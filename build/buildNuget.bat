@@ -1,0 +1,1 @@
+nuget pack ..\Rock.Messaging\Rock.Messaging.csproj -Properties Configuration=Release
