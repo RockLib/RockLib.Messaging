@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
@@ -7,13 +8,35 @@ namespace Rock.Messaging.Routing
 {
     public class XmlMessageParser : IMessageParser
     {
-        public string GetTypeName(Type type)
+        private readonly ConcurrentDictionary<Type, XmlRootAttribute> _xmlRootAttributes = new ConcurrentDictionary<Type, XmlRootAttribute>();
+
+        public void RegisterXmlRoot(Type messageType, string xmlRootElementName)
         {
-            var xmlRootAttribute = Attribute.GetCustomAttribute(type, typeof(XmlRootAttribute)) as XmlRootAttribute;
+            if (string.IsNullOrWhiteSpace(xmlRootElementName))
+            {
+                XmlRootAttribute dummy;
+                _xmlRootAttributes.TryRemove(messageType, out dummy);
+            }
+            else
+            {
+                _xmlRootAttributes.AddOrUpdate(
+                    messageType,
+                    t => new XmlRootAttribute(xmlRootElementName),
+                    (t, a) => new XmlRootAttribute(xmlRootElementName));
+            }
+        }
+
+        public string GetTypeName(Type messageType)
+        {
+            XmlRootAttribute xmlRootAttribute;
+            if (!_xmlRootAttributes.TryGetValue(messageType, out xmlRootAttribute))
+            {
+                xmlRootAttribute = Attribute.GetCustomAttribute(messageType, typeof(XmlRootAttribute)) as XmlRootAttribute;
+            }
 
             return xmlRootAttribute != null && !string.IsNullOrWhiteSpace(xmlRootAttribute.ElementName)
                 ? xmlRootAttribute.ElementName
-                : type.Name;
+                : messageType.Name;
         }
 
         public string GetTypeName(string rawMessage)
@@ -29,11 +52,18 @@ namespace Rock.Messaging.Routing
 
         public object DeserializeMessage(string rawMessage, Type messageType)
         {
-            var serializer = new XmlSerializer(messageType);
             using (var reader = new StringReader(rawMessage))
             {
-                return serializer.Deserialize(reader);
+                return GetXmlSerializer(messageType).Deserialize(reader);
             }
+        }
+
+        private XmlSerializer GetXmlSerializer(Type messageType)
+        {
+            XmlRootAttribute xmlRootAttribute;
+            return _xmlRootAttributes.TryGetValue(messageType, out xmlRootAttribute)
+                ? new XmlSerializer(messageType, xmlRootAttribute)
+                : new XmlSerializer(messageType);
         }
     }
 }
