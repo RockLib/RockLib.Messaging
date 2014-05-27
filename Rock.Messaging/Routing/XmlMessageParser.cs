@@ -50,11 +50,11 @@ namespace Rock.Messaging.Routing
             return match.Groups[1].Value;
         }
 
-        public object DeserializeMessage(string rawMessage, Type messageType)
+        public TMessage DeserializeMessage<TMessage>(string rawMessage)
         {
             using (var reader = new StringReader(rawMessage))
             {
-                return GetXmlSerializer(messageType).Deserialize(reader);
+                return (TMessage)GetXmlSerializer(typeof(TMessage)).Deserialize(reader);
             }
         }
 

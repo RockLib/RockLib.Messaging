@@ -66,21 +66,21 @@ namespace Rock.Messaging.Routing
                 var messageType = _typeLocator.GetMessageType(rootElement);
                 var rawMessageParameter = Expression.Parameter(typeof(string), "rawMessage");
 
-                var deserializeMethod = GetType().GetMethod("Deserialize", BindingFlags.NonPublic | BindingFlags.Instance);
+                var messageParserDeserializeMessageMethod = typeof(IMessageParser).GetMethod("DeserializeMessage").MakeGenericMethod(messageType);
                 var deserializeExpression =
-                    Expression.Convert(
-                        Expression.Call(Expression.Constant(this), deserializeMethod, rawMessageParameter, Expression.Constant(messageType)),
-                        messageType);
+                    Expression.Call(
+                        Expression.Constant(_messageParser),
+                        messageParserDeserializeMessageMethod,
+                        new Expression[]{ rawMessageParameter });
 
                 var messageHandlerType = _typeLocator.GetMessageHandlerType(messageType);
                 var handleMethod = messageHandlerType.GetMethod("Handle");
 
-                var getMessageHandlerMethod = GetType().GetMethod("GetMessageHandler", BindingFlags.NonPublic | BindingFlags.Instance);
+                var resolverGetMethod = typeof(IResolver).GetMethod("Get", Type.EmptyTypes).MakeGenericMethod(messageHandlerType);
                 var getMessageHandlerExpression =
                     Expression.Call(
-                        Expression.Constant(this),
-                        getMessageHandlerMethod,
-                        new Expression[] { Expression.Constant(messageHandlerType) });
+                        Expression.Constant(_resolver),
+                        resolverGetMethod);
 
                 var continueWithMethod =
                     typeof(Task<>).MakeGenericType(messageType).GetMethods()
@@ -188,18 +188,6 @@ namespace Rock.Messaging.Routing
             var taskFromResultMethod = typeof(Task).GetMethod("FromResult").MakeGenericMethod(messageType);
             var completedTask = taskFromResultMethod.Invoke(null, new object[] { null });
             return completedTask;
-        }
-
-        // ReSharper disable once UnusedMember.Local
-        private object GetMessageHandler(Type messageType)
-        {
-            return _resolver.Get(messageType);
-        }
-
-        // ReSharper disable once UnusedMember.Local
-        private object Deserialize(string rawMessage, Type messageType)
-        {
-            return _messageParser.DeserializeMessage(rawMessage, messageType);
         }
 
         // ReSharper disable once UnusedMember.Local
