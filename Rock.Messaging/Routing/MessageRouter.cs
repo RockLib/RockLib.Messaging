@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using Rock.DependencyInjection;
 using Rock.Logging;
 
 namespace Rock.Messaging.Routing
@@ -19,12 +20,14 @@ namespace Rock.Messaging.Routing
         private readonly IMessageParser _messageParser;
         private readonly ITypeLocator _typeLocator;
         private readonly ILogger _logger;
+        private readonly IResolver _resolver;
 
-        public MessageRouter(IMessageParser messageParser = null, ITypeLocator typeLocator = null, ILogger logger = null)
+        public MessageRouter(IMessageParser messageParser = null, ITypeLocator typeLocator = null, ILogger logger = null, IResolver resolver = null)
         {
             _messageParser = messageParser ?? new XmlMessageParser();
             _typeLocator = typeLocator ?? new CurrentAppDomainTypeLocator(_messageParser);
             _logger = logger ?? NullLogger.Instance;
+            _resolver = resolver ?? new AutoContainer();
         }
 
         public Task Route(string rawMessage)
@@ -71,7 +74,13 @@ namespace Rock.Messaging.Routing
 
                 var messageHandlerType = _typeLocator.GetMessageHandlerType(messageType);
                 var handleMethod = messageHandlerType.GetMethod("Handle");
-                var newMessageHandlerExpression = Expression.New(messageHandlerType);
+
+                var getMessageHandlerMethod = GetType().GetMethod("GetMessageHandler", BindingFlags.NonPublic | BindingFlags.Instance);
+                var getMessageHandlerExpression =
+                    Expression.Call(
+                        Expression.Constant(this),
+                        getMessageHandlerMethod,
+                        new Expression[] { Expression.Constant(messageHandlerType) });
 
                 var continueWithMethod =
                     typeof(Task<>).MakeGenericType(messageType).GetMethods()
@@ -86,7 +95,7 @@ namespace Rock.Messaging.Routing
 
                 var tryBody =
                     Expression.Call(
-                        Expression.Call(newMessageHandlerExpression, handleMethod, new Expression[] { deserializeExpression }),
+                        Expression.Call(getMessageHandlerExpression, handleMethod, new Expression[] { deserializeExpression }),
                         continueWithMethod,
                         new Expression[] { continueWithExpression });
 
@@ -179,6 +188,12 @@ namespace Rock.Messaging.Routing
             var taskFromResultMethod = typeof(Task).GetMethod("FromResult").MakeGenericMethod(messageType);
             var completedTask = taskFromResultMethod.Invoke(null, new object[] { null });
             return completedTask;
+        }
+
+        // ReSharper disable once UnusedMember.Local
+        private object GetMessageHandler(Type messageType)
+        {
+            return _resolver.Get(messageType);
         }
 
         // ReSharper disable once UnusedMember.Local
