@@ -5,7 +5,8 @@ using NUnit.Framework;
 using Rock.Logging;
 using Rock.Messaging.Routing;
 
-namespace Rock.Messaging.UnitTests
+// ReSharper disable once CheckNamespace
+namespace MessageRouterTests
 {
     public class MessageRouterTests
     {

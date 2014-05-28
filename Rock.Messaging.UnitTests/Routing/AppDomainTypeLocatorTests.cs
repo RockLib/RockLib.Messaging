@@ -3,7 +3,8 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Rock.Messaging.Routing;
 
-namespace Rock.Messaging.UnitTests
+// ReSharper disable once CheckNamespace
+namespace AppDomainTypeLocatorTests
 {
     public class AppDomainTypeLocatorTests
     {

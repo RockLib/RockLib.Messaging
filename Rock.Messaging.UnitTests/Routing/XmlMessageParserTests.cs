@@ -2,7 +2,8 @@
 using NUnit.Framework;
 using Rock.Messaging.Routing;
 
-namespace Rock.Messaging.UnitTests
+// ReSharper disable once CheckNamespace
+namespace XmlMessageParserTests
 {
     public class XmlMessageParserTests
     {
