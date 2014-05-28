@@ -25,7 +25,7 @@ namespace Rock.Messaging.Routing
         public MessageRouter(IMessageParser messageParser = null, ITypeLocator typeLocator = null, ILogger logger = null, IResolver resolver = null)
         {
             _messageParser = messageParser ?? new XmlMessageParser();
-            _typeLocator = typeLocator ?? new CurrentAppDomainTypeLocator(_messageParser);
+            _typeLocator = typeLocator ?? new AppDomainTypeLocator(_messageParser);
             _logger = logger ?? NullLogger.Instance;
             _resolver = resolver ?? new AutoContainer();
         }

@@ -6,6 +6,7 @@ namespace Rock.Messaging.Routing
     {
         string GetTypeName(Type type);
         string GetTypeName(string rawMessage);
-        TMessage DeserializeMessage<TMessage>(string rawMessage);
+        TMessage DeserializeMessage<TMessage>(string rawMessage)
+            where TMessage : IMessage;
     }
 }
