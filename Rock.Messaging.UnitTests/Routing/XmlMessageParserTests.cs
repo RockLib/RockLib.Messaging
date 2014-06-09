@@ -118,6 +118,44 @@ namespace XmlMessageParserTests
             }
         }
 
+        public class TheRegisterXmlRootMethod : XmlMessageParserTests
+        {
+            [Test]
+            public void CausesTheParserToExpectTheProvidedXmlRootElementName()
+            {
+                _xmlMessageParser.RegisterXmlRoot(typeof(FooCommand), "Foobar");
+
+                var result = _xmlMessageParser.GetTypeName(typeof(FooCommand));
+
+                Assert.That(result, Is.EqualTo("Foobar"));
+            }
+
+            [Test]
+            public void WhenCalledMoreThanOnceForTheSameTypeCausesTheParserToExpectTheLastProvidedXmlRootElementName()
+            {
+                _xmlMessageParser.RegisterXmlRoot(typeof(FooCommand), "NotGonnaHappen");
+                _xmlMessageParser.RegisterXmlRoot(typeof(FooCommand), "Foobar");
+
+                var result = _xmlMessageParser.GetTypeName(typeof(FooCommand));
+
+                Assert.That(result, Is.EqualTo("Foobar"));
+            }
+        }
+
+        public class TheDeregisterXmlRootMethod : XmlMessageParserTests
+        {
+            [Test]
+            public void CausesTheParserToExpectTheNameOfTheTypeAsTheXmlRootElementName()
+            {
+                _xmlMessageParser.RegisterXmlRoot(typeof(FooCommand), "Foobar");
+                _xmlMessageParser.DeregisterXmlRoot(typeof(FooCommand));
+
+                var result = _xmlMessageParser.GetTypeName(typeof(FooCommand));
+
+                Assert.That(result, Is.EqualTo("FooCommand"));
+            }
+        }
+
         public class FooCommand : IMessage
         {
             public string Data { get; set; }

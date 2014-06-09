@@ -14,7 +14,7 @@ namespace Rock.Messaging.Routing
         public XmlMessageParser()
         {
             // From XML Specifications: http://www.w3.org/TR/REC-xml/#sec-starttags
-            const string nameStartCharacters = @":A-Z_a-z\xC0-\xD6\xD8-\xF6\xF8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD"; //\u10000-\uEFFFF"; // .net regex doesn't support high-value unicode pointcodes.
+            const string nameStartCharacters = @":A-Z_a-z\xC0-\xD6\xD8-\xF6\xF8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD"; //\u10000-\uEFFFF"; // .net regex doesn't support high-value unicode pointcodes. :(
             const string nameCharacters = @"-.0-9\xB7\u0300-\u036F\u203F-\u2040" + nameStartCharacters;
             var namePattern = string.Format("[{0}][{1}]*", nameStartCharacters, nameCharacters);
             var tagPattern = string.Format(@"<({0})[ \r\n\t>/]", namePattern);
@@ -23,18 +23,16 @@ namespace Rock.Messaging.Routing
 
         public void RegisterXmlRoot(Type messageType, string xmlRootElementName)
         {
-            if (string.IsNullOrWhiteSpace(xmlRootElementName))
-            {
-                XmlRootAttribute dummy;
-                _xmlRootAttributes.TryRemove(messageType, out dummy);
-            }
-            else
-            {
-                _xmlRootAttributes.AddOrUpdate(
+            _xmlRootAttributes.AddOrUpdate(
                     messageType,
                     t => new XmlRootAttribute(xmlRootElementName),
                     (t, a) => new XmlRootAttribute(xmlRootElementName));
-            }
+        }
+
+        public void DeregisterXmlRoot(Type messageType)
+        {
+            XmlRootAttribute dummy;
+            _xmlRootAttributes.TryRemove(messageType, out dummy);
         }
 
         public string GetTypeName(Type messageType)

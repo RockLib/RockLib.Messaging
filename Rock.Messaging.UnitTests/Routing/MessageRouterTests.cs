@@ -69,6 +69,20 @@ namespace MessageRouterTests
                 Assert.That(called, Is.True);
             }
 
+            [Test]
+            public void InvokesTheLastRegisteredCompletionForTheMessageType()
+            {
+                var firstCalled = false;
+                var lastCalled = false;
+                _router.RegisterCompletion<FooCommand10>(fooCommand9 => { firstCalled = true; });
+                _router.RegisterCompletion<FooCommand10>(fooCommand9 => { lastCalled = true; });
+
+                _router.Route("<FooCommand10/>").Wait();
+
+                Assert.That(firstCalled, Is.False);
+                Assert.That(lastCalled, Is.True);
+            }
+
             // ReSharper disable ExplicitCallerInfoArgument
             [Test]
             public void HandlesAnExceptionWhenTheHandlerMethodOfTheMessageHandlerThrowsOne()
