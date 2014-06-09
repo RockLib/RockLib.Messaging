@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Rock.DependencyInjection;
-using Rock.Logging;
 
 namespace Rock.Messaging.Routing
 {
@@ -19,14 +18,18 @@ namespace Rock.Messaging.Routing
 
         private readonly IMessageParser _messageParser;
         private readonly ITypeLocator _typeLocator;
-        private readonly ILogger _logger;
+        private readonly IExceptionHandler _exceptionHandler;
         private readonly IResolver _resolver;
 
-        public MessageRouter(IMessageParser messageParser = null, ITypeLocator typeLocator = null, ILogger logger = null, IResolver resolver = null)
+        public MessageRouter(
+            IMessageParser messageParser = null,
+            ITypeLocator typeLocator = null,
+            IExceptionHandler exceptionHandler = null,
+            IResolver resolver = null)
         {
             _messageParser = messageParser ?? new XmlMessageParser();
             _typeLocator = typeLocator ?? new AppDomainTypeLocator(_messageParser);
-            _logger = logger ?? NullLogger.Instance;
+            _exceptionHandler = exceptionHandler ?? NullExceptionHandler.Instance;
             _resolver = resolver ?? new AutoContainer();
         }
 
@@ -89,9 +92,9 @@ namespace Rock.Messaging.Routing
                             && m.GetParameters().Length == 1
                             && m.GetParameters()[0].ParameterType == typeof(Action<>).MakeGenericType(typeof(Task<>).MakeGenericType(messageType)));
 
-                var logExceptionMethod = GetType().GetMethod("LogException", BindingFlags.NonPublic | BindingFlags.Instance);
+                var handleExceptionMethod = GetType().GetMethod("HandleException", BindingFlags.NonPublic | BindingFlags.Instance);
 
-                var continueWithExpression = Expression.Constant(CreateContinueWithFunction(messageType, logExceptionMethod));
+                var continueWithExpression = Expression.Constant(CreateContinueWithFunction(messageType, handleExceptionMethod));
 
                 var tryBody =
                     Expression.Call(
@@ -107,7 +110,7 @@ namespace Rock.Messaging.Routing
                         exceptionVariable,
                         Expression.Block(
                             typeof(Task),
-                            Expression.Call(Expression.Constant(this), logExceptionMethod, new Expression[] { exceptionVariable }),
+                            Expression.Call(Expression.Constant(this), handleExceptionMethod, new Expression[] { exceptionVariable }),
                             Expression.Constant(GetCompletedTask(messageType))),
                         null);
 
@@ -122,7 +125,7 @@ namespace Rock.Messaging.Routing
             }
         }
 
-        private Delegate CreateContinueWithFunction(Type messageType, MethodInfo logExceptionMethod)
+        private Delegate CreateContinueWithFunction(Type messageType, MethodInfo handleExceptionMethod)
         {
             var invokeCompletionMessageParameter = Expression.Parameter(typeof(Task<>).MakeGenericType(messageType), "messageTask");
 
@@ -153,7 +156,7 @@ namespace Rock.Messaging.Routing
                     Expression.MakeCatchBlock(
                         typeof(Exception),
                         exceptionVariable,
-                        Expression.Call(Expression.Constant(this), logExceptionMethod, new Expression[] { exceptionVariable }),
+                        Expression.Call(Expression.Constant(this), handleExceptionMethod, new Expression[] { exceptionVariable }),
                         null);
 
                 var tryInvokeCompletion = Expression.TryCatch(invokeCompletion, catchBlock);
@@ -161,7 +164,7 @@ namespace Rock.Messaging.Routing
                 invokeCompletionBody =
                     Expression.IfThenElse(
                         Expression.Property(invokeCompletionMessageParameter, "IsFaulted"),
-                        Expression.Call(Expression.Constant(this), logExceptionMethod, new Expression[] { Expression.Property(invokeCompletionMessageParameter, "Exception") }),
+                        Expression.Call(Expression.Constant(this), handleExceptionMethod, new Expression[] { Expression.Property(invokeCompletionMessageParameter, "Exception") }),
                         Expression.IfThen(
                             Expression.Not(Expression.Property(invokeCompletionMessageParameter, "IsCanceled")),
                             tryInvokeCompletion));
@@ -171,7 +174,7 @@ namespace Rock.Messaging.Routing
                 invokeCompletionBody =
                     Expression.IfThen(
                         Expression.Property(invokeCompletionMessageParameter, "IsFaulted"),
-                        Expression.Call(Expression.Constant(this), logExceptionMethod, new Expression[] { Expression.Property(invokeCompletionMessageParameter, "Exception") }));
+                        Expression.Call(Expression.Constant(this), handleExceptionMethod, new Expression[] { Expression.Property(invokeCompletionMessageParameter, "Exception") }));
             }
 
             var invokeCompletionLambda =
@@ -191,9 +194,9 @@ namespace Rock.Messaging.Routing
         }
 
         // ReSharper disable once UnusedMember.Local
-        private void LogException(Exception ex)
+        private void HandleException(Exception ex)
         {
-            _logger.Error(ex);
+            _exceptionHandler.HandleException(ex);
         }
     }
 }

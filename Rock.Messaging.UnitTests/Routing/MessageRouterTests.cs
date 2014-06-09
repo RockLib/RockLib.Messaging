@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
-using Rock.Logging;
+using Rock;
 using Rock.Messaging.Routing;
 
 // ReSharper disable once CheckNamespace
@@ -10,15 +10,15 @@ namespace MessageRouterTests
 {
     public class MessageRouterTests
     {
-        protected Mock<ILogger> _mockLogger;
+        protected Mock<IExceptionHandler> _mockExceptionHandler;
         protected MessageRouter _router;
 
         [SetUp]
         public void Setup()
         {
-            _mockLogger = new Mock<ILogger>();
-            _mockLogger.Setup(m => m.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
-            _router = new MessageRouter(logger:_mockLogger.Object);
+            _mockExceptionHandler = new Mock<IExceptionHandler>();
+            _router = new MessageRouter(exceptionHandler:_mockExceptionHandler.Object);
+
         }
 
         public class TheRouteMethod : MessageRouterTests
@@ -71,21 +71,21 @@ namespace MessageRouterTests
 
             // ReSharper disable ExplicitCallerInfoArgument
             [Test]
-            public void LogsAnExceptionWhenTheHandlerMethodOfTheMessageHandlerThrowsAnException()
+            public void HandlesAnExceptionWhenTheHandlerMethodOfTheMessageHandlerThrowsOne()
             {
                 _router.Route("<FooCommand11/>").Wait();
 
-                _mockLogger.Verify(m => m.Log(It.IsAny<LogEntry>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()), Times.Once());
+                _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
             }
 
             [Test]
-            public void LogsAnExceptionWhenTheCompletionThrowsAnException()
+            public void HandlesAnExceptionWhenTheCompletionActionThrowsAnExceptionOne()
             {
                 _router.RegisterCompletion<FooCommand10>(fooCommand9 => { throw new Exception(); });
 
                 _router.Route("<FooCommand10/>").Wait();
 
-                _mockLogger.Verify(m => m.Log(It.IsAny<LogEntry>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()), Times.Once());
+                _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
             }
             // ReSharper restore ExplicitCallerInfoArgument
         }

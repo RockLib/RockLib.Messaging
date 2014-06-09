@@ -40,15 +40,13 @@
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="Reflectinator">
+    <Reference Include="Reflectinator, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Reflectinator.0.0.8\lib\net40\Reflectinator.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Core">
-      <HintPath>..\packages\Rock.Core.0.0.1-alpha027\lib\net45\Rock.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Rock.Logging, Version=0.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Rock.Core, Version=0.9.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Rock.Logging.0.0.1-alpha018\lib\net45\Rock.Logging.dll</HintPath>
+      <HintPath>..\packages\Rock.Core.0.0.1-alpha029\lib\net45\Rock.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -57,7 +55,8 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="XSerializer">
+    <Reference Include="XSerializer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=9ab97cfaa8f0c80a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\XSerializer.0.1.11\lib\net40\XSerializer.dll</HintPath>
     </Reference>
   </ItemGroup>
