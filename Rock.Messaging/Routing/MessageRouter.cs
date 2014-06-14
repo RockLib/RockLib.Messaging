@@ -5,7 +5,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using Rock.Defaults;
 using Rock.DependencyInjection;
+using Rock.Messaging.Defaults.Implementation;
 
 namespace Rock.Messaging.Routing
 {
@@ -29,15 +31,18 @@ namespace Rock.Messaging.Routing
         }
         // ReSharper restore RedundantArgumentDefaultValue
 
+        [UsesDefaultValue(typeof(Default), "MessageParser")]
+        [UsesDefaultValue(typeof(Default), "TypeLocator")]
+        [UsesDefaultValue(typeof(Default), "ExceptionHandler")]
         public MessageRouter(
             IMessageParser messageParser = null,
             ITypeLocator typeLocator = null,
             IExceptionHandler exceptionHandler = null,
             IResolver resolver = null)
         {
-            _messageParser = messageParser ?? new XmlMessageParser();
-            _typeLocator = typeLocator ?? new AppDomainTypeLocator(_messageParser);
-            _exceptionHandler = exceptionHandler ?? NullExceptionHandler.Instance;
+            _messageParser = messageParser ?? Default.MessageParser;
+            _typeLocator = typeLocator ?? Default.TypeLocator;
+            _exceptionHandler = exceptionHandler ?? Default.ExceptionHandler;
             _resolver = resolver ?? new AutoContainer();
         }
 

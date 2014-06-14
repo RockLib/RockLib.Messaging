@@ -41,7 +41,7 @@
     </Reference>
     <Reference Include="Rock.Core, Version=0.9.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Rock.Core.0.0.1-alpha030\lib\net45\Rock.Core.dll</HintPath>
+      <HintPath>..\packages\Rock.Core.0.0.1-alpha031\lib\net45\Rock.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -56,6 +56,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Defaults\Implementation\Default.cs" />
+    <Compile Include="Defaults\Implementation\Default.ExceptionHandler.cs" />
+    <Compile Include="Defaults\Implementation\Default.TypeLocator.cs" />
+    <Compile Include="Defaults\Implementation\Default.MessageHelper.cs" />
+    <Compile Include="AssemblyInitialization\ModuleInitializer.cs" />
     <Compile Include="Routing\AppDomainTypeLocator.cs" />
     <Compile Include="Routing\IMessage.cs" />
     <Compile Include="Routing\IMessageHandler.cs" />
@@ -69,7 +74,11 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="InjectModuleInitializer" AfterTargets="AfterBuild">
+    <Exec Command="..\packages\InjectModuleInitializer.1.3.1\tools\InjectModuleInitializer.exe &quot;$(TargetPath)&quot;" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
