@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Rock.Messaging.Routing
 {
     public interface IMessageRouter
     {
-        Task Route(string rawMessage);
+        Task Route(string rawMessage, Action completion = null);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -21,6 +22,13 @@ namespace Rock.Messaging.Routing
         private readonly IExceptionHandler _exceptionHandler;
         private readonly IResolver _resolver;
 
+        // ReSharper disable RedundantArgumentDefaultValue
+        public MessageRouter()
+            : this(null, null, null, null)
+        {
+        }
+        // ReSharper restore RedundantArgumentDefaultValue
+
         public MessageRouter(
             IMessageParser messageParser = null,
             ITypeLocator typeLocator = null,
@@ -33,13 +41,35 @@ namespace Rock.Messaging.Routing
             _resolver = resolver ?? new AutoContainer();
         }
 
-        public Task Route(string rawMessage)
+        public async Task Route(string rawMessage, Action completion = null)
         {
-            var routeFunction = _routeFunctions.GetOrAdd(
-                _messageParser.GetTypeName(rawMessage),
-                rootElement => CreateRouteFunction(rootElement));
+            try
+            {
+                var routeFunction =
+                    _routeFunctions.GetOrAdd(
+                        _messageParser.GetTypeName(rawMessage),
+                        rootElement => CreateRouteFunction(rootElement));
 
-            return routeFunction(rawMessage);
+                await routeFunction(rawMessage);
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex);
+            }
+            finally
+            {
+                if (completion != null)
+                {
+                    try
+                    {
+                        completion();
+                    }
+                    catch (Exception ex)
+                    {
+                        HandleException(ex);
+                    }
+                }
+            }
         }
 
         public void RegisterDefaultCompletion(Action completion)
@@ -129,61 +159,69 @@ namespace Rock.Messaging.Routing
         {
             var invokeCompletionMessageParameter = Expression.Parameter(typeof(Task<>).MakeGenericType(messageType), "messageTask");
 
-            Expression invokeCompletion;
+            var bodyExpressions = new List<Expression>();
+
+            var handleExceptionExpression =
+                Expression.IfThen(
+                    Expression.Property(invokeCompletionMessageParameter, "IsFaulted"),
+                    Expression.Call(Expression.Constant(this), handleExceptionMethod, new Expression[] { Expression.Property(invokeCompletionMessageParameter, "Exception") }));
+
+            bodyExpressions.Add(handleExceptionExpression);
+
             Delegate completion;
             if (_completions.TryGetValue(messageType, out completion))
             {
-                invokeCompletion = Expression.Invoke(
-                    Expression.Constant(Convert.ChangeType(completion, typeof(Action<>).MakeGenericType(messageType))),
-                    Expression.Property(invokeCompletionMessageParameter, "Result"));
+                if (_defaultCompletion != null)
+                {
+                    bodyExpressions.Add(Try(handleExceptionMethod, GetInvokeGenericCompletionExpression(messageType, completion, invokeCompletionMessageParameter)));
+                    bodyExpressions.Add(Try(handleExceptionMethod, GetInvokeDefaultCompletionExpression()));
+                }
+                else
+                {
+                    bodyExpressions.Add(Try(handleExceptionMethod, GetInvokeGenericCompletionExpression(messageType, completion, invokeCompletionMessageParameter)));
+                }
             }
             else if (_defaultCompletion != null)
             {
-                invokeCompletion = Expression.Invoke(Expression.Constant(_defaultCompletion));
-            }
-            else
-            {
-                invokeCompletion = null;
+                bodyExpressions.Add(Try(handleExceptionMethod, GetInvokeDefaultCompletionExpression()));
             }
 
-            Expression invokeCompletionBody;
-
-            if (invokeCompletion != null)
-            {
-                var exceptionVariable = Expression.Variable(typeof(Exception), "ex");
-
-                var catchBlock =
-                    Expression.MakeCatchBlock(
-                        typeof(Exception),
-                        exceptionVariable,
-                        Expression.Call(Expression.Constant(this), handleExceptionMethod, new Expression[] { exceptionVariable }),
-                        null);
-
-                var tryInvokeCompletion = Expression.TryCatch(invokeCompletion, catchBlock);
-
-                invokeCompletionBody =
-                    Expression.IfThenElse(
-                        Expression.Property(invokeCompletionMessageParameter, "IsFaulted"),
-                        Expression.Call(Expression.Constant(this), handleExceptionMethod, new Expression[] { Expression.Property(invokeCompletionMessageParameter, "Exception") }),
-                        Expression.IfThen(
-                            Expression.Not(Expression.Property(invokeCompletionMessageParameter, "IsCanceled")),
-                            tryInvokeCompletion));
-            }
-            else
-            {
-                invokeCompletionBody =
-                    Expression.IfThen(
-                        Expression.Property(invokeCompletionMessageParameter, "IsFaulted"),
-                        Expression.Call(Expression.Constant(this), handleExceptionMethod, new Expression[] { Expression.Property(invokeCompletionMessageParameter, "Exception") }));
-            }
+            var body = Expression.Block(bodyExpressions);
 
             var invokeCompletionLambda =
                 Expression.Lambda(
                     typeof(Action<>).MakeGenericType(typeof(Task<>).MakeGenericType(messageType)),
-                    invokeCompletionBody,
+                    body,
                     "Route" + messageType.Name + "Continuation",
                     new[] { invokeCompletionMessageParameter });
             return invokeCompletionLambda.Compile();
+        }
+
+        private InvocationExpression GetInvokeDefaultCompletionExpression()
+        {
+            return Expression.Invoke(Expression.Constant(_defaultCompletion));
+        }
+
+        private static InvocationExpression GetInvokeGenericCompletionExpression(Type messageType, Delegate completion, ParameterExpression invokeCompletionMessageParameter)
+        {
+            return Expression.Invoke(
+                Expression.Constant(Convert.ChangeType(completion, typeof(Action<>).MakeGenericType(messageType))),
+                Expression.Property(invokeCompletionMessageParameter, "Result"));
+        }
+
+        private TryExpression Try(MethodInfo handleExceptionMethod, Expression invokeCompletion)
+        {
+            var exceptionVariable = Expression.Variable(typeof(Exception), "ex");
+
+            var catchBlock =
+                Expression.MakeCatchBlock(
+                    typeof(Exception),
+                    exceptionVariable,
+                    Expression.Call(Expression.Constant(this), handleExceptionMethod, new Expression[] {exceptionVariable}),
+                    null);
+
+            var tryInvokeCompletion = Expression.TryCatch(invokeCompletion, catchBlock);
+            return tryInvokeCompletion;
         }
 
         private static object GetCompletedTask(Type messageType)
@@ -193,10 +231,16 @@ namespace Rock.Messaging.Routing
             return completedTask;
         }
 
-        // ReSharper disable once UnusedMember.Local
-        private void HandleException(Exception ex)
+        // ReSharper disable once EmptyGeneralCatchClause
+        private async void HandleException(Exception ex)
         {
-            _exceptionHandler.HandleException(ex);
+            try
+            {
+                await _exceptionHandler.HandleException(ex);
+            }
+            catch
+            {
+            }
         }
     }
 }
