@@ -73,24 +73,11 @@ namespace MessageRouterTests
             }
 
             [Test]
-            public void InvokesTheCompletion()
+            public async void ReturnsTheMessage()
             {
-                bool called = false;
-
-                _router.Route("<FooCommand10/>", result => called = true).Wait();
-
-                Assert.That(called, Is.True);
-            }
-
-            [Test]
-            public void PassesTheMessageToTheCompletion()
-            {
-                FooCommand10 message = null;
-
-                _router.Route("<FooCommand10/>", result => message = result.Message as FooCommand10).Wait();
+                var message = await _router.Route("<FooCommand10/>");
 
                 Assert.That(message, Is.Not.Null);
-                Assert.That(message, Is.InstanceOf<FooCommand10>());
             }
 
             [Test]
@@ -98,7 +85,7 @@ namespace MessageRouterTests
             {
                 Exception exception = null;
 
-                _router.Route("<FooCommand11/>", result => exception = result.Exception).Wait();
+                _router.Route("<FooCommand11/>", onFailue: ex => exception = ex).Wait();
 
                 Assert.That(exception, Is.Not.Null);
             }
@@ -108,7 +95,7 @@ namespace MessageRouterTests
             {
                 Exception exception = null;
 
-                _router.Route("<FooCommand11/>", result => exception = result.Exception).Wait();
+                _router.Route("<FooCommand11/>").ContinueWith(t => exception = t.Exception).Wait();
 
                 _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
                 Assert.That(exception, Is.Not.Null);
@@ -119,7 +106,7 @@ namespace MessageRouterTests
             {
                 Exception exception = null;
 
-                _router.Route("<FooCommand12/>", result => exception = result.Exception).Wait();
+                _router.Route("<FooCommand12/>").ContinueWith(t => exception = t.Exception).Wait();
 
                 _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
                 Assert.That(exception, Is.Not.Null);
@@ -130,18 +117,10 @@ namespace MessageRouterTests
             {
                 Exception exception = null;
 
-                _router.Route("<FooCommand13/>", result => exception = result.Exception).Wait();
+                _router.Route("<FooCommand13/>").ContinueWith(t => exception = t.Exception).Wait();
 
                 _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
                 Assert.That(exception, Is.Not.Null);
-            }
-
-            [Test]
-            public void HandlesAnExceptionThrownFromTheCompletionMethodOfTheRouteMethod()
-            {
-                _router.Route("<FooCommand10/>", result => { throw new Exception(); }).Wait();
-
-                _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
             }
 
             [Test]
@@ -149,7 +128,7 @@ namespace MessageRouterTests
             {
                 Exception exception = null;
 
-                _router.Route("<FooCom", result => exception = result.Exception).Wait();
+                _router.Route("<FooCom").ContinueWith(t => exception = t.Exception).Wait();
 
                 _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
                 Assert.That(exception, Is.Not.Null);

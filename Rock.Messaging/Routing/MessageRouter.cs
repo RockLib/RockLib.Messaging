@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Threading.Tasks;
 using Rock.Defaults;
 using Rock.DependencyInjection;
@@ -61,10 +58,8 @@ namespace Rock.Messaging.Routing
             _resolver = resolver ?? new AutoContainer();
         }
 
-        public async Task Route(string rawMessage, Action<IRouteResult> completion = null)
+        public async Task<IMessage> Route(string rawMessage)
         {
-            var routeResult = new RouteResult();
-
             try
             {
                 var routeFunction =
@@ -72,26 +67,19 @@ namespace Rock.Messaging.Routing
                         _messageParser.GetTypeName(rawMessage),
                         rootElement => CreateRouteFunction(rootElement));
 
-                routeResult.Message = await routeFunction(rawMessage);
+                return await routeFunction(rawMessage);
             }
             catch (Exception ex)
             {
-                routeResult.Exception = ex;
-                HandleException(ex);
-            }
-            finally
-            {
-                if (completion != null)
+                try
                 {
-                    try
-                    {
-                        completion(routeResult);
-                    }
-                    catch (Exception ex)
-                    {
-                        HandleException(ex);
-                    }
+                    HandleException(ex);
                 }
+                catch
+                {
+                }
+
+                throw;
             }
         }
 
@@ -111,10 +99,7 @@ namespace Rock.Messaging.Routing
             var handleMethod = messageHandlerType.GetMethod("Handle");
 
             var resolverGetMethod = typeof(IResolver).GetMethod("Get", Type.EmptyTypes).MakeGenericMethod(messageHandlerType);
-            var getMessageHandlerExpression =
-                Expression.Call(
-                    Expression.Constant(_resolver),
-                    resolverGetMethod);
+            var getMessageHandlerExpression = Expression.Call(Expression.Constant(_resolver), resolverGetMethod);
 
             var body = Expression.Call(getMessageHandlerExpression, handleMethod, new Expression[] { deserializeExpression });
 
