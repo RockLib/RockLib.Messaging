@@ -73,130 +73,73 @@ namespace MessageRouterTests
             }
 
             [Test]
-            public void InvokesTheRegisteredDefaultCompletion()
+            public void InvokesTheCompletion()
             {
-                var called = false;
-                _router.RegisterDefaultCompletion(() => { called = true; });
+                bool called = false;
 
-                _router.Route("<FooCommand10/>").Wait();
+                _router.Route("<FooCommand10/>", result => called = true).Wait();
 
                 Assert.That(called, Is.True);
             }
 
             [Test]
-            public void InvokesTheLastRegisteredDefaultCompletion()
+            public void PassesTheMessageToTheCompletion()
             {
-                var firstCalled = false;
-                var lastCalled = false;
-                _router.RegisterDefaultCompletion(() => { firstCalled = true; });
-                _router.RegisterDefaultCompletion(() => { lastCalled = true; });
+                FooCommand10 message = null;
 
-                _router.Route("<FooCommand10/>").Wait();
+                _router.Route("<FooCommand10/>", result => message = result.Message as FooCommand10).Wait();
 
-                Assert.That(firstCalled, Is.False);
-                Assert.That(lastCalled, Is.True);
+                Assert.That(message, Is.Not.Null);
+                Assert.That(message, Is.InstanceOf<FooCommand10>());
             }
 
             [Test]
-            public void InvokesTheRegisteredCompletionForTheMessageType()
+            public void PassesTheExceptionToTheCompletionWhenThereIsAnException()
             {
-                var called = false;
-                _router.RegisterCompletion<FooCommand10>(fooCommand10 => { called = true; });
+                Exception exception = null;
 
-                _router.Route("<FooCommand10/>").Wait();
+                _router.Route("<FooCommand11/>", result => exception = result.Exception).Wait();
 
-                Assert.That(called, Is.True);
-            }
-
-            [Test]
-            public void InvokesTheLastRegisteredCompletionForTheMessageType()
-            {
-                var firstCalled = false;
-                var lastCalled = false;
-                _router.RegisterCompletion<FooCommand10>(fooCommand10 => { firstCalled = true; });
-                _router.RegisterCompletion<FooCommand10>(fooCommand10 => { lastCalled = true; });
-
-                _router.Route("<FooCommand10/>").Wait();
-
-                Assert.That(firstCalled, Is.False);
-                Assert.That(lastCalled, Is.True);
-            }
-
-            [Test]
-            public void InvokesBothTheRegisteredDefaultCompletionAndTheRegisteredCompletionForTheMessageType()
-            {
-                var defaultCalled = false;
-                var genericCalled = false;
-                _router.RegisterDefaultCompletion(() => { defaultCalled = true; });
-                _router.RegisterCompletion<FooCommand10>(fooCommand10 => { genericCalled = true; });
-
-                _router.Route("<FooCommand10/>").Wait();
-
-                Assert.That(defaultCalled, Is.True);
-                Assert.That(genericCalled, Is.True);
-            }
-
-            [Test]
-            public void InvokesTheCompletionParameter()
-            {
-                var called = false;
-
-                _router.RegisterDefaultCompletion(() => { });
-                _router.RegisterCompletion<FooCommand10>(command => {});
-
-                _router.Route("<FooCommand10/>", () => called = true).Wait();
-
-                Assert.That(called, Is.True);
+                Assert.That(exception, Is.Not.Null);
             }
 
             [Test]
             public void HandlesAnExceptionThrownFromTheMessageConstructor()
             {
-                _router.Route("<FooCommand11/>").Wait();
+                Exception exception = null;
+
+                _router.Route("<FooCommand11/>", result => exception = result.Exception).Wait();
 
                 _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
+                Assert.That(exception, Is.Not.Null);
             }
 
             [Test]
             public void HandlesAnExceptionThrownFromTheMessageHandlerConstructor()
             {
-                _router.Route("<FooCommand12/>").Wait();
+                Exception exception = null;
+
+                _router.Route("<FooCommand12/>", result => exception = result.Exception).Wait();
 
                 _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
+                Assert.That(exception, Is.Not.Null);
             }
 
             [Test]
             public void HandlesAnExceptionThrownFromTheHandleMethodOfTheMessageHandler()
             {
-                _router.Route("<FooCommand13/>").Wait();
+                Exception exception = null;
+
+                _router.Route("<FooCommand13/>", result => exception = result.Exception).Wait();
 
                 _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
-            }
-
-            [Test]
-            public void HandlesAnExceptionThrownFromTheDefaultCompletionMethod()
-            {
-                _router.RegisterDefaultCompletion(() => { throw new Exception(); });
-
-                _router.Route("<FooCommand10/>").Wait();
-
-                _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
-            }
-
-            [Test]
-            public void HandlesAnExceptionThrownFromTheGenericCompletionMethod()
-            {
-                _router.RegisterCompletion<FooCommand10>(command => { throw new Exception(); });
-
-                _router.Route("<FooCommand10/>").Wait();
-
-                _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
+                Assert.That(exception, Is.Not.Null);
             }
 
             [Test]
             public void HandlesAnExceptionThrownFromTheCompletionMethodOfTheRouteMethod()
             {
-                _router.Route("<FooCommand10/>", () => { throw new Exception(); }).Wait();
+                _router.Route("<FooCommand10/>", result => { throw new Exception(); }).Wait();
 
                 _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
             }
@@ -204,19 +147,12 @@ namespace MessageRouterTests
             [Test]
             public void HandlesAnExceptionResultingFromAnIncompleteMessage()
             {
-                _router.Route("<FooCom").Wait();
+                Exception exception = null;
+
+                _router.Route("<FooCom", result => exception = result.Exception).Wait();
 
                 _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
-            }
-
-            [Test]
-            public void DoesNotThrowAnExceptionWhenTheExceptionHandlerItselfThrowsAnException()
-            {
-                _mockExceptionHandler.Setup(m => m.HandleException(It.IsAny<Exception>())).Throws<Exception>();
-                _router.RegisterDefaultCompletion(() => { throw new Exception(); });
-
-                Assert.That(() => _router.Route("<FooCommand10/>").Wait(), Throws.Nothing);
-                _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
+                Assert.That(exception, Is.Not.Null);
             }
         }
 
@@ -234,10 +170,10 @@ namespace MessageRouterTests
             public static int Instances { get; private set; }
             public static int HandledCount { get; private set; }
 
-            public Task<FooCommand10> Handle(FooCommand10 message)
+            public Task<IMessage> Handle(FooCommand10 message)
             {
                 HandledCount++;
-                return Task.FromResult(message);
+                return Task.FromResult<IMessage>(message);
             }
         }
 
@@ -251,9 +187,9 @@ namespace MessageRouterTests
 
         public class FooCommand11Handler : IMessageHandler<FooCommand11>
         {
-            public Task<FooCommand11> Handle(FooCommand11 message)
+            public Task<IMessage> Handle(FooCommand11 message)
             {
-                return Task.FromResult(message);
+                return Task.FromResult<IMessage>(message);
             }
         }
 
@@ -268,9 +204,9 @@ namespace MessageRouterTests
                 throw new Exception();
             }
 
-            public Task<FooCommand12> Handle(FooCommand12 message)
+            public Task<IMessage> Handle(FooCommand12 message)
             {
-                return Task.FromResult(message);
+                return Task.FromResult<IMessage>(message);
             }
         }
 
@@ -280,7 +216,7 @@ namespace MessageRouterTests
 
         public class FooCommand13Handler : IMessageHandler<FooCommand13>
         {
-            public Task<FooCommand13> Handle(FooCommand13 message)
+            public Task<IMessage> Handle(FooCommand13 message)
             {
                 throw new Exception();
             }

@@ -5,6 +5,6 @@ namespace Rock.Messaging.Routing
     public interface IMessageHandler<TMessage>
         where TMessage : IMessage
     {
-        Task<TMessage> Handle(TMessage message);
+        Task<IMessage> Handle(TMessage message);
     }
 }

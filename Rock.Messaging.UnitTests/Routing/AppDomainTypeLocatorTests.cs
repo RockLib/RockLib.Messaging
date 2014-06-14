@@ -120,7 +120,7 @@ namespace AppDomainTypeLocatorTests
 
         public class FooCommand1Handler : IMessageHandler<FooCommand1>
         {
-            public Task<FooCommand1> Handle(FooCommand1 message)
+            public Task<IMessage> Handle(FooCommand1 message)
             {
                 throw new NotImplementedException();
             }
@@ -128,7 +128,7 @@ namespace AppDomainTypeLocatorTests
 
         public abstract class FooCommand2Handler : IMessageHandler<FooCommand2>
         {
-            public Task<FooCommand2> Handle(FooCommand2 message)
+            public Task<IMessage> Handle(FooCommand2 message)
             {
                 throw new NotImplementedException();
             }
@@ -136,7 +136,7 @@ namespace AppDomainTypeLocatorTests
 
         public class FooCommand3Handler1 : IMessageHandler<FooCommand3>
         {
-            public Task<FooCommand3> Handle(FooCommand3 message)
+            public Task<IMessage> Handle(FooCommand3 message)
             {
                 throw new NotImplementedException();
             }
@@ -144,7 +144,7 @@ namespace AppDomainTypeLocatorTests
 
         public class FooCommand3Handler2 : IMessageHandler<FooCommand3>
         {
-            public Task<FooCommand3> Handle(FooCommand3 message)
+            public Task<IMessage> Handle(FooCommand3 message)
             {
                 throw new NotImplementedException();
             }
