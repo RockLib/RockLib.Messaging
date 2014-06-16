@@ -39,7 +39,7 @@ namespace Rock.Messaging.Routing
 
         public bool Success
         {
-            get { return _exception != null; }
+            get { return _exception == null; }
         }
     }
 }

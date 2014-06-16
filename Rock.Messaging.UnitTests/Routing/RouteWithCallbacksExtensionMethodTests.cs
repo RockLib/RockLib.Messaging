@@ -9,6 +9,47 @@ namespace RouteWithCallbacksExtensionMethod
     public class TheRouteMethod
     {
         [Test]
+        public void ThrowsAnArgumentNullExceptionIfTheMessageRouterIsNull()
+        {
+            IMessageRouter messageRouter = null;
+
+            Assert.That(async () => await messageRouter.Route("", message => {}), Throws.TypeOf<ArgumentNullException>());
+        }
+
+        [Test]
+        public void DoesNotThrowAnExceptionIfOnSuccessCallbackThrowsAnException()
+        {
+            var mockRouter = new Mock<IMessageRouter>();
+            mockRouter.Setup(m => m.Route(It.IsAny<string>())).ReturnsAsync(new RouteResult(new TestMessage()));
+
+            var thrown = false;
+            Assert.That(async () => await mockRouter.Object.Route("", message => { thrown = true; throw new Exception(); }), Throws.Nothing);
+            Assert.That(thrown, Is.True);
+        }
+
+        [Test]
+        public void DoesNotThrowAnExceptionIfOnFailureCallbackThrowsAnException()
+        {
+            var mockRouter = new Mock<IMessageRouter>();
+            mockRouter.Setup(m => m.Route(It.IsAny<string>())).ReturnsAsync(new RouteResult(new Exception()));
+
+            var thrown = false;
+            Assert.That(async () => await mockRouter.Object.Route("", onFailure:exception => { thrown = true; throw new Exception(); }), Throws.Nothing);
+            Assert.That(thrown, Is.True);
+        }
+
+        [Test]
+        public void DoesNotThrowAnExceptionIfOnCompleteCallbackThrowsAnException()
+        {
+            var mockRouter = new Mock<IMessageRouter>();
+            mockRouter.Setup(m => m.Route(It.IsAny<string>())).ReturnsAsync(new RouteResult(new TestMessage()));
+
+            var thrown = false;
+            Assert.That(async () => await mockRouter.Object.Route("", onComplete:() => { thrown = true; throw new Exception(); }), Throws.Nothing);
+            Assert.That(thrown, Is.True);
+        }
+
+        [Test]
         public async void InvokesTheOnSuccessCallbackWhenTheInterfaceRouteMethodReturnsASuccessfulResult()
         {
             var messageFromRouter = new TestMessage();

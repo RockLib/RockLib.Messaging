@@ -3,9 +3,6 @@ using System.Threading.Tasks;
 
 namespace Rock.Messaging.Routing
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public static class RouteWithCallbacksExtensionMethod
     {
         public static async Task Route(
