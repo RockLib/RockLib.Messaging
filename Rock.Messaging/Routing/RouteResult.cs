@@ -9,11 +9,21 @@ namespace Rock.Messaging.Routing
 
         public RouteResult(IMessage message)
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException("message");
+            }
+
             _message = message;
         }
 
         public RouteResult(Exception exception)
         {
+            if (exception == null)
+            {
+                throw new ArgumentNullException("exception");
+            }
+
             _exception = exception;
         }
 
@@ -25,6 +35,11 @@ namespace Rock.Messaging.Routing
         public Exception Exception
         {
             get { return _exception; }
+        }
+
+        public bool Success
+        {
+            get { return _exception != null; }
         }
     }
 }
