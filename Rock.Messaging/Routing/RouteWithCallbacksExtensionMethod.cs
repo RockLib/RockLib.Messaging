@@ -12,9 +12,14 @@ namespace Rock.Messaging.Routing
             this IMessageRouter messageRouter,
             string rawMessage,
             Action<IMessage> onSuccess = null,
-            Action<Exception> onFailue = null,
+            Action<Exception> onFailure = null,
             Action onComplete = null)
         {
+            if (messageRouter == null)
+            {
+                throw new ArgumentNullException("messageRouter");
+            }
+
             RouteResult result;
 
             try
@@ -28,16 +33,34 @@ namespace Rock.Messaging.Routing
 
             if (onSuccess != null && result.Message != null)
             {
-                onSuccess(result.Message);
+                try
+                {
+                    onSuccess(result.Message);
+                }
+                catch
+                {
+                }
             }
-            else if (onFailue != null && result.Exception != null)
+            else if (onFailure != null && result.Exception != null)
             {
-                onFailue(result.Exception);
+                try
+                {
+                    onFailure(result.Exception);
+                }
+                catch
+                {
+                }
             }
 
             if (onComplete != null)
             {
-                onComplete();
+                try
+                {
+                    onComplete();
+                }
+                catch
+                {
+                }
             }
         }
     }

@@ -31,7 +31,7 @@ namespace RouteWithCallbacksExtensionMethod
             mockRouter.Setup(m => m.Route(It.IsAny<string>())).ReturnsAsync(new RouteResult(thrownException));
 
             Exception exception = null;
-            await mockRouter.Object.Route("", onFailue: ex => exception = ex);
+            await mockRouter.Object.Route("", onFailure: ex => exception = ex);
 
             Assert.That(exception, Is.SameAs(thrownException));
         }
@@ -45,7 +45,7 @@ namespace RouteWithCallbacksExtensionMethod
             mockRouter.Setup(m => m.Route(It.IsAny<string>())).ThrowsAsync(thrownException);
 
             Exception exception = null;
-            await mockRouter.Object.Route("", onFailue: ex => exception = ex);
+            await mockRouter.Object.Route("", onFailure: ex => exception = ex);
 
             Assert.That(exception, Is.SameAs(thrownException));
         }
