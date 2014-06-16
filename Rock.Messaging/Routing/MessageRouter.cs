@@ -8,37 +8,17 @@ using Rock.Messaging.Defaults.Implementation;
 
 namespace Rock.Messaging.Routing
 {
-    public interface IRouteResult
-    {
-        bool Success { get; }
-        IMessage Message { get; }
-        Exception Exception { get; }
-    }
-
-    public class RouteResult : IRouteResult
-    {
-        public bool Success
-        {
-            get { return Message != null; }
-        }
-
-        public IMessage Message { get; set; }
-
-        public Exception Exception { get; set; }
-    }
-
     public class MessageRouter : IMessageRouter
     {
         private readonly ConcurrentDictionary<string, Func<string, Task<IMessage>>> _routeFunctions = new ConcurrentDictionary<string, Func<string, Task<IMessage>>>();
 
         private readonly IMessageParser _messageParser;
         private readonly ITypeLocator _typeLocator;
-        private readonly IExceptionHandler _exceptionHandler;
         private readonly IResolver _resolver;
 
         // ReSharper disable RedundantArgumentDefaultValue
         public MessageRouter()
-            : this(null, null, null, null)
+            : this(null, null, null)
         {
         }
         // ReSharper restore RedundantArgumentDefaultValue
@@ -49,16 +29,14 @@ namespace Rock.Messaging.Routing
         public MessageRouter(
             IMessageParser messageParser = null,
             ITypeLocator typeLocator = null,
-            IExceptionHandler exceptionHandler = null,
             IResolver resolver = null)
         {
             _messageParser = messageParser ?? Default.MessageParser;
             _typeLocator = typeLocator ?? Default.TypeLocator;
-            _exceptionHandler = exceptionHandler ?? Default.ExceptionHandler;
             _resolver = resolver ?? new AutoContainer();
         }
 
-        public async Task<IMessage> Route(string rawMessage)
+        public async Task<RouteResult> Route(string rawMessage)
         {
             try
             {
@@ -67,19 +45,12 @@ namespace Rock.Messaging.Routing
                         _messageParser.GetTypeName(rawMessage),
                         rootElement => CreateRouteFunction(rootElement));
 
-                return await routeFunction(rawMessage);
+                var message = await routeFunction(rawMessage);
+                return new RouteResult(message);
             }
             catch (Exception ex)
             {
-                try
-                {
-                    HandleException(ex);
-                }
-                catch
-                {
-                }
-
-                throw;
+                return new RouteResult(ex);
             }
         }
 
@@ -109,25 +80,6 @@ namespace Rock.Messaging.Routing
                     "Route" + messageType.Name,
                     new[] { rawMessageParameter });
             return lambda.Compile();
-        }
-
-        private static object GetCompletedTask(Type messageType)
-        {
-            var taskFromResultMethod = typeof(Task).GetMethod("FromResult").MakeGenericMethod(messageType);
-            var completedTask = taskFromResultMethod.Invoke(null, new object[] { null });
-            return completedTask;
-        }
-
-        // ReSharper disable once EmptyGeneralCatchClause
-        private async void HandleException(Exception ex)
-        {
-            try
-            {
-                await _exceptionHandler.HandleException(ex);
-            }
-            catch
-            {
-            }
         }
     }
 }

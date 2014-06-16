@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using Moq;
 using NUnit.Framework;
-using Rock;
 using Rock.Messaging.Routing;
 
 // ReSharper disable once CheckNamespace
@@ -38,22 +36,20 @@ namespace MessageRouterTests
 
         public class TheRouteMethod : MessageRouterTests
         {
-            private Mock<IExceptionHandler> _mockExceptionHandler;
             private MessageRouter _router;
 
             [SetUp]
             public void Setup()
             {
-                _mockExceptionHandler = new Mock<IExceptionHandler>();
-                _router = new MessageRouter(exceptionHandler: _mockExceptionHandler.Object);
+                _router = new MessageRouter();
             }
 
             [Test]
-            public void InstantiatesAnInstanceOfTheMessageHandler()
+            public async void InstantiatesAnInstanceOfTheMessageHandler()
             {
                 var instancesBefore = FooCommand10Handler.Instances;
 
-                _router.Route("<FooCommand10/>").Wait();
+                await _router.Route("<FooCommand10/>");
 
                 var instancesAfter = FooCommand10Handler.Instances;
 
@@ -61,11 +57,11 @@ namespace MessageRouterTests
             }
 
             [Test]
-            public void CallsTheHandleMethodOfTheMessageHandler()
+            public async void CallsTheHandleMethodOfTheMessageHandler()
             {
                 var handledCountBefore = FooCommand10Handler.HandledCount;
 
-                _router.Route("<FooCommand10/>").Wait();
+                await _router.Route("<FooCommand10/>");
 
                 var handledCountAfter = FooCommand10Handler.HandledCount;
 
@@ -73,64 +69,43 @@ namespace MessageRouterTests
             }
 
             [Test]
-            public async void ReturnsTheMessage()
+            public async void ReturnsTheMessageThatWasSuccessfullyHandled()
             {
-                var message = await _router.Route("<FooCommand10/>");
+                var message = (await _router.Route("<FooCommand14><Bar>abc123</Bar></FooCommand14>")).Message as FooCommand14;
 
-                Assert.That(message, Is.Not.Null);
+                Assert.That(message, Is.Not.Null); // ReSharper disable once PossibleNullReferenceException
+                Assert.That(message.Bar, Is.EqualTo("abc123"));
             }
 
             [Test]
-            public void PassesTheExceptionToTheCompletionWhenThereIsAnException()
+            public async void HandlesAnExceptionThrownFromTheMessageConstructor()
             {
-                Exception exception = null;
-
-                _router.Route("<FooCommand11/>", onFailue: ex => exception = ex).Wait();
+                var exception = (await _router.Route("<FooCommand11/>")).Exception;
 
                 Assert.That(exception, Is.Not.Null);
             }
 
             [Test]
-            public void HandlesAnExceptionThrownFromTheMessageConstructor()
+            public async void HandlesAnExceptionThrownFromTheMessageHandlerConstructor()
             {
-                Exception exception = null;
+                var exception = (await _router.Route("<FooCommand12/>")).Exception;
 
-                _router.Route("<FooCommand11/>").ContinueWith(t => exception = t.Exception).Wait();
-
-                _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
                 Assert.That(exception, Is.Not.Null);
             }
 
             [Test]
-            public void HandlesAnExceptionThrownFromTheMessageHandlerConstructor()
+            public async void HandlesAnExceptionThrownFromTheHandleMethodOfTheMessageHandler()
             {
-                Exception exception = null;
+                var exception = (await _router.Route("<FooCommand13/>")).Exception;
 
-                _router.Route("<FooCommand12/>").ContinueWith(t => exception = t.Exception).Wait();
-
-                _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
                 Assert.That(exception, Is.Not.Null);
             }
 
             [Test]
-            public void HandlesAnExceptionThrownFromTheHandleMethodOfTheMessageHandler()
+            public async void HandlesAnExceptionResultingFromAnIncompleteMessage()
             {
-                Exception exception = null;
+                var exception = (await _router.Route("<FooCom")).Exception;
 
-                _router.Route("<FooCommand13/>").ContinueWith(t => exception = t.Exception).Wait();
-
-                _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
-                Assert.That(exception, Is.Not.Null);
-            }
-
-            [Test]
-            public void HandlesAnExceptionResultingFromAnIncompleteMessage()
-            {
-                Exception exception = null;
-
-                _router.Route("<FooCom").ContinueWith(t => exception = t.Exception).Wait();
-
-                _mockExceptionHandler.Verify(m => m.HandleException(It.IsAny<Exception>()), Times.Once());
                 Assert.That(exception, Is.Not.Null);
             }
         }
@@ -198,6 +173,19 @@ namespace MessageRouterTests
             public Task<IMessage> Handle(FooCommand13 message)
             {
                 throw new Exception();
+            }
+        }
+
+        public class FooCommand14 : IMessage
+        {
+            public string Bar { get; set; }
+        }
+
+        public class FooCommand14Handler : IMessageHandler<FooCommand14>
+        {
+            public Task<IMessage> Handle(FooCommand14 message)
+            {
+                return Task.FromResult<IMessage>(message);
             }
         }
     }

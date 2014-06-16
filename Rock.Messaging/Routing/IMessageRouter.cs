@@ -5,6 +5,6 @@ namespace Rock.Messaging.Routing
 {
     public interface IMessageRouter
     {
-        Task<IMessage> Route(string rawMessage);
+        Task<RouteResult> Route(string rawMessage);
     }
 }
