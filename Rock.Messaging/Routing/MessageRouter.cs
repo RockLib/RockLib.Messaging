@@ -68,26 +68,22 @@ namespace Rock.Messaging.Routing
             _resolver = resolver ?? new AutoContainer();
         }
 
-        public async void Route(
-            string rawMessage,
-            Action<IMessage, object> onSuccess = null,
-            Action<Exception> onFailure = null,
-            Action onComplete = null)
+        public async void Route(string rawMessage, Action<RouteResult> onComplete = null)
         {
             try
             {
-                var handle =
+                var handleMessage =
                     _handleFunctions.GetOrAdd(
                         _messageParser.GetTypeName(rawMessage),
                         rootElement => CreateRouteFunction(rootElement));
 
-                var handleResult = await handle(rawMessage);
+                var handleResult = await handleMessage(rawMessage);
 
-                if (onSuccess != null)
+                if (onComplete != null)
                 {
                     try
                     {
-                        onSuccess(handleResult.Message, handleResult.Result);
+                        onComplete(new RouteResult(handleResult.Message, handleResult.Result));
                     } // ReSharper disable once EmptyGeneralCatchClause
                     catch
                     {
@@ -96,26 +92,15 @@ namespace Rock.Messaging.Routing
             }
             catch (Exception ex)
             {
-                if (onFailure != null)
+                if (onComplete != null)
                 {
                     try
                     {
-                        onFailure(ex);
+                        onComplete(new RouteResult(ex));
                     } // ReSharper disable once EmptyGeneralCatchClause
                     catch
                     {
                     }
-                }
-            }
-
-            if (onComplete != null)
-            {
-                try
-                {
-                    onComplete();
-                } // ReSharper disable once EmptyGeneralCatchClause
-                catch
-                {
                 }
             }
         }

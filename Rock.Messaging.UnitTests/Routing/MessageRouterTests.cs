@@ -60,7 +60,7 @@ namespace MessageRouterTests
             {
                 var instancesBefore = FooCommand10Handler.Instances;
 
-                _router.Route("<FooCommand10/>", onComplete: () => _waitHandle.Set());
+                _router.Route("<FooCommand10/>", onComplete: result => _waitHandle.Set());
 
                 _waitHandle.WaitOne();
 
@@ -74,7 +74,7 @@ namespace MessageRouterTests
             {
                 var handledCountBefore = FooCommand10Handler.HandledCount;
 
-                _router.Route("<FooCommand10/>", onComplete: () => _waitHandle.Set());
+                _router.Route("<FooCommand10/>", onComplete: result => _waitHandle.Set());
 
                 _waitHandle.WaitOne();
 
@@ -84,10 +84,10 @@ namespace MessageRouterTests
             }
 
             [Test]
-            public void CallsTheOnSuccessCallbackWhenNoExceptionIsThrown()
+            public void CallsTheOnCompleteCallbackWhenNoExceptionIsThrown()
             {
                 bool called = false;
-                _router.Route("<FooCommand10/>", (message, result) => called = true, onComplete: () => _waitHandle.Set());
+                _router.Route("<FooCommand13/>", result => { called = true; _waitHandle.Set(); });
 
                 _waitHandle.WaitOne();
 
@@ -95,10 +95,10 @@ namespace MessageRouterTests
             }
 
             [Test]
-            public void PassesTheDeserializedMessageToTheOnSuccessCallback()
+            public void PassesTheDeserializedMessageToTheOnCompleteCallbackWhenNoExceptionIsThrown()
             {
                 IMessage message = null;
-                _router.Route("<FooCommand10/>", (m, result) => message = m, onComplete: () => _waitHandle.Set());
+                _router.Route("<FooCommand10/>", result => { message = result.Message; _waitHandle.Set(); });
 
                 _waitHandle.WaitOne();
 
@@ -106,10 +106,10 @@ namespace MessageRouterTests
             }
 
             [Test]
-            public void PassesTheResultObjectToTheOnSuccessCallback()
+            public void PassesTheResultObjectToTheOnCompleteCallbackWhenNoExceptionIsThrown()
             {
                 object result = null;
-                _router.Route("<FooCommand15><Who>Clarice</Who></FooCommand15>", (message, r) => result = r, onComplete: () => _waitHandle.Set());
+                _router.Route("<FooCommand15><Who>Clarice</Who></FooCommand15>", r => { result = r.Result; _waitHandle.Set(); });
 
                 _waitHandle.WaitOne();
 
@@ -117,10 +117,10 @@ namespace MessageRouterTests
             }
 
             [Test]
-            public void CallsTheOnFailureCallbackWhenExceptionIsThrown()
+            public void CallsTheOnCompleteCallbackWhenExceptionIsThrown()
             {
                 bool called = false;
-                _router.Route("<FooCommand13/>", onFailure: ex => called = true, onComplete: () => _waitHandle.Set());
+                _router.Route("<FooCommand13/>", result => { called = true; _waitHandle.Set(); });
 
                 _waitHandle.WaitOne();
 
@@ -128,21 +128,21 @@ namespace MessageRouterTests
             }
 
             [Test]
-            public void PassesTheThrownExceptionToTheOnFailureCallback()
+            public void PassesTheThrownExceptionToTheOnCompleteCallbackWhenExceptionIsThrown()
             {
-                bool called = false;
-                _router.Route("<FooCommand13/>", onFailure: ex => called = true, onComplete: () => _waitHandle.Set());
+                Exception exception = null;
+                _router.Route("<FooCommand13/>", result => { exception = result.Exception; _waitHandle.Set(); });
 
                 _waitHandle.WaitOne();
 
-                Assert.That(called, Is.True);
+                Assert.That(exception, Is.Not.Null);
             }
 
             [Test]
             public void CapturesTheExceptionThrownFromTheGetTypeNameMethodOfTheMessageParser()
             {
                 Exception exception = null;
-                _router.Route("<FooCom", onFailure: ex => exception = ex, onComplete: () => _waitHandle.Set());
+                _router.Route("<FooCom", result => { exception = result.Exception; _waitHandle.Set(); });
 
                 _waitHandle.WaitOne();
 
@@ -153,7 +153,7 @@ namespace MessageRouterTests
             public void CapturesTheExceptionThrownFromTheMessageConstructor()
             {
                 Exception exception = null;
-                _router.Route("<FooCommand11/>", onFailure: ex => exception = ex, onComplete: () => _waitHandle.Set());
+                _router.Route("<FooCommand11/>", result => { exception = result.Exception; _waitHandle.Set(); });
 
                 _waitHandle.WaitOne();
 
@@ -164,7 +164,7 @@ namespace MessageRouterTests
             public void CapturesTheExceptionThrownFromTheMessageHandlerConstructor()
             {
                 Exception exception = null;
-                _router.Route("<FooCommand12/>", onFailure: ex => exception = ex, onComplete: () => _waitHandle.Set());
+                _router.Route("<FooCommand12/>", result => { exception = result.Exception; _waitHandle.Set(); });
 
                 _waitHandle.WaitOne();
 
@@ -175,7 +175,7 @@ namespace MessageRouterTests
             public void CapturesTheExceptionThrownFromTheHandleMethodOfTheMessageHandler()
             {
                 Exception exception = null;
-                _router.Route("<FooCommand13/>", onFailure: ex => exception = ex, onComplete: () => _waitHandle.Set());
+                _router.Route("<FooCommand13/>", result => { exception = result.Exception; _waitHandle.Set(); });
 
                 _waitHandle.WaitOne();
 
@@ -183,75 +183,36 @@ namespace MessageRouterTests
             }
 
             [Test]
-            public void CallsTheOnCompleteCallbackWhenNoExceptionIsThrown()
-            {
-                bool called = false;
-                _router.Route("<FooCommand10/>", onComplete: () => { called = true; _waitHandle.Set(); });
-
-                _waitHandle.WaitOne();
-
-                Assert.That(called, Is.True);
-            }
-
-            [Test]
-            public void CallsTheOnCompleteCallbackWhenExceptionIsThrown()
-            {
-                bool called = false;
-                _router.Route("<FooCommand11/>", onComplete: () => { called = true; _waitHandle.Set(); });
-
-                _waitHandle.WaitOne();
-
-                Assert.That(called, Is.True);
-            }
-
-            [Test]
-            public void DoesNotThrowExceptionWhenExceptionIsThrownFromOnSuccessCallback()
+            public void DoesNotThrowExceptionWhenExceptionIsThrownFromOnCompleteCallbackUponSuccessfulRouteOperation()
             {
                 try
                 {
                     var thrown = false;
-                    _router.Route("<FooCommand10/>", (message, result) => { thrown = true; throw new Exception(); }, onComplete: () => _waitHandle.Set());
-                    _waitHandle.WaitOne();
-
-                    Assert.That(thrown, Is.True);
-                }
-                catch (Exception ex)
-                {
-                    Assert.Fail("No exception expected:\r\n" + ex);
-                }
-            }
-
-            [Test]
-            public void DoesNotThrowExceptionWhenExceptionIsThrownFromOnFailureCallback()
-            {
-                try
-                {
-                    var thrown = false;
-                    _router.Route("<FooCommand11/>", onFailure: ex => { thrown = true; throw new Exception(); }, onComplete: () => _waitHandle.Set());
-                    _waitHandle.WaitOne();
-
-                    Assert.That(thrown, Is.True);
-                }
-                catch (Exception ex)
-                {
-                    Assert.Fail("No exception expected:\r\n" + ex);
-                }
-            }
-
-            [Test]
-            public void DoesNotThrowExceptionWhenExceptionIsThrownFromOnCompleteCallback()
-            {
-                try
-                {
-                    var thrown = false;
-                    _router.Route("<FooCommand10/>", onComplete: () => { thrown = true; throw new Exception(); });
+                    _router.Route("<FooCommand10/>", onComplete: result => { thrown = true; throw new Exception(); });
+                    
                     Thread.Sleep(100);
-
                     Assert.That(thrown, Is.True);
                 }
                 catch (Exception ex)
                 {
-                    Assert.Fail("No exception expected:\r\n" + ex);
+                    Assert.Fail("Expected: no exception to be thrown, but was:\r\n" + ex);
+                }
+            }
+
+            [Test]
+            public void DoesNotThrowExceptionWhenExceptionIsThrownFromOnCompleteCallbackUponUnsuccessfulRouteOperation()
+            {
+                try
+                {
+                    var thrown = false;
+                    _router.Route("<FooCommand13/>", onComplete: result => { thrown = true; throw new Exception(); });
+                    
+                    Thread.Sleep(100);
+                    Assert.That(thrown, Is.True);
+                }
+                catch (Exception ex)
+                {
+                    Assert.Fail("Expected: no exception to be thrown, but was:\r\n" + ex);
                 }
             }
         }
