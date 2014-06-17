@@ -63,8 +63,6 @@
   <ItemGroup>
     <Compile Include="Routing\AppDomainTypeLocatorTests.cs" />
     <Compile Include="Routing\MessageRouterTests.cs" />
-    <Compile Include="Routing\RouteResultTests.cs" />
-    <Compile Include="Routing\RouteWithCallbacksExtensionMethodTests.cs" />
     <Compile Include="Routing\XmlMessageParserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

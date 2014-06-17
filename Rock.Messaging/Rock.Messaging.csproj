@@ -68,8 +68,6 @@
     <Compile Include="Routing\ITypeLocator.cs" />
     <Compile Include="Routing\MessageRouter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Routing\RouteResult.cs" />
-    <Compile Include="Routing\RouteWithCallbacksExtensionMethod.cs" />
     <Compile Include="Routing\XmlMessageParser.cs" />
   </ItemGroup>
   <ItemGroup>

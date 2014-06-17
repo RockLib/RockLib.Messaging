@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Rock.Messaging.Routing;
@@ -20,10 +21,18 @@ namespace MessageRouterTests
                 Assert.That(VerifyPublicParameterlessConstructor, Throws.Nothing);
             }
 
+            // ReSharper disable once EmptyGeneralCatchClause
             private static void VerifyPublicParameterlessConstructor()
             {
                 var method = typeof(TheMessageRouterClass).GetMethod("CreateInstance", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(typeof(MessageRouter));
-                method.Invoke(null, null);
+
+                try
+                {
+                    method.Invoke(null, null);
+                }
+                catch
+                {
+                }
             }
 
             // ReSharper disable once UnusedMember.Local
@@ -37,19 +46,23 @@ namespace MessageRouterTests
         public class TheRouteMethod : MessageRouterTests
         {
             private MessageRouter _router;
+            private AutoResetEvent _waitHandle;
 
             [SetUp]
             public void Setup()
             {
                 _router = new MessageRouter();
+                _waitHandle = new AutoResetEvent(false);
             }
 
             [Test]
-            public async void InstantiatesAnInstanceOfTheMessageHandler()
+            public void InstantiatesAnInstanceOfTheMessageHandler()
             {
                 var instancesBefore = FooCommand10Handler.Instances;
 
-                await _router.Route("<FooCommand10/>");
+                _router.Route("<FooCommand10/>", onComplete: () => _waitHandle.Set());
+
+                _waitHandle.WaitOne();
 
                 var instancesAfter = FooCommand10Handler.Instances;
 
@@ -57,11 +70,13 @@ namespace MessageRouterTests
             }
 
             [Test]
-            public async void CallsTheHandleMethodOfTheMessageHandler()
+            public void CallsTheHandleMethodOfTheMessageHandler()
             {
                 var handledCountBefore = FooCommand10Handler.HandledCount;
 
-                await _router.Route("<FooCommand10/>");
+                _router.Route("<FooCommand10/>", onComplete: () => _waitHandle.Set());
+
+                _waitHandle.WaitOne();
 
                 var handledCountAfter = FooCommand10Handler.HandledCount;
 
@@ -69,44 +84,175 @@ namespace MessageRouterTests
             }
 
             [Test]
-            public async void ReturnsTheMessageThatWasSuccessfullyHandled()
+            public void CallsTheOnSuccessCallbackWhenNoExceptionIsThrown()
             {
-                var message = (await _router.Route("<FooCommand14><Bar>abc123</Bar></FooCommand14>")).Message as FooCommand14;
+                bool called = false;
+                _router.Route("<FooCommand10/>", (message, result) => called = true, onComplete: () => _waitHandle.Set());
 
-                Assert.That(message, Is.Not.Null); // ReSharper disable once PossibleNullReferenceException
-                Assert.That(message.Bar, Is.EqualTo("abc123"));
+                _waitHandle.WaitOne();
+
+                Assert.That(called, Is.True);
             }
 
             [Test]
-            public async void HandlesAnExceptionThrownFromTheMessageConstructor()
+            public void PassesTheDeserializedMessageToTheOnSuccessCallback()
             {
-                var exception = (await _router.Route("<FooCommand11/>")).Exception;
+                IMessage message = null;
+                _router.Route("<FooCommand10/>", (m, result) => message = m, onComplete: () => _waitHandle.Set());
+
+                _waitHandle.WaitOne();
+
+                Assert.That(message, Is.InstanceOf<FooCommand10>());
+            }
+
+            [Test]
+            public void PassesTheResultObjectToTheOnSuccessCallback()
+            {
+                object result = null;
+                _router.Route("<FooCommand15><Who>Clarice</Who></FooCommand15>", (message, r) => result = r, onComplete: () => _waitHandle.Set());
+
+                _waitHandle.WaitOne();
+
+                Assert.That(result, Is.EqualTo("Hello, Clarice!"));
+            }
+
+            [Test]
+            public void CallsTheOnFailureCallbackWhenExceptionIsThrown()
+            {
+                bool called = false;
+                _router.Route("<FooCommand13/>", onFailure: ex => called = true, onComplete: () => _waitHandle.Set());
+
+                _waitHandle.WaitOne();
+
+                Assert.That(called, Is.True);
+            }
+
+            [Test]
+            public void PassesTheThrownExceptionToTheOnFailureCallback()
+            {
+                bool called = false;
+                _router.Route("<FooCommand13/>", onFailure: ex => called = true, onComplete: () => _waitHandle.Set());
+
+                _waitHandle.WaitOne();
+
+                Assert.That(called, Is.True);
+            }
+
+            [Test]
+            public void CapturesTheExceptionThrownFromTheGetTypeNameMethodOfTheMessageParser()
+            {
+                Exception exception = null;
+                _router.Route("<FooCom", onFailure: ex => exception = ex, onComplete: () => _waitHandle.Set());
+
+                _waitHandle.WaitOne();
 
                 Assert.That(exception, Is.Not.Null);
             }
 
             [Test]
-            public async void HandlesAnExceptionThrownFromTheMessageHandlerConstructor()
+            public void CapturesTheExceptionThrownFromTheMessageConstructor()
             {
-                var exception = (await _router.Route("<FooCommand12/>")).Exception;
+                Exception exception = null;
+                _router.Route("<FooCommand11/>", onFailure: ex => exception = ex, onComplete: () => _waitHandle.Set());
+
+                _waitHandle.WaitOne();
 
                 Assert.That(exception, Is.Not.Null);
             }
 
             [Test]
-            public async void HandlesAnExceptionThrownFromTheHandleMethodOfTheMessageHandler()
+            public void CapturesTheExceptionThrownFromTheMessageHandlerConstructor()
             {
-                var exception = (await _router.Route("<FooCommand13/>")).Exception;
+                Exception exception = null;
+                _router.Route("<FooCommand12/>", onFailure: ex => exception = ex, onComplete: () => _waitHandle.Set());
+
+                _waitHandle.WaitOne();
 
                 Assert.That(exception, Is.Not.Null);
             }
 
             [Test]
-            public async void HandlesAnExceptionResultingFromAnIncompleteMessage()
+            public void CapturesTheExceptionThrownFromTheHandleMethodOfTheMessageHandler()
             {
-                var exception = (await _router.Route("<FooCom")).Exception;
+                Exception exception = null;
+                _router.Route("<FooCommand13/>", onFailure: ex => exception = ex, onComplete: () => _waitHandle.Set());
+
+                _waitHandle.WaitOne();
 
                 Assert.That(exception, Is.Not.Null);
+            }
+
+            [Test]
+            public void CallsTheOnCompleteCallbackWhenNoExceptionIsThrown()
+            {
+                bool called = false;
+                _router.Route("<FooCommand10/>", onComplete: () => { called = true; _waitHandle.Set(); });
+
+                _waitHandle.WaitOne();
+
+                Assert.That(called, Is.True);
+            }
+
+            [Test]
+            public void CallsTheOnCompleteCallbackWhenExceptionIsThrown()
+            {
+                bool called = false;
+                _router.Route("<FooCommand11/>", onComplete: () => { called = true; _waitHandle.Set(); });
+
+                _waitHandle.WaitOne();
+
+                Assert.That(called, Is.True);
+            }
+
+            [Test]
+            public void DoesNotThrowExceptionWhenExceptionIsThrownFromOnSuccessCallback()
+            {
+                try
+                {
+                    var thrown = false;
+                    _router.Route("<FooCommand10/>", (message, result) => { thrown = true; throw new Exception(); }, onComplete: () => _waitHandle.Set());
+                    _waitHandle.WaitOne();
+
+                    Assert.That(thrown, Is.True);
+                }
+                catch (Exception ex)
+                {
+                    Assert.Fail("No exception expected:\r\n" + ex);
+                }
+            }
+
+            [Test]
+            public void DoesNotThrowExceptionWhenExceptionIsThrownFromOnFailureCallback()
+            {
+                try
+                {
+                    var thrown = false;
+                    _router.Route("<FooCommand11/>", onFailure: ex => { thrown = true; throw new Exception(); }, onComplete: () => _waitHandle.Set());
+                    _waitHandle.WaitOne();
+
+                    Assert.That(thrown, Is.True);
+                }
+                catch (Exception ex)
+                {
+                    Assert.Fail("No exception expected:\r\n" + ex);
+                }
+            }
+
+            [Test]
+            public void DoesNotThrowExceptionWhenExceptionIsThrownFromOnCompleteCallback()
+            {
+                try
+                {
+                    var thrown = false;
+                    _router.Route("<FooCommand10/>", onComplete: () => { thrown = true; throw new Exception(); });
+                    Thread.Sleep(100);
+
+                    Assert.That(thrown, Is.True);
+                }
+                catch (Exception ex)
+                {
+                    Assert.Fail("No exception expected:\r\n" + ex);
+                }
             }
         }
 
@@ -124,10 +270,10 @@ namespace MessageRouterTests
             public static int Instances { get; private set; }
             public static int HandledCount { get; private set; }
 
-            public Task<IMessage> Handle(FooCommand10 message)
+            public Task<object> Handle(FooCommand10 message)
             {
                 HandledCount++;
-                return Task.FromResult<IMessage>(message);
+                return Task.FromResult<object>(null);
             }
         }
 
@@ -141,9 +287,9 @@ namespace MessageRouterTests
 
         public class FooCommand11Handler : IMessageHandler<FooCommand11>
         {
-            public Task<IMessage> Handle(FooCommand11 message)
+            public Task<object> Handle(FooCommand11 message)
             {
-                return Task.FromResult<IMessage>(message);
+                return Task.FromResult<object>(null);
             }
         }
 
@@ -158,9 +304,9 @@ namespace MessageRouterTests
                 throw new Exception();
             }
 
-            public Task<IMessage> Handle(FooCommand12 message)
+            public Task<object> Handle(FooCommand12 message)
             {
-                return Task.FromResult<IMessage>(message);
+                return Task.FromResult<object>(null);
             }
         }
 
@@ -170,7 +316,7 @@ namespace MessageRouterTests
 
         public class FooCommand13Handler : IMessageHandler<FooCommand13>
         {
-            public Task<IMessage> Handle(FooCommand13 message)
+            public Task<object> Handle(FooCommand13 message)
             {
                 throw new Exception();
             }
@@ -183,9 +329,22 @@ namespace MessageRouterTests
 
         public class FooCommand14Handler : IMessageHandler<FooCommand14>
         {
-            public Task<IMessage> Handle(FooCommand14 message)
+            public Task<object> Handle(FooCommand14 message)
             {
-                return Task.FromResult<IMessage>(message);
+                return Task.FromResult<object>(null);
+            }
+        }
+
+        public class FooCommand15 : IMessage
+        {
+            public string Who { get; set; }
+        }
+
+        public class FooCommand15Handler : IMessageHandler<FooCommand15>
+        {
+            public Task<object> Handle(FooCommand15 message)
+            {
+                return Task.FromResult<object>(string.Format("Hello, {0}!", message.Who));
             }
         }
     }
