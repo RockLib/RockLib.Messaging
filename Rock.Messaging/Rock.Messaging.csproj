@@ -58,7 +58,7 @@
   <ItemGroup>
     <Compile Include="Defaults\Implementation\Default.cs" />
     <Compile Include="Defaults\Implementation\Default.TypeLocator.cs" />
-    <Compile Include="Defaults\Implementation\Default.MessageHelper.cs" />
+    <Compile Include="Defaults\Implementation\Default.MessageParser.cs" />
     <Compile Include="AssemblyInitialization\ModuleInitializer.cs" />
     <Compile Include="Routing\AppDomainTypeLocator.cs" />
     <Compile Include="Routing\IMessage.cs" />
