@@ -156,19 +156,19 @@ namespace XmlMessageParserTests
             }
         }
 
-        public class FooCommand : IMessage
+        public class FooCommand
         {
             public string Data { get; set; }
         }
 
         [XmlRoot("Bar")]
-        public class BarEvent : IMessage
+        public class BarEvent
         {
             public string Data { get; set; }
         }
 
         [XmlRoot]
-        public class BazMessage : IMessage
+        public class BazMessage
         {
             public string Data { get; set; }
         }

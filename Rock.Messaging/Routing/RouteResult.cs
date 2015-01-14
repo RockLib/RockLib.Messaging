@@ -11,7 +11,7 @@ namespace Rock.Messaging.Routing
     /// </summary>
     public class RouteResult
     {
-        private readonly IMessage _message;
+        private readonly object _message;
         private readonly object _result;
         private readonly Exception _exception;
 
@@ -21,7 +21,7 @@ namespace Rock.Messaging.Routing
         /// <param name="message">The message that was handled by a Route operation.</param>
         /// <param name="result">An object that was returned by the message handler that handled the message.</param>
         /// <exception cref="ArgumentNullException">If <paramref name="message"/> is null.</exception>
-        public RouteResult(IMessage message, object result)
+        public RouteResult(object message, object result)
         {
             if (message == null)
             {
@@ -52,7 +52,7 @@ namespace Rock.Messaging.Routing
         /// Gets the message that was handled by a Route operation. If the Route operation was
         /// unsuccessful, the value of this property will be null.
         /// </summary>
-        public IMessage Message
+        public object Message
         {
             get { return _message; }
         }

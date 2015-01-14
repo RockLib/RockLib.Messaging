@@ -60,7 +60,6 @@ namespace Rock.Messaging.Routing
         }
 
         public TMessage DeserializeMessage<TMessage>(string rawMessage)
-            where TMessage : IMessage
         {
             using (var reader = new StringReader(rawMessage))
             {

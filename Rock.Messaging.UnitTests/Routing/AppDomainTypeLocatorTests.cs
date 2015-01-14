@@ -33,12 +33,6 @@ namespace AppDomainTypeLocatorTests
             }
 
             [Test]
-            public void WillNotReturnATypeThatDoesNotImplementIMessage()
-            {
-                Assert.That(() => _locator.GetMessageType(typeof(NotAMessage1).Name), Throws.Exception);
-            }
-
-            [Test]
             public void ThrowsAnExceptionIfMoreThanOneTypeIsFound()
             {
                 Assert.That(() => _locator.GetMessageType("BazMessage1"), Throws.Exception);
@@ -80,42 +74,38 @@ namespace AppDomainTypeLocatorTests
             }
         }
 
-        public class FooCommand1 : IMessage
+        public class FooCommand1
         {
         }
 
-        public class FooCommand2 : IMessage
+        public class FooCommand2
         {
         }
 
-        public class FooCommand3 : IMessage
+        public class FooCommand3
         {
         }
 
-        public class FooCommand4 : IMessage
+        public class FooCommand4
         {
         }
 
-        public abstract class BarEvent1 : IMessage
+        public abstract class BarEvent1
         {
         }
 
         public class Wrapper1
         {
-            public class BazMessage1 : IMessage
+            public class BazMessage1
             {
             }
         }
 
         public class Wrapper2
         {
-            public class BazMessage1 : IMessage
+            public class BazMessage1
             {
             }
-        }
-
-        public class NotAMessage1
-        {
         }
 
         public class FooCommand1Handler : IMessageHandler<FooCommand1>

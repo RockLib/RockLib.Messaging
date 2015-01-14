@@ -61,7 +61,6 @@
     <Compile Include="Defaults\Implementation\Default.MessageParser.cs" />
     <Compile Include="AssemblyInitialization\ModuleInitializer.cs" />
     <Compile Include="Routing\AppDomainTypeLocator.cs" />
-    <Compile Include="Routing\IMessage.cs" />
     <Compile Include="Routing\IMessageHandler.cs" />
     <Compile Include="Routing\IMessageParser.cs" />
     <Compile Include="Routing\IMessageRouter.cs" />

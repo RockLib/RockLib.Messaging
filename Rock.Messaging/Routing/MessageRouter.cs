@@ -87,7 +87,6 @@ namespace Rock.Messaging.Routing
 
         // ReSharper disable once UnusedMember.Local
         private async Task<HandleResult> HandleMessage<TMessage>(string rawMessage)
-            where TMessage : IMessage
         {
             var messageHandlerType = _typeLocator.GetMessageHandlerType(typeof(TMessage));
             var messageHandler = (IMessageHandler<TMessage>)_resolver.Get(messageHandlerType);
@@ -100,16 +99,16 @@ namespace Rock.Messaging.Routing
 
         private class HandleResult
         {
-            private readonly IMessage _message;
+            private readonly object _message;
             private readonly object _result;
 
-            public HandleResult(IMessage message, object result)
+            public HandleResult(object message, object result)
             {
                 _message = message;
                 _result = result;
             }
 
-            public IMessage Message
+            public object Message
             {
                 get { return _message; }
             }

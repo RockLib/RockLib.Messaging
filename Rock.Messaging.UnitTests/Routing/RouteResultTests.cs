@@ -38,7 +38,7 @@ namespace RouteResultTests
             Assert.That(routeResult.Result, Is.SameAs(result));
         }
 
-        private class TestMessage : IMessage
+        private class TestMessage
         {
         }
     }
@@ -80,7 +80,7 @@ namespace RouteResultTests
             Assert.That(result.Success, Is.False);
         }
 
-        private class TestMessage : IMessage
+        private class TestMessage
         {
         }
     }

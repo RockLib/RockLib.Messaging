@@ -97,7 +97,7 @@ namespace MessageRouterTests
             [Test]
             public void PassesTheDeserializedMessageToTheOnCompleteCallbackWhenNoExceptionIsThrown()
             {
-                IMessage message = null;
+                object message = null;
                 _router.Route("<FooCommand10/>", result => { message = result.Message; _waitHandle.Set(); });
 
                 _waitHandle.WaitOne();
@@ -217,7 +217,7 @@ namespace MessageRouterTests
             }
         }
 
-        public class FooCommand10 : IMessage
+        public class FooCommand10
         {
         }
 
@@ -238,7 +238,7 @@ namespace MessageRouterTests
             }
         }
 
-        public class FooCommand11 : IMessage
+        public class FooCommand11
         {
             public FooCommand11()
             {
@@ -254,7 +254,7 @@ namespace MessageRouterTests
             }
         }
 
-        public class FooCommand12 : IMessage
+        public class FooCommand12
         {
         }
 
@@ -271,7 +271,7 @@ namespace MessageRouterTests
             }
         }
 
-        public class FooCommand13 : IMessage
+        public class FooCommand13
         {
         }
 
@@ -283,7 +283,7 @@ namespace MessageRouterTests
             }
         }
 
-        public class FooCommand14 : IMessage
+        public class FooCommand14
         {
             public string Bar { get; set; }
         }
@@ -296,7 +296,7 @@ namespace MessageRouterTests
             }
         }
 
-        public class FooCommand15 : IMessage
+        public class FooCommand15
         {
             public string Who { get; set; }
         }

@@ -19,7 +19,7 @@ namespace Rock.Messaging.Routing
             return
                (from a in _appDomain.GetAssemblies()
                 from t in a.GetTypes()
-                where !t.IsAbstract && typeof(IMessage).IsAssignableFrom(t) && _messageParser.GetTypeName(t) == typeName
+                where !t.IsAbstract && _messageParser.GetTypeName(t) == typeName
                 select t).Single();
         }
 

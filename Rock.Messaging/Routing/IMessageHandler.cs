@@ -3,7 +3,6 @@
 namespace Rock.Messaging.Routing
 {
     public interface IMessageHandler<in TMessage>
-        where TMessage : IMessage
     {
         /// <summary>
         /// Handle the given message, returning a <see cref="Task{TResult}"/> whose <see cref="Task{TResult}.Result"/>
