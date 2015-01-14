@@ -2,14 +2,16 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Threading.Tasks;
-using Rock.Defaults;
 using Rock.DependencyInjection;
-using Rock.Messaging.Defaults.Implementation;
+using Rock.Messaging.Rock.StaticDependencyInjection;
 
 namespace Rock.Messaging.Routing
 {
     public class MessageRouter : IMessageRouter
     {
+        private static readonly Default<IMessageParser> _defaultMessageParser = new Default<IMessageParser>(() => new XmlMessageParser());
+        private static readonly Default<ITypeLocator> _defaultTypeLocator = new Default<ITypeLocator>(() => new AppDomainTypeLocator(_defaultMessageParser.DefaultInstance, AppDomain.CurrentDomain));
+
         private readonly ConcurrentDictionary<string, Func<string, Task<HandleResult>>> _handleFunctions = new ConcurrentDictionary<string, Func<string, Task<HandleResult>>>();
 
         private readonly IMessageParser _messageParser;
@@ -23,16 +25,26 @@ namespace Rock.Messaging.Routing
         }
         // ReSharper restore RedundantArgumentDefaultValue
 
-        [UsesDefaultValue(typeof(Default), "MessageParser")]
-        [UsesDefaultValue(typeof(Default), "TypeLocator")]
         public MessageRouter(
             IMessageParser messageParser = null,
             ITypeLocator typeLocator = null,
             IResolver resolver = null)
         {
-            _messageParser = messageParser ?? Default.MessageParser;
-            _typeLocator = typeLocator ?? Default.TypeLocator;
+            _messageParser = messageParser ?? DefaultMessageParser;
+            _typeLocator = typeLocator ?? DefaultTypeLocator;
             _resolver = resolver ?? new AutoContainer();
+        }
+
+        public static IMessageParser DefaultMessageParser
+        {
+            internal get { return _defaultMessageParser.Current; }
+            set { _defaultMessageParser.SetCurrent(value); }
+        }
+
+        public static ITypeLocator DefaultTypeLocator
+        {
+            internal get { return _defaultTypeLocator.Current; }
+            set { _defaultTypeLocator.SetCurrent(value); }
         }
 
         public async void Route(string rawMessage, Action<RouteResult> onComplete = null)
