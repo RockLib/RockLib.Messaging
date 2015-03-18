@@ -46,8 +46,31 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Defaults\Implementation\Default.MessagingScenarioFactory.cs" />
     <Compile Include="Defaults\Implementation\Default.TypeLocator.cs" />
     <Compile Include="Defaults\Implementation\Default.MessageParser.cs" />
+    <Compile Include="MQ\BinarySenderMessage.cs" />
+    <Compile Include="MQ\IMessagingScenarioFactory.cs" />
+    <Compile Include="MQ\IReceiver.cs" />
+    <Compile Include="MQ\IReceiverMessage.cs" />
+    <Compile Include="MQ\ISender.cs" />
+    <Compile Include="MQ\ISenderMessage.cs" />
+    <Compile Include="MQ\MessageFormat.cs" />
+    <Compile Include="MQ\MessageReceivedEventArgs.cs" />
+    <Compile Include="MQ\MessagingScenarioExtensions.cs" />
+    <Compile Include="MQ\MessagingScenarioFactory.cs" />
+    <Compile Include="MQ\MessagingScenarioFactoryExtensions.cs" />
+    <Compile Include="MQ\NamedPipes\INamedPipeConfig.cs" />
+    <Compile Include="MQ\NamedPipes\INamedPipeConfigProvider.cs" />
+    <Compile Include="MQ\NamedPipes\NamedPipeMessagingScenarioFactory.cs" />
+    <Compile Include="MQ\NamedPipes\NamedPipeQueueConsumer.cs" />
+    <Compile Include="MQ\NamedPipes\NamedPipeQueueProducer.cs" />
+    <Compile Include="MQ\NamedPipes\NamedPipeReceiverMessage.cs" />
+    <Compile Include="MQ\NamedPipes\SentMessage.cs" />
+    <Compile Include="MQ\NamedPipes\SimpleNamedPipeConfig.cs" />
+    <Compile Include="MQ\NamedPipes\SimpleNamedPipeConfigProvider.cs" />
+    <Compile Include="MQ\ReceiverMessageExtensions.cs" />
+    <Compile Include="MQ\StringSenderMessage.cs" />
     <Compile Include="Rock.StaticDependencyInjection\CompositionRoot.cs" />
     <Compile Include="Rock.StaticDependencyInjection\ExportAttribute.cs" />
     <Compile Include="Rock.StaticDependencyInjection\ModuleInitializer.cs" />
@@ -65,6 +88,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="InjectModuleInitializer" AfterTargets="AfterBuild" Condition="'$(UseInjectModuleInitializer)' == 'true'">
     <Exec Command="..\packages\Rock.StaticDependencyInjection.1.0.1\tools\InjectModuleInitializer.exe &quot;$(TargetPath)&quot;" />
