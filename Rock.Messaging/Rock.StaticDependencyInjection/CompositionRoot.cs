@@ -1,4 +1,5 @@
 using System.Configuration;
+using Rock.Messaging.Defaults.Implementation;
 using Rock.Messaging.Routing;
 
 namespace Rock.Messaging.Rock.StaticDependencyInjection
@@ -7,8 +8,8 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
     {
         public override void Bootstrap()
         {
-            ImportFirst<IMessageParser>(parser => MessageRouter.DefaultMessageParser = parser);
-            ImportFirst<ITypeLocator>(locator => MessageRouter.DefaultTypeLocator = locator);
+            ImportFirst<IMessageParser>(x => Default.SetMessageParser(() => x));
+            ImportFirst<ITypeLocator>(x => Default.SetTypeLocator(() => x));
         }
 
         /// <summary>
@@ -18,7 +19,7 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
         {
             get
             {
-                const string key = "Rock.Messaging.StaticDependencyInjection.Enabled";
+                const string key = "Rock.StaticDependencyInjection.Enabled";
                 var enabledValue = ConfigurationManager.AppSettings.Get(key) ?? "true";
                 return enabledValue.ToLower() != "false";
             }
