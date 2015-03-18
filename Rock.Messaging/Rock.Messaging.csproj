@@ -46,7 +46,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Defaults\Implementation\Default.cs" />
     <Compile Include="Defaults\Implementation\Default.TypeLocator.cs" />
     <Compile Include="Defaults\Implementation\Default.MessageParser.cs" />
     <Compile Include="Rock.StaticDependencyInjection\CompositionRoot.cs" />
