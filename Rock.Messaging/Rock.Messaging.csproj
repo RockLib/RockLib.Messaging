@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Defaults\Implementation\Default.NamedPipeConfigProvider.cs" />
     <Compile Include="Defaults\Implementation\Default.MessagingScenarioFactory.cs" />
     <Compile Include="Defaults\Implementation\Default.TypeLocator.cs" />
     <Compile Include="Defaults\Implementation\Default.MessageParser.cs" />
@@ -59,7 +60,7 @@
     <Compile Include="MQ\MessageReceivedEventArgs.cs" />
     <Compile Include="MQ\MessagingScenarioExtensions.cs" />
     <Compile Include="MQ\MessagingScenarioFactory.cs" />
-    <Compile Include="MQ\MessagingScenarioFactoryExtensions.cs" />
+    <Compile Include="MQ\NamedPipes\SenderMessageJsonSerializer.cs" />
     <Compile Include="MQ\NamedPipes\INamedPipeConfig.cs" />
     <Compile Include="MQ\NamedPipes\INamedPipeConfigProvider.cs" />
     <Compile Include="MQ\NamedPipes\NamedPipeMessagingScenarioFactory.cs" />

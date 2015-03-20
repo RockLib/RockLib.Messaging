@@ -2,7 +2,7 @@
 
 namespace Rock.Messaging.NamedPipes
 {
-    public class SentMessage
+    internal class SentMessage
     {
         public string StringValue { get; set; }
         public byte[] BinaryValue { get; set; }

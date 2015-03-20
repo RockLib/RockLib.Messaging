@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using Rock.Serialization;
 
 namespace Rock.Messaging.NamedPipes
 {
+    /// <summary>
+    /// An implementation of <see cref="IReceiver"/> that uses named pipes as
+    /// its communication mechanism.
+    /// </summary>
     public class NamedPipeQueueConsumer : IReceiver
     {
         private readonly ISerializer _serializer;
@@ -19,7 +22,13 @@ namespace Rock.Messaging.NamedPipes
 
         private NamedPipeServerStream _pipeServer;
 
-        internal NamedPipeQueueConsumer(string name, string pipeName, ISerializer serializer)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NamedPipeQueueConsumer"/> class.
+        /// </summary>
+        /// <param name="name">The name of this instance of <see cref="NamedPipeQueueConsumer"/>.</param>
+        /// <param name="pipeName">Name of the named pipe.</param>
+        /// <param name="serializer">The serializer to use when receiving messages.</param>
+        public NamedPipeQueueConsumer(string name, string pipeName, ISerializer serializer)
         {
             _name = name;
             _pipeName = pipeName;
@@ -27,10 +36,20 @@ namespace Rock.Messaging.NamedPipes
             _consumerThread = new Thread(Consume);
         }
 
+        /// <summary>
+        /// Occurs when a message is received.
+        /// </summary>
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
 
+        /// <summary>
+        /// Gets the name of this instance of <see cref="IReceiver" />.
+        /// </summary>
         public string Name { get { return _name; } }
 
+        /// <summary>
+        /// Starts listening for messages.
+        /// </summary>
+        /// <param name="selector">Also known as a 'routing key', this value enables only certain messages to be received.</param>
         public void Start(string selector)
         {
             if (_pipeServer == null)
@@ -68,7 +87,7 @@ namespace Rock.Messaging.NamedPipes
             }
             finally
             {
-                try { _pipeServer.Close(); }
+                try { _pipeServer.Close(); } // ReSharper disable once EmptyGeneralCatchClause
                 catch { }
                 StartNewPipeServer();
             }
@@ -92,9 +111,9 @@ namespace Rock.Messaging.NamedPipes
             if (_pipeServer != null)
             {
                 _messages.CompleteAdding();
-                try { _pipeServer.Close(); }
+                try { _pipeServer.Close(); } // ReSharper disable once EmptyGeneralCatchClause
                 catch { }
-                try { _consumerThread.Join(); }
+                try { _consumerThread.Join(); } // ReSharper disable once EmptyGeneralCatchClause
                 catch { }
             }
         }

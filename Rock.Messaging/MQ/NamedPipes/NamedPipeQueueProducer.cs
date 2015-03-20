@@ -7,6 +7,10 @@ using Rock.Serialization;
 
 namespace Rock.Messaging.NamedPipes
 {
+    /// <summary>
+    /// An implementation of <see cref="ISender"/> that uses named pipes as
+    /// its communication mechanism.
+    /// </summary>
     public class NamedPipeQueueProducer : ISender
     {
         private readonly string _name;
@@ -15,7 +19,13 @@ namespace Rock.Messaging.NamedPipes
         private readonly BlockingCollection<string> _messages;
         private readonly Thread _runThread;
 
-        internal NamedPipeQueueProducer(string name, string pipeName, ISerializer serializer)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NamedPipeQueueProducer"/> class.
+        /// </summary>
+        /// <param name="name">The name of this instance of <see cref="NamedPipeQueueProducer"/>.</param>
+        /// <param name="pipeName">Name of the named pipe.</param>
+        /// <param name="serializer">The serializer to use when sending messages.</param>
+        public NamedPipeQueueProducer(string name, string pipeName, ISerializer serializer)
         {
             _name = name;
             _pipeName = pipeName;
@@ -27,14 +37,24 @@ namespace Rock.Messaging.NamedPipes
             _runThread.Start();
         }
 
+        /// <summary>
+        /// Gets the name of this instance of <see cref="ISender" />.
+        /// </summary>
         public string Name { get { return _name; } }
 
+        /// <summary>
+        /// Sends the specified message.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
         public void Send(ISenderMessage message)
         {
             var messageString = _serializer.SerializeToString(message);
             _messages.Add(messageString);
         }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             _messages.CompleteAdding();
@@ -65,7 +85,7 @@ namespace Rock.Messaging.NamedPipes
                 }
                 catch (Exception ex)
                 {
-                    // TODO: Something.
+                    // TODO: Something?
                     continue;
                 }
             }
