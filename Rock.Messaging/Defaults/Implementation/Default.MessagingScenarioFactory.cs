@@ -1,12 +1,13 @@
 ﻿using System;
 using Rock.Defaults;
 using System.Configuration;
+using Rock.Messaging.NamedPipes;
 
 namespace Rock.Messaging.Defaults.Implementation
 {
     public static partial class Default
     {
-        private static readonly DefaultHelper<IMessagingScenarioFactory> _messagingScenarioFactory = new DefaultHelper<IMessagingScenarioFactory>(CreateDefaultMessagingScenarioFactory);
+        private static readonly DefaultHelper<IMessagingScenarioFactory> _messagingScenarioFactory = new DefaultHelper<IMessagingScenarioFactory>(CreateDefaultFactory);
 
         public static IMessagingScenarioFactory MessagingScenarioFactory
         {
@@ -28,12 +29,34 @@ namespace Rock.Messaging.Defaults.Implementation
             _messagingScenarioFactory.RestoreDefault();
         }
 
-        private static IMessagingScenarioFactory CreateDefaultMessagingScenarioFactory()
+        private static IMessagingScenarioFactory CreateDefaultFactory()
         {
-            // TODO: Finish implemening the mechanism for getting the default messaging scenario factory.
+            IMessagingScenarioFactory value;
+
             return
-                (IMessagingScenarioFactory)ConfigurationManager.GetSection("rock.messaging");
-                //?? new SimpleLoggerFactory<ConsoleLogProvider>(LogLevel.Debug);
+                TryGetFactoryFromConfig(out value)
+                    ? value
+                    : GetDefaultFactory();
+        }
+
+        private static bool TryGetFactoryFromConfig(out IMessagingScenarioFactory factory)
+        {
+            try
+            {
+                var rockMessagingConfiguration = (IRockMessagingConfiguration)ConfigurationManager.GetSection("rock.messaging");
+                factory = rockMessagingConfiguration.MessagingScenarioFactory;
+                return true;
+            }
+            catch (Exception)
+            {
+                factory = null;
+                return false;
+            }
+        }
+
+        private static IMessagingScenarioFactory GetDefaultFactory()
+        {
+            return new NamedPipeMessagingScenarioFactory();
         }
     }
 }
