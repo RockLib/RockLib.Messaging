@@ -13,7 +13,7 @@ namespace Rock.Messaging
             _messagingScenarioFactory = new Lazy<IMessagingScenarioFactory>(() => FactoryProxy.CreateInstance());
         }
 
-        [XmlElement("MessagingScenarioFactory")]
+        [XmlElement("messagingScenarioFactory")]
         public MessagingScenarioFactoryProxy FactoryProxy { get; set; }
 
         [XmlIgnore]
