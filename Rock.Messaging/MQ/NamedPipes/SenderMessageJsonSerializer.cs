@@ -16,16 +16,25 @@ namespace Rock.Messaging.NamedPipes
         private const string _quote = @"""";
         private const string _headerSeparator = @""":""";
 
-        private const string _jsonPattern =
-            "^"
-            + _stringValueHeader
-            + @"(?<stringValue>(?:[^""]|\"")*?)"
-            + _binaryValueHeader
-            + @"(?<binaryValue>(?:[^""]|\"")*?)"
-            + _headersHeader
-            + @"(?:""(?<key>(?:[^""]|\"")*?)"":""(?<value>(?:[^""]|\"")*?)""(?:,""(?<key>(?:[^""]|\"")*?)"":""(?<value>(?:[^""]|\"")*?)"")*)?}}";
+        private const string _jsonPattern = @"
+            ^{
+                ""StringValue"":""(?<stringValue>(?:[^""]|\"")*?)""
+                ,
+                ""BinaryValue"":""(?<binaryValue>(?:[^""]|\"")*?)""
+                ,
+                ""Headers"":
+                {
+                    (?:
+                        ""(?<key>(?:[^""]|\"")*?)"":""(?<value>(?:[^""]|\"")*?)""
+                        (?:
+                            ,
+                            ""(?<key>(?:[^""]|\"")*?)"":""(?<value>(?:[^""]|\"")*?)""
+                        )*
+                    )?
+                }
+            }$";
 
-        private static readonly Regex _jsonRegex = new Regex(_jsonPattern, RegexOptions.Compiled);
+        private static readonly Regex _jsonRegex = new Regex(_jsonPattern, RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace);
 
         // This is the default encoding that the StreamWriter class uses.
         private static readonly Encoding _defaultEncoding = new UTF8Encoding(false, true);
@@ -120,12 +129,64 @@ namespace Rock.Messaging.NamedPipes
 
         private static string Escape(string value)
         {
-            return value == null ? "" : value.Replace(_quote, "\\\"");
+            var sb = new StringBuilder();
+
+            foreach (var c in value)
+            {
+                switch (c)
+                {
+                    case '\\':
+                        sb.Append(@"\\");
+                        break;
+                    case '"':
+                        sb.Append(@"\""");
+                        break;
+                    default:
+                        sb.Append(c);
+                        break;
+                }
+            }
+
+            return sb.ToString();
         }
 
         private static string Unescape(string value)
         {
-            return value == null ? "" : value.Replace("\\\"", _quote);
+            var sb = new StringBuilder();
+
+            bool wasPrevBackslash = false;
+
+            foreach (var c in value)
+            {
+                switch (c)
+                {
+                    case '\\':
+                        if (wasPrevBackslash)
+                        {
+                            sb.Append('\\');
+                            wasPrevBackslash = false;
+                        }
+                        else
+                        {
+                            wasPrevBackslash = true;
+                        }
+                        break;
+                    case '"':
+                        sb.Append('"');
+                        wasPrevBackslash = false;
+                        break;
+                    default:
+                        if (wasPrevBackslash)
+                        {
+                            sb.Append('\\');
+                        }
+                        sb.Append(c);
+                        wasPrevBackslash = false;
+                        break;
+                }
+            }
+
+            return sb.ToString();
         }
     }
 }
