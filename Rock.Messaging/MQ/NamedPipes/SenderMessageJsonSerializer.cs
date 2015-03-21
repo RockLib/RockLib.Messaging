@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using Rock.Serialization;
 
 namespace Rock.Messaging.NamedPipes
@@ -15,26 +15,6 @@ namespace Rock.Messaging.NamedPipes
         private const string _headersHeader = @""",""Headers"":{";
         private const string _quote = @"""";
         private const string _headerSeparator = @""":""";
-
-        private const string _jsonPattern = @"
-            ^{
-                ""StringValue"":""(?<stringValue>(?:[^""]|\"")*?)""
-                ,
-                ""BinaryValue"":""(?<binaryValue>(?:[^""]|\"")*?)""
-                ,
-                ""Headers"":
-                {
-                    (?:
-                        ""(?<key>(?:[^""]|\"")*?)"":""(?<value>(?:[^""]|\"")*?)""
-                        (?:
-                            ,
-                            ""(?<key>(?:[^""]|\"")*?)"":""(?<value>(?:[^""]|\"")*?)""
-                        )*
-                    )?
-                }
-            }$";
-
-        private static readonly Regex _jsonRegex = new Regex(_jsonPattern, RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace);
 
         // This is the default encoding that the StreamWriter class uses.
         private static readonly Encoding _defaultEncoding = new UTF8Encoding(false, true);
@@ -97,33 +77,86 @@ namespace Rock.Messaging.NamedPipes
 
         public object DeserializeFromString(string data, Type type)
         {
-            var match = _jsonRegex.Match(data);
+            var enumerator = data.GetEnumerator();
 
-            if (!match.Success)
-            {
-                var ex = new FormatException("Invalid message format.");
-                ex.Data.Add("message", data);
-                throw ex;
-            }
+            Skip(enumerator, _stringValueHeader.Length);
+            var stringValue = Unescape(GetStringValue(enumerator));
+            Skip(enumerator, _binaryValueHeader.Length - 1);
+            var binaryValue = Convert.FromBase64String(GetStringValue(enumerator));
+            Skip(enumerator, _headersHeader.Length);
+            var headers = GetHeaders(enumerator).ToDictionary(x => x.Key, x => x.Value);
 
             return new SentMessage
             {
-                StringValue = Unescape(match.Groups["stringValue"].Value),
-                BinaryValue = Convert.FromBase64String(match.Groups["binaryValue"].Value),
-                Headers = GetHeaders(match).ToDictionary(x => x.Key, x => x.Value)
+                StringValue = stringValue,
+                BinaryValue = binaryValue,
+                Headers = headers
             };
         }
 
-        private static IEnumerable<KeyValuePair<string, string>> GetHeaders(Match match)
+        private static IEnumerable<KeyValuePair<string, string>> GetHeaders(IEnumerator<char> enumerator)
         {
-            var keys = match.Groups["key"].Captures.Cast<Capture>().GetEnumerator();
-            var values = match.Groups["value"].Captures.Cast<Capture>().GetEnumerator();
-
-            while (keys.MoveNext() && values.MoveNext())
+            while (true)
             {
-                yield return new KeyValuePair<string, string>(
-                    Unescape(keys.Current.Value),
-                    Unescape(values.Current.Value));
+                if (enumerator.Current == '}')
+                {
+                    yield break;
+                }
+
+                var key = Unescape(GetStringValue(enumerator));
+                Skip(enumerator, _headerSeparator.Length - 1);
+                var value = Unescape(GetStringValue(enumerator));
+                Skip(enumerator, _quote.Length);
+
+                if (enumerator.Current == ',')
+                {
+                    Skip(enumerator, 1);
+                }
+
+                yield return new KeyValuePair<string, string>(key, value);
+            }
+        }
+
+        private static void Skip(IEnumerator enumerator, int count)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                enumerator.MoveNext();
+            }
+        }
+
+        private static string GetStringValue(IEnumerator<char> enumerator)
+        {
+            var sb = new StringBuilder();
+
+            var wasPrevBackslash = false;
+
+            while (true)
+            {
+                enumerator.MoveNext();
+
+                if (enumerator.Current == '"')
+                {
+                    if (wasPrevBackslash)
+                    {
+                        sb.Append(@"""");
+                        wasPrevBackslash = false;
+                    }
+                    else
+                    {
+                        return sb.ToString();
+                    }
+                }
+                else if (enumerator.Current == '\\')
+                {
+                    sb.Append('\\');
+                    wasPrevBackslash = !wasPrevBackslash;
+                }
+                else
+                {
+                    sb.Append(enumerator.Current);
+                    wasPrevBackslash = false;
+                }
             }
         }
 
