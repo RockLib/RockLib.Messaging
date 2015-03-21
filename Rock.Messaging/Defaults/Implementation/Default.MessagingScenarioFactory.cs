@@ -8,7 +8,8 @@ namespace Rock.Messaging.Defaults.Implementation
 {
     public static partial class Default
     {
-        private static readonly DefaultHelper<IMessagingScenarioFactory> _messagingScenarioFactory = new DefaultHelper<IMessagingScenarioFactory>(CreateDefaultFactory);
+        private static readonly Lazy<NamedPipeMessagingScenarioFactory> _fallbackMessagingScenarioFactory = new Lazy<NamedPipeMessagingScenarioFactory>(() => new NamedPipeMessagingScenarioFactory());
+        private static readonly DefaultHelper<IMessagingScenarioFactory> _messagingScenarioFactory = new DefaultHelper<IMessagingScenarioFactory>(CreateDefaultMessagingScenarioFactory);
 
         public static IMessagingScenarioFactory MessagingScenarioFactory
         {
@@ -30,14 +31,22 @@ namespace Rock.Messaging.Defaults.Implementation
             _messagingScenarioFactory.RestoreDefault();
         }
 
-        private static IMessagingScenarioFactory CreateDefaultFactory()
+        internal static bool WasMessagingScenarioFactoryLoadedFromConfig
+        {
+            get
+            {
+                return !_fallbackMessagingScenarioFactory.IsValueCreated;
+            }
+        }
+
+        private static IMessagingScenarioFactory CreateDefaultMessagingScenarioFactory()
         {
             IMessagingScenarioFactory value;
 
             return
                 TryGetFactoryFromConfig(out value)
                     ? value
-                    : GetDefaultFactory();
+                    : _fallbackMessagingScenarioFactory.Value;
         }
 
         private static bool TryGetFactoryFromConfig(out IMessagingScenarioFactory factory)
@@ -53,11 +62,6 @@ namespace Rock.Messaging.Defaults.Implementation
                 factory = null;
                 return false;
             }
-        }
-
-        private static IMessagingScenarioFactory GetDefaultFactory()
-        {
-            return new NamedPipeMessagingScenarioFactory();
         }
     }
 }

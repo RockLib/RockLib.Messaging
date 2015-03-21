@@ -10,9 +10,15 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
         public override void Bootstrap()
         {
             ImportFirst<IMessageParser>(x => Default.SetMessageParser(() => x));
-            ImportFirst<IMessagingScenarioFactory>(x => Default.SetMessagingScenarioFactory(() => x));
             ImportFirst<INamedPipeConfigProvider>(x => Default.SetNamedPipeConfigProvider(() => x));
             ImportFirst<ITypeLocator>(x => Default.SetTypeLocator(() => x));
+            ImportFirst<IMessagingScenarioFactory>(x =>
+            {
+                if (!Default.WasMessagingScenarioFactoryLoadedFromConfig)
+                {
+                    Default.SetMessagingScenarioFactory(() => x);
+                }
+            });
         }
 
         /// <summary>
