@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Rock.Serialization;
 
 namespace Rock.Messaging.NamedPipes
@@ -15,6 +15,17 @@ namespace Rock.Messaging.NamedPipes
         private const string _headersHeader = @""",""Headers"":{";
         private const string _quote = @"""";
         private const string _headerSeparator = @""":""";
+
+        private const string _jsonPattern =
+            "^"
+            + _stringValueHeader
+            + @"(?<stringValue>(?:[^""]|\"")*?)"
+            + _binaryValueHeader
+            + @"(?<binaryValue>(?:[^""]|\"")*?)"
+            + _headersHeader
+            + @"(?:""(?<key>(?:[^""]|\"")*?)"":""(?<value>(?:[^""]|\"")*?)""(?:,""(?<key>(?:[^""]|\"")*?)"":""(?<value>(?:[^""]|\"")*?)"")*)?}}";
+
+        private static readonly Regex _jsonRegex = new Regex(_jsonPattern, RegexOptions.Compiled);
 
         // This is the default encoding that the StreamWriter class uses.
         private static readonly Encoding _defaultEncoding = new UTF8Encoding(false, true);
@@ -31,16 +42,7 @@ namespace Rock.Messaging.NamedPipes
         {
             using (var reader = new StreamReader(stream, Encoding.UTF8, true, 1024, true))
             {
-                return DeserializeFromChars(GetChars(reader));
-            }
-        }
-
-        private static IEnumerable<char> GetChars(StreamReader reader)
-        {
-            int i;
-            while ((i = reader.Read()) != -1)
-            {
-                yield return (char)i;
+                return DeserializeFromString(reader.ReadToEnd(), type);
             }
         }
 
@@ -53,7 +55,7 @@ namespace Rock.Messaging.NamedPipes
             sb.Append(_stringValueHeader)
                 .Append(Escape(message.StringValue))
                 .Append(_binaryValueHeader)
-                .Append(Convert.ToBase64String(message.BinaryValue))
+                .Append(message.BinaryValue == null ? null : Convert.ToBase64String(message.BinaryValue))
                 .Append(_headersHeader);
 
             if (message.Headers != null)
@@ -86,97 +88,44 @@ namespace Rock.Messaging.NamedPipes
 
         public object DeserializeFromString(string data, Type type)
         {
-            return DeserializeFromChars(data);
-        }
+            var match = _jsonRegex.Match(data);
 
-        private static object DeserializeFromChars(IEnumerable<char> data)
-        {
-            var enumerator = data.GetEnumerator();
-
-            Skip(enumerator, _stringValueHeader.Length);
-            var stringValue = Unescape(GetStringValue(enumerator));
-            Skip(enumerator, _binaryValueHeader.Length - 1);
-            var binaryValue = Convert.FromBase64String(GetStringValue(enumerator));
-            Skip(enumerator, _headersHeader.Length);
-            var headers = GetHeaders(enumerator).ToDictionary(x => x.Key, x => x.Value);
+            if (!match.Success)
+            {
+                var ex = new FormatException("Invalid message format.");
+                ex.Data.Add("message", data);
+                throw ex;
+            }
 
             return new SentMessage
             {
-                StringValue = stringValue,
-                BinaryValue = binaryValue,
-                Headers = headers
+                StringValue = Unescape(match.Groups["stringValue"].Value),
+                BinaryValue = Convert.FromBase64String(match.Groups["binaryValue"].Value),
+                Headers = GetHeaders(match).ToDictionary(x => x.Key, x => x.Value)
             };
         }
 
-        private static IEnumerable<KeyValuePair<string, string>> GetHeaders(IEnumerator<char> enumerator)
+        private static IEnumerable<KeyValuePair<string, string>> GetHeaders(Match match)
         {
-            while (true)
+            var keys = match.Groups["key"].Captures.Cast<Capture>().GetEnumerator();
+            var values = match.Groups["value"].Captures.Cast<Capture>().GetEnumerator();
+
+            while (keys.MoveNext() && values.MoveNext())
             {
-                if (enumerator.Current == '}')
-                {
-                    yield break;
-                }
-
-                var key = Unescape(GetStringValue(enumerator));
-                Skip(enumerator, _headerSeparator.Length - 1);
-                var value = Unescape(GetStringValue(enumerator));
-                Skip(enumerator, _quote.Length);
-
-                if (enumerator.Current == ',')
-                {
-                    Skip(enumerator, 1);
-                }
-
-                yield return new KeyValuePair<string, string>(key, value);
-            }
-        }
-
-        private static void Skip(IEnumerator enumerator, int count)
-        {
-            for (var i = 0; i < count; i++)
-            {
-                enumerator.MoveNext();
-            }
-        }
-
-        private static string GetStringValue(IEnumerator<char> enumerator)
-        {
-            var sb = new StringBuilder();
-
-            var prev = '\0';
-
-            while (true)
-            {
-                enumerator.MoveNext();
-
-                if (enumerator.Current == '"')
-                {
-                    if (prev == '\\')
-                    {
-                        sb.Append(@"""");
-                    }
-                    else
-                    {
-                        return sb.ToString();
-                    }
-                }
-                else
-                {
-                    sb.Append(enumerator.Current);
-                }
-
-                prev = enumerator.Current;
+                yield return new KeyValuePair<string, string>(
+                    Unescape(keys.Current.Value),
+                    Unescape(values.Current.Value));
             }
         }
 
         private static string Escape(string value)
         {
-            return value.Replace(_quote, "\\\"");
+            return value == null ? "" : value.Replace(_quote, "\\\"");
         }
 
         private static string Unescape(string value)
         {
-            return value.Replace("\\\"", _quote);
+            return value == null ? "" : value.Replace("\\\"", _quote);
         }
     }
 }
