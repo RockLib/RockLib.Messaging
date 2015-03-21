@@ -92,6 +92,9 @@ namespace Rock.Messaging
             get { return _headers; }
         }
 
+        /// <summary>
+        /// Gets the headers of the message.
+        /// </summary>
         IEnumerable<KeyValuePair<string, string>> ISenderMessage.Headers
         {
             get { return Headers; }
