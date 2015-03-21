@@ -1,6 +1,7 @@
 ﻿using System;
 using Rock.Defaults;
 using System.Configuration;
+using Rock.Messaging.Configuration;
 using Rock.Messaging.NamedPipes;
 
 namespace Rock.Messaging.Defaults.Implementation

@@ -46,11 +46,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\MessagingScenarioFactoryProxy.cs" />
+    <Compile Include="Configuration\MessagingSectionHandler.cs" />
+    <Compile Include="Configuration\XmlSerializingRockMessagingConfiguration.cs" />
     <Compile Include="Defaults\Implementation\Default.NamedPipeConfigProvider.cs" />
     <Compile Include="Defaults\Implementation\Default.MessagingScenarioFactory.cs" />
     <Compile Include="Defaults\Implementation\Default.TypeLocator.cs" />
     <Compile Include="Defaults\Implementation\Default.MessageParser.cs" />
-    <Compile Include="IRockMessagingConfiguration.cs" />
+    <Compile Include="Configuration\IRockMessagingConfiguration.cs" />
     <Compile Include="MQ\BinarySenderMessage.cs" />
     <Compile Include="MQ\IMessagingScenarioFactory.cs" />
     <Compile Include="MQ\IReceiver.cs" />

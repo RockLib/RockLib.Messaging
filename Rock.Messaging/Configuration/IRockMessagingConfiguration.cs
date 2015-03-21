@@ -1,6 +1,5 @@
-﻿namespace Rock.Messaging
+﻿namespace Rock.Messaging.Configuration
 {
-    // TODO: Create implementation of this interface for config.
     public interface IRockMessagingConfiguration
     {
         IMessagingScenarioFactory MessagingScenarioFactory { get; }
