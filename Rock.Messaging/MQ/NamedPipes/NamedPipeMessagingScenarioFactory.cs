@@ -89,5 +89,10 @@ namespace Rock.Messaging.NamedPipes
         {
             return CreateQueueConsumer(name);
         }
+
+        public void Dispose()
+        {
+            // Nothing to do.
+        }
     }
 }

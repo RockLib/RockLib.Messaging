@@ -1,9 +1,11 @@
-﻿namespace Rock.Messaging
+﻿using System;
+
+namespace Rock.Messaging
 {
     /// <summary>
     /// Defines an interface for creating instances of various messaging scenarios.
     /// </summary>
-    public interface IMessagingScenarioFactory
+    public interface IMessagingScenarioFactory : IDisposable
     {
         /// <summary>
         /// Creates an instance of <see cref="ISender"/> that uses the queue producer scenario.
