@@ -1,4 +1,5 @@
-﻿using Rock.Messaging.Defaults.Implementation;
+﻿using System;
+using Rock.Messaging.Defaults.Implementation;
 using Rock.Serialization;
 
 namespace Rock.Messaging.NamedPipes
@@ -90,9 +91,8 @@ namespace Rock.Messaging.NamedPipes
             return CreateQueueConsumer(name);
         }
 
-        public void Dispose()
+        void IDisposable.Dispose()
         {
-            // Nothing to do.
         }
     }
 }
