@@ -40,5 +40,9 @@ namespace Rock.Messaging
         {
             throw new NotImplementedException();
         }
+
+        void IDisposable.Dispose()
+        {
+        }
     }
 }
