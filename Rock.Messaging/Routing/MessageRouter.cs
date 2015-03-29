@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using System.Threading.Tasks;
 using Rock.DependencyInjection;
-using Rock.Messaging.Defaults.Implementation;
 
 namespace Rock.Messaging.Routing
 {
@@ -27,8 +26,8 @@ namespace Rock.Messaging.Routing
             ITypeLocator typeLocator = null,
             IResolver resolver = null)
         {
-            _messageParser = messageParser ?? Default.MessageParser;
-            _typeLocator = typeLocator ?? Default.TypeLocator;
+            _messageParser = messageParser ?? DefaultMessageParser.Current;
+            _typeLocator = typeLocator ?? DefaultTypeLocator.Current;
             _resolver = resolver ?? new AutoContainer();
         }
 

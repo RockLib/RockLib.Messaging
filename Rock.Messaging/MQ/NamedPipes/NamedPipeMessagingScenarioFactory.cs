@@ -1,5 +1,5 @@
 ﻿using System;
-using Rock.Messaging.Defaults.Implementation;
+using Rock.Immutable;
 using Rock.Serialization;
 
 namespace Rock.Messaging.NamedPipes
@@ -11,6 +11,9 @@ namespace Rock.Messaging.NamedPipes
     /// </summary>
     public class NamedPipeMessagingScenarioFactory : IMessagingScenarioFactory
     {
+        private static readonly Semimutable<INamedPipeConfigProvider> _defaultConfigProvider =
+            new Semimutable<INamedPipeConfigProvider>(CreateDefaultDefaultConfigProvider);
+
         private readonly INamedPipeConfigProvider _configProvider;
         private readonly ISerializer _serializer;
 
@@ -27,7 +30,7 @@ namespace Rock.Messaging.NamedPipes
         /// </summary>
         /// <param name="configProvider">
         /// The configuration provider. If null or not provided, then
-        /// <see cref="Default.NamedPipeConfigProvider"/> is used.
+        /// <see cref="DefaultConfigProvider"/> is used.
         /// </param>
         /// <param name="serializer">
         /// The serializer to use when sending or receiving messages. If null or not provided,
@@ -37,8 +40,23 @@ namespace Rock.Messaging.NamedPipes
             INamedPipeConfigProvider configProvider = null,
             ISerializer serializer = null)
         {
-            _configProvider = configProvider ?? Default.NamedPipeConfigProvider;
+            _configProvider = configProvider ?? DefaultConfigProvider;
             _serializer = serializer ?? new SenderMessageJsonSerializer();
+        }
+
+        public static INamedPipeConfigProvider DefaultConfigProvider
+        {
+            get { return _defaultConfigProvider.Value; }
+        }
+
+        public static void SetDefaultConfigProvider(INamedPipeConfigProvider defaultConfigProvider)
+        {
+            _defaultConfigProvider.Value = defaultConfigProvider;
+        }
+
+        private static INamedPipeConfigProvider CreateDefaultDefaultConfigProvider()
+        {
+            return new SimpleNamedPipeConfigProvider();
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using Rock.Messaging.Defaults.Implementation;
 
 namespace Rock.Messaging
 {
@@ -8,9 +7,9 @@ namespace Rock.Messaging
         [Test]
         public void TheMessagingScenarioFactoryDefinedInConfigIsAssignedToDefaultMessagingScenarioFactory()
         {
-            Assert.That(Default.MessagingScenarioFactory, Is.InstanceOf<ExampleMessagingScenarioFactory>());
-            
-            var factory = (ExampleMessagingScenarioFactory)Default.MessagingScenarioFactory;
+            Assert.That(MessagingScenarioFactory.Current, Is.InstanceOf<ExampleMessagingScenarioFactory>());
+
+            var factory = (ExampleMessagingScenarioFactory)MessagingScenarioFactory.Current;
             
             Assert.That(factory.IntData, Is.EqualTo(123));
         }
