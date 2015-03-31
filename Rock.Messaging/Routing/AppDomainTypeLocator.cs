@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Rock.Reflection;
 
 namespace Rock.Messaging.Routing
 {
@@ -18,7 +19,7 @@ namespace Rock.Messaging.Routing
         {
             return
                (from a in _appDomain.GetAssemblies()
-                from t in a.GetTypes()
+                from t in a.GetTypesSafely()
                 where !t.IsAbstract && _messageParser.GetTypeName(t) == typeName
                 select t).Single();
         }
@@ -27,7 +28,7 @@ namespace Rock.Messaging.Routing
         {
             return
                (from a in _appDomain.GetAssemblies()
-                from t in a.GetTypes()
+                from t in a.GetTypesSafely()
                 where !t.IsAbstract
                 from i in t.GetInterfaces()
                 where i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMessageHandler<>) && i.GetGenericArguments()[0] == messageType
