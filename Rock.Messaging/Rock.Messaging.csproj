@@ -94,7 +94,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="InjectModuleInitializer" AfterTargets="AfterBuild" Condition="'$(UseInjectModuleInitializer)' == 'true'">
-    <Exec Command="..\packages\Rock.StaticDependencyInjection.1.0.1\tools\InjectModuleInitializer.exe &quot;$(TargetPath)&quot;" />
+    <Exec Command="..\packages\Rock.StaticDependencyInjection.1.1.0\tools\InjectModuleInitializer.exe &quot;$(TargetPath)&quot;" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

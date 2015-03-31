@@ -1,6 +1,10 @@
+using System;
+using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using Rock.Messaging.NamedPipes;
 using Rock.Messaging.Routing;
+using Rock.StaticDependencyInjection;
 
 namespace Rock.Messaging.Rock.StaticDependencyInjection
 {
@@ -25,6 +29,37 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
                 var enabledValue = ConfigurationManager.AppSettings.Get(key) ?? "true";
                 return enabledValue.ToLower() != "false";
             }
+        }
+
+        /// <summary>
+        /// Return a collection of metadata objects that describe the export operations for a type.
+        /// </summary>
+        /// <param name="type">The type to get export metadata.</param>
+        /// <returns>A collection of metadata objects that describe export operations.</returns>
+        protected override IEnumerable<ExportInfo> GetExportInfos(Type type)
+        {
+            // Modify this method if your library needs to support a different
+            // export mechanism (possibly a different attribute) that inspects
+            // the type of a class.
+            //
+            // Remove this method if your library should not support any advanced
+            // export mechanisms based on the type of a class.
+
+            var attributes = Attribute.GetCustomAttributes(type, typeof(ExportAttribute));
+
+            if (attributes.Length == 0)
+            {
+                return base.GetExportInfos(type);
+            }
+
+            return
+                attributes.Cast<ExportAttribute>()
+                .Select(attribute =>
+                    new ExportInfo(type, attribute.Priority)
+                    {
+                        Disabled = attribute.Disabled,
+                        Name = attribute.Name
+                    });
         }
     }
 }
