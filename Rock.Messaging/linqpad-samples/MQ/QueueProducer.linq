@@ -1,6 +1,5 @@
 <Query Kind="Program">
-  <NuGetReference Prerelease="true">Rock.Core</NuGetReference>
-  <NuGetReference Prerelease="true">Rock.Messaging</NuGetReference>
+  <NuGetReference>Rock.Messaging</NuGetReference>
   <Namespace>Rock.Messaging</Namespace>
 </Query>
 

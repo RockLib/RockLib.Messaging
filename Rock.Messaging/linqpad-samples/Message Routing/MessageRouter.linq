@@ -1,5 +1,5 @@
 <Query Kind="Program">
-  <NuGetReference Prerelease="true">Rock.Messaging</NuGetReference>
+  <NuGetReference>Rock.Messaging</NuGetReference>
   <Namespace>Rock.Messaging</Namespace>
   <Namespace>Rock.Messaging.Routing</Namespace>
   <Namespace>Rock.Serialization</Namespace>
