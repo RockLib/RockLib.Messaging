@@ -1,6 +1,5 @@
 using System;
 using System.Xml.Serialization;
-using Rock.Messaging.Configuration;
 
 namespace Rock.Messaging
 {

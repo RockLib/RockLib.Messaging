@@ -1,4 +1,4 @@
-﻿namespace Rock.Messaging.Configuration
+﻿namespace Rock.Messaging
 {
     public interface IRockMessagingConfiguration
     {
