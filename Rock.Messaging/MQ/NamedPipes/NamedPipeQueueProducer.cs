@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading;
+using System.Threading.Tasks;
 using Rock.Serialization;
 
 namespace Rock.Messaging.NamedPipes
@@ -13,6 +14,8 @@ namespace Rock.Messaging.NamedPipes
     /// </summary>
     public class NamedPipeQueueProducer : ISender
     {
+        private static readonly Task _completedTask = Task.FromResult(0);
+
         private readonly string _name;
         private readonly string _pipeName;
         private readonly ISerializer _serializer;
@@ -46,10 +49,11 @@ namespace Rock.Messaging.NamedPipes
         /// Sends the specified message.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        public void Send(ISenderMessage message)
+        public Task SendAsync(ISenderMessage message)
         {
             var messageString = _serializer.SerializeToString(message);
             _messages.Add(messageString);
+            return _completedTask;
         }
 
         /// <summary>

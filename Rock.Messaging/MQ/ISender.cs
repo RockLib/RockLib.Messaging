@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Rock.Messaging
 {
@@ -13,9 +14,9 @@ namespace Rock.Messaging
         string Name { get; }
 
         /// <summary>
-        /// Sends the specified message.
+        /// Asynchronously sends the specified message.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        void Send(ISenderMessage message);
+        Task SendAsync(ISenderMessage message);
     }
 }
