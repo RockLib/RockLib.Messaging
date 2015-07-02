@@ -109,6 +109,11 @@ namespace Rock.Messaging.NamedPipes
             return CreateQueueConsumer(name);
         }
 
+        public bool HasScenario(string name)
+        {
+            return _configProvider.HasConfig(name);
+        }
+
         void IDisposable.Dispose()
         {
         }

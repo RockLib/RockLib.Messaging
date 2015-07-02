@@ -12,6 +12,7 @@ namespace Rock.Messaging.NamedPipes
     {
         private const string _stringValueHeader = @"{""StringValue"":""";
         private const string _binaryValueHeader = @""",""BinaryValue"":""";
+        private const string _messageFormatHeader = @""",""MessageFormat"":""";
         private const string _headersHeader = @""",""Headers"":{";
         private const string _quote = @"""";
         private const string _headerSeparator = @""":""";
@@ -45,6 +46,8 @@ namespace Rock.Messaging.NamedPipes
                 .Append(Escape(message.StringValue))
                 .Append(_binaryValueHeader)
                 .Append(message.BinaryValue == null ? null : Convert.ToBase64String(message.BinaryValue))
+                .Append(_messageFormatHeader)
+                .Append(message.MessageFormat)
                 .Append(_headersHeader);
 
             if (message.Headers != null)
@@ -83,6 +86,8 @@ namespace Rock.Messaging.NamedPipes
             var stringValue = Unescape(GetStringValue(enumerator));
             Skip(enumerator, _binaryValueHeader.Length - 1);
             var binaryValue = Convert.FromBase64String(GetStringValue(enumerator));
+            Skip(enumerator, _messageFormatHeader.Length - 1);
+            var messageFormat = (MessageFormat)Enum.Parse(typeof(MessageFormat), GetStringValue(enumerator));
             Skip(enumerator, _headersHeader.Length);
             var headers = GetHeaders(enumerator).ToDictionary(x => x.Key, x => x.Value);
 
@@ -90,6 +95,7 @@ namespace Rock.Messaging.NamedPipes
             {
                 StringValue = stringValue,
                 BinaryValue = binaryValue,
+                MessageFormat = messageFormat,
                 Headers = headers
             };
         }

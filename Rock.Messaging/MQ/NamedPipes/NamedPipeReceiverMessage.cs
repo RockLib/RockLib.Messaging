@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
 
 namespace Rock.Messaging.NamedPipes
 {
@@ -18,6 +19,8 @@ namespace Rock.Messaging.NamedPipes
         {
             _sentMessage = sentMessage;
         }
+
+        public byte? Priority { get { return null; } }
 
         /// <summary>
         /// Gets the string value of the message. The <paramref name="encoding"/> parameter
@@ -64,11 +67,21 @@ namespace Rock.Messaging.NamedPipes
             return null;
         }
 
+        public string[] GetHeaderNames()
+        {
+            return _sentMessage.Headers.Keys.ToArray();
+        }
+
         /// <summary>
         /// Does nothing.
         /// </summary>
         public void Acknowledge()
         {
+        }
+
+        public ISenderMessage ToSenderMessage()
+        {
+            return _sentMessage;
         }
     }
 }

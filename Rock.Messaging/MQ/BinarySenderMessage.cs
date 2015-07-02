@@ -14,6 +14,7 @@ namespace Rock.Messaging
         private readonly byte[] _binaryValue;
         private readonly Lazy<string> _stringValue;
         private readonly MessageFormat _messageFormat;
+        private readonly byte? _priority;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BinarySenderMessage"/> class using
@@ -41,7 +42,8 @@ namespace Rock.Messaging
         /// The encoding to use when converting the binary value to a string if 
         /// <paramref name="messageFormat"/> is not <see cref="Messaging.MessageFormat.Binary"/>.
         /// </param>
-        public BinarySenderMessage(byte[] binaryValue, MessageFormat messageFormat, Encoding encoding = null)
+        /// <param name="priority">The priority of the message.</param>
+        public BinarySenderMessage(byte[] binaryValue, MessageFormat messageFormat, Encoding encoding = null, byte? priority = null)
         {
             _binaryValue = binaryValue;
             _stringValue =
@@ -53,6 +55,7 @@ namespace Rock.Messaging
                             ? Convert.ToBase64String(binaryValue)
                             : (encoding ?? Encoding.UTF8).GetString(binaryValue));
             _messageFormat = messageFormat;
+            _priority = priority;
         }
 
         /// <summary>
@@ -90,6 +93,14 @@ namespace Rock.Messaging
         IEnumerable<KeyValuePair<string, string>> ISenderMessage.Headers
         {
             get { return Headers; }
+        }
+
+        /// <summary>
+        /// Gets the priority of the message.
+        /// </summary>
+        public byte? Priority
+        {
+            get { return _priority; }
         }
     }
 }

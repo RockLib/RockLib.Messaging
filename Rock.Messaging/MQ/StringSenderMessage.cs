@@ -14,6 +14,7 @@ namespace Rock.Messaging
         private readonly string _stringValue;
         private readonly Lazy<byte[]> _binaryValue;
         private readonly MessageFormat _messageFormat;
+        private readonly byte? _priority;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StringSenderMessage"/> class 
@@ -26,8 +27,9 @@ namespace Rock.Messaging
         /// <param name="encoding">
         /// The encoding to use when converting the string value to a byte array.
         /// </param>
-        public StringSenderMessage(string stringValue, Encoding encoding = null)
-            : this(stringValue, MessageFormat.Text, encoding)
+        /// <param name="priority">The priority of the message.</param>
+        public StringSenderMessage(string stringValue, Encoding encoding = null, byte? priority = null)
+            : this(stringValue, MessageFormat.Text, encoding, priority)
         {
         }
 
@@ -46,7 +48,8 @@ namespace Rock.Messaging
         /// The encoding to use when converting the string value to a byte array if
         /// <paramref name="messageFormat"/> is not <see cref="Messaging.MessageFormat.Binary"/>.
         /// </param>
-        public StringSenderMessage(string stringValue, MessageFormat messageFormat, Encoding encoding = null)
+        /// <param name="priority">The priority of the message.</param>
+        public StringSenderMessage(string stringValue, MessageFormat messageFormat, Encoding encoding = null, byte? priority = null)
         {
             _stringValue = stringValue;
             _binaryValue =
@@ -58,6 +61,7 @@ namespace Rock.Messaging
                             ? Convert.FromBase64String(stringValue)
                             : (encoding ?? Encoding.UTF8).GetBytes(stringValue));
             _messageFormat = messageFormat;
+            _priority = priority;
         }
 
         /// <summary>
@@ -92,12 +96,17 @@ namespace Rock.Messaging
             get { return _headers; }
         }
 
-        /// <summary>
-        /// Gets the headers of the message.
-        /// </summary>
         IEnumerable<KeyValuePair<string, string>> ISenderMessage.Headers
         {
             get { return Headers; }
+        }
+
+        /// <summary>
+        /// Gets the priority of the message.
+        /// </summary>
+        public byte? Priority
+        {
+            get { return _priority; }
         }
     }
 }
