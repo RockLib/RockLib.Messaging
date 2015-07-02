@@ -23,5 +23,10 @@
         {
             return new SimpleNamedPipeConfig(name);
         }
+
+        public bool HasConfig(string name)
+        {
+            return true;
+        }
     }
 }

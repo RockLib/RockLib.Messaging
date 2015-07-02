@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConfigTests.cs" />
+    <Compile Include="MQ\AnotherMessagingScenarioFactory.cs" />
     <Compile Include="MQ\ExampleMessagingScenarioFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -54,5 +54,13 @@ namespace Rock.Messaging
         /// throwing an exception.
         /// </remarks>
         IReceiver CreateTopicSubscriber(string name);
+
+        /// <summary>
+        /// Returns a value indicating whether a scenario by the given name can be created by this
+        /// instance of <see cref="IMessagingScenarioFactory"/>.
+        /// </summary>
+        /// <param name="name">The name of the scenario.</param>
+        /// <returns>True, if the scenario can be created. Otherwise, false.</returns>
+        bool HasScenario(string name);
     }
 }

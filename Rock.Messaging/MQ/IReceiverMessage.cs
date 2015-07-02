@@ -8,6 +8,11 @@ namespace Rock.Messaging
     public interface IReceiverMessage
     {
         /// <summary>
+        /// Gets the priority of the received message.
+        /// </summary>
+        byte? Priority { get; }
+
+        /// <summary>
         /// Gets the string value of the message. If the implemenation "speaks" binary,
         /// <paramref name="encoding"/> is used to convert the binary message to a string.
         /// If <paramref name="encoding"/> is null, the binary data will be converted using
@@ -45,8 +50,20 @@ namespace Rock.Messaging
         string GetHeaderValue(string key, Encoding encoding);
 
         /// <summary>
+        /// Gets the names of the headers that are available for this message.
+        /// </summary>
+        /// <returns>An array containing the names of the headers for this message.</returns>
+        string[] GetHeaderNames();
+
+        /// <summary>
         /// Acknowledges the message.
         /// </summary>
         void Acknowledge();
+
+        /// <summary>
+        /// Returns an instance of <see cref="ISenderMessage"/> that is equivalent to this
+        /// instance of <see cref="IReceiverMessage"/>.
+        /// </summary>
+        ISenderMessage ToSenderMessage();
     }
 }

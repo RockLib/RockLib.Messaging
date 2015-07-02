@@ -2,23 +2,23 @@
 
 namespace Rock.Messaging
 {
-    public class ExampleMessagingScenarioFactory : IMessagingScenarioFactory
+    public class AnotherMessagingScenarioFactory : IMessagingScenarioFactory
     {
-        private readonly int _intData;
+        private readonly bool _boolData;
 
-        public ExampleMessagingScenarioFactory()
-            : this(0)
+        public AnotherMessagingScenarioFactory()
+            : this(false)
         {
         }
 
-        public ExampleMessagingScenarioFactory(int intData = 0)
+        public AnotherMessagingScenarioFactory(bool boolData = false)
         {
-            _intData = intData;
+            _boolData = boolData;
         }
 
-        public int IntData
+        public bool BoolData
         {
-            get { return _intData; }
+            get { return _boolData; }
         }
 
         public ISender CreateQueueProducer(string name)

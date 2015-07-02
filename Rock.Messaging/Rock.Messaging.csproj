@@ -51,6 +51,7 @@
     <Compile Include="Configuration\XmlSerializingRockMessagingConfiguration.cs" />
     <Compile Include="Configuration\IRockMessagingConfiguration.cs" />
     <Compile Include="MQ\BinarySenderMessage.cs" />
+    <Compile Include="MQ\CompositeMessagingScenarioFactory.cs" />
     <Compile Include="MQ\IMessagingScenarioFactory.cs" />
     <Compile Include="MQ\IReceiver.cs" />
     <Compile Include="MQ\IReceiverMessage.cs" />

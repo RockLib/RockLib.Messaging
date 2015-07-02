@@ -26,5 +26,10 @@ namespace Rock.Messaging
         /// Gets the headers of the message.
         /// </summary>
         IEnumerable<KeyValuePair<string, string>> Headers { get; }
+
+        /// <summary>
+        /// Gets the priority of the message.
+        /// </summary>
+        byte? Priority { get; }
     }
 }
