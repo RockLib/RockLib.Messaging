@@ -38,7 +38,7 @@ namespace Rock.Messaging.Routing
         public string GetTypeName(Type messageType)
         {
             XmlRootAttribute xmlRootAttribute;
-            if (!_xmlRootAttributes.TryGetValue(messageType, out xmlRootAttribute))
+            if (!TryGetRootAttribute(messageType, out xmlRootAttribute))
             {
                 xmlRootAttribute = Attribute.GetCustomAttribute(messageType, typeof(XmlRootAttribute)) as XmlRootAttribute;
             }
@@ -59,7 +59,7 @@ namespace Rock.Messaging.Routing
             return match.Groups[1].Value;
         }
 
-        public TMessage DeserializeMessage<TMessage>(string rawMessage)
+        public virtual TMessage DeserializeMessage<TMessage>(string rawMessage)
         {
             using (var reader = new StringReader(rawMessage))
             {
@@ -67,10 +67,15 @@ namespace Rock.Messaging.Routing
             }
         }
 
+        protected bool TryGetRootAttribute(Type messageType, out XmlRootAttribute xmlRootAttribute)
+        {
+            return _xmlRootAttributes.TryGetValue(messageType, out xmlRootAttribute);
+        }
+
         private XmlSerializer GetXmlSerializer(Type messageType)
         {
             XmlRootAttribute xmlRootAttribute;
-            return _xmlRootAttributes.TryGetValue(messageType, out xmlRootAttribute)
+            return TryGetRootAttribute(messageType, out xmlRootAttribute)
                 ? new XmlSerializer(messageType, xmlRootAttribute)
                 : new XmlSerializer(messageType);
         }
