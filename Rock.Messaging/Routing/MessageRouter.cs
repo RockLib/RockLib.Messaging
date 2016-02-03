@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Reflection;
 using System.Threading.Tasks;
 using Rock.DependencyInjection;
 
@@ -72,25 +71,39 @@ namespace Rock.Messaging.Routing
         {
             var messageType = _typeLocator.GetMessageType(rootElement);
 
-            var methodInfo =
-                typeof(MessageRouter).GetMethod("HandleMessage", BindingFlags.NonPublic | BindingFlags.Instance)
-                    .MakeGenericMethod(messageType);
+            var genericMessageHandlerType = typeof(GenericMessageHandler<>).MakeGenericType(messageType);
+            var genericMessageHandler = Activator.CreateInstance(genericMessageHandlerType, _typeLocator, _resolver, _messageParser);
+
+            var methodInfo = genericMessageHandlerType.GetMethod("HandleMessage");
 
             var delegateType = typeof(Func<string, Task<HandleResult>>);
 
-            return (Func<string, Task<HandleResult>>)Delegate.CreateDelegate(delegateType, this, methodInfo);
+            return (Func<string, Task<HandleResult>>)Delegate.CreateDelegate(delegateType, genericMessageHandler, methodInfo);
         }
 
-        // ReSharper disable once UnusedMember.Local
-        private async Task<HandleResult> HandleMessage<TMessage>(string rawMessage)
+        private class GenericMessageHandler<TMessage>
         {
-            var messageHandlerType = _typeLocator.GetMessageHandlerType(typeof(TMessage));
-            var messageHandler = (IMessageHandler<TMessage>)_resolver.Get(messageHandlerType);
-            
-            var message = _messageParser.DeserializeMessage<TMessage>(rawMessage);
-            var result = await messageHandler.Handle(message);
+            private readonly IResolver _resolver;
+            private readonly IMessageParser _messageParser;
+            private readonly Type _messageHandlerType;
 
-            return new HandleResult(message, result);
+            public GenericMessageHandler(ITypeLocator typeLocator, IResolver resolver, IMessageParser messageParser)
+            {
+                _resolver = resolver;
+                _messageParser = messageParser;
+                _messageHandlerType = typeLocator.GetMessageHandlerType(typeof(TMessage));
+            }
+
+            // ReSharper disable once UnusedMember.Local
+            public async Task<HandleResult> HandleMessage(string rawMessage)
+            {
+                var messageHandler = (IMessageHandler<TMessage>)_resolver.Get(_messageHandlerType);
+
+                var message = _messageParser.DeserializeMessage<TMessage>(rawMessage);
+                var result = await messageHandler.Handle(message);
+
+                return new HandleResult(message, result);
+            }
         }
 
         private class HandleResult

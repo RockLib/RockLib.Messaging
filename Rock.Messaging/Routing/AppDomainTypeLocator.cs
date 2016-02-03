@@ -21,18 +21,38 @@ namespace Rock.Messaging.Routing
                (from a in _appDomain.GetAssemblies()
                 from t in a.GetTypesSafely()
                 where !t.IsAbstract && _messageParser.GetTypeName(t) == typeName
+                      && GetMessageHandlerTypeImpl(t) != null
                 select t).Single();
         }
 
         public Type GetMessageHandlerType(Type messageType)
         {
-            return
-               (from a in _appDomain.GetAssemblies()
-                from t in a.GetTypesSafely()
-                where !t.IsAbstract
-                from i in t.GetInterfaces()
-                where i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMessageHandler<>) && i.GetGenericArguments()[0] == messageType
-                select t).Single();
+            var messageHandlerType = GetMessageHandlerTypeImpl(messageType);
+
+            if (messageHandlerType == null)
+            {
+                throw new InvalidOperationException("No message handler found for type " + messageType.FullName);
+            }
+
+            return messageHandlerType;
+        }
+
+        private Type GetMessageHandlerTypeImpl(Type messageType)
+        {
+            try
+            {
+                return
+                   (from a in _appDomain.GetAssemblies()
+                    from t in a.GetTypesSafely()
+                    where !t.IsAbstract
+                    from i in t.GetInterfaces()
+                    where i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMessageHandler<>) && i.GetGenericArguments()[0] == messageType
+                    select t).Single();
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

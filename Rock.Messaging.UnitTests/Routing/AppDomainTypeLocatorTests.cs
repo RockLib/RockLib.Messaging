@@ -33,6 +33,12 @@ namespace AppDomainTypeLocatorTests
             }
 
             [Test]
+            public void WillNotReturnATypeIfNoMessageHandlerExistsForThatType()
+            {
+                Assert.That(() => _locator.GetMessageType(typeof(OrphanedCommand).Name), Throws.Exception);
+            }
+
+            [Test]
             public void ThrowsAnExceptionIfMoreThanOneTypeIsFound()
             {
                 Assert.That(() => _locator.GetMessageType("BazMessage1"), Throws.Exception);
@@ -87,6 +93,10 @@ namespace AppDomainTypeLocatorTests
         }
 
         public class FooCommand4
+        {
+        }
+
+        public class OrphanedCommand
         {
         }
 
