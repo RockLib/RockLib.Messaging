@@ -105,7 +105,7 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
         /// class with a public parameterless constructor is found that implements or
         /// inherits from either <typeparamref name="TTargetType"/> or
         /// <typeparamref name="TFactoryType"/>, then an instance of that class is created. 
-        /// If that instance is a <see cref="TTargetType"/>, than that instance will be
+        /// If that instance is a <typeparamref name="TTargetType"/>, than that instance will be
         /// passed to the <paramref name="importAction"/> callback. If the instance is a
         /// <typeparamref name="TFactoryType"/>, then an instance of
         /// <typeparamref name="TTargetType"/> is obtained by using the 
@@ -184,7 +184,7 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
         /// class with a public parameterless constructor is found that implements or
         /// inherits from either <typeparamref name="TTargetType"/> or
         /// <typeparamref name="TFactoryType"/>, then an instance of the highest priority
-        /// class is created. If that instance is a <see cref="TTargetType"/>, than that 
+        /// class is created. If that instance is a <typeparamref name="TTargetType"/>, than that 
         /// instance will be passed to the <paramref name="importAction"/> callback. If the 
         /// instance is a <typeparamref name="TFactoryType"/>, then an instance of
         /// <typeparamref name="TTargetType"/> is obtained by using the 
@@ -263,7 +263,7 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
         /// constructor are found that implements or inherits from either 
         /// <typeparamref name="TTargetType"/> or <typeparamref name="TFactoryType"/>, 
         /// then instances of those classes are created. If an instance is a 
-        /// <see cref="TTargetType"/>, than that instance will be passed as part of a 
+        /// <typeparamref name="TTargetType"/>, than that instance will be passed as part of a 
         /// collection to the <paramref name="importAction"/> callback. If an instance is a
         /// <typeparamref name="TFactoryType"/>, then an instance of
         /// <typeparamref name="TTargetType"/> is obtained by using the 
@@ -720,6 +720,11 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
         {
             foreach (var directoryPath in directoryPaths)
             {
+                if (!Directory.Exists(directoryPath))
+                {
+                    continue;
+                }
+
                 IEnumerable<string> dllFiles;
 
                 try
@@ -762,7 +767,7 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
                 }
 
                 return
-                    assembly.GetTypes()
+                    GetTypesSafely(assembly)
                         .Where(t =>
                             t.IsClass
                             && !t.IsAbstract
@@ -775,11 +780,30 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
             }
         }
 
+        private static IEnumerable<Type> GetTypesSafely(Assembly assembly)
+        {
+            try
+            {
+                return assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                return ex.Types.Where(t => t != null);
+            }
+        }
+
         private static bool HasDefaultishConstructor(Type type)
         {
-            return
-                type.GetConstructor(Type.EmptyTypes) != null
-                || type.GetConstructors().Any(ctor => ctor.GetParameters().All(HasDefaultValue));
+            try
+            {
+                return
+                    type.GetConstructor(Type.EmptyTypes) != null
+                    || type.GetConstructors().Any(ctor => ctor.GetParameters().All(HasDefaultValue));
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private static bool HasDefaultValue(ParameterInfo parameter)
@@ -1068,7 +1092,11 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
         /// </summary>
         private static string[] GetDefaultDirectoryPaths()
         {
-            return new[] { AppDomain.CurrentDomain.BaseDirectory };
+            return new[]
+            {
+                AppDomain.CurrentDomain.BaseDirectory,
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin")
+            };
         }
 
         /// <summary>
