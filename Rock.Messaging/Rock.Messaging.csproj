@@ -34,7 +34,7 @@
   <ItemGroup>
     <Reference Include="Rock.Core, Version=0.9.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Rock.Core.0.9.4\lib\net45\Rock.Core.dll</HintPath>
+      <HintPath>..\packages\Rock.Core.0.9.5\lib\net45\Rock.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -95,7 +95,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="InjectModuleInitializer" AfterTargets="AfterBuild" Condition="'$(UseInjectModuleInitializer)' == 'true'">
-    <Exec Command="..\packages\Rock.StaticDependencyInjection.1.1.5\tools\InjectModuleInitializer.exe &quot;$(TargetPath)&quot;" />
+    <Exec Command="..\packages\Rock.StaticDependencyInjection.1.1.6\tools\InjectModuleInitializer.exe &quot;$(TargetPath)&quot;" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -796,14 +796,44 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
         {
             try
             {
+                var constructors = GetConstructors(type);
+
                 return
-                    type.GetConstructor(Type.EmptyTypes) != null
-                    || type.GetConstructors().Any(ctor => ctor.GetParameters().All(HasDefaultValue));
+                    constructors.Any(
+                        ctor =>
+                        {
+                            var parameters = ctor.GetParameters();
+                            return parameters.Length == 0 || parameters.All(HasDefaultValue);
+                        });
             }
             catch
             {
                 return false;
             }
+        }
+
+        private static IEnumerable<ConstructorInfo> GetConstructors(Type type)
+        {
+            // Retreiving constructors via TypeInfo.DeclaredConstructors is less likely to throw an
+            // an exception, but TypeInfo doesn't exist in .NET 4.0. So use reflection to attempt
+            // to try to get a TypeInfo. If we're unable to get it, just return type.GetConstructors()
+
+            var introspectionExtensionsType = Type.GetType("System.Reflection.IntrospectionExtensions, mscorlib");
+            if (introspectionExtensionsType == null)
+            {
+                return type.GetConstructors();
+            }
+
+            var getTypeInfo = introspectionExtensionsType.GetMethod("GetTypeInfo");
+            if (getTypeInfo == null)
+            {
+                return type.GetConstructors();
+            }
+
+            dynamic typeInfo = getTypeInfo.Invoke(null, new object[] { type });
+            IEnumerable<ConstructorInfo> constructors = typeInfo.DeclaredConstructors;
+
+            return constructors.Where(ctor => ctor.IsPublic);
         }
 
         private static bool HasDefaultValue(ParameterInfo parameter)
