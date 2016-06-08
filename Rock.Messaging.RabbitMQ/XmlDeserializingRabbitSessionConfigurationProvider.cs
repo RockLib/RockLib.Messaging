@@ -9,7 +9,8 @@ namespace Rock.Messaging.RabbitMQ
         private RabbitSessionConfiguration[] configurations = new RabbitSessionConfiguration[0];
 
         [XmlElement("rabbit")]
-        public RabbitSessionConfiguration[] Configurations {
+        public RabbitSessionConfiguration[] Configurations
+        {
             get { return configurations; }
             set
             {
@@ -18,7 +19,8 @@ namespace Rock.Messaging.RabbitMQ
                     throw new ArgumentNullException("value");
                 }
                 configurations = value;
-            } }
+            }
+        }
 
         public IRabbitSessionConfiguration GetConfiguration(string name)
         {
