@@ -11,5 +11,6 @@ namespace Rock.Messaging.NamedPipes
 
         IEnumerable<KeyValuePair<string, string>> ISenderMessage.Headers { get { return Headers; } }
         byte? ISenderMessage.Priority { get { return null; } }
+        bool? ISenderMessage.Compressed { get { return null; } }
     }
 }
