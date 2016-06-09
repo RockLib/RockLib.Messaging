@@ -52,11 +52,15 @@
     <Compile Include="Configuration\IRockMessagingConfiguration.cs" />
     <Compile Include="MQ\BinarySenderMessage.cs" />
     <Compile Include="MQ\CompositeMessagingScenarioFactory.cs" />
+    <Compile Include="MQ\DefaultMessageCompressor.cs" />
+    <Compile Include="MQ\GZipBase64EncodedMessageCompressor.cs" />
+    <Compile Include="MQ\IMessageCompressor.cs" />
     <Compile Include="MQ\IMessagingScenarioFactory.cs" />
     <Compile Include="MQ\IReceiver.cs" />
     <Compile Include="MQ\IReceiverMessage.cs" />
     <Compile Include="MQ\ISender.cs" />
     <Compile Include="MQ\ISenderMessage.cs" />
+    <Compile Include="MQ\MessageCompression.cs" />
     <Compile Include="MQ\MessageFormat.cs" />
     <Compile Include="MQ\MessageReceivedEventArgs.cs" />
     <Compile Include="MQ\MessagingScenarioExtensions.cs" />
