@@ -18,7 +18,7 @@ namespace Rock.Messaging.NamedPipes
     {
         private static readonly Task _completedTask = Task.FromResult(0);
 
-        private readonly ISerializer _serializer = SenderMessageJsonSerializer.Instance;
+        private readonly ISerializer _serializer = NamedPipeMessageSerializer.Instance;
 
         private readonly string _name;
         private readonly string _pipeName;
@@ -61,7 +61,7 @@ namespace Rock.Messaging.NamedPipes
                 ? MessageCompression.Compress(message.StringValue)
                 : message.StringValue;
 
-            var sentMessage = new SentMessage
+            var namedPipeMessage = new NamedPipeMessage
             {
                 StringValue = stringValue,
                 MessageFormat = message.MessageFormat,
@@ -78,22 +78,22 @@ namespace Rock.Messaging.NamedPipes
                     originatingSystemAlreadyExists = true;
                 }
 
-                sentMessage.Headers.Add(header.Key, header.Value);
+                namedPipeMessage.Headers.Add(header.Key, header.Value);
             }
 
-            sentMessage.Headers[HeaderName.MessageFormat] = message.MessageFormat.ToString();
+            namedPipeMessage.Headers[HeaderName.MessageFormat] = message.MessageFormat.ToString();
 
             if (!originatingSystemAlreadyExists)
             {
-                sentMessage.Headers[HeaderName.OriginatingSystem] = "NamedPipe";
+                namedPipeMessage.Headers[HeaderName.OriginatingSystem] = "NamedPipe";
             }
 
             if (shouldCompress)
             {
-                sentMessage.Headers[HeaderName.CompressedPayload] = "true";
+                namedPipeMessage.Headers[HeaderName.CompressedPayload] = "true";
             }
 
-            var messageString = _serializer.SerializeToString(sentMessage);
+            var messageString = _serializer.SerializeToString(namedPipeMessage);
             _messages.Add(messageString);
             return _completedTask;
         }

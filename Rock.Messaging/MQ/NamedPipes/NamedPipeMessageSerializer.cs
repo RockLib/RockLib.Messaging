@@ -8,11 +8,11 @@ using Rock.Serialization;
 
 namespace Rock.Messaging.NamedPipes
 {
-    internal class SenderMessageJsonSerializer : ISerializer
+    internal class NamedPipeMessageSerializer : ISerializer
     {
-        public static readonly SenderMessageJsonSerializer Instance = new SenderMessageJsonSerializer();
+        public static readonly NamedPipeMessageSerializer Instance = new NamedPipeMessageSerializer();
 
-        private SenderMessageJsonSerializer()
+        private NamedPipeMessageSerializer()
         {
         }
 
@@ -44,7 +44,7 @@ namespace Rock.Messaging.NamedPipes
 
         public string SerializeToString(object item, Type type)
         {
-            var message = (SentMessage)item;
+            var message = (NamedPipeMessage)item;
 
             var sb = new StringBuilder();
 
@@ -97,7 +97,7 @@ namespace Rock.Messaging.NamedPipes
             Skip(enumerator, _headersHeader.Length);
             var headers = GetHeaders(enumerator).ToDictionary(x => x.Key, x => x.Value);
 
-            return new SentMessage
+            return new NamedPipeMessage
             {
                 StringValue = stringValue,
                 MessageFormat = messageFormat,

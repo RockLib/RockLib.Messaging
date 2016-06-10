@@ -11,15 +11,15 @@ namespace Rock.Messaging.NamedPipes
     /// </summary>
     public class NamedPipeReceiverMessage : IReceiverMessage
     {
-        private readonly SentMessage _sentMessage;
+        private readonly NamedPipeMessage _namedPipeMessage;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NamedPipeReceiverMessage"/> class.
         /// </summary>
-        /// <param name="sentMessage">The message that was sent.</param>
-        internal NamedPipeReceiverMessage(SentMessage sentMessage)
+        /// <param name="namedPipeMessage">The message that was sent.</param>
+        internal NamedPipeReceiverMessage(NamedPipeMessage namedPipeMessage)
         {
-            _sentMessage = sentMessage;
+            _namedPipeMessage = namedPipeMessage;
         }
 
         public byte? Priority { get { return null; } }
@@ -36,8 +36,8 @@ namespace Rock.Messaging.NamedPipes
         {
             var stringValue = RawStringValue;
 
-            if (_sentMessage.Headers.ContainsKey(HeaderName.CompressedPayload)
-                && _sentMessage.Headers[HeaderName.CompressedPayload] == "true")
+            if (_namedPipeMessage.Headers.ContainsKey(HeaderName.CompressedPayload)
+                && _namedPipeMessage.Headers[HeaderName.CompressedPayload] == "true")
             {
                 stringValue = MessageCompression.Decompress(stringValue);
             }
@@ -76,7 +76,7 @@ namespace Rock.Messaging.NamedPipes
         {
             string headerValue;
 
-            if (_sentMessage.Headers.TryGetValue(key, out headerValue))
+            if (_namedPipeMessage.Headers.TryGetValue(key, out headerValue))
             {
                 return headerValue;
             }
@@ -86,7 +86,7 @@ namespace Rock.Messaging.NamedPipes
 
         public string[] GetHeaderNames()
         {
-            return _sentMessage.Headers.Keys.ToArray();
+            return _namedPipeMessage.Headers.Keys.ToArray();
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace Rock.Messaging.NamedPipes
             // double-compress the payload, so pass false for the compressed constructor parameter.
             var senderMessage = new StringSenderMessage(RawStringValue, MessageFormat, compressed: false);
 
-            foreach (var header in _sentMessage.Headers)
+            foreach (var header in _namedPipeMessage.Headers)
             {
                 senderMessage.Headers.Add(header.Key, header.Value);
             }
@@ -113,17 +113,17 @@ namespace Rock.Messaging.NamedPipes
 
         private string RawStringValue
         {
-            get { return _sentMessage.StringValue; }
+            get { return _namedPipeMessage.StringValue; }
         }
 
         private MessageFormat MessageFormat
         {
             get
             {
-                if (_sentMessage.Headers.ContainsKey(HeaderName.MessageFormat))
+                if (_namedPipeMessage.Headers.ContainsKey(HeaderName.MessageFormat))
                 {
                     MessageFormat messageFormat;
-                    if (Enum.TryParse(_sentMessage.Headers[HeaderName.MessageFormat], out messageFormat))
+                    if (Enum.TryParse(_namedPipeMessage.Headers[HeaderName.MessageFormat], out messageFormat))
                     {
                         return messageFormat;
                     }
