@@ -18,9 +18,10 @@ namespace Rock.Messaging.NamedPipes
     {
         private static readonly Task _completedTask = Task.FromResult(0);
 
+        private readonly ISerializer _serializer = SenderMessageJsonSerializer.Instance;
+
         private readonly string _name;
         private readonly string _pipeName;
-        private readonly ISerializer _serializer;
         private readonly bool _compressed;
         private readonly BlockingCollection<string> _messages;
         private readonly Thread _runThread;
@@ -31,12 +32,10 @@ namespace Rock.Messaging.NamedPipes
         /// <param name="name">The name of this instance of <see cref="NamedPipeQueueProducer"/>.</param>
         /// <param name="pipeName">Name of the named pipe.</param>
         /// <param name="compressed">Whether messages should be compressed.</param>
-        /// <param name="serializer">The serializer to use when sending messages.</param>
-        public NamedPipeQueueProducer(string name, string pipeName, bool compressed, ISerializer serializer)
+        public NamedPipeQueueProducer(string name, string pipeName, bool compressed)
         {
             _name = name;
             _pipeName = pipeName;
-            _serializer = serializer;
             _compressed = compressed;
 
             _messages = new BlockingCollection<string>();

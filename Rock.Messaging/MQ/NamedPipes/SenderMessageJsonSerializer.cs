@@ -10,6 +10,12 @@ namespace Rock.Messaging.NamedPipes
 {
     internal class SenderMessageJsonSerializer : ISerializer
     {
+        public static readonly SenderMessageJsonSerializer Instance = new SenderMessageJsonSerializer();
+
+        private SenderMessageJsonSerializer()
+        {
+        }
+
         private const string _stringValueHeader = @"{""StringValue"":""";
         private const string _messageFormatHeader = @""",""MessageFormat"":""";
         private const string _priorityHeader = @""",""Priority"":";

@@ -12,7 +12,7 @@ namespace Rock.Messaging.NamedPipes
     /// </summary>
     public class NamedPipeQueueConsumer : IReceiver
     {
-        private readonly ISerializer _serializer;
+        private readonly ISerializer _serializer = SenderMessageJsonSerializer.Instance;
 
         private readonly BlockingCollection<SentMessage> _messages = new BlockingCollection<SentMessage>();
         private readonly Thread _consumerThread;
@@ -27,12 +27,10 @@ namespace Rock.Messaging.NamedPipes
         /// </summary>
         /// <param name="name">The name of this instance of <see cref="NamedPipeQueueConsumer"/>.</param>
         /// <param name="pipeName">Name of the named pipe.</param>
-        /// <param name="serializer">The serializer to use when receiving messages.</param>
-        public NamedPipeQueueConsumer(string name, string pipeName, ISerializer serializer)
+        public NamedPipeQueueConsumer(string name, string pipeName)
         {
             _name = name;
             _pipeName = pipeName;
-            _serializer = serializer;
             _consumerThread = new Thread(Consume);
         }
 

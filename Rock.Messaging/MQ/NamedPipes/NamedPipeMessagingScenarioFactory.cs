@@ -1,6 +1,5 @@
 ﻿using System;
 using Rock.Immutable;
-using Rock.Serialization;
 
 namespace Rock.Messaging.NamedPipes
 {
@@ -15,13 +14,12 @@ namespace Rock.Messaging.NamedPipes
             new Semimutable<INamedPipeConfigProvider>(CreateDefaultDefaultConfigProvider);
 
         private readonly INamedPipeConfigProvider _configProvider;
-        private readonly ISerializer _serializer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NamedPipeMessagingScenarioFactory"/> class.
         /// </summary>
         public NamedPipeMessagingScenarioFactory()
-            : this(null, null)
+            : this(null)
         {
         }
 
@@ -32,16 +30,9 @@ namespace Rock.Messaging.NamedPipes
         /// The configuration provider. If null or not provided, then
         /// <see cref="DefaultConfigProvider"/> is used.
         /// </param>
-        /// <param name="serializer">
-        /// The serializer to use when sending or receiving messages. If null or not provided,
-        /// then a JSON serializer is used.
-        /// </param>
-        public NamedPipeMessagingScenarioFactory(
-            INamedPipeConfigProvider configProvider = null,
-            ISerializer serializer = null)
+        public NamedPipeMessagingScenarioFactory(INamedPipeConfigProvider configProvider = null)
         {
             _configProvider = configProvider ?? DefaultConfigProvider;
-            _serializer = serializer ?? new SenderMessageJsonSerializer();
         }
 
         public static INamedPipeConfigProvider DefaultConfigProvider
@@ -69,7 +60,7 @@ namespace Rock.Messaging.NamedPipes
         public ISender CreateQueueProducer(string name)
         {
             var config = _configProvider.GetConfig(name);
-            return new NamedPipeQueueProducer(name, config.PipeName, config.Compressed, _serializer);
+            return new NamedPipeQueueProducer(name, config.PipeName, config.Compressed);
         }
 
         /// <summary>
@@ -82,7 +73,7 @@ namespace Rock.Messaging.NamedPipes
         public IReceiver CreateQueueConsumer(string name)
         {
             var config = _configProvider.GetConfig(name);
-            return new NamedPipeQueueConsumer(name, config.PipeName, _serializer);
+            return new NamedPipeQueueConsumer(name, config.PipeName);
         }
 
         /// <summary>
