@@ -69,7 +69,7 @@ namespace Rock.Messaging.NamedPipes
         public ISender CreateQueueProducer(string name)
         {
             var config = _configProvider.GetConfig(name);
-            return new NamedPipeQueueProducer(name, config.PipeName, _serializer);
+            return new NamedPipeQueueProducer(name, config.PipeName, config.Compressed, _serializer);
         }
 
         /// <summary>

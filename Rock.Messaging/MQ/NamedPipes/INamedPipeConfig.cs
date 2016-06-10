@@ -10,5 +10,10 @@
         /// Gets the name of the named pipe.
         /// </summary>
         string PipeName { get; }
+
+        /// <summary>
+        /// Gets whether messages should be compressed.
+        /// </summary>
+        bool Compressed { get; }
     }
 }

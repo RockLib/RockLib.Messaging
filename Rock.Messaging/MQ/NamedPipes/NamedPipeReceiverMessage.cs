@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using Rock.Messaging.Internal;
 
 namespace Rock.Messaging.NamedPipes
 {
@@ -33,7 +34,15 @@ namespace Rock.Messaging.NamedPipes
         /// </returns>
         public string GetStringValue(Encoding encoding)
         {
-            return _sentMessage.StringValue;
+            var stringValue = RawStringValue;
+
+            if (_sentMessage.Headers.ContainsKey(HeaderName.CompressedPayload)
+                && _sentMessage.Headers[HeaderName.CompressedPayload] == "true")
+            {
+                stringValue = MessageCompression.Decompress(stringValue);
+            }
+
+            return stringValue;
         }
 
         /// <summary>
@@ -51,7 +60,7 @@ namespace Rock.Messaging.NamedPipes
             return
                 stringValue == null
                     ? null
-                    : encoding == null
+                    : MessageFormat == MessageFormat.Binary || encoding == null
                         ? Convert.FromBase64String(stringValue)
                         : encoding.GetBytes(stringValue);
         }
@@ -89,7 +98,10 @@ namespace Rock.Messaging.NamedPipes
 
         public ISenderMessage ToSenderMessage()
         {
-            var senderMessage = new StringSenderMessage(_sentMessage.StringValue);
+            // If the received message is compressed, then it will already have the compression
+            // header, so it will pass it along to the sender message. But we don't want to
+            // double-compress the payload, so pass false for the compressed constructor parameter.
+            var senderMessage = new StringSenderMessage(RawStringValue, MessageFormat, compressed: false);
 
             foreach (var header in _sentMessage.Headers)
             {
@@ -97,6 +109,28 @@ namespace Rock.Messaging.NamedPipes
             }
 
             return senderMessage;
+        }
+
+        private string RawStringValue
+        {
+            get { return _sentMessage.StringValue; }
+        }
+
+        private MessageFormat MessageFormat
+        {
+            get
+            {
+                if (_sentMessage.Headers.ContainsKey(HeaderName.MessageFormat))
+                {
+                    MessageFormat messageFormat;
+                    if (Enum.TryParse(_sentMessage.Headers[HeaderName.MessageFormat], out messageFormat))
+                    {
+                        return messageFormat;
+                    }
+                }
+
+                return MessageFormat.Text;
+            }
         }
     }
 }
