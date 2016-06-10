@@ -51,7 +51,20 @@ namespace Rock.Messaging.NamedPipes
         /// <param name="message">The message to send.</param>
         public Task SendAsync(ISenderMessage message)
         {
-            var messageString = _serializer.SerializeToString(message);
+            var sentMessage = new SentMessage
+            {
+                StringValue = message.StringValue,
+                MessageFormat = message.MessageFormat,
+                Priority = message.Priority,
+                Headers = new Dictionary<string, string>()
+            };
+
+            foreach (var header in message.Headers)
+            {
+                sentMessage.Headers.Add(header.Key, header.Value);
+            }
+
+            var messageString = _serializer.SerializeToString(sentMessage);
             _messages.Add(messageString);
             return _completedTask;
         }

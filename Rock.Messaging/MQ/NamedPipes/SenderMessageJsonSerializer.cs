@@ -11,9 +11,9 @@ namespace Rock.Messaging.NamedPipes
     internal class SenderMessageJsonSerializer : ISerializer
     {
         private const string _stringValueHeader = @"{""StringValue"":""";
-        private const string _binaryValueHeader = @""",""BinaryValue"":""";
         private const string _messageFormatHeader = @""",""MessageFormat"":""";
-        private const string _headersHeader = @""",""Headers"":{";
+        private const string _priorityHeader = @""",""Priority"":";
+        private const string _headersHeader = @",""Headers"":{";
         private const string _quote = @"""";
         private const string _headerSeparator = @""":""";
 
@@ -38,16 +38,16 @@ namespace Rock.Messaging.NamedPipes
 
         public string SerializeToString(object item, Type type)
         {
-            var message = (ISenderMessage)item;
+            var message = (SentMessage)item;
 
             var sb = new StringBuilder();
 
             sb.Append(_stringValueHeader)
                 .Append(Escape(message.StringValue))
-                .Append(_binaryValueHeader)
-                .Append(message.BinaryValue == null ? null : Convert.ToBase64String(message.BinaryValue))
                 .Append(_messageFormatHeader)
                 .Append(message.MessageFormat)
+                .Append(_priorityHeader)
+                .Append(message.Priority == null ? "null" : message.Priority.ToString())
                 .Append(_headersHeader);
 
             if (message.Headers != null)
@@ -84,18 +84,18 @@ namespace Rock.Messaging.NamedPipes
 
             Skip(enumerator, _stringValueHeader.Length);
             var stringValue = Unescape(GetStringValue(enumerator));
-            Skip(enumerator, _binaryValueHeader.Length - 1);
-            var binaryValue = Convert.FromBase64String(GetStringValue(enumerator));
             Skip(enumerator, _messageFormatHeader.Length - 1);
             var messageFormat = (MessageFormat)Enum.Parse(typeof(MessageFormat), GetStringValue(enumerator));
+            Skip(enumerator, _priorityHeader.Length);
+            var priority = GetNullableByteValue(enumerator);
             Skip(enumerator, _headersHeader.Length);
             var headers = GetHeaders(enumerator).ToDictionary(x => x.Key, x => x.Value);
 
             return new SentMessage
             {
                 StringValue = stringValue,
-                BinaryValue = binaryValue,
                 MessageFormat = messageFormat,
+                Priority = priority,
                 Headers = headers
             };
         }
@@ -164,6 +164,34 @@ namespace Rock.Messaging.NamedPipes
                     wasPrevBackslash = false;
                 }
             }
+        }
+
+        private static byte? GetNullableByteValue(IEnumerator<char> enumerator)
+        {
+            if (enumerator.Current == 'n')
+            {
+                enumerator.MoveNext(); // u
+                enumerator.MoveNext(); // l
+                enumerator.MoveNext(); // l
+                enumerator.MoveNext(); // Move past last char (to match how we parse the number below)
+                return null;
+            }
+
+            var sb = new StringBuilder();
+            sb.Append(enumerator.Current);
+            enumerator.MoveNext(); // Move past first digit (to second digit, if present)
+            if (enumerator.Current != ',')
+            {
+                sb.Append(enumerator.Current);
+                enumerator.MoveNext(); // Move past second digit (to third digit, if present)
+                if (enumerator.Current != ',')
+                {
+                    sb.Append(enumerator.Current); // Move past third digit (because we *always* move past the last digit)
+                    enumerator.MoveNext();
+                }
+            }
+
+            return byte.Parse(sb.ToString());
         }
 
         private static string Escape(string value)

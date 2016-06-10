@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
 
 namespace Rock.Messaging.NamedPipes
@@ -45,7 +46,14 @@ namespace Rock.Messaging.NamedPipes
         /// </returns>
         public byte[] GetBinaryValue(Encoding encoding)
         {
-            return _sentMessage.BinaryValue;
+            var stringValue = GetStringValue(encoding);
+
+            return
+                stringValue == null
+                    ? null
+                    : encoding == null
+                        ? Convert.FromBase64String(stringValue)
+                        : encoding.GetBytes(stringValue);
         }
 
         /// <summary>
@@ -81,7 +89,14 @@ namespace Rock.Messaging.NamedPipes
 
         public ISenderMessage ToSenderMessage()
         {
-            return _sentMessage;
+            var senderMessage = new StringSenderMessage(_sentMessage.StringValue);
+
+            foreach (var header in _sentMessage.Headers)
+            {
+                senderMessage.Headers.Add(header.Key, header.Value);
+            }
+
+            return senderMessage;
         }
     }
 }
