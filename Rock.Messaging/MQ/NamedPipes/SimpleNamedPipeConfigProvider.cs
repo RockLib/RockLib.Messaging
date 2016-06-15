@@ -21,7 +21,7 @@
         /// </returns>
         public INamedPipeConfig GetConfig(string name)
         {
-            return new SimpleNamedPipeConfig(name);
+            return new SimpleNamedPipeConfig(name, false);
         }
 
         public bool HasConfig(string name)

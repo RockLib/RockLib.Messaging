@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
+using Rock.Messaging.Internal;
 
 namespace Rock.Messaging.NamedPipes
 {
@@ -9,15 +11,15 @@ namespace Rock.Messaging.NamedPipes
     /// </summary>
     public class NamedPipeReceiverMessage : IReceiverMessage
     {
-        private readonly SentMessage _sentMessage;
+        private readonly NamedPipeMessage _namedPipeMessage;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NamedPipeReceiverMessage"/> class.
         /// </summary>
-        /// <param name="sentMessage">The message that was sent.</param>
-        internal NamedPipeReceiverMessage(SentMessage sentMessage)
+        /// <param name="namedPipeMessage">The message that was sent.</param>
+        internal NamedPipeReceiverMessage(NamedPipeMessage namedPipeMessage)
         {
-            _sentMessage = sentMessage;
+            _namedPipeMessage = namedPipeMessage;
         }
 
         public byte? Priority { get { return null; } }
@@ -32,7 +34,15 @@ namespace Rock.Messaging.NamedPipes
         /// </returns>
         public string GetStringValue(Encoding encoding)
         {
-            return _sentMessage.StringValue;
+            var stringValue = RawStringValue;
+
+            if (_namedPipeMessage.Headers.ContainsKey(HeaderName.CompressedPayload)
+                && _namedPipeMessage.Headers[HeaderName.CompressedPayload] == "true")
+            {
+                stringValue = MessageCompression.Decompress(stringValue);
+            }
+
+            return stringValue;
         }
 
         /// <summary>
@@ -45,7 +55,14 @@ namespace Rock.Messaging.NamedPipes
         /// </returns>
         public byte[] GetBinaryValue(Encoding encoding)
         {
-            return _sentMessage.BinaryValue;
+            var stringValue = GetStringValue(encoding);
+
+            return
+                stringValue == null
+                    ? null
+                    : MessageFormat == MessageFormat.Binary || encoding == null
+                        ? Convert.FromBase64String(stringValue)
+                        : encoding.GetBytes(stringValue);
         }
 
         /// <summary>
@@ -59,7 +76,7 @@ namespace Rock.Messaging.NamedPipes
         {
             string headerValue;
 
-            if (_sentMessage.Headers.TryGetValue(key, out headerValue))
+            if (_namedPipeMessage.Headers.TryGetValue(key, out headerValue))
             {
                 return headerValue;
             }
@@ -69,7 +86,7 @@ namespace Rock.Messaging.NamedPipes
 
         public string[] GetHeaderNames()
         {
-            return _sentMessage.Headers.Keys.ToArray();
+            return _namedPipeMessage.Headers.Keys.ToArray();
         }
 
         /// <summary>
@@ -81,7 +98,39 @@ namespace Rock.Messaging.NamedPipes
 
         public ISenderMessage ToSenderMessage()
         {
-            return _sentMessage;
+            // If the received message is compressed, then it will already have the compression
+            // header, so it will pass it along to the sender message. But we don't want to
+            // double-compress the payload, so pass false for the compressed constructor parameter.
+            var senderMessage = new StringSenderMessage(RawStringValue, MessageFormat, compressed: false);
+
+            foreach (var header in _namedPipeMessage.Headers)
+            {
+                senderMessage.Headers.Add(header.Key, header.Value);
+            }
+
+            return senderMessage;
+        }
+
+        private string RawStringValue
+        {
+            get { return _namedPipeMessage.StringValue; }
+        }
+
+        private MessageFormat MessageFormat
+        {
+            get
+            {
+                if (_namedPipeMessage.Headers.ContainsKey(HeaderName.MessageFormat))
+                {
+                    MessageFormat messageFormat;
+                    if (Enum.TryParse(_namedPipeMessage.Headers[HeaderName.MessageFormat], out messageFormat))
+                    {
+                        return messageFormat;
+                    }
+                }
+
+                return MessageFormat.Text;
+            }
         }
     }
 }

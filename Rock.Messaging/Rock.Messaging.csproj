@@ -67,14 +67,14 @@
     <Compile Include="MQ\MessageReceivedEventArgs.cs" />
     <Compile Include="MQ\MessagingScenarioExtensions.cs" />
     <Compile Include="MQ\MessagingScenarioFactory.cs" />
-    <Compile Include="MQ\NamedPipes\SenderMessageJsonSerializer.cs" />
+    <Compile Include="MQ\NamedPipes\NamedPipeMessageSerializer.cs" />
     <Compile Include="MQ\NamedPipes\INamedPipeConfig.cs" />
     <Compile Include="MQ\NamedPipes\INamedPipeConfigProvider.cs" />
     <Compile Include="MQ\NamedPipes\NamedPipeMessagingScenarioFactory.cs" />
     <Compile Include="MQ\NamedPipes\NamedPipeQueueConsumer.cs" />
     <Compile Include="MQ\NamedPipes\NamedPipeQueueProducer.cs" />
     <Compile Include="MQ\NamedPipes\NamedPipeReceiverMessage.cs" />
-    <Compile Include="MQ\NamedPipes\SentMessage.cs" />
+    <Compile Include="MQ\NamedPipes\NamedPipeMessage.cs" />
     <Compile Include="MQ\NamedPipes\SimpleNamedPipeConfig.cs" />
     <Compile Include="MQ\NamedPipes\SimpleNamedPipeConfigProvider.cs" />
     <Compile Include="MQ\ReceiverMessageExtensions.cs" />
