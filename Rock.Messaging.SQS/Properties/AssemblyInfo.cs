@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Rock.Messaging")]
-[assembly: AssemblyDescription("Rock Messaging.")]
+[assembly: AssemblyTitle("Rock.Messaging.SQS")]
+[assembly: AssemblyDescription("Messaging provider for Rock Framework adding Amazon SQS functionality")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Quicken Loans")]
-[assembly: AssemblyProduct("Rock.Messaging")]
-[assembly: AssemblyCopyright("Copyright © Quicken Loans 2014")]
+[assembly: AssemblyProduct("Rock.Messaging.SQS")]
+[assembly: AssemblyCopyright("Copyright © Quicken Loans 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("58c2f915-e27e-436d-bd97-b6cb117ffd6b")]
+[assembly: Guid("ac7d7795-664e-4244-94fd-4da2bbb3dc38")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -33,5 +33,5 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("0.9.0.0")]
-[assembly: AssemblyFileVersion("0.9.9")]
-[assembly: AssemblyInformationalVersion("0.9.9")]
+[assembly: AssemblyFileVersion("0.9.0")]
+[assembly: AssemblyInformationalVersion("0.9.0")]

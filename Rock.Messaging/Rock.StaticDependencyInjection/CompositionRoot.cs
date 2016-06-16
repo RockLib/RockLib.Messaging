@@ -16,6 +16,7 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
             ImportFirst<INamedPipeConfigProvider>(NamedPipeMessagingScenarioFactory.SetDefaultConfigProvider);
             ImportFirst<ITypeLocator>(DefaultTypeLocator.SetCurrent);
             ImportFirst<IMessagingScenarioFactory>(MessagingScenarioFactory.SetFallback);
+            ImportFirst<IMessageCompressor>(DefaultMessageCompressor.SetCurrent);
         }
 
         /// <summary>

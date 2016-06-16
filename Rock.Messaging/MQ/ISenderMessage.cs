@@ -31,5 +31,11 @@ namespace Rock.Messaging
         /// Gets the priority of the message.
         /// </summary>
         byte? Priority { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the message should be compressed when sending.
+        /// If null, compression is determined by the sender's configuration.
+        /// </summary>
+        bool? Compressed { get; }
     }
 }

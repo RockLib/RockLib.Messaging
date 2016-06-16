@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
+using Rock.Messaging.Internal;
 using Rock.Serialization;
 
 namespace Rock.Messaging.NamedPipes
@@ -16,9 +18,11 @@ namespace Rock.Messaging.NamedPipes
     {
         private static readonly Task _completedTask = Task.FromResult(0);
 
+        private readonly ISerializer _serializer = NamedPipeMessageSerializer.Instance;
+
         private readonly string _name;
         private readonly string _pipeName;
-        private readonly ISerializer _serializer;
+        private readonly bool _compressed;
         private readonly BlockingCollection<string> _messages;
         private readonly Thread _runThread;
 
@@ -27,12 +31,12 @@ namespace Rock.Messaging.NamedPipes
         /// </summary>
         /// <param name="name">The name of this instance of <see cref="NamedPipeQueueProducer"/>.</param>
         /// <param name="pipeName">Name of the named pipe.</param>
-        /// <param name="serializer">The serializer to use when sending messages.</param>
-        public NamedPipeQueueProducer(string name, string pipeName, ISerializer serializer)
+        /// <param name="compressed">Whether messages should be compressed.</param>
+        public NamedPipeQueueProducer(string name, string pipeName, bool compressed)
         {
             _name = name;
             _pipeName = pipeName;
-            _serializer = serializer;
+            _compressed = compressed;
 
             _messages = new BlockingCollection<string>();
 
@@ -51,7 +55,45 @@ namespace Rock.Messaging.NamedPipes
         /// <param name="message">The message to send.</param>
         public Task SendAsync(ISenderMessage message)
         {
-            var messageString = _serializer.SerializeToString(message);
+            var shouldCompress = message.ShouldCompress(_compressed);
+
+            var stringValue = shouldCompress
+                ? MessageCompression.Compress(message.StringValue)
+                : message.StringValue;
+
+            var namedPipeMessage = new NamedPipeMessage
+            {
+                StringValue = stringValue,
+                MessageFormat = message.MessageFormat,
+                Priority = message.Priority,
+                Headers = new Dictionary<string, string>()
+            };
+
+            var originatingSystemAlreadyExists = false;
+
+            foreach (var header in message.Headers)
+            {
+                if (header.Key == HeaderName.OriginatingSystem)
+                {
+                    originatingSystemAlreadyExists = true;
+                }
+
+                namedPipeMessage.Headers.Add(header.Key, header.Value);
+            }
+
+            namedPipeMessage.Headers[HeaderName.MessageFormat] = message.MessageFormat.ToString();
+
+            if (!originatingSystemAlreadyExists)
+            {
+                namedPipeMessage.Headers[HeaderName.OriginatingSystem] = "NamedPipe";
+            }
+
+            if (shouldCompress)
+            {
+                namedPipeMessage.Headers[HeaderName.CompressedPayload] = "true";
+            }
+
+            var messageString = _serializer.SerializeToString(namedPipeMessage);
             _messages.Add(messageString);
             return _completedTask;
         }
