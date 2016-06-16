@@ -62,6 +62,8 @@
     <Compile Include="MQ\IReceiverMessage.cs" />
     <Compile Include="MQ\ISender.cs" />
     <Compile Include="MQ\ISenderMessage.cs" />
+    <Compile Include="MQ\ISenderTransaction.cs" />
+    <Compile Include="MQ\ITransactionalSender.cs" />
     <Compile Include="MQ\MessageCompression.cs" />
     <Compile Include="MQ\MessageFormat.cs" />
     <Compile Include="MQ\MessageReceivedEventArgs.cs" />
