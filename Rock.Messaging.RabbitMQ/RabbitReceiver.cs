@@ -9,11 +9,11 @@ namespace Rock.Messaging.RabbitMQ
 /* Queue binding settings: exchange, exchangeType, queueName, Routing Key, (TODO: durable, exclusive, autoDelete)
    Note: Queue Binding and the Receiver are together because AutoDelete queues will kill themselves off if they've got no listeners/messages. */
 
-    public class RabbitReceiver : RabbitConnectionBase, IReceiver
+    public class RabbitReceiver : IReceiver
     {
         private bool _isTopic;
         private bool _isStarted;
-        private IModel _consumerModel;
+        
         private string _exchange;
         private string _exchangeType;
         private string _queueName;
@@ -22,9 +22,11 @@ namespace Rock.Messaging.RabbitMQ
         private bool _autoAck;
         private string _name;
 
+        private IModel _consumerModel;
+        private IConnection _connection;
+
 
         public RabbitReceiver(IConnectionFactory conn, IRabbitSessionConfiguration config, bool isTopic = false)
-            : base(conn)
         {
             _isTopic = isTopic;
 
@@ -36,6 +38,8 @@ namespace Rock.Messaging.RabbitMQ
             _maxRequests = config.MaxRequests;
             _autoAck = config.AutoAcknowledge;
             _name = config.Name;
+
+            _connection = conn.CreateConnection();
         }
 
 
@@ -84,10 +88,10 @@ namespace Rock.Messaging.RabbitMQ
 
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
 
-        public override void Dispose()
+        public void Dispose()
         {
             _consumerModel.Dispose();
-            base.Dispose();
+            _connection.Dispose();
         }
 
         public string Name

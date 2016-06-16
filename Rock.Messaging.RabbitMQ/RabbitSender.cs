@@ -6,14 +6,16 @@ using RabbitMQ.Client;
 namespace Rock.Messaging.RabbitMQ
 {
     // needed config values for RabbitSender: u/pass, URL, vHost, exchange name, routing key.
-    public class RabbitSender : RabbitConnectionBase, ISender 
+    public class RabbitSender : ISender 
     {
         const byte highestPriority = 9;
         private string _routingKey;
         private string _exchange;
+        private IConnection _connection;
 
-        public RabbitSender(IConnectionFactory conn, string exchange, string routingKey, string name) : base(conn)
+        public RabbitSender(IConnectionFactory conn, string exchange, string routingKey, string name)
         {
+            _connection = conn.CreateConnection();
             _exchange = exchange;
             _routingKey = routingKey;
             Name = name;
@@ -35,5 +37,10 @@ namespace Rock.Messaging.RabbitMQ
         }
 
         public string Name { get; }
+
+        public void Dispose()
+        {
+            _connection.Dispose();
+        }
     }
 }
