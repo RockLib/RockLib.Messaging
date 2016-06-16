@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Messaging.RabbitMQ", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Messaging.RabbitMQ.IntegrationTests", "Rock.Messaging.RabbitMQ.IntegrationTests\Rock.Messaging.RabbitMQ.IntegrationTests.csproj", "{B8353F1F-741E-4809-B144-EB63A77117A9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Messaging.SQS", "Rock.Messaging.SQS\Rock.Messaging.SQS.csproj", "{781351C5-B9BC-488F-A6E3-4BD9646E0C53}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{B8353F1F-741E-4809-B144-EB63A77117A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8353F1F-741E-4809-B144-EB63A77117A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8353F1F-741E-4809-B144-EB63A77117A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{781351C5-B9BC-488F-A6E3-4BD9646E0C53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{781351C5-B9BC-488F-A6E3-4BD9646E0C53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{781351C5-B9BC-488F-A6E3-4BD9646E0C53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{781351C5-B9BC-488F-A6E3-4BD9646E0C53}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

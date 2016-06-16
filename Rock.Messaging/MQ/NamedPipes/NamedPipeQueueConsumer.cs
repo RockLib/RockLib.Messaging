@@ -12,9 +12,9 @@ namespace Rock.Messaging.NamedPipes
     /// </summary>
     public class NamedPipeQueueConsumer : IReceiver
     {
-        private readonly ISerializer _serializer;
+        private readonly ISerializer _serializer = NamedPipeMessageSerializer.Instance;
 
-        private readonly BlockingCollection<SentMessage> _messages = new BlockingCollection<SentMessage>();
+        private readonly BlockingCollection<NamedPipeMessage> _messages = new BlockingCollection<NamedPipeMessage>();
         private readonly Thread _consumerThread;
 
         private readonly string _name;
@@ -27,12 +27,10 @@ namespace Rock.Messaging.NamedPipes
         /// </summary>
         /// <param name="name">The name of this instance of <see cref="NamedPipeQueueConsumer"/>.</param>
         /// <param name="pipeName">Name of the named pipe.</param>
-        /// <param name="serializer">The serializer to use when receiving messages.</param>
-        public NamedPipeQueueConsumer(string name, string pipeName, ISerializer serializer)
+        public NamedPipeQueueConsumer(string name, string pipeName)
         {
             _name = name;
             _pipeName = pipeName;
-            _serializer = serializer;
             _consumerThread = new Thread(Consume);
         }
 
@@ -78,7 +76,7 @@ namespace Rock.Messaging.NamedPipes
 
             try
             {
-                var sentMessage = _serializer.DeserializeFromStream<SentMessage>(_pipeServer);
+                var sentMessage = _serializer.DeserializeFromStream<NamedPipeMessage>(_pipeServer);
 
                 if (sentMessage != null)
                 {

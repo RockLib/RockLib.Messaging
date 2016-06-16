@@ -15,6 +15,7 @@ namespace Rock.Messaging
         private readonly Lazy<string> _stringValue;
         private readonly MessageFormat _messageFormat;
         private readonly byte? _priority;
+        private readonly bool? _compressed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BinarySenderMessage"/> class using
@@ -23,8 +24,16 @@ namespace Rock.Messaging
         /// <paramref name="binaryValue"/>.
         /// </summary>
         /// <param name="binaryValue">The binary value of the message.</param>
-        public BinarySenderMessage(byte[] binaryValue)
-            : this(binaryValue, MessageFormat.Binary)
+        /// <param name="encoding">
+        /// The encoding to use when converting the byte array value to a string.
+        /// </param>
+        /// <param name="priority">The priority of the message.</param>
+        /// <param name="compressed">
+        /// Whether the message should be compressed. If null, compression is determined by
+        /// the sender's configuration.
+        /// </param>
+        public BinarySenderMessage(byte[] binaryValue, Encoding encoding = null, byte? priority = null, bool? compressed = null)
+            : this(binaryValue, MessageFormat.Binary, encoding, priority, compressed)
         {
         }
 
@@ -43,7 +52,11 @@ namespace Rock.Messaging
         /// <paramref name="messageFormat"/> is not <see cref="Messaging.MessageFormat.Binary"/>.
         /// </param>
         /// <param name="priority">The priority of the message.</param>
-        public BinarySenderMessage(byte[] binaryValue, MessageFormat messageFormat, Encoding encoding = null, byte? priority = null)
+        /// <param name="compressed">
+        /// Whether the message should be compressed. If null, compression is determined by
+        /// the sender's configuration.
+        /// </param>
+        public BinarySenderMessage(byte[] binaryValue, MessageFormat messageFormat, Encoding encoding = null, byte? priority = null, bool? compressed = null)
         {
             _binaryValue = binaryValue;
             _stringValue =
@@ -56,6 +69,7 @@ namespace Rock.Messaging
                             : (encoding ?? Encoding.UTF8).GetString(binaryValue));
             _messageFormat = messageFormat;
             _priority = priority;
+            _compressed = compressed;
         }
 
         /// <summary>
@@ -102,5 +116,11 @@ namespace Rock.Messaging
         {
             get { return _priority; }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the message should be compressed when sending.
+        /// If null, compression is determined by the sender's configuration.
+        /// </summary>
+        public bool? Compressed { get { return _compressed; } }
     }
 }
