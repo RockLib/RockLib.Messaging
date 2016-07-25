@@ -1,13 +1,12 @@
-﻿using Amazon.SQS;
+﻿using System.Linq;
+using Amazon.Runtime;
+using Amazon.SQS;
 using Amazon.SQS.Model;
-using Rock.Logging;
-using Rock.Logging.Defaults;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
-using ILogger = Rock.Logging.ILogger;
-using LoggerFactory = Rock.Logging.LoggerFactory;
+using Rock.BackgroundErrorLogging;
 
 namespace Rock.Messaging.SQS
 {
@@ -19,7 +18,6 @@ namespace Rock.Messaging.SQS
         private readonly bool _autoAcknwoledge;
         private readonly IAmazonSQS _sqs;
         private readonly Thread _worker;
-        private readonly Lazy<ILogger> _logger;
 
         private bool _stopped;
 
@@ -33,18 +31,6 @@ namespace Rock.Messaging.SQS
             _sqs = sqs;
 
             _worker = new Thread(DoStuff);
-
-            _logger = new Lazy<ILogger>(() =>
-            {
-                try
-                {
-                    return LoggerFactory.GetInstance();
-                }
-                catch
-                {
-                    return null;
-                }
-            });
         }
 
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
@@ -96,10 +82,11 @@ namespace Rock.Messaging.SQS
 
                 if (exception != null || response == null || response.HttpStatusCode != HttpStatusCode.OK)
                 {
-                    if (_logger.Value != null)
-                    {
-                        _logger.Value.Error(new LogEntry("Rock.Messaging.SQS.SQSQueueReceiver: Unable to receive messages.", exception));
-                    }
+                    BackgroundErrorLogger.Log(
+                        exception,
+                        "Unable to receive SQS messages from AWS.",
+                        "Rock.Messaging.SQS",
+                        GetAdditionalInformation(response, null));
 
                     continue;
                 }
@@ -121,12 +108,16 @@ namespace Rock.Messaging.SQS
                             () =>
                             {
                                 Exception deleteException = null;
+                                DeleteMessageResponse deleteResponse = null;
 
                                 for (int i = 0; i < 3; i++)
                                 {
                                     try
                                     {
-                                        var deleteResponse = _sqs.DeleteMessage(new DeleteMessageRequest
+                                        deleteException = null;
+                                        deleteResponse = null;
+
+                                        deleteResponse = _sqs.DeleteMessage(new DeleteMessageRequest
                                         {
                                             QueueUrl = _queueUrl,
                                             ReceiptHandle = receiptHandle
@@ -143,10 +134,11 @@ namespace Rock.Messaging.SQS
                                     }
                                 }
 
-                                if (_logger.Value != null)
-                                {
-                                    _logger.Value.Error(new LogEntry("Rock.Messaging.SQS.SQSQueueReceiver: Unable to delete message.", new { receiptHandle }, deleteException));
-                                }
+                                BackgroundErrorLogger.Log(
+                                    deleteException,
+                                    "Unable to delete SQS message.",
+                                    "Rock.Messaging.SQS",
+                                    GetAdditionalInformation(deleteResponse, receiptHandle));
                             };
 
                         try
@@ -170,6 +162,69 @@ namespace Rock.Messaging.SQS
             _stopped = true;
             _worker.Join();
             _sqs.Dispose();
+        }
+
+        private static string GetAdditionalInformation(AmazonWebServiceResponse response, string receiptHandle)
+        {
+            if (response == null && receiptHandle == null)
+            {
+                return null;
+            }
+
+            if (response == null)
+            {
+                return string.Format(@"{{
+   ""receiptHandle"": ""{0}""
+}}", receiptHandle);
+            }
+
+            if (receiptHandle != null)
+            {
+                receiptHandle = string.Format(@",
+   ""receiptHandle"": ""{0}""", receiptHandle);
+            }
+
+            var responseMetadata = "null";
+
+            if (response.ResponseMetadata != null)
+            {
+                var metadata = "null";
+
+                if (response.ResponseMetadata.Metadata != null)
+                {
+                    if (response.ResponseMetadata.Metadata.Count == 0)
+                    {
+                        metadata = "{}";
+                    }
+                    else
+                    {
+                        metadata = string.Format(@"{{
+            {0}
+         }}", string.Join(",\r\n            ",
+                            response.ResponseMetadata.Metadata.Select(x => string.Format(@"""{0}"": ""{1}""", x.Key, x.Value))));
+                    }
+                }
+
+                var requestId = "null";
+
+                if (response.ResponseMetadata.RequestId != null)
+                {
+                    requestId = string.Format(@"""{0}""", response.ResponseMetadata.RequestId);
+                }
+
+                responseMetadata = string.Format(@"{{
+         ""RequestId"": {0},
+         ""Metadata"": {1}
+      }}", requestId, metadata);
+            }
+
+            return string.Format(@"{{
+   ""response"": {{
+      ""HttpStatusCode"": ""{0}"",
+      ""ContentLength"": {1},
+      ""ResponseMetadata"": {2}
+   }}{3}
+}}", response.HttpStatusCode, response.ContentLength, responseMetadata, receiptHandle);
         }
     }
 }
