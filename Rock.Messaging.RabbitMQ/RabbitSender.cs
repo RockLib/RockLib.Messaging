@@ -9,16 +9,18 @@ namespace Rock.Messaging.RabbitMQ
     public class RabbitSender : ISender 
     {
         const byte highestPriority = 9;
-        private string _routingKey;
-        private string _exchange;
-        private IConnection _connection;
+
+        private readonly string _routingKey;
+        private readonly string _exchange;
+        private readonly IConnection _connection;
+        private readonly string _name;
 
         public RabbitSender(IConnectionFactory conn, string exchange, string routingKey, string name)
         {
             _connection = conn.CreateConnection();
             _exchange = exchange;
             _routingKey = routingKey;
-            Name = name;
+            _name = name;
         }
         public Task SendAsync(ISenderMessage message)
         {
@@ -36,7 +38,7 @@ namespace Rock.Messaging.RabbitMQ
             });
         }
 
-        public string Name { get; }
+        public string Name { get { return _name; } }
 
         public void Dispose()
         {

@@ -83,7 +83,12 @@ namespace Rock.Messaging.RabbitMQ
 
         protected virtual void OnMessageReceived(MessageReceivedEventArgs args)
         {
-            MessageReceived?.Invoke(this, args);
+            var handler = MessageReceived;
+
+            if (handler != null)
+            {
+                handler(this, args);
+            }
         }
 
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
