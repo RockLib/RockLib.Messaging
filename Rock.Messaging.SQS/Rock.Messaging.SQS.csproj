@@ -44,8 +44,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Rock.Core, Version=0.9.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Core.0.9.7\lib\net45\Rock.Core.dll</HintPath>
-      <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Rock.Core.0.9.8\lib\net45\Rock.Core.dll</HintPath>
     </Reference>
     <Reference Include="Rock.Logging, Version=0.9.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Rock.Logging.0.9.5\lib\net45\Rock.Logging.dll</HintPath>
