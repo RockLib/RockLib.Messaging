@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -46,6 +47,35 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
         public virtual bool IsEnabled
         {
             get { return true; }
+        }
+
+        /// <summary>
+        /// Called when an error condition occurrs.
+        /// </summary>
+        /// <param name="message">A message describing the error condition.</param>
+        /// <param name="exception">The <see cref="Exception"/> that caused the error condition. Can be null.</param>
+        /// <param name="import">An <see cref="ImportInfo"/> object that describes the import operation that failed.</param>
+        protected virtual void OnError(string message, Exception exception, ImportInfo import)
+        {
+            var sb = new StringBuilder();
+
+            if (message != null)
+            {
+                sb.AppendLine("Message: " + message).AppendLine();
+            }
+
+            if (import != null)
+            {
+                sb.AppendLine("Import: " + import.ToString()).AppendLine();
+            }
+
+            if (exception != null)
+            {
+                sb.AppendLine(exception.ToString()).AppendLine();
+            }
+
+            var debugMessage = sb.ToString();
+            Debug.WriteLine(debugMessage);
         }
 
         /// <summary>
@@ -94,10 +124,22 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
             ImportOptions options = null)
             where TTargetType : class
         {
-            ImportSingleType(
-                importAction,
-                GetImportInfo<TTargetType>(importName, options),
-                CreateInstance<TTargetType>);
+            var import = GetImportInfo<TTargetType>(importName, options);
+
+            try
+            {
+                ImportSingleType(
+                    importAction,
+                    import,
+                    type => CreateInstance<TTargetType>(type, import));
+            }
+            catch (Exception ex)
+            {
+                var message = string.Format("Unexpected error in ImportSingle<{0}>.",
+                    typeof(TTargetType));
+
+                OnError(message, ex, import);
+            }
         }
 
         /// <summary>
@@ -142,10 +184,22 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
             where TTargetType : class
             where TFactoryType : class
         {
-            ImportSingleType(
-                importAction,
-                GetImportInfo<TTargetType>(importName, options, typeof(TFactoryType)),
-                t => CreateInstance(t, getTarget));
+            var import = GetImportInfo<TTargetType>(importName, options, typeof(TFactoryType));
+
+            try
+            {
+                ImportSingleType(
+                    importAction,
+                    import,
+                    type => CreateInstance(type, getTarget, import));
+            }
+            catch (Exception ex)
+            {
+                var message = string.Format("Unexpected error in ImportSingle<{0}, {1}>.",
+                    typeof(TTargetType), typeof(TFactoryType));
+
+                OnError(message, ex, import);
+            }
         }
 
         /// <summary>
@@ -174,9 +228,19 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
             ImportOptions options = null)
             where TTargetType : class
         {
-            ImportFirstType(
-                importAction,
-                GetInstances<TTargetType>(importName, options));
+            var import = GetImportInfo<TTargetType>(importName, options);
+
+            try
+            {
+                ImportFirstType(importAction, GetInstances<TTargetType>(import), import);
+            }
+            catch (Exception ex)
+            {
+                var message = string.Format("Unexpected error in ImportFirst<{0}>.",
+                    typeof(TTargetType));
+
+                OnError(message, ex, import);
+            }
         }
 
         /// <summary>
@@ -221,9 +285,19 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
             where TTargetType : class
             where TFactoryType : class
         {
-            ImportFirstType(
-                importAction,
-                GetInstances(getTarget, importName, options));
+            var import = GetImportInfo<TTargetType>(importName, options, typeof(TFactoryType));
+
+            try
+            {
+                ImportFirstType(importAction, GetInstances(getTarget, import), import);
+            }
+            catch (Exception ex)
+            {
+                var message = string.Format("Unexpected error in ImportFirst<{0}, {1}>.",
+                    typeof(TTargetType), typeof(TFactoryType));
+
+                OnError(message, ex, import);
+            }
         }
 
         /// <summary>
@@ -254,7 +328,31 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
             ImportOptions options = null)
             where TTargetType : class
         {
-            importAction(GetInstances<TTargetType>(importName, options).ToList());
+            var import = GetImportInfo<TTargetType>(importName, options);
+
+            List<TTargetType> instances;
+
+            try
+            {
+                instances = GetInstances<TTargetType>(import).ToList();
+            }
+            catch (Exception ex)
+            {
+                var message = string.Format("Unexpected error in ImportMultiple<{0}>.",
+                    typeof(TTargetType));
+
+                OnError(message, ex, import);
+                return;
+            }
+
+            try
+            {
+                importAction(instances);
+            }
+            catch (Exception ex)
+            {
+                OnError("An error occurred in the 'importAction' callback.", ex, import);
+            }
         }
 
         /// <summary>
@@ -301,32 +399,46 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
             where TTargetType : class
             where TFactoryType : class
         {
-            importAction(GetInstances(getTarget, importName, options).ToList());
+            var import = GetImportInfo<TTargetType>(importName, options, typeof(TFactoryType));
+
+            List<TTargetType> instances;
+
+            try
+            {
+                instances = GetInstances(getTarget, import).ToList();
+            }
+            catch (Exception ex)
+            {
+                var message = string.Format("Unexpected error in ImportMultiple<{0}, {1}>.",
+                    typeof(TTargetType), typeof(TFactoryType));
+
+                OnError(message, ex, import);
+                return;
+            }
+
+            try
+            {
+                importAction(instances);
+            }
+            catch (Exception ex)
+            {
+                OnError("An error occurred in the 'importAction' callback.", ex, import);
+            }
         }
 
-        private IEnumerable<TTargetType> GetInstances<TTargetType>(
-            string importName,
-            ImportOptions options)
+        private IEnumerable<TTargetType> GetInstances<TTargetType>(ImportInfo import)
             where TTargetType : class
         {
-            return GetInstances(
-                GetImportInfo<TTargetType>(importName, options),
-                CreateInstance<TTargetType>);
+            return GetInstances(import, type => CreateInstance<TTargetType>(type, import));
         }
 
         private IEnumerable<TTargetType> GetInstances<TTargetType, TFactoryType>(
             Func<TFactoryType, TTargetType> getTarget,
-            string importName,
-            ImportOptions options)
+            ImportInfo import)
             where TTargetType : class
             where TFactoryType : class
         {
-            return GetInstances(
-                GetImportInfo<TTargetType>(
-                    importName,
-                    options,
-                    typeof(TFactoryType)),
-                type => CreateInstance(type, getTarget));
+            return GetInstances(import, type => CreateInstance(type, getTarget, import));
         }
 
         private ImportInfo GetImportInfo<TTargetType>(
@@ -350,28 +462,59 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
         {
             var candidateTypeNames = GetCandidateTypeNames(import);
 
-            var instance =
-                GetPrioritizedGroupsOfCandidateTypes(candidateTypeNames, import)
-                    .Select(candidateTypes => ChooseCandidateType(candidateTypes, import))
-                    .Select(t => t == null ? null : createInstance(t))
-                    .FirstOrDefault();
+            var prioritizedGroupsOfCandidateTypes =
+                GetPrioritizedGroupsOfCandidateTypes(candidateTypeNames, import).GetEnumerator();
 
-            if (instance != null)
+            // If any candidate types were found, the enumerator will advance.
+            if (prioritizedGroupsOfCandidateTypes.MoveNext())
             {
-                importAction(instance);
+                var highestPriorityCandidateTypes = prioritizedGroupsOfCandidateTypes.Current;
+
+                var bestCandidateType = ChooseCandidateType(highestPriorityCandidateTypes, import);
+
+                if (bestCandidateType == null)
+                {
+                    var message = string.Format(
+                        "Unable to import a single instance of type '{0}' - more than one export " +
+                        "with the same highest priority was discovered: {1}.", typeof(TTargetType),
+                        string.Join(", ", highestPriorityCandidateTypes.Select(t => "'" + t + "'")));
+
+                    OnError(message, null, import);
+                }
+                else
+                {
+                    var instance = createInstance(bestCandidateType);
+
+                    try
+                    {
+                        importAction(instance);
+                    }
+                    catch (Exception ex)
+                    {
+                        OnError("An error occurred in the 'importAction' callback.", ex, import);
+                    }
+                }
             }
         }
 
-        private static void ImportFirstType<TTargetType>(
+        private void ImportFirstType<TTargetType>(
             Action<TTargetType> importAction,
-            IEnumerable<TTargetType> instances)
+            IEnumerable<TTargetType> instances,
+            ImportInfo import)
             where TTargetType : class
         {
             var instance = instances.FirstOrDefault();
 
             if (instance != null)
             {
-                importAction(instance);
+                try
+                {
+                    importAction(instance);
+                }
+                catch (Exception ex)
+                {
+                    OnError("An error occurred in the 'importAction' callback.", ex, import);
+                }
             }
         }
 
@@ -394,55 +537,78 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
                 .Where(instance => instance != null);
         }
 
-        private static TTargetType CreateInstance<TTargetType>(Type candidateType)
+        private TTargetType CreateInstance<TTargetType>(Type candidateType, ImportInfo import)
             where TTargetType : class
         {
+            object instance;
             try
             {
-                var instance = Instantiate(candidateType);
-
-                var target = instance as TTargetType;
-                if (target != null)
-                {
-                    return target;
-                }
-
-                return null;
+                instance = Instantiate(candidateType);
             }
-            catch
+            catch (Exception ex)
             {
+                OnError(string.Format(
+                    "An error occurred while creating an instance of the '{0}' type.",
+                    candidateType), ex, import);
                 return null;
             }
+
+            var target = instance as TTargetType;
+            if (target != null)
+            {
+                return target;
+            }
+
+            OnError(string.Format(
+                "The type of the created instance, '{0}', is not assignable to the target type, '{1}'.",
+                instance.GetType(), typeof(TTargetType)), null, import);
+            return null;
         }
 
-        private static TTargetType CreateInstance<TTargetType, TFactoryType>(
+        private TTargetType CreateInstance<TTargetType, TFactoryType>(
             Type candidateType,
-            Func<TFactoryType, TTargetType> getTarget)
+            Func<TFactoryType, TTargetType> getTarget,
+            ImportInfo import)
             where TTargetType : class
             where TFactoryType : class
         {
+            object instance;
             try
             {
-                var instance = Instantiate(candidateType);
+                instance = Instantiate(candidateType);
+            }
+            catch (Exception ex)
+            {
+                OnError(string.Format(
+                    "An error occurred while creating an instance of the '{0}' type.",
+                    candidateType), ex, import);
+                return null;
+            }
 
-                var factory = instance as TFactoryType;
-                if (factory != null)
+            var factory = instance as TFactoryType;
+            if (factory != null)
+            {
+                try
                 {
                     return getTarget(factory);
                 }
-
-                var target = instance as TTargetType;
-                if (target != null)
+                catch (Exception ex)
                 {
-                    return target;
+                    OnError("An error occurred in the 'getTarget' callback.", ex, import);
+                    return null;
                 }
+            }
 
-                return null;
-            }
-            catch
+            var target = instance as TTargetType;
+            if (target != null)
             {
-                return null;
+                return target;
             }
+
+            OnError(string.Format(
+                "The type of the created instance, '{0}', is not assignable to the target type, '{1}'.",
+                instance.GetType(), typeof(TTargetType)), null, import);
+            return null;
         }
 
         private static object Instantiate(Type candidateType)
@@ -843,50 +1009,6 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
 
             return (parameter.Attributes & hasDefaultValue) == hasDefaultValue;
         }
-
-        private class ImportInfo
-        {
-            private readonly string _name;
-            private readonly Type _targetType;
-            private readonly Type _factoryType;
-            private readonly ImportOptions _options;
-
-            public ImportInfo(
-                string name,
-                Type targetType,
-                Type factoryType,
-                ImportOptions options)
-            {
-                _name = name;
-                _targetType = targetType;
-                _factoryType = factoryType;
-                _options = options;
-            }
-
-            internal string Name { get { return _name; } }
-            internal Type TargetType { get { return _targetType; } }
-            internal Type FactoryType { get { return _factoryType; } }
-            internal ImportOptions Options { get { return _options; } }
-
-            internal string TargetTypeName
-            {
-                get
-                {
-                    return TargetType.AssemblyQualifiedName;
-                }
-            }
-
-            internal string FactoryTypeName
-            {
-                get
-                {
-                    return
-                        _factoryType == null
-                            ? null
-                            : _factoryType.AssemblyQualifiedName;
-                }
-            }
-        }
     }
 
     /// <summary>
@@ -1048,6 +1170,64 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
         public bool Disabled { get; set; }
     }
 
+    internal class ImportInfo
+    {
+        private readonly string _name;
+        private readonly Type _targetType;
+        private readonly Type _factoryType;
+        private readonly ImportOptions _options;
+
+        public ImportInfo(
+            string name,
+            Type targetType,
+            Type factoryType,
+            ImportOptions options)
+        {
+            _name = name;
+            _targetType = targetType;
+            _factoryType = factoryType;
+            _options = options;
+        }
+
+        public string Name { get { return _name; } }
+        public Type TargetType { get { return _targetType; } }
+        public Type FactoryType { get { return _factoryType; } }
+        public ImportOptions Options { get { return _options; } }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendFormat(@"{{
+  ""Name"": {0},
+  ""TargetType"": {1},
+  ""FactoryType"": {2},
+  ""Options"": {3}
+}}", Name, TargetType, FactoryType, Options.ToString("  "));
+
+            return sb.ToString();
+        }
+
+        internal string TargetTypeName
+        {
+            get
+            {
+                return TargetType.AssemblyQualifiedName;
+            }
+        }
+
+        internal string FactoryTypeName
+        {
+            get
+            {
+                return
+                    _factoryType == null
+                        ? null
+                        : _factoryType.AssemblyQualifiedName;
+            }
+        }
+    }
+
     /// <summary>
     /// Defines various options for an import operation.
     /// </summary>
@@ -1114,6 +1294,28 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
             {
                 _exportComparer = value ?? GetDefaultExportComparer();
             }
+        }
+
+        public override string ToString()
+        {
+            return ToString("");
+        }
+
+        internal string ToString(string indent)
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendFormat(@"{{
+{6}  ""AllowNonPublicClasses"": {0},
+{6}  ""IncludeNamedExportsFromUnnamedImports"": {1},
+{6}  ""PreferTTargetType"": {2},
+{6}  ""IncludeTypesFromThisAssembly"": {3},
+{6}  ""DirectoryPaths"": [{4}],
+{6}  ""ExportComparer"": ""{5}""
+{6}}}", AllowNonPublicClasses, IncludeNamedExportsFromUnnamedImports, PreferTTargetType,
+   IncludeTypesFromThisAssembly, string.Join(",", DirectoryPaths), ExportComparer.GetType(), indent);
+
+            return sb.ToString();
         }
 
         /// <summary>
