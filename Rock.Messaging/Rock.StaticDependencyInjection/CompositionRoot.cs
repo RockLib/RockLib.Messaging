@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using Rock.BackgroundErrorLogging;
 using Rock.Messaging.NamedPipes;
 using Rock.Messaging.Routing;
 using Rock.StaticDependencyInjection;
@@ -17,6 +18,13 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
             ImportFirst<ITypeLocator>(DefaultTypeLocator.SetCurrent);
             ImportFirst<IMessagingScenarioFactory>(MessagingScenarioFactory.SetFallback);
             ImportFirst<IMessageCompressor>(DefaultMessageCompressor.SetCurrent);
+        }
+
+        protected override void OnError(string message, Exception exception, ImportInfo import)
+        {
+            BackgroundErrorLogger.Log(exception, "Static Dependency Injection - " + message, "Rock.Messaging", "ImportInfo:\r\n" + import);
+
+            base.OnError(message, exception, import);
         }
 
         /// <summary>
