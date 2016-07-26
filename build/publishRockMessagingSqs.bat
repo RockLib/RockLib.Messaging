@@ -19,5 +19,5 @@ set ApiKey=%1
 goto :get_latest_package_and_push_it
 
 :get_latest_package_and_push_it
-for /f %%i in ('dir /b/a-d/od/t:c Rock.Messaging.?.?.?*.nupkg') do set LAST=%%i
+for /f %%i in ('dir /b/a-d/od/t:c Rock.Messaging.SQS.?.?.?*.nupkg') do set LAST=%%i
 nuget push %LAST% %ApiKey%
