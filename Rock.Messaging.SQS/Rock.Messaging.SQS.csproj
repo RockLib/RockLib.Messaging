@@ -48,8 +48,8 @@
       <HintPath>..\packages\Rock.Core.0.9.8\lib\net45\Rock.Core.dll</HintPath>
     </Reference>
     <Reference Include="Rock.Messaging, Version=0.9.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Messaging.0.9.9\lib\net45\Rock.Messaging.dll</HintPath>
-      <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Rock.Messaging.0.9.10\lib\net45\Rock.Messaging.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
