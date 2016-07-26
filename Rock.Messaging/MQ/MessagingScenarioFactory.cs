@@ -1,6 +1,5 @@
 ﻿using System;
 using Rock.Immutable;
-using Rock.Messaging.NamedPipes;
 using System.Configuration;
 
 namespace Rock.Messaging
@@ -13,8 +12,7 @@ namespace Rock.Messaging
         private static readonly Semimutable<IMessagingScenarioFactory> _messagingScenarioFactory =
             new Semimutable<IMessagingScenarioFactory>(CreateDefaultMessagingScenarioFactory);
 
-        private static IMessagingScenarioFactory _fallbackMessagingScenarioFactory =
-            new NamedPipeMessagingScenarioFactory();
+        private static IMessagingScenarioFactory _fallbackMessagingScenarioFactory;
 
         public static IMessagingScenarioFactory Current
         {
@@ -44,12 +42,17 @@ namespace Rock.Messaging
                 return
                     TryGetFactoryFromConfig(out value)
                         ? value
-                        : _fallbackMessagingScenarioFactory;
+                        : _fallbackMessagingScenarioFactory ?? ThrowNoMessagingScenarioFactoryFoundException();
             }
             finally
             {
                 _fallbackMessagingScenarioFactory = null;
             }
+        }
+
+        private static IMessagingScenarioFactory ThrowNoMessagingScenarioFactoryFoundException()
+        {
+            throw new InvalidOperationException("MessagingScenarioFactory.Current has no value. The value can be set via config or by calling the SetCurrent method.");
         }
 
         private static bool TryGetFactoryFromConfig(out IMessagingScenarioFactory factory)

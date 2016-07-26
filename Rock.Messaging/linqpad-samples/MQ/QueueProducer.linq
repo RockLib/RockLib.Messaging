@@ -1,10 +1,14 @@
 <Query Kind="Program">
   <NuGetReference>Rock.Messaging</NuGetReference>
   <Namespace>Rock.Messaging</Namespace>
+  <Namespace>Rock.Messaging.NamedPipes</Namespace>
 </Query>
 
 void Main()
 {
+    // For this example, use named pipes as the messaging scenario.
+    MessagingScenarioFactory.SetCurrent(new NamedPipeMessagingScenarioFactory());
+
     // Create an instance of ISender that uses the queue producer scenario.
     using (var producer = MessagingScenarioFactory.CreateQueueProducer("my_queue"))
     {
