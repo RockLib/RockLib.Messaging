@@ -8,7 +8,9 @@
         <description>$description$</description>
         <summary>Messaging APIs.</summary>
         <tags>rock messaging linqpad-samples</tags>
+        <projectUrl>https://github.com/RockFramework/Rock.Messaging</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <releaseNotes></releaseNotes>
     </metadata>
     <files>
         <file src="linqpad-samples\**\*.linq" target="linqpad-samples" />

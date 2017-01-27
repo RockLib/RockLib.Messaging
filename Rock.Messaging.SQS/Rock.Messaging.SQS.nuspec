@@ -8,7 +8,8 @@
         <description>$description$</description>
         <summary>Messaging extension for Rock Framework to add Amazon SQS support.</summary>
         <tags>rock framework sqs</tags>
-        <projectUrl>http://github.com/rockframework/Rock.Messaging/Rock.Messaging.SQS</projectUrl>
+        <projectUrl>https://github.com/RockFramework/Rock.Messaging/tree/master/Rock.Messaging.SQS</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <releaseNotes></releaseNotes>
     </metadata>
 </package>
