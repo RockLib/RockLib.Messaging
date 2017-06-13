@@ -53,7 +53,7 @@ namespace Rock.Messaging
 
         bool IMessagingScenarioFactory.HasScenario(string name)
         {
-            return Factories.Count(f => f.HasScenario(name)) == 1;
+            return Factories.Any(f => f.HasScenario(name));
         }
 
         /// <summary>
@@ -71,11 +71,11 @@ namespace Rock.Messaging
         {
             try
             {
-                return Factories.Single(f => f.HasScenario(name));
+                return Factories.First(f => f.HasScenario(name));
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Unable to locate a single configuration: " + name, ex);
+                throw new InvalidOperationException($"Unable to locate a messaging scenario with the name '{name}'.", ex);
             }
         }
     }
