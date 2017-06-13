@@ -46,9 +46,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CompositeMessagingScenarioTests.cs" />
     <Compile Include="ConfigTests.cs" />
     <Compile Include="MQ\AnotherMessagingScenarioFactory.cs" />
+    <Compile Include="MQ\OneMoreMessagingScenarioFactory.cs" />
     <Compile Include="MQ\ExampleMessagingScenarioFactory.cs" />
+    <Compile Include="MQ\TestReceiver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
