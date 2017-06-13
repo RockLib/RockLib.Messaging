@@ -28,7 +28,7 @@ namespace Rock.Messaging
 
         public IReceiver CreateQueueConsumer(string name)
         {
-            throw new NotImplementedException();
+            return new TestReceiver(name, GetType());
         }
 
         public ISender CreateTopicPublisher(string name)
@@ -43,7 +43,7 @@ namespace Rock.Messaging
 
         public bool HasScenario(string name)
         {
-            throw new NotImplementedException();
+            return name == "foo";
         }
 
         void IDisposable.Dispose()
