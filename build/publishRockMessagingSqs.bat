@@ -20,4 +20,4 @@ goto :get_latest_package_and_push_it
 
 :get_latest_package_and_push_it
 for /f %%i in ('dir /b/a-d/od/t:c Rock.Messaging.SQS.?.?.?*.nupkg') do set LAST=%%i
-nuget push %LAST% %ApiKey%
+nuget push %LAST% %ApiKey% -source https://www.nuget.org
