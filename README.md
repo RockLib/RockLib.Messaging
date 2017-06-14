@@ -18,8 +18,6 @@ If you are unsure how to use the UI to reference the package source checkout out
 
 How to install from the package manager console:
 
-Make sure your package source is set to QuGet
-
 ```
 PM> Install-Package Rock.Messaging
 ```
