@@ -36,11 +36,25 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="packages.config" />
   </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="RockLib.Immutable" Version="0.0.1-alpha01" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.6'">
+    <PackageReference Include="RockLib.Configuration">
+      <Version>0.0.1-alpha01</Version>
+    </PackageReference>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 
 

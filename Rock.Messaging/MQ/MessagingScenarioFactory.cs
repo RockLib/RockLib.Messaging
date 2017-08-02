@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Configuration;
+using Microsoft.Extensions.Configuration;
+using RockLib.Configuration;
 
 #if ROCKLIB
 using RockLib.Immutable;
@@ -69,8 +70,10 @@ namespace Rock.Messaging
         {
             try
             {
-                var rockMessagingConfiguration = (IRockMessagingConfiguration)ConfigurationManager.GetSection("rock.messaging");
+                var rockMessagingConfiguration = Config.Root.GetSection("rock.messaging").Get<IRockMessagingConfiguration>();
+
                 factory = rockMessagingConfiguration.MessagingScenarioFactory;
+
                 return true;
             }
             catch (Exception)
