@@ -82,7 +82,7 @@ namespace Rock.Messaging
                 return false;
             }
         }
-
+        
         /// <summary>
         /// Creates an instance of <see cref="ISender"/> that uses the queue producer scenario
         /// by calling the <see cref="IMessagingScenarioFactory.CreateQueueProducer"/> method
