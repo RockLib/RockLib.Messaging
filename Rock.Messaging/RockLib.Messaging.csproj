@@ -38,5 +38,10 @@
   <ItemGroup>
     <None Remove="packages.config" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="RockLib.Immutable" Version="0.0.1-alpha01" />
+  </ItemGroup>
+
 
 </Project>

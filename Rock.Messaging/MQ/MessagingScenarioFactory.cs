@@ -1,6 +1,12 @@
 ﻿using System;
-using Rock.Immutable;
 using System.Configuration;
+
+#if ROCKLIB
+using RockLib.Immutable;
+#else
+using Rock.Immutable;
+#endif
+
 
 #if ROCKLIB
 namespace RockLib.Messaging

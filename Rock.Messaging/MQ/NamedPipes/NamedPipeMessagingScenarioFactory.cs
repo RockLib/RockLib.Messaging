@@ -1,5 +1,10 @@
 ﻿using System;
+
+#if ROCKLIB
+using RockLib.Immutable;
+#else
 using Rock.Immutable;
+#endif
 
 #if ROCKLIB
 namespace RockLib.Messaging.NamedPipes
