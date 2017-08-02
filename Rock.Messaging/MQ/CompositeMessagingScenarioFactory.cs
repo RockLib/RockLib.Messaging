@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Messaging;
 
 #if ROCKLIB
 namespace RockLib.Messaging

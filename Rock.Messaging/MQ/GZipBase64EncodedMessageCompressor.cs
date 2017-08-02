@@ -1,6 +1,6 @@
 using System;
 using System.Text;
-using Rock.Compression;
+using RockLib.Compression;
 
 #if ROCKLIB
 namespace RockLib.Messaging

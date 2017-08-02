@@ -1,5 +1,4 @@
 ﻿using System;
-using Rock.Messaging;
 
 #if ROCKLIB
 namespace RockLib.Messaging
