@@ -1,4 +1,3 @@
-using Rock.Messaging;
 using Rock.Serialization;
 
 #if ROCKLIB

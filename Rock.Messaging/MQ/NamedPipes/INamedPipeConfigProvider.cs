@@ -1,4 +1,8 @@
-﻿namespace Rock.Messaging.NamedPipes
+﻿#if ROCKLIB
+namespace RockLib.Messaging.NamedPipes
+#else
+namespace Rock.Messaging.NamedPipes
+#endif
 {
     /// <summary>
     /// Provides a mechanism for obtaining instances of <see cref="INamedPipeConfig"/>

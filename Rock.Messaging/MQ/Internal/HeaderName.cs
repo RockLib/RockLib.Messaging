@@ -1,4 +1,8 @@
-﻿namespace Rock.Messaging.Internal
+﻿#if ROCKLIB
+namespace RockLib.Messaging.Internal
+#else
+namespace Rock.Messaging.Internal
+#endif
 {
     /// <summary>
     /// Provides the names of headers for internal use.

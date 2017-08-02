@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Rock.Messaging;
 
 #if ROCKLIB
 namespace RockLib.Messaging
@@ -24,7 +23,7 @@ namespace Rock.Messaging
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BinarySenderMessage"/> class using
-        /// <see cref="Rock.Messaging.MessageFormat.Binary"/> for its format. The value of
+        /// <see cref="Messaging.MessageFormat.Binary"/> for its format. The value of
         /// <see cref="StringValue"/> will be the result of a base 64 encoding operation on
         /// <paramref name="binaryValue"/>.
         /// </summary>
@@ -44,7 +43,7 @@ namespace Rock.Messaging
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BinarySenderMessage"/> class. If
-        /// <paramref name="messageFormat"/> is <see cref="Rock.Messaging.MessageFormat.Binary"/>,
+        /// <paramref name="messageFormat"/> is <see cref="Messaging.MessageFormat.Binary"/>,
         /// the value of <see cref="StringValue"/> will be the result of a base 64 encoding
         /// operation on <paramref name="binaryValue"/>. Otherwise, <paramref name="encoding"/>
         /// (or <see cref="Encoding.UTF8"/> if null) will be used to obtain the value of

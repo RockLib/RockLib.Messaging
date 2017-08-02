@@ -1,5 +1,4 @@
 using Rock.Configuration;
-using Rock.Messaging;
 
 #if ROCKLIB
 namespace RockLib.Messaging

@@ -1,6 +1,4 @@
-﻿using Rock.Messaging;
-
-#if ROCKLIB
+﻿#if ROCKLIB
 namespace RockLib.Messaging
 #else
 namespace Rock.Messaging

@@ -8,7 +8,11 @@ using System.Threading.Tasks;
 using Rock.Messaging.Internal;
 using Rock.Serialization;
 
+#if ROCKLIB
+namespace RockLib.Messaging.NamedPipes
+#else
 namespace Rock.Messaging.NamedPipes
+#endif
 {
     /// <summary>
     /// An implementation of <see cref="ISender"/> that uses named pipes as
