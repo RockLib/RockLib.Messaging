@@ -1,6 +1,10 @@
 ﻿using System.Threading.Tasks;
 
+#if ROCKLIB
+namespace RockLib.Messaging
+#else
 namespace Rock.Messaging
+#endif
 {
     /// <summary>
     /// Provides a set of methods that simplify usage of instances of <see cref="ISender"/>

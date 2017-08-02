@@ -1,8 +1,13 @@
 using System;
 using System.Linq;
 using System.Xml.Serialization;
+using Rock.Messaging;
 
+#if ROCKLIB
+namespace RockLib.Messaging
+#else
 namespace Rock.Messaging
+#endif
 {
     public class XmlSerializingRockMessagingConfiguration : IRockMessagingConfiguration
     {

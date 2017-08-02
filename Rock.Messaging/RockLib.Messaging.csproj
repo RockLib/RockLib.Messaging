@@ -35,4 +35,8 @@
     <None Remove="Routing\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="packages.config" />
+  </ItemGroup>
+
 </Project>

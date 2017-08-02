@@ -2,7 +2,11 @@
 using Rock.Immutable;
 using System.Configuration;
 
+#if ROCKLIB
+namespace RockLib.Messaging
+#else
 namespace Rock.Messaging
+#endif
 {
     /// <summary>
     /// Provides methods for creating instances of various messaging scenarios.
