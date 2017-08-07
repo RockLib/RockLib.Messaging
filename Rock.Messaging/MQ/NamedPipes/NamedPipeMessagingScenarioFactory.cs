@@ -85,10 +85,8 @@ namespace Rock.Messaging.NamedPipes
         /// </returns>
         public IReceiver CreateQueueConsumer(string name)
         {
-//            var config = _configProvider.GetConfig(name);
-//            return new NamedPipeQueueConsumer(name, config.PipeName);
-
-            throw new NotImplementedException("Need to get working ");
+            var config = _configProvider.GetConfig(name);
+            return new NamedPipeQueueConsumer(name, config.PipeName);
         }
 
         /// <summary>

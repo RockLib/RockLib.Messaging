@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using RockLib.Messaging.Internal;
 
 #if ROCKLIB
@@ -95,9 +97,12 @@ namespace Rock.Messaging.NamedPipes
                 namedPipeMessage.Headers[HeaderName.CompressedPayload] = "true";
             }
 
-            //var messageString = _serializer.SerializeToString(namedPipeMessage);
-            //_messages.Add(messageString);
-            
+            var messageString = JsonConvert.SerializeObject(namedPipeMessage);
+            _messages.Add(messageString);
+
+
+            Trace.TraceError($"[Rock.Messaging.NamedPipeProducer] - [SendAsync] - sending message of {messageString}");
+
             return _completedTask;
         }
 

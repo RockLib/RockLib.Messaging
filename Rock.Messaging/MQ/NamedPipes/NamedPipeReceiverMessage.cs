@@ -1,7 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+
+#if ROCKLIB
+using RockLib.Messaging.Internal;
+#else
 using Rock.Messaging.Internal;
+#endif
 
 #if ROCKLIB
 namespace RockLib.Messaging.NamedPipes

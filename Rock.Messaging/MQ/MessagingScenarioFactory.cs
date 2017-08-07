@@ -4,6 +4,11 @@ using System.Linq;
 using Microsoft.Extensions.Configuration;
 using RockLib.Configuration;
 using RockLib.Messaging.Configuration;
+
+#if !NETSTANDARD1_6
+
+#endif
+
 #if ROCKLIB
 using RockLib.Immutable;
 #else
@@ -67,11 +72,13 @@ namespace Rock.Messaging
             try
             {
 
-#if NETSTANDARD1_6
                 factory = BuildFactoryForCore();
-#else
-                factory = BuildConfigurationFromFramework();
-#endif
+
+//#if NETSTANDARD1_6
+//                factory = BuildFactoryForCore();
+//#else
+//                factory = BuildConfigurationFromFramework();
+//#endif
 
                 return true;
             }

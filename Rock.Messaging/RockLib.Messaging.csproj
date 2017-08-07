@@ -58,12 +58,15 @@
     <Compile Include="MQ\NamedPipes\MessageSettings.cs" />
     <Compile Include="MQ\NamedPipes\NamedPipeMessage.cs" />
     <Compile Include="MQ\NamedPipes\NamedPipeMessagingScenarioFactory.cs" />
+    <Compile Include="MQ\NamedPipes\NamedPipeQueueConsumer.cs" />
     <Compile Include="MQ\NamedPipes\NamedPipeQueueProducer.cs" />
+    <Compile Include="MQ\NamedPipes\NamedPipeReceiverMessage.cs" />
     <Compile Include="MQ\NamedPipes\SimpleNamedPipeConfig.cs" />
     <Compile Include="MQ\NamedPipes\SimpleNamedPipeConfigProvider.cs" />
   </ItemGroup>
   
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="RockLib.Compression" Version="0.0.1-alpha01" />
     <PackageReference Include="RockLib.Configuration" Version="0.0.1-alpha01" />
     <PackageReference Include="RockLib.Immutable" Version="0.0.1-alpha01" />
