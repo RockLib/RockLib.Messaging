@@ -27,10 +27,7 @@ namespace Rock.Messaging
 
         private static IMessagingScenarioFactory _fallbackMessagingScenarioFactory;
 
-        public static IMessagingScenarioFactory Current
-        {
-            get { return _messagingScenarioFactory.Value; }
-        }
+        public static IMessagingScenarioFactory Current => _messagingScenarioFactory.Value;
 
         public static void SetCurrent(IMessagingScenarioFactory messagingScenarioFactory)
         {
@@ -52,10 +49,7 @@ namespace Rock.Messaging
             {
                 IMessagingScenarioFactory value;
 
-                return
-                    TryGetFactoryFromConfig(out value)
-                        ? value
-                        : _fallbackMessagingScenarioFactory ?? ThrowNoMessagingScenarioFactoryFoundException();
+                return TryGetFactoryFromConfig(out value) ? value : _fallbackMessagingScenarioFactory ?? ThrowNoMessagingScenarioFactoryFoundException();
             }
             finally
             {

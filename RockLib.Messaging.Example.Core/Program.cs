@@ -12,20 +12,21 @@ namespace RockLib.Messaging.Example.Core
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
+           
+            var namedPipeProducer = MessagingScenarioFactory.CreateQueueProducer("NampedPipeTester");
+            var namedPipeConsumer = MessagingScenarioFactory.CreateQueueConsumer("NampedPipeTester");
 
-            var messagingSection = Config.Root.GetSection("RockLib.Messaging").Get<ScenarioFactorySection>();
+            namedPipeConsumer.Start();
+            namedPipeConsumer.MessageReceived += (sender, eventArgs) =>
+            {
+                var eventArgsMessage = eventArgs.Message;
+                var message = eventArgsMessage.GetStringValue();
+                
+                Console.WriteLine($"Message: {message}");
+            };
 
-            var scenarioFactoriesCount = messagingSection.ScenarioFactories.Count;
-            var messagingScenarioFactory = messagingSection.ScenarioFactories[0].CreateInstance();
-            
-
-            var queueProducer = MessagingScenarioFactory.CreateQueueProducer("");
+            namedPipeProducer.SendAsync("Test Named Pipe Message");
         }
     }
     
-    public class ScenarioFactorySection
-    {
-        public List<LateBoundConfigurationSection<IMessagingScenarioFactory>> ScenarioFactories { get; set; }
-        
-    }
 }

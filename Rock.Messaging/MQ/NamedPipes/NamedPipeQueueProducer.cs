@@ -5,8 +5,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
-using Rock.Messaging.Internal;
-using Rock.Serialization;
+using RockLib.Messaging.Internal;
 
 #if ROCKLIB
 namespace RockLib.Messaging.NamedPipes
@@ -22,9 +21,8 @@ namespace Rock.Messaging.NamedPipes
     {
         private static readonly Task _completedTask = Task.FromResult(0);
 
-        private readonly ISerializer _serializer = NamedPipeMessageSerializer.Instance;
+        //private readonly ISerializer _serializer = NamedPipeMessageSerializer.Instance;
 
-        private readonly string _name;
         private readonly string _pipeName;
         private readonly bool _compressed;
         private readonly BlockingCollection<string> _messages;
@@ -38,7 +36,7 @@ namespace Rock.Messaging.NamedPipes
         /// <param name="compressed">Whether messages should be compressed.</param>
         public NamedPipeQueueProducer(string name, string pipeName, bool compressed)
         {
-            _name = name;
+            Name = name;
             _pipeName = pipeName;
             _compressed = compressed;
 
@@ -51,7 +49,7 @@ namespace Rock.Messaging.NamedPipes
         /// <summary>
         /// Gets the name of this instance of <see cref="ISender" />.
         /// </summary>
-        public string Name { get { return _name; } }
+        public string Name { get; }
 
         /// <summary>
         /// Sends the specified message.
@@ -97,8 +95,9 @@ namespace Rock.Messaging.NamedPipes
                 namedPipeMessage.Headers[HeaderName.CompressedPayload] = "true";
             }
 
-            var messageString = _serializer.SerializeToString(namedPipeMessage);
-            _messages.Add(messageString);
+            //var messageString = _serializer.SerializeToString(namedPipeMessage);
+            //_messages.Add(messageString);
+            
             return _completedTask;
         }
 

@@ -43,5 +43,58 @@ namespace RockLib.Messaging.Tests
             factory.Should().NotBeNull();
             factory.Should().BeOfType<CompositeMessagingScenarioFactory>();
         }
+
+        [Fact]
+        public void SetCurrent_WhenProvidedAFactory_WillSetItAsCurrent()
+        {
+            MessagingScenarioFactory.SetCurrent(new StubMessagingScenarioFactory());
+
+            var currentScenarioFactory = MessagingScenarioFactory.Current;
+
+            currentScenarioFactory.Should().BeOfType<StubMessagingScenarioFactory>();
+        }
+
+        [Fact]
+        public void SetFallback_WillSetFallback_WillBeUsedWhenCreatingDefaultFactory()
+        {
+            MessagingScenarioFactory.SetFallback(new StubMessagingScenarioFactory());
+
+            var currentScenarioFactory = MessagingScenarioFactory.Current;
+
+            currentScenarioFactory.Should().BeOfType<StubMessagingScenarioFactory>();
+        }
+    }
+
+    public class StubMessagingScenarioFactory : IMessagingScenarioFactory
+    {
+        public void Dispose()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public ISender CreateQueueProducer(string name)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public IReceiver CreateQueueConsumer(string name)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public ISender CreateTopicPublisher(string name)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public IReceiver CreateTopicSubscriber(string name)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public bool HasScenario(string name)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
