@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using RockLib.Configuration;
-
+using RockLib.Messaging.Configuration;
 #if ROCKLIB
 using RockLib.Immutable;
 #else
@@ -70,19 +72,42 @@ namespace Rock.Messaging
         {
             try
             {
-                var rockMessagingConfiguration = Config.Root.GetSection("rock.messaging").Get<IRockMessagingConfiguration>();
 
-                factory = rockMessagingConfiguration.MessagingScenarioFactory;
+#if NETSTANDARD1_6
+                factory = BuildFactoryForCore();
+#else
+                factory = BuildConfigurationFromFramework();
+#endif
 
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Trace.TraceError($"[Rock.Messaging] - [Messaging Scenario Factory] - TryGet Config failed with {e.Message}");
+
                 factory = null;
                 return false;
             }
         }
-        
+
+        internal static IMessagingScenarioFactory BuildFactoryForCore()
+        {
+            var messagingSection = Config.Root.GetSection("RockLib.Messaging").Get<ScenarioFactorySection>();
+            var scenarioFactories = messagingSection.ScenarioFactories;
+
+            if( !scenarioFactories.Any()) { throw new InvalidOperationException("FactoryProxies must have at least one element, please make sure your configuration is correct."); }
+
+            var factories = scenarioFactories.Select(f => f.CreateInstance()).ToList();
+
+            return factories.Count == 1 ? factories[0] : new CompositeMessagingScenarioFactory(factories);
+        }
+
+        private static IMessagingScenarioFactory BuildConfigurationFromFramework()
+        {
+            //(IRockMessagingConfiguration)ConfigurationManager.GetSection("rock.messaging");
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Creates an instance of <see cref="ISender"/> that uses the queue producer scenario
         /// by calling the <see cref="IMessagingScenarioFactory.CreateQueueProducer"/> method

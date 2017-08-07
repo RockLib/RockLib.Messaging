@@ -9,4 +9,10 @@
     <ProjectReference Include="..\Rock.Messaging\RockLib.Messaging.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="RockLib.config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

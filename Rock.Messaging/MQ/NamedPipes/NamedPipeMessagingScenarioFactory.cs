@@ -1,5 +1,5 @@
 ﻿using System;
-
+using RockLib.Messaging.MQ.NamedPipes;
 #if ROCKLIB
 using RockLib.Immutable;
 #else
@@ -44,6 +44,10 @@ namespace Rock.Messaging.NamedPipes
             _configProvider = configProvider ?? DefaultConfigProvider;
         }
 
+#if ROCKLIB
+        public MessagingSettings[] MessagingSettings { get; set; }
+#endif
+
         public static INamedPipeConfigProvider DefaultConfigProvider
         {
             get { return _defaultConfigProvider.Value; }
@@ -68,8 +72,9 @@ namespace Rock.Messaging.NamedPipes
         /// </returns>
         public ISender CreateQueueProducer(string name)
         {
-            var config = _configProvider.GetConfig(name);
-            return new NamedPipeQueueProducer(name, config.PipeName, config.Compressed);
+//            var config = _configProvider.GetConfig(name);
+//            return new NamedPipeQueueProducer(name, config.PipeName, config.Compressed);
+            throw new NotImplementedException("Need to get working ");
         }
 
         /// <summary>
@@ -81,8 +86,10 @@ namespace Rock.Messaging.NamedPipes
         /// </returns>
         public IReceiver CreateQueueConsumer(string name)
         {
-            var config = _configProvider.GetConfig(name);
-            return new NamedPipeQueueConsumer(name, config.PipeName);
+//            var config = _configProvider.GetConfig(name);
+//            return new NamedPipeQueueConsumer(name, config.PipeName);
+
+            throw new NotImplementedException("Need to get working ");
         }
 
         /// <summary>

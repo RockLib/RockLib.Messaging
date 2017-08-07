@@ -1,0 +1,21 @@
+﻿{
+  "AppSettings": {
+    "ApplicationId": 201740,
+    "Environment": "Dev"
+  },
+  "RockLib.Messaging": {
+    "ScenarioFactories": [
+      {
+        "Type": "RockLib.Messaging.Example.Core.NamedPipeMessagingScenarioFactory, RockLib.Messaging.Example.Core",
+        "Value": {
+          "MessagingSettings": [
+            {
+              "PipeName": "pipe1",
+              "Compressed": "true"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
