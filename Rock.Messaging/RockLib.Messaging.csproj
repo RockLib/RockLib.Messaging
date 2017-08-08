@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Remove="Configuration\MessagingScenarioFactoryProxy.cs" />
     <Compile Remove="Configuration\MessagingSectionHandler.cs" />
+    <Compile Remove="Configuration\RockMessagingSetting.cs" />
     <Compile Remove="Configuration\XmlSerializingRockMessagingConfiguration.cs" />
     <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
