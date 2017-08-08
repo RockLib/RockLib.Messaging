@@ -21,7 +21,7 @@ namespace RockLib.Messaging.Tests
 
             Config.SetRoot(config);
 
-            var factory = MessagingScenarioFactory.BuildFactoryForCore();
+            var factory = MessagingScenarioFactory.BuildFactory();
 
             factory.Should().NotBeNull();
             factory.Should().BeOfType<NamedPipeMessagingScenarioFactory>();
@@ -38,7 +38,7 @@ namespace RockLib.Messaging.Tests
 
             Config.SetRoot(config);
 
-            var factory = MessagingScenarioFactory.BuildFactoryForCore();
+            var factory = MessagingScenarioFactory.BuildFactory();
 
             factory.Should().NotBeNull();
             factory.Should().BeOfType<CompositeMessagingScenarioFactory>();

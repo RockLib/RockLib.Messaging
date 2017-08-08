@@ -72,13 +72,7 @@ namespace Rock.Messaging
             try
             {
 
-                factory = BuildFactoryForCore();
-
-//#if NETSTANDARD1_6
-//                factory = BuildFactoryForCore();
-//#else
-//                factory = BuildConfigurationFromFramework();
-//#endif
+                factory = BuildFactory();
 
                 return true;
             }
@@ -91,7 +85,7 @@ namespace Rock.Messaging
             }
         }
 
-        internal static IMessagingScenarioFactory BuildFactoryForCore()
+        internal static IMessagingScenarioFactory BuildFactory()
         {
             var messagingSection = Config.Root.GetSection("RockLib.Messaging").Get<ScenarioFactorySection>();
             var scenarioFactories = messagingSection.ScenarioFactories;
@@ -102,12 +96,7 @@ namespace Rock.Messaging
 
             return factories.Count == 1 ? factories[0] : new CompositeMessagingScenarioFactory(factories);
         }
-
-        private static IMessagingScenarioFactory BuildConfigurationFromFramework()
-        {
-            //(IRockMessagingConfiguration)ConfigurationManager.GetSection("rock.messaging");
-            throw new NotImplementedException();
-        }
+        
 
         /// <summary>
         /// Creates an instance of <see cref="ISender"/> that uses the queue producer scenario

@@ -99,8 +99,7 @@ namespace Rock.Messaging.NamedPipes
 
             var messageString = JsonConvert.SerializeObject(namedPipeMessage);
             _messages.Add(messageString);
-
-
+            
             Trace.TraceError($"[Rock.Messaging.NamedPipeProducer] - [SendAsync] - sending message of {messageString}");
 
             return _completedTask;

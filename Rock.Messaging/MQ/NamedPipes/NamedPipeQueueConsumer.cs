@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 #if ROCKLIB
@@ -67,14 +68,20 @@ namespace Rock.Messaging.NamedPipes
 
 #if !NETSTANDARD1_6
             _pipeServer.BeginWaitForConnection(WaitForConnectionCallBack, null);
-
+            
 #elif NETSTANDARD1_6
-            _pipeServer.WaitForConnectionAsync().ContinueWith(WaitForConnectionCallBack);
+            Task.Run(async () =>
+            {
+                await _pipeServer.WaitForConnectionAsync();
+
+                WaitForConnectionCallBack(null);
+            });
+
 
 #endif
 
         }
-
+        
         private void WaitForConnectionCallBack(IAsyncResult result)
         {
 #if !NETSTANDARD1_6

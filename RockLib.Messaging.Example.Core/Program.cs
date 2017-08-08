@@ -17,7 +17,7 @@ namespace RockLib.Messaging.Example.Core
             var namedPipeProducer = MessagingScenarioFactory.CreateQueueProducer("NampedPipeTester");
             var namedPipeConsumer = MessagingScenarioFactory.CreateQueueConsumer("NampedPipeTester");
 
-            //namedPipeConsumer.Start();
+            namedPipeConsumer.Start();
             namedPipeConsumer.MessageReceived += (sender, eventArgs) =>
             {
                 var eventArgsMessage = eventArgs.Message;
