@@ -1,18 +1,21 @@
-﻿
-using System.IO;
+﻿using System.IO;
+using System.Reflection;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
+using NUnit.Framework;
 using RockLib.Configuration;
+using RockLib.Immutable;
 using RockLib.Messaging.NamedPipes;
-using Xunit;
 
 namespace RockLib.Messaging.Tests
 {
+    [TestFixture]
     public class MessagingScenarioFactoryTests
     {
-        [Fact]
+        [Test]
         public void BuildFactoryFromCore_FromJsonConfig_WillPullSingleFactory()
         {
+
             var builder = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
                     .AddJsonFile(@"CustomConfigFiles\SingleFactory_RockLib.config.json", optional: false, reloadOnChange: true);
@@ -27,9 +30,10 @@ namespace RockLib.Messaging.Tests
             factory.Should().BeOfType<NamedPipeMessagingScenarioFactory>();
         }
 
-        [Fact]
+        [Test]
         public void BuildFactoryFromCore_FromJsonConfig_WillPullMutlipleFactory()
         {
+
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile(@"CustomConfigFiles\MultipleFactory_RockLib.config.json", optional: false, reloadOnChange: true);
@@ -44,7 +48,7 @@ namespace RockLib.Messaging.Tests
             factory.Should().BeOfType<CompositeMessagingScenarioFactory>();
         }
 
-        [Fact]
+        [Test]
         public void SetCurrent_WhenProvidedAFactory_WillSetItAsCurrent()
         {
             MessagingScenarioFactory.SetCurrent(new StubMessagingScenarioFactory());
@@ -54,7 +58,7 @@ namespace RockLib.Messaging.Tests
             currentScenarioFactory.Should().BeOfType<StubMessagingScenarioFactory>();
         }
 
-        [Fact]
+        [Test]
         public void SetFallback_WillSetFallback_WillBeUsedWhenCreatingDefaultFactory()
         {
             MessagingScenarioFactory.SetFallback(new StubMessagingScenarioFactory());
