@@ -73,7 +73,6 @@
     <Compile Include="MQ\MessageReceivedEventArgs.cs" />
     <Compile Include="MQ\MessagingScenarioExtensions.cs" />
     <Compile Include="MQ\MessagingScenarioFactory.cs" />
-    <Compile Include="MQ\NamedPipes\NamedPipeMessageSerializer.cs" />
     <Compile Include="MQ\NamedPipes\INamedPipeConfig.cs" />
     <Compile Include="MQ\NamedPipes\INamedPipeConfigProvider.cs" />
     <Compile Include="MQ\NamedPipes\NamedPipeMessagingScenarioFactory.cs" />
