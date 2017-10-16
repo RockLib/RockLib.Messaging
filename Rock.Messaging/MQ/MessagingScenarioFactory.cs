@@ -5,16 +5,11 @@ using Microsoft.Extensions.Configuration;
 using RockLib.Configuration;
 using RockLib.Messaging.Configuration;
 
-#if !NETSTANDARD1_6
-
-#endif
-
 #if ROCKLIB
 using RockLib.Immutable;
 #else
 using Rock.Immutable;
 #endif
-
 
 #if ROCKLIB
 namespace RockLib.Messaging
