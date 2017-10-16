@@ -1,4 +1,4 @@
-using Rock.Messaging;
+using Rock.Configuration;
 
 namespace Rock.Messaging
 {

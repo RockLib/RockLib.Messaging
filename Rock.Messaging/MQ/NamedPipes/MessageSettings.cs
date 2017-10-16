@@ -1,5 +1,4 @@
-﻿
-namespace RockLib.Messaging.MQ.NamedPipes
+﻿namespace RockLib.Messaging.MQ.NamedPipes
 {
     public class MessagingSettings
     {

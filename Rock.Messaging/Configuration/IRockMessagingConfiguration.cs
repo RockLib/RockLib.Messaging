@@ -4,7 +4,6 @@ namespace RockLib.Messaging
 namespace Rock.Messaging
 #endif
 {
-
     public interface IRockMessagingConfiguration
     {
         IMessagingScenarioFactory MessagingScenarioFactory { get; }

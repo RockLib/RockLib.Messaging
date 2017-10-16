@@ -1,7 +1,8 @@
 ﻿using System;
-using RockLib.Messaging.MQ.NamedPipes;
+
 #if ROCKLIB
 using RockLib.Immutable;
+using RockLib.Messaging.MQ.NamedPipes;
 #else
 using Rock.Immutable;
 #endif

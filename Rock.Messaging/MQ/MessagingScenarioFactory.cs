@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
-using Microsoft.Extensions.Configuration;
-using RockLib.Configuration;
-using RockLib.Messaging.Configuration;
 
 #if ROCKLIB
+using Microsoft.Extensions.Configuration;
+using System.Linq;
+using RockLib.Configuration;
 using RockLib.Immutable;
+using RockLib.Messaging.Configuration;
 #else
+using System.Configuration;
 using Rock.Immutable;
 #endif
 
@@ -82,6 +83,7 @@ namespace Rock.Messaging
 
         internal static IMessagingScenarioFactory BuildFactory()
         {
+#if ROCKLIB
             var messagingSection = Config.Root.GetSection("RockLib.Messaging").Get<ScenarioFactorySection>();
             var scenarioFactories = messagingSection.ScenarioFactories;
 
@@ -90,6 +92,10 @@ namespace Rock.Messaging
             var factories = scenarioFactories.Select(f => f.CreateInstance()).ToList();
 
             return factories.Count == 1 ? factories[0] : new CompositeMessagingScenarioFactory(factories);
+#else
+            var rockMessagingConfiguration = (IRockMessagingConfiguration)ConfigurationManager.GetSection("rock.messaging");
+            return rockMessagingConfiguration.MessagingScenarioFactory;
+#endif
         }
         
 

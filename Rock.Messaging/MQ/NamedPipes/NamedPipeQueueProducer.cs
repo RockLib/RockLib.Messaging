@@ -7,7 +7,12 @@ using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+
+#if ROCKLIB
 using RockLib.Messaging.Internal;
+#else
+using Rock.Messaging.Internal;
+#endif
 
 #if ROCKLIB
 namespace RockLib.Messaging.NamedPipes
