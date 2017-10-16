@@ -1,7 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using NUnit.Framework;
 using RockLib.Configuration;
 using RockLib.Immutable;
@@ -13,12 +15,14 @@ namespace RockLib.Messaging.Tests
     public class MessagingScenarioFactoryTests
     {
         [Test]
-        public void BuildFactoryFromCore_FromJsonConfig_WillPullSingleFactory()
+        public void BuildFactoryCreatesSingleFactoryWithSingleFactoryConfig()
         {
+            ResetFactory();
+            ResetConfig();
 
             var builder = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile(@"CustomConfigFiles\SingleFactory_RockLib.config.json", optional: false, reloadOnChange: true);
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile(@"CustomConfigFiles\SingleFactory_RockLib.config.json", false, true);
 
             var config = builder.Build();
 
@@ -31,12 +35,14 @@ namespace RockLib.Messaging.Tests
         }
 
         [Test]
-        public void BuildFactoryFromCore_FromJsonConfig_WillPullMutlipleFactory()
+        public void BuildFactoryCreatesCompositeFactoryWithMultiFactoryConfig()
         {
+            ResetFactory();
+            ResetConfig();
 
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile(@"CustomConfigFiles\MultipleFactory_RockLib.config.json", optional: false, reloadOnChange: true);
+                .AddJsonFile(@"CustomConfigFiles\MultipleFactory_RockLib.config.json", false, true);
 
             var config = builder.Build();
 
@@ -49,56 +55,125 @@ namespace RockLib.Messaging.Tests
         }
 
         [Test]
-        public void SetCurrent_WhenProvidedAFactory_WillSetItAsCurrent()
+        public void SetCurrentSetsCurrentField()
         {
-            MessagingScenarioFactory.SetCurrent(new StubMessagingScenarioFactory());
+            ResetFactory();
+            ResetConfig();
 
-            var currentScenarioFactory = MessagingScenarioFactory.Current;
+            var mockFactory = new Mock<IMessagingScenarioFactory>();
 
-            currentScenarioFactory.Should().BeOfType<StubMessagingScenarioFactory>();
+            MessagingScenarioFactory.SetCurrent(mockFactory.Object);
+
+            MessagingScenarioFactory.Current.Should().BeSameAs(mockFactory.Object);
         }
 
         [Test]
-        public void SetFallback_WillSetFallback_WillBeUsedWhenCreatingDefaultFactory()
+        public void CreateDefaultMessagingScenarioFactoryUsesFallbackWhenNoConfig()
         {
-            MessagingScenarioFactory.SetFallback(new StubMessagingScenarioFactory());
+            ResetFactory();
+            ResetConfig();
 
-            var currentScenarioFactory = MessagingScenarioFactory.Current;
+            var mockFactory = new Mock<IMessagingScenarioFactory>();
 
-            currentScenarioFactory.Should().BeOfType<StubMessagingScenarioFactory>();
-        }
-    }
+            MessagingScenarioFactory.SetFallback(mockFactory.Object);
 
-    public class StubMessagingScenarioFactory : IMessagingScenarioFactory
-    {
-        public void Dispose()
-        {
-            throw new System.NotImplementedException();
+            var factory = CallPrivateCreateDefault();
+
+            factory.Should().BeSameAs(mockFactory.Object);
         }
 
-        public ISender CreateQueueProducer(string name)
+        [Test]
+        public void CreateDefaultMessagingScenarioFactoryThrowsWhenNoConfigAndNoFallback()
         {
-            throw new System.NotImplementedException();
+            ResetFactory();
+            ResetConfig();
+
+            MessagingScenarioFactory.SetFallback(null);
+
+            try
+            {
+                CallPrivateCreateDefault();
+            }
+            catch (TargetInvocationException ex)
+            {
+                ex.InnerException.Should().BeOfType<InvalidOperationException>();
+                ex.InnerException.Message.Should()
+                    .Be("MessagingScenarioFactory.Current has no value. The value can be set via config or by calling the SetCurrent method.");
+            }
         }
 
-        public IReceiver CreateQueueConsumer(string name)
+        [Test]
+        public void MessagingScenarioFactoryPassThroughOnCreateQueueConsumer()
         {
-            throw new System.NotImplementedException();
+            var mockReceiver = new Mock<IReceiver>();
+            var mockFactory = new Mock<IMessagingScenarioFactory>();
+            mockFactory.Setup(mf => mf.CreateQueueConsumer(It.IsAny<string>())).Returns(mockReceiver.Object);
+
+            ResetFactory();
+            MessagingScenarioFactory.SetCurrent(mockFactory.Object);
+
+            MessagingScenarioFactory.CreateQueueConsumer("test").Should().BeSameAs(mockReceiver.Object);
         }
 
-        public ISender CreateTopicPublisher(string name)
+        [Test]
+        public void MessagingScenarioFactoryPassThroughOnCreateQueueProducer()
         {
-            throw new System.NotImplementedException();
+            var mockReceiver = new Mock<ISender>();
+            var mockFactory = new Mock<IMessagingScenarioFactory>();
+            mockFactory.Setup(mf => mf.CreateQueueProducer(It.IsAny<string>())).Returns(mockReceiver.Object);
+
+            ResetFactory();
+            MessagingScenarioFactory.SetCurrent(mockFactory.Object);
+
+            MessagingScenarioFactory.CreateQueueProducer("test").Should().BeSameAs(mockReceiver.Object);
         }
 
-        public IReceiver CreateTopicSubscriber(string name)
+        [Test]
+        public void MessagingScenarioFactoryPassThroughOnCreateTopicSubscriber()
         {
-            throw new System.NotImplementedException();
+            var mockReceiver = new Mock<IReceiver>();
+            var mockFactory = new Mock<IMessagingScenarioFactory>();
+            mockFactory.Setup(mf => mf.CreateTopicSubscriber(It.IsAny<string>())).Returns(mockReceiver.Object);
+
+            ResetFactory();
+            MessagingScenarioFactory.SetCurrent(mockFactory.Object);
+
+            MessagingScenarioFactory.CreateTopicSubscriber("test").Should().BeSameAs(mockReceiver.Object);
         }
 
-        public bool HasScenario(string name)
+        [Test]
+        public void MessagingScenarioFactoryPassThroughOnCreateTopicPublisher()
         {
-            throw new System.NotImplementedException();
+            var mockReceiver = new Mock<ISender>();
+            var mockFactory = new Mock<IMessagingScenarioFactory>();
+            mockFactory.Setup(mf => mf.CreateTopicPublisher(It.IsAny<string>())).Returns(mockReceiver.Object);
+
+            ResetFactory();
+            MessagingScenarioFactory.SetCurrent(mockFactory.Object);
+
+            MessagingScenarioFactory.CreateTopicPublisher("test").Should().BeSameAs(mockReceiver.Object);
+        }
+
+        private static void ResetConfig()
+        {
+            var rootField = typeof(Config).GetField("_root", BindingFlags.NonPublic | BindingFlags.Static);
+            var root = (Semimutable<IConfigurationRoot>)rootField.GetValue(null);
+            root.GetUnlockValueMethod().Invoke(root, null);
+            Config.SetRoot(new Mock<IConfigurationRoot>().Object);
+        }
+
+        private static void ResetFactory()
+        {
+            var factoryField = typeof(MessagingScenarioFactory).GetField("_messagingScenarioFactory", BindingFlags.NonPublic | BindingFlags.Static);
+            var factory = (Semimutable<IMessagingScenarioFactory>)factoryField.GetValue(null);
+            factory.GetUnlockValueMethod().Invoke(factory, null);
+            MessagingScenarioFactory.SetCurrent(null);
+        }
+
+        private static IMessagingScenarioFactory CallPrivateCreateDefault()
+        {
+            var createMethod = typeof(MessagingScenarioFactory).GetMethod("CreateDefaultMessagingScenarioFactory", BindingFlags.NonPublic | BindingFlags.Static);
+            return (IMessagingScenarioFactory)createMethod.Invoke(null, null);
         }
     }
 }
