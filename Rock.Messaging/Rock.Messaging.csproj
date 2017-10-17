@@ -33,9 +33,6 @@
     <DocumentationFile>bin\Release\Rock.Messaging.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="Rock.Core, Version=0.9.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Rock.Core.0.9.8\lib\net45\Rock.Core.dll</HintPath>
@@ -73,6 +70,7 @@
     <Compile Include="MQ\MessageReceivedEventArgs.cs" />
     <Compile Include="MQ\MessagingScenarioExtensions.cs" />
     <Compile Include="MQ\MessagingScenarioFactory.cs" />
+    <Compile Include="MQ\NamedPipes\NamedPipeMessageSerializer.cs" />
     <Compile Include="MQ\NamedPipes\INamedPipeConfig.cs" />
     <Compile Include="MQ\NamedPipes\INamedPipeConfigProvider.cs" />
     <Compile Include="MQ\NamedPipes\NamedPipeMessagingScenarioFactory.cs" />

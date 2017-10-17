@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 #if ROCKLIB
 namespace RockLib.Messaging.NamedPipes
@@ -20,6 +18,7 @@ namespace Rock.Messaging.NamedPipes
     {
         private readonly BlockingCollection<NamedPipeMessage> _messages = new BlockingCollection<NamedPipeMessage>();
         private readonly Thread _consumerThread;
+        private readonly NamedPipeMessageSerializer _serializer = NamedPipeMessageSerializer.Instance;
 
         private readonly string _pipeName;
 
@@ -94,14 +93,11 @@ namespace Rock.Messaging.NamedPipes
 #endif
             try
             {
-                using (var reader = new StreamReader(_pipeServer))
+                var sentMessage = _serializer.DeserializeFromStream<NamedPipeMessage>(_pipeServer);
+
+                if (sentMessage != null)
                 {
-                    var rawMessage = reader.ReadToEnd();
-                    if (!string.IsNullOrEmpty(rawMessage))
-                    {
-                        var message = JsonConvert.DeserializeObject<NamedPipeMessage>(rawMessage);
-                        _messages.Add(message);
-                    }
+                    _messages.Add(sentMessage);
                 }
             }
             finally

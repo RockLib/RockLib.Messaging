@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 #if ROCKLIB
 using RockLib.Messaging.Internal;
@@ -26,6 +24,7 @@ namespace Rock.Messaging.NamedPipes
     /// </summary>
     public class NamedPipeQueueProducer : ISender
     {
+        private readonly NamedPipeMessageSerializer _serializer = NamedPipeMessageSerializer.Instance;
         private static readonly Task _completedTask = Task.FromResult(0);
 
         private readonly string _pipeName;
@@ -100,10 +99,8 @@ namespace Rock.Messaging.NamedPipes
                 namedPipeMessage.Headers[HeaderName.CompressedPayload] = "true";
             }
 
-            var messageString = JsonConvert.SerializeObject(namedPipeMessage);
+            var messageString = _serializer.SerializeToString(namedPipeMessage);
             _messages.Add(messageString);
-            
-            Trace.TraceError($"[Rock.Messaging.NamedPipeProducer] - [SendAsync] - sending message of {messageString}");
 
             return _completedTask;
         }
