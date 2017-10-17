@@ -53,7 +53,7 @@ namespace Rock.Messaging
         /// <param name="messageFormat">The message's format.</param>
         /// <param name="encoding">
         /// The encoding to use when converting the binary value to a string if 
-        /// <paramref name="messageFormat"/> is not <see cref="Rock.Messaging.MessageFormat.Binary"/>.
+        /// <paramref name="messageFormat"/> is not <see cref="Messaging.MessageFormat.Binary"/>.
         /// </param>
         /// <param name="priority">The priority of the message.</param>
         /// <param name="compressed">

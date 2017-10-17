@@ -18,8 +18,6 @@ namespace Rock.Messaging.NamedPipes
     /// </summary>
     public class NamedPipeQueueConsumer : IReceiver
     {
-        //private readonly ISerializer _serializer = NamedPipeMessageSerializer.Instance;
-
         private readonly BlockingCollection<NamedPipeMessage> _messages = new BlockingCollection<NamedPipeMessage>();
         private readonly Thread _consumerThread;
 
@@ -73,13 +71,13 @@ namespace Rock.Messaging.NamedPipes
             Task.Run(async () =>
             {
                 await _pipeServer.WaitForConnectionAsync();
-
-                WaitForConnectionCallBack(null);
+                try
+                {
+                    WaitForConnectionCallBack(null);
+                }
+                catch (ObjectDisposedException) { }
             });
-
-
 #endif
-
         }
         
         private void WaitForConnectionCallBack(IAsyncResult result)
@@ -96,7 +94,6 @@ namespace Rock.Messaging.NamedPipes
 #endif
             try
             {
-
                 using (var reader = new StreamReader(_pipeServer))
                 {
                     var rawMessage = reader.ReadToEnd();
@@ -109,7 +106,6 @@ namespace Rock.Messaging.NamedPipes
             }
             finally
             {
-
                 // docs say to call dispose vs close.  Dispose also works across standard/framework
                 try { _pipeServer.Dispose(); } // ReSharper disable once EmptyGeneralCatchClause
                 catch { }

@@ -28,8 +28,6 @@ namespace Rock.Messaging.NamedPipes
     {
         private static readonly Task _completedTask = Task.FromResult(0);
 
-        //private readonly ISerializer _serializer = NamedPipeMessageSerializer.Instance;
-
         private readonly string _pipeName;
         private readonly bool _compressed;
         private readonly BlockingCollection<string> _messages;

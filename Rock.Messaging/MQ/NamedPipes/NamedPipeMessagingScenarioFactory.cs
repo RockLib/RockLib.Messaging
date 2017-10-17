@@ -45,10 +45,6 @@ namespace Rock.Messaging.NamedPipes
             _configProvider = configProvider ?? DefaultConfigProvider;
         }
 
-#if ROCKLIB
-        public MessagingSettings[] MessagingSettings { get; set; }
-#endif
-
         public static INamedPipeConfigProvider DefaultConfigProvider
         {
             get { return _defaultConfigProvider.Value; }
