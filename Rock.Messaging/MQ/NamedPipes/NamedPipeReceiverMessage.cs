@@ -1,9 +1,18 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
-using Rock.Messaging.Internal;
 
+#if ROCKLIB
+using RockLib.Messaging.Internal;
+#else
+using Rock.Messaging.Internal;
+#endif
+
+#if ROCKLIB
+namespace RockLib.Messaging.NamedPipes
+#else
 namespace Rock.Messaging.NamedPipes
+#endif
 {
     /// <summary>
     /// An implementation of IReceiverMessage for use by the <see cref="NamedPipeQueueConsumer"/>

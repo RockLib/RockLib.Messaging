@@ -1,6 +1,10 @@
 ﻿using System;
 
+#if ROCKLIB
+namespace RockLib.Messaging
+#else
 namespace Rock.Messaging
+#endif
 {
     /// <summary>
     /// Provides data for the <see cref="IReceiver.MessageReceived"/> event.

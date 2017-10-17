@@ -1,4 +1,8 @@
-﻿namespace Rock.Messaging
+﻿#if ROCKLIB
+namespace RockLib.Messaging
+#else
+namespace Rock.Messaging
+#endif
 {
     /// <summary>
     /// Defines an interface for sending messages transactionally.

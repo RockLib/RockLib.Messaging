@@ -5,10 +5,18 @@ using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
-using Rock.Messaging.Internal;
-using Rock.Serialization;
 
+#if ROCKLIB
+using RockLib.Messaging.Internal;
+#else
+using Rock.Messaging.Internal;
+#endif
+
+#if ROCKLIB
+namespace RockLib.Messaging.NamedPipes
+#else
 namespace Rock.Messaging.NamedPipes
+#endif
 {
     /// <summary>
     /// An implementation of <see cref="ISender"/> that uses named pipes as
@@ -16,11 +24,9 @@ namespace Rock.Messaging.NamedPipes
     /// </summary>
     public class NamedPipeQueueProducer : ISender
     {
+        private readonly NamedPipeMessageSerializer _serializer = NamedPipeMessageSerializer.Instance;
         private static readonly Task _completedTask = Task.FromResult(0);
 
-        private readonly ISerializer _serializer = NamedPipeMessageSerializer.Instance;
-
-        private readonly string _name;
         private readonly string _pipeName;
         private readonly bool _compressed;
         private readonly BlockingCollection<string> _messages;
@@ -34,7 +40,7 @@ namespace Rock.Messaging.NamedPipes
         /// <param name="compressed">Whether messages should be compressed.</param>
         public NamedPipeQueueProducer(string name, string pipeName, bool compressed)
         {
-            _name = name;
+            Name = name;
             _pipeName = pipeName;
             _compressed = compressed;
 
@@ -47,7 +53,7 @@ namespace Rock.Messaging.NamedPipes
         /// <summary>
         /// Gets the name of this instance of <see cref="ISender" />.
         /// </summary>
-        public string Name { get { return _name; } }
+        public string Name { get; }
 
         /// <summary>
         /// Sends the specified message.
@@ -95,6 +101,7 @@ namespace Rock.Messaging.NamedPipes
 
             var messageString = _serializer.SerializeToString(namedPipeMessage);
             _messages.Add(messageString);
+
             return _completedTask;
         }
 

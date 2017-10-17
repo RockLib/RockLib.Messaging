@@ -1,6 +1,10 @@
 ﻿using System.Text;
 
+#if ROCKLIB
+namespace RockLib.Messaging
+#else
 namespace Rock.Messaging
+#endif
 {
     /// <summary>
     /// Provides compression and decompression methods for use by queues.

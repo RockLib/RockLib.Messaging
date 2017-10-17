@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 
+#if ROCKLIB
+namespace RockLib.Messaging
+#else
 namespace Rock.Messaging
+#endif
 {
     /// <summary>
     /// An implementation of <see cref="ISenderMessage"/> for use when a byte array is the

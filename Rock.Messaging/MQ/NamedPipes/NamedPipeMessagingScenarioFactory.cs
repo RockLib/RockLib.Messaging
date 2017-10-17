@@ -1,7 +1,17 @@
 ﻿using System;
-using Rock.Immutable;
 
+#if ROCKLIB
+using RockLib.Immutable;
+using RockLib.Messaging.MQ.NamedPipes;
+#else
+using Rock.Immutable;
+#endif
+
+#if ROCKLIB
+namespace RockLib.Messaging.NamedPipes
+#else
 namespace Rock.Messaging.NamedPipes
+#endif
 {
     /// <summary>
     /// An implementation of <see cref="IMessagingScenarioFactory"/> that returns

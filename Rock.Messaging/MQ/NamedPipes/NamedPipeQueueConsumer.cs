@@ -2,9 +2,13 @@
 using System.Collections.Concurrent;
 using System.IO.Pipes;
 using System.Threading;
-using Rock.Serialization;
+using System.Threading.Tasks;
 
+#if ROCKLIB
+namespace RockLib.Messaging.NamedPipes
+#else
 namespace Rock.Messaging.NamedPipes
+#endif
 {
     /// <summary>
     /// An implementation of <see cref="IReceiver"/> that uses named pipes as
@@ -12,12 +16,10 @@ namespace Rock.Messaging.NamedPipes
     /// </summary>
     public class NamedPipeQueueConsumer : IReceiver
     {
-        private readonly ISerializer _serializer = NamedPipeMessageSerializer.Instance;
-
         private readonly BlockingCollection<NamedPipeMessage> _messages = new BlockingCollection<NamedPipeMessage>();
         private readonly Thread _consumerThread;
+        private readonly NamedPipeMessageSerializer _serializer = NamedPipeMessageSerializer.Instance;
 
-        private readonly string _name;
         private readonly string _pipeName;
 
         private NamedPipeServerStream _pipeServer;
@@ -29,7 +31,7 @@ namespace Rock.Messaging.NamedPipes
         /// <param name="pipeName">Name of the named pipe.</param>
         public NamedPipeQueueConsumer(string name, string pipeName)
         {
-            _name = name;
+            Name = name;
             _pipeName = pipeName;
             _consumerThread = new Thread(Consume);
         }
@@ -42,7 +44,7 @@ namespace Rock.Messaging.NamedPipes
         /// <summary>
         /// Gets the name of this instance of <see cref="IReceiver" />.
         /// </summary>
-        public string Name { get { return _name; } }
+        public string Name { get; }
 
         /// <summary>
         /// Starts listening for messages.
@@ -60,11 +62,26 @@ namespace Rock.Messaging.NamedPipes
         private void StartNewPipeServer()
         {
             _pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.In, 254, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
-            _pipeServer.BeginWaitForConnection(WaitForConnectionCallBack, null);
-        }
 
+#if !NETSTANDARD1_6
+            _pipeServer.BeginWaitForConnection(WaitForConnectionCallBack, null);
+            
+#elif NETSTANDARD1_6
+            Task.Run(async () =>
+            {
+                await _pipeServer.WaitForConnectionAsync();
+                try
+                {
+                    WaitForConnectionCallBack(null);
+                }
+                catch (ObjectDisposedException) { }
+            });
+#endif
+        }
+        
         private void WaitForConnectionCallBack(IAsyncResult result)
         {
+#if !NETSTANDARD1_6
             try
             {
                 _pipeServer.EndWaitForConnection(result);
@@ -73,7 +90,7 @@ namespace Rock.Messaging.NamedPipes
             {
                 return;
             }
-
+#endif
             try
             {
                 var sentMessage = _serializer.DeserializeFromStream<NamedPipeMessage>(_pipeServer);
@@ -85,7 +102,8 @@ namespace Rock.Messaging.NamedPipes
             }
             finally
             {
-                try { _pipeServer.Close(); } // ReSharper disable once EmptyGeneralCatchClause
+                // docs say to call dispose vs close.  Dispose also works across standard/framework
+                try { _pipeServer.Dispose(); } // ReSharper disable once EmptyGeneralCatchClause
                 catch { }
                 StartNewPipeServer();
             }
@@ -109,7 +127,8 @@ namespace Rock.Messaging.NamedPipes
             if (_pipeServer != null)
             {
                 _messages.CompleteAdding();
-                try { _pipeServer.Close(); } // ReSharper disable once EmptyGeneralCatchClause
+                // docs say to call dispose vs close.  Dispose also works across standard/framework
+                try { _pipeServer.Dispose(); } // ReSharper disable once EmptyGeneralCatchClause
                 catch { }
                 try { _consumerThread.Join(); } // ReSharper disable once EmptyGeneralCatchClause
                 catch { }

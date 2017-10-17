@@ -1,8 +1,22 @@
 ﻿using System;
-using Rock.Immutable;
-using System.Configuration;
+using System.Diagnostics;
 
+#if ROCKLIB
+using Microsoft.Extensions.Configuration;
+using System.Linq;
+using RockLib.Configuration;
+using RockLib.Immutable;
+using RockLib.Messaging.Configuration;
+#else
+using System.Configuration;
+using Rock.Immutable;
+#endif
+
+#if ROCKLIB
+namespace RockLib.Messaging
+#else
 namespace Rock.Messaging
+#endif
 {
     /// <summary>
     /// Provides methods for creating instances of various messaging scenarios.
@@ -14,10 +28,7 @@ namespace Rock.Messaging
 
         private static IMessagingScenarioFactory _fallbackMessagingScenarioFactory;
 
-        public static IMessagingScenarioFactory Current
-        {
-            get { return _messagingScenarioFactory.Value; }
-        }
+        public static IMessagingScenarioFactory Current => _messagingScenarioFactory.Value;
 
         public static void SetCurrent(IMessagingScenarioFactory messagingScenarioFactory)
         {
@@ -39,10 +50,7 @@ namespace Rock.Messaging
             {
                 IMessagingScenarioFactory value;
 
-                return
-                    TryGetFactoryFromConfig(out value)
-                        ? value
-                        : _fallbackMessagingScenarioFactory ?? ThrowNoMessagingScenarioFactoryFoundException();
+                return TryGetFactoryFromConfig(out value) ? value : _fallbackMessagingScenarioFactory ?? ThrowNoMessagingScenarioFactoryFoundException();
             }
             finally
             {
@@ -59,16 +67,37 @@ namespace Rock.Messaging
         {
             try
             {
-                var rockMessagingConfiguration = (IRockMessagingConfiguration)ConfigurationManager.GetSection("rock.messaging");
-                factory = rockMessagingConfiguration.MessagingScenarioFactory;
+
+                factory = BuildFactory();
+
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Trace.TraceError($"[Rock.Messaging] - [Messaging Scenario Factory] - TryGet Config failed with {e.Message}");
+
                 factory = null;
                 return false;
             }
         }
+
+        internal static IMessagingScenarioFactory BuildFactory()
+        {
+#if ROCKLIB
+            var messagingSection = Config.Root.GetSection("RockLib.Messaging").Get<ScenarioFactorySection>();
+            var scenarioFactories = messagingSection.ScenarioFactories;
+
+            if( !scenarioFactories.Any()) { throw new InvalidOperationException("FactoryProxies must have at least one element, please make sure your configuration is correct."); }
+
+            var factories = scenarioFactories.Select(f => f.CreateInstance()).ToList();
+
+            return factories.Count == 1 ? factories[0] : new CompositeMessagingScenarioFactory(factories);
+#else
+            var rockMessagingConfiguration = (IRockMessagingConfiguration)ConfigurationManager.GetSection("rock.messaging");
+            return rockMessagingConfiguration.MessagingScenarioFactory;
+#endif
+        }
+        
 
         /// <summary>
         /// Creates an instance of <see cref="ISender"/> that uses the queue producer scenario

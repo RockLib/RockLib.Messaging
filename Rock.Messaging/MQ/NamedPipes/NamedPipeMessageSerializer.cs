@@ -4,11 +4,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Rock.Serialization;
 
+#if ROCKLIB
+namespace RockLib.Messaging.NamedPipes
+#else
 namespace Rock.Messaging.NamedPipes
+#endif
 {
-    internal class NamedPipeMessageSerializer : ISerializer
+    internal class NamedPipeMessageSerializer
     {
         public static readonly NamedPipeMessageSerializer Instance = new NamedPipeMessageSerializer();
 
@@ -26,6 +29,11 @@ namespace Rock.Messaging.NamedPipes
         // This is the default encoding that the StreamWriter class uses.
         private static readonly Encoding _defaultEncoding = new UTF8Encoding(false, true);
 
+        public void SerializeToStream<T>(Stream stream, T value)
+        {
+            SerializeToStream(stream, value, typeof(T));
+        }
+
         public void SerializeToStream(Stream stream, object item, Type type)
         {
             using (var writer = new StreamWriter(stream, _defaultEncoding, 1024, true))
@@ -34,12 +42,22 @@ namespace Rock.Messaging.NamedPipes
             }
         }
 
+        public T DeserializeFromStream<T>(Stream stream)
+        {
+            return (T)DeserializeFromStream(stream, typeof(T));
+        }
+
         public object DeserializeFromStream(Stream stream, Type type)
         {
             using (var reader = new StreamReader(stream, Encoding.UTF8, true, 1024, true))
             {
                 return DeserializeFromString(reader.ReadToEnd(), type);
             }
+        }
+
+        public string SerializeToString<T>(T item)
+        {
+            return SerializeToString(item, typeof(T));
         }
 
         public string SerializeToString(object item, Type type)
@@ -84,9 +102,14 @@ namespace Rock.Messaging.NamedPipes
             return sb.ToString();
         }
 
+        public T DeserializeFromString<T>(string data)
+        {
+            return (T)DeserializeFromString(data, typeof(T));
+        }
+
         public object DeserializeFromString(string data, Type type)
         {
-            var enumerator = data.GetEnumerator();
+            var enumerator = data.AsEnumerable().GetEnumerator();
 
             Skip(enumerator, _stringValueHeader.Length);
             var stringValue = Unescape(GetStringValue(enumerator));
