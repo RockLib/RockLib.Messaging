@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 
 #if ROCKLIB
 using Microsoft.Extensions.Configuration;
@@ -72,10 +71,8 @@ namespace Rock.Messaging
 
                 return true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Trace.TraceError($"[Rock.Messaging] - [Messaging Scenario Factory] - TryGet Config failed with {e.Message}");
-
                 factory = null;
                 return false;
             }
