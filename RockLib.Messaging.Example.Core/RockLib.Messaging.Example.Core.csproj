@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rock.Messaging\RockLib.Messaging.csproj" />
+    <PackageReference Include="RockLib.Messaging" Version="0.0.1-alpha01" />
   </ItemGroup>
 
   <ItemGroup>
