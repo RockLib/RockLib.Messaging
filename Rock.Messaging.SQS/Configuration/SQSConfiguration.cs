@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RockLib.Messaging.SQS.Configuration
+namespace RockLib.Messaging.SQS
 {
     public class SQSConfiguration: ISQSConfiguration
     {

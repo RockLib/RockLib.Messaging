@@ -37,10 +37,17 @@
 
     <ItemGroup>
       <None Remove="packages.config" />
+      <None Remove="Rock.Messaging.SQS.csproj.DotSettings" />
+      <None Remove="Rock.Messaging.SQS.nuspec" />
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="Properties\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AWSSDK.SQS" Version="3.3.3" />
+      <PackageReference Include="RockLib.Messaging" Version="0.0.1-alpha01" />
     </ItemGroup>
 
 </Project>

@@ -1,7 +1,11 @@
 ﻿using Amazon.SQS;
 using System;
 
+#if ROCKLIB
+namespace RockLib.Messaging.SQS
+#else
 namespace Rock.Messaging.SQS
+#endif
 {
     public class SQSMessagingScenarioFactory : IMessagingScenarioFactory
     {
@@ -9,18 +13,20 @@ namespace Rock.Messaging.SQS
 
         public SQSMessagingScenarioFactory(ISQSConfigurationProvider configurationProvider)
         {
-            if (configurationProvider == null)
-            {
-                throw new ArgumentNullException("configurationProvider");
-            }
-
-            _configurationProvider = configurationProvider;
+            _configurationProvider = configurationProvider ?? throw new ArgumentNullException(nameof(configurationProvider));
         }
 
+#if ROCKLIB
+        public SQSMessagingScenarioFactory(SQSConfigurationProvider sqsSettings)
+            : this((ISQSConfigurationProvider)sqsSettings)
+        {
+        }
+#else
         public SQSMessagingScenarioFactory(XmlDeserializingSQSConfigurationProvider sqsSettings)
             : this((ISQSConfigurationProvider)sqsSettings)
         {
         }
+#endif
 
         public IReceiver CreateQueueConsumer(string name)
         {

@@ -1,9 +1,18 @@
 ﻿using Amazon.SQS;
 using Amazon.SQS.Model;
-using Rock.Messaging.Internal;
 using System.Threading.Tasks;
 
+#if ROCKLIB
+using RockLib.Messaging.Internal;
+#else
+using Rock.Messaging.Internal;
+#endif
+
+#if ROCKLIB
+namespace RockLib.Messaging.SQS
+#else
 namespace Rock.Messaging.SQS
+#endif
 {
     public class SQSQueueSender : ISender
     {

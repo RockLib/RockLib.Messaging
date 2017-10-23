@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace RockLib.Messaging.SQS.Configuration
+namespace RockLib.Messaging.SQS
 {
     public class SQSConfigurationProvider: ISQSConfigurationProvider
     {

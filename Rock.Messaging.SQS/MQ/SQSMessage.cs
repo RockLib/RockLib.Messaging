@@ -2,9 +2,18 @@
 using System.Linq;
 using System.Text;
 using Amazon.SQS.Model;
-using Rock.Messaging.Internal;
 
+#if ROCKLIB
+using RockLib.Messaging.Internal;
+#else
+using Rock.Messaging.Internal;
+#endif
+
+#if ROCKLIB
+namespace RockLib.Messaging.SQS
+#else
 namespace Rock.Messaging.SQS
+#endif
 {
     public class SQSMessage : IReceiverMessage
     {
