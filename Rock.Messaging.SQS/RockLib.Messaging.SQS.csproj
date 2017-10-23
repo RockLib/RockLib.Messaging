@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard1.6;net451;</TargetFrameworks>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>RockLib.Messaging.SQS</PackageId>
+        <PackageVersion>0.0.1-alpha01</PackageVersion>
+        <Authors>Quicken Loans</Authors>
+        <Description>Messaging extension for Rock Framework to add Amazon SQS support.</Description>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PackageReleaseNotes></PackageReleaseNotes>
+        <Copyright>Copyright 2017 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
+        <PackageTags>rocklib messaging sqs</PackageTags>
+        <Version>0.0.1-alpha01</Version>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <DefineConstants>ROCKLIB</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard1.6|AnyCPU'">
+        <DocumentationFile>bin\Release\netstandard1.6\RockLib.Messaging.SQS.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net451|AnyCPU'">
+        <DocumentationFile>bin\Release\net451\RockLib.Messaging.SQS.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Remove="Configuration\XmlDeserializingSQSConfigurationProvider.cs" />
+      <Compile Remove="Configuration\XmlSQSConfiguration.cs" />
+      <Compile Remove="Properties\AssemblyInfo.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="packages.config" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Properties\" />
+    </ItemGroup>
+
+</Project>
