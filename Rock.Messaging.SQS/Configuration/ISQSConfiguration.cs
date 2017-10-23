@@ -1,4 +1,8 @@
-﻿namespace Rock.Messaging.SQS
+﻿#if ROCKLIB
+namespace RockLib.Messaging.SQS
+#else
+namespace Rock.Messaging.SQS
+#endif
 {
     public interface ISQSConfiguration
     {
@@ -7,5 +11,6 @@
         int MaxMessages { get; set; }
         bool AutoAcknowledge { get; }
         bool Compressed { get; }
+        void Validate();
     }
 }
