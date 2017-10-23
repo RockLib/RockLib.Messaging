@@ -6,10 +6,10 @@ namespace Rock.Messaging.SQS
 {
     public class XmlDeserializingSQSConfigurationProvider : ISQSConfigurationProvider
     {
-        private SQSConfiguration[] _configurations = new SQSConfiguration[0];
+        private XmlSQSConfiguration[] _configurations = new XmlSQSConfiguration[0];
 
         [XmlElement("sqs")]
-        public SQSConfiguration[] Configurations
+        public XmlSQSConfiguration[] Configurations
         {
             get { return _configurations; }
             set

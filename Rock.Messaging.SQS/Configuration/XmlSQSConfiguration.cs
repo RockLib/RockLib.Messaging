@@ -3,9 +3,9 @@ using System.Xml.Serialization;
 
 namespace Rock.Messaging.SQS
 {
-    public class SQSConfiguration : ISQSConfiguration
+    public class XmlSQSConfiguration : ISQSConfiguration
     {
-        public SQSConfiguration()
+        public XmlSQSConfiguration()
         {
             MaxMessages = 3;
             AutoAcknowledge = true;

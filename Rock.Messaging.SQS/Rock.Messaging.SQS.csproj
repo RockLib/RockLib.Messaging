@@ -64,7 +64,7 @@
   <ItemGroup>
     <Compile Include="Configuration\ISQSConfiguration.cs" />
     <Compile Include="Configuration\ISQSConfigurationProvider.cs" />
-    <Compile Include="Configuration\SQSConfiguration.cs" />
+    <Compile Include="Configuration\XmlSQSConfiguration.cs" />
     <Compile Include="MQ\SQSMessage.cs" />
     <Compile Include="MQ\SQSMessagingScenarioFactory.cs" />
     <Compile Include="MQ\SQSQueueSender.cs" />
