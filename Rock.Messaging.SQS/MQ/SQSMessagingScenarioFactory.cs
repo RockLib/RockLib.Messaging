@@ -1,5 +1,7 @@
 ﻿using Amazon.SQS;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 #if ROCKLIB
 namespace RockLib.Messaging.SQS
@@ -9,19 +11,30 @@ namespace Rock.Messaging.SQS
 {
     public class SQSMessagingScenarioFactory : IMessagingScenarioFactory
     {
-        private readonly ISQSConfigurationProvider _configurationProvider;
+        private ISQSConfigurationProvider _configurationProvider;
 
+#if ROCKLIB
+
+        private List<SQSConfiguration> _sqsSettings;
+
+        public List<SQSConfiguration> SQSSettings
+        {
+            get => _sqsSettings;
+            set
+            {
+                _sqsSettings = value;
+                _configurationProvider = new SQSConfigurationProvider
+                {
+                    Configurations = value.ToArray<ISQSConfiguration>()
+                };
+            }
+        }
+#else
         public SQSMessagingScenarioFactory(ISQSConfigurationProvider configurationProvider)
         {
             _configurationProvider = configurationProvider ?? throw new ArgumentNullException(nameof(configurationProvider));
         }
 
-#if ROCKLIB
-        public SQSMessagingScenarioFactory(SQSConfigurationProvider sqsSettings)
-            : this((ISQSConfigurationProvider)sqsSettings)
-        {
-        }
-#else
         public SQSMessagingScenarioFactory(XmlDeserializingSQSConfigurationProvider sqsSettings)
             : this((ISQSConfigurationProvider)sqsSettings)
         {
