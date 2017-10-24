@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockLib.Messaging.Example.F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SQS", "Rock.Messaging.SQS\RockLib.Messaging.SQS.csproj", "{C4385BD1-2B62-4232-ADC2-896BDBE34142}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockLib.Messaging.SQS.Example.Framework", "RockLib.Messaging.SQS.Example.Framework\RockLib.Messaging.SQS.Example.Framework.csproj", "{845B884E-FE1E-46AF-B49D-1EFE76371130}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Messaging.SQS.Core", "Example.Messaging.SQS.Core\Example.Messaging.SQS.Core.csproj", "{B6E266AD-459F-4D9F-A196-7F1D725F1C50}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{C4385BD1-2B62-4232-ADC2-896BDBE34142}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4385BD1-2B62-4232-ADC2-896BDBE34142}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4385BD1-2B62-4232-ADC2-896BDBE34142}.Release|Any CPU.Build.0 = Release|Any CPU
+		{845B884E-FE1E-46AF-B49D-1EFE76371130}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{845B884E-FE1E-46AF-B49D-1EFE76371130}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{845B884E-FE1E-46AF-B49D-1EFE76371130}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{845B884E-FE1E-46AF-B49D-1EFE76371130}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6E266AD-459F-4D9F-A196-7F1D725F1C50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6E266AD-459F-4D9F-A196-7F1D725F1C50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6E266AD-459F-4D9F-A196-7F1D725F1C50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6E266AD-459F-4D9F-A196-7F1D725F1C50}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
