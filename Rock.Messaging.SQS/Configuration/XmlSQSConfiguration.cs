@@ -1,19 +1,29 @@
 ﻿using System;
+using System.Xml.Serialization;
 
-namespace RockLib.Messaging.SQS
+namespace Rock.Messaging.SQS
 {
-    public class SQSConfiguration: ISQSConfiguration
+    public class XmlSQSConfiguration : ISQSConfiguration
     {
-        public SQSConfiguration()
+        public XmlSQSConfiguration()
         {
             MaxMessages = 3;
             AutoAcknowledge = true;
         }
 
+        [XmlAttribute("name")]
         public string Name { get; set; }
+
+        [XmlAttribute("queueUrl")]
         public string QueueUrl { get; set; }
+
+        [XmlAttribute("maxMessages")]
         public int MaxMessages { get; set; }
+
+        [XmlAttribute("autoAcknowledge")]
         public bool AutoAcknowledge { get; set; }
+
+        [XmlAttribute("compressed")]
         public bool Compressed { get; set; }
 
         public void Validate()

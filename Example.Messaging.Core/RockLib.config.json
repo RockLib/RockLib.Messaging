@@ -8,16 +8,7 @@
       {
         "Type": "RockLib.Messaging.NamedPipes.NamedPipeMessagingScenarioFactory, RockLib.Messaging",
         "Value": {
-          "MessagingSettings": [
-            {
-              "PipeName": "pipe1",
-              "Compressed": "true"
-            },
-            {
-              "PipeName": "pipe2",
-              "Compressed": "true"
-            }
-          ]
+            "Foo" : "Foo" 
         }
       }
     ]

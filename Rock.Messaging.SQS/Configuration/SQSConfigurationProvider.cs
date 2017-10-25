@@ -1,26 +1,16 @@
 ﻿using System;
 using System.Linq;
-using System.Xml.Serialization;
 
-namespace Rock.Messaging.SQS
+namespace RockLib.Messaging.SQS
 {
-    public class XmlDeserializingSQSConfigurationProvider : ISQSConfigurationProvider
+    public class SQSConfigurationProvider: ISQSConfigurationProvider
     {
-        private XmlSQSConfiguration[] _configurations = new XmlSQSConfiguration[0];
-
-        [XmlElement("sqs")]
-        public XmlSQSConfiguration[] Configurations
+        private ISQSConfiguration[] _configurations = new ISQSConfiguration[0];
+        
+        public ISQSConfiguration[] Configurations
         {
-            get { return _configurations; }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-
-                _configurations = value;
-            }
+            get => _configurations;
+            set => _configurations = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         public ISQSConfiguration GetConfiguration(string name)

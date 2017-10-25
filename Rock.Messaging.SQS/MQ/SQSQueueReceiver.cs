@@ -6,9 +6,18 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
-using Rock.BackgroundErrorLogging;
 
+#if ROCKLIB
+using System.Diagnostics;
+#else
+using Rock.BackgroundErrorLogging;
+#endif
+
+#if ROCKLIB
+namespace RockLib.Messaging.SQS
+#else
 namespace Rock.Messaging.SQS
+#endif
 {
     public class SQSQueueReceiver : IReceiver
     {
@@ -66,7 +75,7 @@ namespace Rock.Messaging.SQS
                 {
                     try
                     {
-                        response = _sqs.ReceiveMessage(receiveMessageRequest);
+                        response = Sync.OverAsync(() => _sqs.ReceiveMessageAsync(receiveMessageRequest));
 
                         if (response.HttpStatusCode == HttpStatusCode.OK)
                         {
@@ -82,12 +91,15 @@ namespace Rock.Messaging.SQS
 
                 if (exception != null || response == null || response.HttpStatusCode != HttpStatusCode.OK)
                 {
+#if ROCKLIB
+                    Trace.TraceError($"Unable to receive SQS messages from AWS. Additional Information - {GetAdditionalInformation(response, null)}");
+#else
                     BackgroundErrorLogger.Log(
                         exception,
                         "Unable to receive SQS messages from AWS.",
                         "Rock.Messaging.SQS",
                         GetAdditionalInformation(response, null));
-
+#endif
                     continue;
                 }
 
@@ -117,11 +129,11 @@ namespace Rock.Messaging.SQS
                                         deleteException = null;
                                         deleteResponse = null;
 
-                                        deleteResponse = _sqs.DeleteMessage(new DeleteMessageRequest
+                                        deleteResponse = Sync.OverAsync(() => _sqs.DeleteMessageAsync(new DeleteMessageRequest
                                         {
                                             QueueUrl = _queueUrl,
                                             ReceiptHandle = receiptHandle
-                                        });
+                                        }));
 
                                         if (deleteResponse.HttpStatusCode == HttpStatusCode.OK)
                                         {
@@ -134,11 +146,15 @@ namespace Rock.Messaging.SQS
                                     }
                                 }
 
+#if ROCKLIB
+                                Trace.TraceError($"Unable to delete SQS message.. Additional Information - {GetAdditionalInformation(deleteResponse, receiptHandle)}");
+#else
                                 BackgroundErrorLogger.Log(
                                     deleteException,
                                     "Unable to delete SQS message.",
                                     "Rock.Messaging.SQS",
                                     GetAdditionalInformation(deleteResponse, receiptHandle));
+#endif
                             };
 
                         try

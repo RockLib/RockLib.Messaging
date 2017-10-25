@@ -1,26 +1,54 @@
 ﻿using Amazon.SQS;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
+#if ROCKLIB
+namespace RockLib.Messaging.SQS
+#else
 namespace Rock.Messaging.SQS
+#endif
 {
     public class SQSMessagingScenarioFactory : IMessagingScenarioFactory
     {
-        private readonly ISQSConfigurationProvider _configurationProvider;
+        private ISQSConfigurationProvider _configurationProvider;
+
+#if ROCKLIB
+
+        private List<SQSConfiguration> _sqsSettings;
+
+        public SQSMessagingScenarioFactory()
+        {
+        }
 
         public SQSMessagingScenarioFactory(ISQSConfigurationProvider configurationProvider)
         {
-            if (configurationProvider == null)
-            {
-                throw new ArgumentNullException("configurationProvider");
-            }
+            _configurationProvider = configurationProvider ?? throw new ArgumentNullException(nameof(configurationProvider));
+        }
 
-            _configurationProvider = configurationProvider;
+        public List<SQSConfiguration> SQSSettings
+        {
+            get => _sqsSettings;
+            set
+            {
+                _sqsSettings = value;
+                _configurationProvider = new SQSConfigurationProvider
+                {
+                    Configurations = value.ToArray<ISQSConfiguration>()
+                };
+            }
+        }
+#else
+        public SQSMessagingScenarioFactory(ISQSConfigurationProvider configurationProvider)
+        {
+            _configurationProvider = configurationProvider ?? throw new ArgumentNullException(nameof(configurationProvider));
         }
 
         public SQSMessagingScenarioFactory(XmlDeserializingSQSConfigurationProvider sqsSettings)
             : this((ISQSConfigurationProvider)sqsSettings)
         {
         }
+#endif
 
         public IReceiver CreateQueueConsumer(string name)
         {

@@ -1,15 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26711.1
+VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging", "Rock.Messaging\RockLib.Messaging.csproj", "{E1860FD3-54D8-4EDB-82E0-E61ED8725F20}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.Tests", "RockLib.Messaging.Tests\RockLib.Messaging.Tests.csproj", "{6B81F84C-A768-43DC-8F2E-F6F0EE9A9F32}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.Example.Core", "RockLib.Messaging.Example.Core\RockLib.Messaging.Example.Core.csproj", "{4B030711-4BCE-4749-9EFF-3E7B11866647}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.Core", "Example.Messaging.Core\Example.Messaging.Core.csproj", "{4B030711-4BCE-4749-9EFF-3E7B11866647}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockLib.Messaging.Example.Framework", "RockLib.Messaging.Example.Framework\RockLib.Messaging.Example.Framework.csproj", "{F828E6D1-F6D1-4325-8DFA-DA8826E1CE3C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Messaging.Framework", "Example.Messaging.Framework\Example.Messaging.Framework.csproj", "{F828E6D1-F6D1-4325-8DFA-DA8826E1CE3C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SQS", "Rock.Messaging.SQS\RockLib.Messaging.SQS.csproj", "{C4385BD1-2B62-4232-ADC2-896BDBE34142}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Messaging.SQS.Framework", "Example.Messaging.SQS.Framework\Example.Messaging.SQS.Framework.csproj", "{845B884E-FE1E-46AF-B49D-1EFE76371130}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.SQS.Core", "Example.Messaging.SQS.Core\Example.Messaging.SQS.Core.csproj", "{B6E266AD-459F-4D9F-A196-7F1D725F1C50}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +39,18 @@ Global
 		{F828E6D1-F6D1-4325-8DFA-DA8826E1CE3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F828E6D1-F6D1-4325-8DFA-DA8826E1CE3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F828E6D1-F6D1-4325-8DFA-DA8826E1CE3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4385BD1-2B62-4232-ADC2-896BDBE34142}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4385BD1-2B62-4232-ADC2-896BDBE34142}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4385BD1-2B62-4232-ADC2-896BDBE34142}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4385BD1-2B62-4232-ADC2-896BDBE34142}.Release|Any CPU.Build.0 = Release|Any CPU
+		{845B884E-FE1E-46AF-B49D-1EFE76371130}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{845B884E-FE1E-46AF-B49D-1EFE76371130}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{845B884E-FE1E-46AF-B49D-1EFE76371130}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{845B884E-FE1E-46AF-B49D-1EFE76371130}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6E266AD-459F-4D9F-A196-7F1D725F1C50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6E266AD-459F-4D9F-A196-7F1D725F1C50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6E266AD-459F-4D9F-A196-7F1D725F1C50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6E266AD-459F-4D9F-A196-7F1D725F1C50}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
