@@ -10,11 +10,12 @@ namespace RockLib.Messaging.SQS
             AutoAcknowledge = true;
         }
 
-        public String Name { get; set; }
-        public String QueueUrl { get; set; }
-        public Int32 MaxMessages { get; set; }
-        public Boolean AutoAcknowledge { get; set; }
-        public Boolean Compressed { get; set; }
+        public string Name { get; set; }
+        public string QueueUrl { get; set; }
+        public int MaxMessages { get; set; }
+        public bool AutoAcknowledge { get; set; }
+        public bool Compressed { get; set; }
+
         public void Validate()
         {
             if (Name == null)

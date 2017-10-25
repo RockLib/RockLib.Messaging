@@ -17,6 +17,15 @@ namespace Rock.Messaging.SQS
 
         private List<SQSConfiguration> _sqsSettings;
 
+        public SQSMessagingScenarioFactory()
+        {
+        }
+
+        public SQSMessagingScenarioFactory(ISQSConfigurationProvider configurationProvider)
+        {
+            _configurationProvider = configurationProvider ?? throw new ArgumentNullException(nameof(configurationProvider));
+        }
+
         public List<SQSConfiguration> SQSSettings
         {
             get => _sqsSettings;
