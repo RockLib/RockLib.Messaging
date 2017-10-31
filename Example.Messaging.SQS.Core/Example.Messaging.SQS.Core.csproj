@@ -6,12 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.Core" Version="3.3.18.2" />
     <PackageReference Include="RockLib.Messaging" Version="0.0.1-alpha01" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Rock.Messaging.SQS\RockLib.Messaging.SQS.csproj" />
+    <PackageReference Include="RockLib.Messaging.SQS" Version="0.0.1-alpha01" />
   </ItemGroup>
 
   <ItemGroup>
