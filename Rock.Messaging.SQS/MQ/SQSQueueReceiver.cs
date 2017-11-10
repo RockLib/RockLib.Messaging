@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 
 #if ROCKLIB
 using System.Diagnostics;
@@ -19,8 +20,6 @@ namespace RockLib.Messaging.SQS
 namespace Rock.Messaging.SQS
 #endif
 {
-    using System.Threading.Tasks;
-
     public class SQSQueueReceiver : IReceiver
     {
         private readonly string _name;
@@ -112,7 +111,7 @@ namespace Rock.Messaging.SQS
                     Parallel.ForEach(response.Messages, Handle);
                 }
                 else
-                { 
+                {
                     foreach (var message in response.Messages)
                     {
                         this.Handle(message);
