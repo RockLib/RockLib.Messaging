@@ -114,7 +114,7 @@ namespace Rock.Messaging.SQS
                 {
                     foreach (var message in response.Messages)
                     {
-                        this.Handle(message);
+                        Handle(message);
                     }
                 }
             }
