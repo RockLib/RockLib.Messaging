@@ -11,6 +11,7 @@ namespace Rock.Messaging.SQS
         int MaxMessages { get; set; }
         bool AutoAcknowledge { get; }
         bool Compressed { get; }
+        bool ParallelHandling { get; }
         void Validate();
     }
 }

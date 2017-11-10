@@ -19,12 +19,15 @@ namespace RockLib.Messaging.SQS
 namespace Rock.Messaging.SQS
 #endif
 {
+    using System.Threading.Tasks;
+
     public class SQSQueueReceiver : IReceiver
     {
         private readonly string _name;
         private readonly string _queueUrl;
         private readonly int _maxMessages;
         private readonly bool _autoAcknwoledge;
+        private readonly bool _parallelHandling;
         private readonly IAmazonSQS _sqs;
         private readonly Thread _worker;
 
@@ -36,6 +39,7 @@ namespace Rock.Messaging.SQS
             _queueUrl = configuration.QueueUrl;
             _maxMessages = configuration.MaxMessages;
             _autoAcknwoledge = configuration.AutoAcknowledge;
+            _parallelHandling = configuration.ParallelHandling;
 
             _sqs = sqs;
 
@@ -103,51 +107,65 @@ namespace Rock.Messaging.SQS
                     continue;
                 }
 
-                foreach (var message in response.Messages)
+                if (_parallelHandling)
                 {
-                    if (_stopped)
+                    Parallel.ForEach(response.Messages, Handle);
+                }
+                else
+                { 
+                    foreach (var message in response.Messages)
                     {
-                        break;
+                        this.Handle(message);
                     }
+                }
+            }
+        }
 
-                    var handler = MessageReceived;
+        private void Handle(Message message)
+        {
+            if (_stopped)
+            {
+                return;
+            }
 
-                    if (handler != null)
+            var handler = MessageReceived;
+
+            if (handler != null)
+            {
+                var receiptHandle = message.ReceiptHandle;
+
+                Action acknowledge =
+                    () =>
                     {
-                        var receiptHandle = message.ReceiptHandle;
+                        Exception deleteException = null;
+                        DeleteMessageResponse deleteResponse = null;
 
-                        Action acknowledge =
-                            () =>
+                        for (int i = 0; i < 3; i++)
+                        {
+                            try
                             {
-                                Exception deleteException = null;
-                                DeleteMessageResponse deleteResponse = null;
+                                deleteException = null;
+                                deleteResponse = null;
 
-                                for (int i = 0; i < 3; i++)
+                                deleteResponse = Sync.OverAsync(() => _sqs.DeleteMessageAsync(new DeleteMessageRequest
                                 {
-                                    try
-                                    {
-                                        deleteException = null;
-                                        deleteResponse = null;
+                                    QueueUrl = _queueUrl,
+                                    ReceiptHandle = receiptHandle
+                                }));
 
-                                        deleteResponse = Sync.OverAsync(() => _sqs.DeleteMessageAsync(new DeleteMessageRequest
-                                        {
-                                            QueueUrl = _queueUrl,
-                                            ReceiptHandle = receiptHandle
-                                        }));
-
-                                        if (deleteResponse.HttpStatusCode == HttpStatusCode.OK)
-                                        {
-                                            return;
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        deleteException = ex;
-                                    }
+                                if (deleteResponse.HttpStatusCode == HttpStatusCode.OK)
+                                {
+                                    return;
                                 }
+                            }
+                            catch (Exception ex)
+                            {
+                                deleteException = ex;
+                            }
+                        }
 
 #if ROCKLIB
-                                Trace.TraceError($"Unable to delete SQS message.. Additional Information - {GetAdditionalInformation(deleteResponse, receiptHandle)}");
+                        Trace.TraceError($"Unable to delete SQS message.. Additional Information - {GetAdditionalInformation(deleteResponse, receiptHandle)}");
 #else
                                 BackgroundErrorLogger.Log(
                                     deleteException,
@@ -155,19 +173,17 @@ namespace Rock.Messaging.SQS
                                     "Rock.Messaging.SQS",
                                     GetAdditionalInformation(deleteResponse, receiptHandle));
 #endif
-                            };
+                    };
 
-                        try
-                        {
-                            handler(this, new MessageReceivedEventArgs(new SQSMessage(message, acknowledge)));
-                        }
-                        finally
-                        {
-                            if (_autoAcknwoledge)
-                            {
-                                acknowledge();
-                            }
-                        }
+                try
+                {
+                    handler(this, new MessageReceivedEventArgs(new SQSMessage(message, acknowledge)));
+                }
+                finally
+                {
+                    if (_autoAcknwoledge)
+                    {
+                        acknowledge();
                     }
                 }
             }

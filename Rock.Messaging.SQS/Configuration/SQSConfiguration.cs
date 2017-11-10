@@ -8,6 +8,7 @@ namespace RockLib.Messaging.SQS
         {
             MaxMessages = 3;
             AutoAcknowledge = true;
+            ParallelHandling = false;
         }
 
         public string Name { get; set; }
@@ -15,6 +16,7 @@ namespace RockLib.Messaging.SQS
         public int MaxMessages { get; set; }
         public bool AutoAcknowledge { get; set; }
         public bool Compressed { get; set; }
+        public bool ParallelHandling { get; set; }
 
         public void Validate()
         {
