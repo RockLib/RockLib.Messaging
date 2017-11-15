@@ -32,6 +32,9 @@ namespace Rock.Messaging.SQS
 
         private bool _stopped;
 
+        private const int _maxAcknowledgeAttempts = 3;
+        private const int _maxReceiveAttempts = 3;
+
         public SQSQueueReceiver(ISQSConfiguration configuration, IAmazonSQS sqs)
         {
             _name = configuration.Name;
@@ -74,7 +77,7 @@ namespace Rock.Messaging.SQS
                 ReceiveMessageResponse response = null;
                 Exception exception = null;
 
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < _maxAcknowledgeAttempts; i++)
                 {
                     try
                     {

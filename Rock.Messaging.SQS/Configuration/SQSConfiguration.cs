@@ -8,7 +8,6 @@ namespace RockLib.Messaging.SQS
         {
             MaxMessages = 3;
             AutoAcknowledge = true;
-            ParallelHandling = false;
         }
 
         public string Name { get; set; }
