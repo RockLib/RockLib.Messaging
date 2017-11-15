@@ -77,7 +77,7 @@ namespace Rock.Messaging.SQS
                 ReceiveMessageResponse response = null;
                 Exception exception = null;
 
-                for (int i = 0; i < _maxAcknowledgeAttempts; i++)
+                for (int i = 0; i < _maxReceiveAttempts; i++)
                 {
                     try
                     {
@@ -142,7 +142,7 @@ namespace Rock.Messaging.SQS
                         Exception deleteException = null;
                         DeleteMessageResponse deleteResponse = null;
 
-                        for (int i = 0; i < 3; i++)
+                        for (int i = 0; i < _maxAcknowledgeAttempts; i++)
                         {
                             try
                             {
