@@ -80,8 +80,8 @@ namespace Rock.Messaging
         internal static IMessagingScenarioFactory BuildFactory()
         {
 #if ROCKLIB
-            var messagingSection = Config.Root.GetSection("RockLib.Messaging").Create<ScenarioFactorySection>();
-            var scenarioFactories = messagingSection.ScenarioFactories;
+            var messagingSection = Config.Root.GetSection("RockLib.Messaging");
+            var scenarioFactories = messagingSection.Create<List<IMessagingScenarioFactory>>();
 
             if( !scenarioFactories.Any()) { throw new InvalidOperationException("There must be at least one scenario factory, please make sure your configuration is correct."); }
 
