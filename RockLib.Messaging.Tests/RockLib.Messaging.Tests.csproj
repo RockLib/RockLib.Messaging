@@ -19,13 +19,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="CustomConfigFiles\RockLib.config.json">
+    <None Update="CustomConfigFiles\appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="CustomConfigFiles\MultipleFactory_RockLib.config.json">
+    <None Update="CustomConfigFiles\MultipleFactory_appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="CustomConfigFiles\SingleFactory_RockLib.config.json">
+    <None Update="CustomConfigFiles\SingleFactory_appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
