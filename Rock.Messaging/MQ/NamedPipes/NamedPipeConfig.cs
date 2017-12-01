@@ -7,21 +7,29 @@ namespace Rock.Messaging.NamedPipes
     /// <summary>
     /// A simple implementation of <see cref="INamedPipeConfig"/>.
     /// </summary>
-    public class SimpleNamedPipeConfig : INamedPipeConfig
+    public class NamedPipeConfig : INamedPipeConfig
     {
+        private readonly string _name;
         private readonly string _pipeName;
         private readonly bool _compressed;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SimpleNamedPipeConfig"/> class.
+        /// Initializes a new instance of the <see cref="NamedPipeConfig"/> class.
         /// </summary>
+        /// <param name="name">The configuration name.</param>
         /// <param name="pipeName">The name of the named pipe.</param>
         /// <param name="compressed">Whether messages should be compressed.</param>
-        public SimpleNamedPipeConfig(string pipeName, bool compressed)
+        public NamedPipeConfig(string name, string pipeName, bool compressed)
         {
+            _name = name;
             _pipeName = pipeName;
             _compressed = compressed;
         }
+
+        /// <summary>
+        /// Gets the name of the named pipe.
+        /// </summary>
+        public string Name { get { return _name; } }
 
         /// <summary>
         /// Gets the name of the named pipe.

@@ -4,7 +4,7 @@
     "Environment": "Dev"
   },
   "RockLib.Messaging": {
-    "Type": "RockLib.Messaging.Example.Core.NamedPipeMessagingScenarioFactory, RockLib.Messaging.Example.Core",
+    "Type": "RockLib.Messaging.NamedPipes.NamedPipeMessagingScenarioFactory, RockLib.Messaging",
     "Value": {}
   }
 }

@@ -11,6 +11,11 @@ namespace Rock.Messaging.NamedPipes
     public interface INamedPipeConfig
     {
         /// <summary>
+        /// Gets the configuration name.
+        /// </summary>
+        string Name { get; }
+
+        /// <summary>
         /// Gets the name of the named pipe.
         /// </summary>
         string PipeName { get; }
