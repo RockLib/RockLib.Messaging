@@ -1,10 +1,5 @@
 ﻿using System;
-
-#if ROCKLIB
-using RockLib.Immutable;
-#else
-using Rock.Immutable;
-#endif
+using System.Collections.Generic;
 
 #if ROCKLIB
 namespace RockLib.Messaging.NamedPipes
@@ -19,9 +14,6 @@ namespace Rock.Messaging.NamedPipes
     /// </summary>
     public class NamedPipeMessagingScenarioFactory : IMessagingScenarioFactory
     {
-        private static readonly Semimutable<INamedPipeConfigProvider> _defaultConfigProvider =
-            new Semimutable<INamedPipeConfigProvider>(CreateDefaultDefaultConfigProvider);
-
         private readonly INamedPipeConfigProvider _configProvider;
 
         /// <summary>
@@ -37,26 +29,11 @@ namespace Rock.Messaging.NamedPipes
         /// </summary>
         /// <param name="configProvider">
         /// The configuration provider. If null or not provided, then
-        /// <see cref="DefaultConfigProvider"/> is used.
+        /// a <see cref="NamedPipeConfigProvider"/> is used.
         /// </param>
         public NamedPipeMessagingScenarioFactory(INamedPipeConfigProvider configProvider = null)
         {
-            _configProvider = configProvider ?? DefaultConfigProvider;
-        }
-
-        public static INamedPipeConfigProvider DefaultConfigProvider
-        {
-            get { return _defaultConfigProvider.Value; }
-        }
-
-        public static void SetDefaultConfigProvider(INamedPipeConfigProvider defaultConfigProvider)
-        {
-            _defaultConfigProvider.Value = defaultConfigProvider;
-        }
-
-        private static INamedPipeConfigProvider CreateDefaultDefaultConfigProvider()
-        {
-            return new SimpleNamedPipeConfigProvider();
+            _configProvider = configProvider ?? new NamedPipeConfigProvider();
         }
 
         /// <summary>
