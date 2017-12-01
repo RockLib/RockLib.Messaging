@@ -14,6 +14,48 @@ namespace RockLib.Messaging.Tests
     [TestFixture]
     public class MessagingScenarioFactoryTests
     {
+        private static readonly FieldInfo _compressedField;
+        private static readonly FieldInfo _pipeNameField;
+
+        static MessagingScenarioFactoryTests()
+        {
+            var queueProducerType = typeof(NamedPipeQueueProducer);
+            _compressedField = queueProducerType.GetField("_compressed", BindingFlags.NonPublic | BindingFlags.Instance);
+            _pipeNameField = queueProducerType.GetField("_pipeName", BindingFlags.NonPublic | BindingFlags.Instance);
+        }
+
+        [Test]
+        public void BuildFactoryCreatesSingleFactoryWithEmptyConfig()
+        {
+            ResetFactory();
+            ResetConfig();
+
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile(@"CustomConfigFiles\Empty_appsettings.json", false, true);
+
+            var config = builder.Build();
+
+            Config.SetRoot(config);
+
+            var factory = MessagingScenarioFactory.BuildFactory();
+
+            factory.Should().NotBeNull();
+            factory.Should().BeOfType<NamedPipeMessagingScenarioFactory>();
+            factory.HasScenario("Pipe1").Should().BeTrue();
+            factory.HasScenario("Pipe2").Should().BeTrue();
+            factory.HasScenario("Pipe3").Should().BeTrue();
+            factory.HasScenario("NotReallyAPipeName").Should().BeTrue();
+
+            var pipe1Sender = factory.CreateQueueProducer("Pipe1");
+            _compressedField.GetValue(pipe1Sender).Should().Be(false);
+            _pipeNameField.GetValue(pipe1Sender).Should().Be("Pipe1");
+
+            var pipe2Sender = factory.CreateQueueProducer("Pipe2");
+            _compressedField.GetValue(pipe2Sender).Should().Be(false);
+            _pipeNameField.GetValue(pipe2Sender).Should().Be("Pipe2");
+        }
+
         [Test]
         public void BuildFactoryCreatesSingleFactoryWithSingleFactoryConfig()
         {
@@ -32,6 +74,44 @@ namespace RockLib.Messaging.Tests
 
             factory.Should().NotBeNull();
             factory.Should().BeOfType<NamedPipeMessagingScenarioFactory>();
+            factory.HasScenario("Pipe1").Should().BeTrue();
+            factory.HasScenario("Pipe2").Should().BeFalse();
+            factory.HasScenario("Pipe3").Should().BeFalse();
+
+            var pipe1Sender = factory.CreateQueueProducer("Pipe1");
+            _compressedField.GetValue(pipe1Sender).Should().Be(true);
+            _pipeNameField.GetValue(pipe1Sender).Should().Be("PipeName1");
+        }
+
+        [Test]
+        public void BuildFactoryCreatesSingleFactoryWithSingleFactoryMultiConfigsConfig()
+        {
+            ResetFactory();
+            ResetConfig();
+
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile(@"CustomConfigFiles\SingleFactory_MultiConfigs_appsettings.json", false, true);
+
+            var config = builder.Build();
+
+            Config.SetRoot(config);
+
+            var factory = MessagingScenarioFactory.BuildFactory();
+
+            factory.Should().NotBeNull();
+            factory.Should().BeOfType<NamedPipeMessagingScenarioFactory>();
+            factory.HasScenario("Pipe1").Should().BeTrue();
+            factory.HasScenario("Pipe2").Should().BeTrue();
+            factory.HasScenario("Pipe3").Should().BeFalse();
+
+            var pipe1Sender = factory.CreateQueueProducer("Pipe1");
+            _compressedField.GetValue(pipe1Sender).Should().Be(true);
+            _pipeNameField.GetValue(pipe1Sender).Should().Be("PipeName1");
+
+            var pipe2Sender = factory.CreateQueueProducer("Pipe2");
+            _compressedField.GetValue(pipe2Sender).Should().Be(false);
+            _pipeNameField.GetValue(pipe2Sender).Should().Be("PipeName2");
         }
 
         [Test]
@@ -52,6 +132,17 @@ namespace RockLib.Messaging.Tests
 
             factory.Should().NotBeNull();
             factory.Should().BeOfType<CompositeMessagingScenarioFactory>();
+            factory.HasScenario("Pipe1").Should().BeTrue();
+            factory.HasScenario("Pipe2").Should().BeTrue();
+            factory.HasScenario("Pipe3").Should().BeFalse();
+
+            var pipe1Sender = factory.CreateQueueProducer("Pipe1");
+            _compressedField.GetValue(pipe1Sender).Should().Be(true);
+            _pipeNameField.GetValue(pipe1Sender).Should().Be("PipeName1");
+
+            var pipe2Sender = factory.CreateQueueProducer("Pipe2");
+            _compressedField.GetValue(pipe2Sender).Should().Be(false);
+            _pipeNameField.GetValue(pipe2Sender).Should().Be("PipeName2");
         }
 
         [Test]

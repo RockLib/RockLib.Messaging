@@ -19,13 +19,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="CustomConfigFiles\appsettings.json">
+    <None Update="CustomConfigFiles\Empty_appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="CustomConfigFiles\MultipleFactory_appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="CustomConfigFiles\SingleFactory_appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="CustomConfigFiles\SingleFactory_MultiConfigs_appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
