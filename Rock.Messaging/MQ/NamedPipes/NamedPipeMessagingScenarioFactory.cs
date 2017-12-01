@@ -27,8 +27,8 @@ namespace Rock.Messaging.NamedPipes
         /// <summary>
         /// Initializes a new instance of the <see cref="NamedPipeMessagingScenarioFactory"/> class.
         /// </summary>
-        public NamedPipeMessagingScenarioFactory()
-            : this(null)
+        public NamedPipeMessagingScenarioFactory(List<NamedPipeConfig> namedPipeConfigs)
+            : this(new NamedPipeConfigProvider(namedPipeConfigs))
         {
         }
 
