@@ -22,7 +22,7 @@ namespace RockLib.Messaging.Tests
 
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile(@"CustomConfigFiles\SingleFactory_RockLib.config.json", false, true);
+                .AddJsonFile(@"CustomConfigFiles\SingleFactory_appsettings.json", false, true);
 
             var config = builder.Build();
 
@@ -42,7 +42,7 @@ namespace RockLib.Messaging.Tests
 
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile(@"CustomConfigFiles\MultipleFactory_RockLib.config.json", false, true);
+                .AddJsonFile(@"CustomConfigFiles\MultipleFactory_appsettings.json", false, true);
 
             var config = builder.Build();
 

@@ -1,11 +1,10 @@
 ﻿using System;
-
+using System.Collections.Generic;
 #if ROCKLIB
-using Microsoft.Extensions.Configuration;
 using System.Linq;
 using RockLib.Configuration;
 using RockLib.Immutable;
-using RockLib.Messaging.Configuration;
+using RockLib.Configuration.ObjectFactory;
 #else
 using System.Configuration;
 using Rock.Immutable;
@@ -81,14 +80,12 @@ namespace Rock.Messaging
         internal static IMessagingScenarioFactory BuildFactory()
         {
 #if ROCKLIB
-            var messagingSection = Config.Root.GetSection("RockLib.Messaging").Get<ScenarioFactorySection>();
-            var scenarioFactories = messagingSection.ScenarioFactories;
+            var messagingSection = Config.Root.GetSection("RockLib.Messaging");
+            var scenarioFactories = messagingSection.Create<List<IMessagingScenarioFactory>>();
 
-            if( !scenarioFactories.Any()) { throw new InvalidOperationException("FactoryProxies must have at least one element, please make sure your configuration is correct."); }
+            if( !scenarioFactories.Any()) { throw new InvalidOperationException("There must be at least one scenario factory, please make sure your configuration is correct."); }
 
-            var factories = scenarioFactories.Select(f => f.CreateInstance()).ToList();
-
-            return factories.Count == 1 ? factories[0] : new CompositeMessagingScenarioFactory(factories);
+            return scenarioFactories.Count == 1 ? scenarioFactories[0] : new CompositeMessagingScenarioFactory(scenarioFactories);
 #else
             var rockMessagingConfiguration = (IRockMessagingConfiguration)ConfigurationManager.GetSection("rock.messaging");
             return rockMessagingConfiguration.MessagingScenarioFactory;
