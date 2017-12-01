@@ -64,7 +64,7 @@
     <Compile Include="MQ\NamedPipes\NamedPipeQueueProducer.cs" />
     <Compile Include="MQ\NamedPipes\NamedPipeReceiverMessage.cs" />
     <Compile Include="MQ\NamedPipes\SimpleNamedPipeConfig.cs" />
-    <Compile Include="MQ\NamedPipes\SimpleNamedPipeConfigProvider.cs" />
+    <Compile Include="MQ\NamedPipes\NamedPipeConfigProvider.cs" />
   </ItemGroup>
   
   <ItemGroup>
