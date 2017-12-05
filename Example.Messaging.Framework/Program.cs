@@ -8,8 +8,8 @@ namespace RockLib.Messaging.Example.Framework
         {
             Console.WriteLine("Hello World!");
 
-            var namedPipeProducer = MessagingScenarioFactory.CreateQueueProducer("NampedPipeTester");
-            var namedPipeConsumer = MessagingScenarioFactory.CreateQueueConsumer("NampedPipeTester");
+            var namedPipeProducer = MessagingScenarioFactory.CreateQueueProducer("Pipe1");
+            var namedPipeConsumer = MessagingScenarioFactory.CreateQueueConsumer("Pipe1");
 
             namedPipeConsumer.Start();
             namedPipeConsumer.MessageReceived += (sender, eventArgs) =>
