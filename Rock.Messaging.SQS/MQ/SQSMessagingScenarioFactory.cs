@@ -1,7 +1,6 @@
 ﻿using Amazon.SQS;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 #if ROCKLIB
 namespace RockLib.Messaging.SQS
@@ -11,44 +10,23 @@ namespace Rock.Messaging.SQS
 {
     public class SQSMessagingScenarioFactory : IMessagingScenarioFactory
     {
-        private ISQSConfigurationProvider _configurationProvider;
+        private readonly ISQSConfigurationProvider _configurationProvider;
 
 #if ROCKLIB
-
-        private List<SQSConfiguration> _sqsSettings;
-
-        public SQSMessagingScenarioFactory()
+        public SQSMessagingScenarioFactory(List<SQSConfiguration> sqsSettings)
+            : this(new SQSConfigurationProvider(sqsSettings))
         {
-        }
-
-        public SQSMessagingScenarioFactory(ISQSConfigurationProvider configurationProvider)
-        {
-            _configurationProvider = configurationProvider ?? throw new ArgumentNullException(nameof(configurationProvider));
-        }
-
-        public List<SQSConfiguration> SQSSettings
-        {
-            get => _sqsSettings;
-            set
-            {
-                _sqsSettings = value;
-                _configurationProvider = new SQSConfigurationProvider
-                {
-                    Configurations = value.ToArray<ISQSConfiguration>()
-                };
-            }
         }
 #else
-        public SQSMessagingScenarioFactory(ISQSConfigurationProvider configurationProvider)
-        {
-            _configurationProvider = configurationProvider ?? throw new ArgumentNullException(nameof(configurationProvider));
-        }
-
         public SQSMessagingScenarioFactory(XmlDeserializingSQSConfigurationProvider sqsSettings)
             : this((ISQSConfigurationProvider)sqsSettings)
         {
         }
 #endif
+        public SQSMessagingScenarioFactory(ISQSConfigurationProvider configurationProvider)
+        {
+            _configurationProvider = configurationProvider ?? throw new ArgumentNullException(nameof(configurationProvider));
+        }
 
         public IReceiver CreateQueueConsumer(string name)
         {

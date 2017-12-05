@@ -1,16 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RockLib.Messaging.SQS
 {
     public class SQSConfigurationProvider: ISQSConfigurationProvider
     {
-        private ISQSConfiguration[] _configurations = new ISQSConfiguration[0];
-        
-        public ISQSConfiguration[] Configurations
+        private readonly List<SQSConfiguration> _configurations;
+
+        public SQSConfigurationProvider(List<SQSConfiguration> configuration)
         {
-            get => _configurations;
-            set => _configurations = value ?? throw new ArgumentNullException(nameof(value));
+            _configurations = configuration;
         }
 
         public ISQSConfiguration GetConfiguration(string name)
@@ -30,7 +30,7 @@ namespace RockLib.Messaging.SQS
                 configuration.Validate();
             }
 
-            if (_configurations.Select(c => c.Name).Distinct().Count() != _configurations.Length)
+            if (_configurations.Select(c => c.Name).Distinct().Count() != _configurations.Count)
             {
                 throw new Exception("Each configuration Name must be unique.");
             }
