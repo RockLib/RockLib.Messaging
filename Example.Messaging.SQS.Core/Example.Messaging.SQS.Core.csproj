@@ -6,12 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RockLib.Messaging" Version="0.0.1-alpha01" />
-    <PackageReference Include="RockLib.Messaging.SQS" Version="0.0.1-alpha01" />
+    <PackageReference Include="RockLib.Messaging.SQS" Version="0.0.1-alpha03" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="RockLib.config.json">
+    <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
