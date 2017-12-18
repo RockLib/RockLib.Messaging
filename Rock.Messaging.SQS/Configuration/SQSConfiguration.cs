@@ -2,37 +2,22 @@
 
 namespace RockLib.Messaging.SQS
 {
-    public class SQSConfiguration: ISQSConfiguration
+    public class SQSConfiguration : ISQSConfiguration
     {
-        public SQSConfiguration()
+        private int _maxMessages = 3;
+
+        public SQSConfiguration(string name, string queueUrl)
         {
-            MaxMessages = 3;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            QueueUrl = queueUrl ?? throw new ArgumentNullException(nameof(queueUrl));
             AutoAcknowledge = true;
         }
 
-        public string Name { get; set; }
-        public string QueueUrl { get; set; }
-        public int MaxMessages { get; set; }
+        public string Name { get; }
+        public string QueueUrl { get; }
+        public int MaxMessages { get => _maxMessages; set => _maxMessages = value > 0 ? value : throw new ArgumentException("MaxMessages must be greater than zero.", nameof(value)); }
         public bool AutoAcknowledge { get; set; }
         public bool Compressed { get; set; }
         public bool ParallelHandling { get; set; }
-
-        public void Validate()
-        {
-            if (Name == null)
-            {
-                throw new Exception("Name must be set.");
-            }
-
-            if (QueueUrl == null)
-            {
-                throw new Exception("QueueUrl must be set.");
-            }
-
-            if (MaxMessages < 1)
-            {
-                throw new Exception("MaxMessages must be greater than zero.");
-            }
-        }
     }
 }

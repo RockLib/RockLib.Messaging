@@ -6,34 +6,23 @@ namespace RockLib.Messaging.SQS
 {
     public class SQSConfigurationProvider: ISQSConfigurationProvider
     {
-        private readonly List<SQSConfiguration> _configurations;
+        private readonly IReadOnlyDictionary<string, SQSConfiguration> _configurations;
 
-        public SQSConfigurationProvider(List<SQSConfiguration> configuration)
+        public SQSConfigurationProvider(IEnumerable<SQSConfiguration> configurations)
         {
-            _configurations = configuration;
+            _configurations = configurations?.ToDictionary(c => c.Name) ?? throw new ArgumentNullException(nameof(configurations));
         }
+
+        public IEnumerable<SQSConfiguration> Configurations { get { return _configurations.Values; } }
 
         public ISQSConfiguration GetConfiguration(string name)
         {
-            return _configurations.First(c => c.Name == name);
+            return _configurations[name];
         }
 
         public bool HasConfiguration(string name)
         {
-            return _configurations.Any(c => c.Name == name);
-        }
-
-        public void Validate()
-        {
-            foreach (var configuration in _configurations)
-            {
-                configuration.Validate();
-            }
-
-            if (_configurations.Select(c => c.Name).Distinct().Count() != _configurations.Count)
-            {
-                throw new Exception("Each configuration Name must be unique.");
-            }
+            return _configurations.ContainsKey(name);
         }
     }
 }

@@ -6,12 +6,11 @@ namespace Rock.Messaging.SQS
 {
     public interface ISQSConfiguration
     {
-        string Name { get; set; }
-        string QueueUrl { get; set; }
-        int MaxMessages { get; set; }
+        string Name { get; }
+        string QueueUrl { get; }
+        int MaxMessages { get; }
         bool AutoAcknowledge { get; }
         bool Compressed { get; }
         bool ParallelHandling { get; }
-        void Validate();
     }
 }
