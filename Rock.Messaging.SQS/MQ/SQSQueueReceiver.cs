@@ -167,7 +167,7 @@ namespace Rock.Messaging.SQS
                         }
 
 #if ROCKLIB
-                        Trace.TraceError($"Unable to delete SQS message.. Additional Information - {GetAdditionalInformation(deleteResponse, receiptHandle)}");
+                        Trace.TraceError($"Unable to delete SQS message. Additional Information - {GetAdditionalInformation(deleteResponse, receiptHandle)}");
 #else
                                 BackgroundErrorLogger.Log(
                                     deleteException,
@@ -179,7 +179,7 @@ namespace Rock.Messaging.SQS
 
                 try
                 {
-                    handler(this, new MessageReceivedEventArgs(new SQSMessage(message, acknowledge)));
+                    handler(this, new MessageReceivedEventArgs(new SQSReceiverMessage(message, acknowledge)));
                 }
                 finally
                 {
