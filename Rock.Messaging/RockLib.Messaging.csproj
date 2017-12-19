@@ -31,15 +31,12 @@
 
   <ItemGroup>
     <Compile Remove="Configuration\**" />
-    <Compile Remove="MQ\NamedPipes\**" />
     <Compile Remove="Rock.StaticDependencyInjection\**" />
     <Compile Remove="Routing\**" />
     <EmbeddedResource Remove="Configuration\**" />
-    <EmbeddedResource Remove="MQ\NamedPipes\**" />
     <EmbeddedResource Remove="Rock.StaticDependencyInjection\**" />
     <EmbeddedResource Remove="Routing\**" />
     <None Remove="Configuration\**" />
-    <None Remove="MQ\NamedPipes\**" />
     <None Remove="Rock.StaticDependencyInjection\**" />
     <None Remove="Routing\**" />
   </ItemGroup>
@@ -51,30 +48,12 @@
   <ItemGroup>
     <None Remove="packages.config" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="MQ\NamedPipes\INamedPipeConfig.cs" />
-    <Compile Include="MQ\NamedPipes\INamedPipeConfigProvider.cs" />
-    <Compile Include="MQ\NamedPipes\MessageSettings.cs" />
-    <Compile Include="MQ\NamedPipes\NamedPipeMessage.cs" />
-    <Compile Include="MQ\NamedPipes\NamedPipeMessageSerializer.cs" />
-    <Compile Include="MQ\NamedPipes\NamedPipeMessagingScenarioFactory.cs" />
-    <Compile Include="MQ\NamedPipes\NamedPipeQueueConsumer.cs" />
-    <Compile Include="MQ\NamedPipes\NamedPipeQueueProducer.cs" />
-    <Compile Include="MQ\NamedPipes\NamedPipeReceiverMessage.cs" />
-    <Compile Include="MQ\NamedPipes\NamedPipeConfig.cs" />
-    <Compile Include="MQ\NamedPipes\NamedPipeConfigProvider.cs" />
-  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="RockLib.Compression" Version="0.0.1-alpha01" />
     <PackageReference Include="RockLib.Configuration" Version="1.0.0" />
     <PackageReference Include="RockLib.Configuration.ObjectFactory" Version="1.0.0" />
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="Properties\" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.6'">
