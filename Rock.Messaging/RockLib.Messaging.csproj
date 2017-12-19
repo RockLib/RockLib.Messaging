@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.6;net451;</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard1.6;net451;</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -19,6 +19,10 @@
 
   <PropertyGroup>
     <DefineConstants>ROCKLIB</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+    <DocumentationFile>bin\Release\netstandard2.0\RockLib.Messaging.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard1.6|AnyCPU'">
