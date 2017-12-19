@@ -1,6 +1,6 @@
-﻿#if ROCKLIB
-using System;
+﻿using System;
 
+#if ROCKLIB
 namespace RockLib.Messaging.NamedPipes
 #else
 namespace Rock.Messaging.NamedPipes

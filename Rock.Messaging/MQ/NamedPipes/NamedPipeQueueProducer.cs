@@ -136,7 +136,7 @@ namespace Rock.Messaging.NamedPipes
                         writer.WriteLine(message);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // TODO: Something?
                     continue;
