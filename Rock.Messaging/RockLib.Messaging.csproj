@@ -30,22 +30,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Configuration\**" />
     <Compile Remove="MQ\NamedPipes\**" />
     <Compile Remove="Rock.StaticDependencyInjection\**" />
     <Compile Remove="Routing\**" />
+    <EmbeddedResource Remove="Configuration\**" />
     <EmbeddedResource Remove="MQ\NamedPipes\**" />
     <EmbeddedResource Remove="Rock.StaticDependencyInjection\**" />
     <EmbeddedResource Remove="Routing\**" />
+    <None Remove="Configuration\**" />
     <None Remove="MQ\NamedPipes\**" />
     <None Remove="Rock.StaticDependencyInjection\**" />
     <None Remove="Routing\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Configuration\MessagingScenarioFactoryProxy.cs" />
-    <Compile Remove="Configuration\MessagingSectionHandler.cs" />
-    <Compile Remove="Configuration\RockMessagingSetting.cs" />
-    <Compile Remove="Configuration\XmlSerializingRockMessagingConfiguration.cs" />
     <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
 
