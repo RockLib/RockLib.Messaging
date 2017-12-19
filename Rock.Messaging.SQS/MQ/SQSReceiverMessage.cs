@@ -15,18 +15,20 @@ namespace RockLib.Messaging.SQS
 namespace Rock.Messaging.SQS
 #endif
 {
-    public class SQSMessage : IReceiverMessage
+    public class SQSReceiverMessage : IReceiverMessage
     {
         private readonly Message _message;
         private readonly Action _acknowledge;
 
-        public SQSMessage(Message message, Action acknowledge)
+        public SQSReceiverMessage(Message message, Action acknowledge)
         {
             _message = message;
             _acknowledge = acknowledge;
         }
 
         public byte? Priority { get { return null; } }
+
+        public Message Message { get { return _message; } }
 
         public string GetStringValue(Encoding encoding)
         {

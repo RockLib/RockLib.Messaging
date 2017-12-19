@@ -13,7 +13,7 @@ namespace Rock.Messaging.SQS
         private readonly ISQSConfigurationProvider _configurationProvider;
 
 #if ROCKLIB
-        public SQSMessagingScenarioFactory(List<SQSConfiguration> sqsSettings)
+        public SQSMessagingScenarioFactory(IEnumerable<SQSConfiguration> sqsSettings)
             : this(new SQSConfigurationProvider(sqsSettings))
         {
         }

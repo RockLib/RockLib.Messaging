@@ -1,4 +1,6 @@
 ﻿#if ROCKLIB
+using System;
+
 namespace RockLib.Messaging.NamedPipes
 #else
 namespace Rock.Messaging.NamedPipes
@@ -19,10 +21,10 @@ namespace Rock.Messaging.NamedPipes
         /// <param name="name">The configuration name.</param>
         /// <param name="pipeName">The name of the named pipe.</param>
         /// <param name="compressed">Whether messages should be compressed.</param>
-        public NamedPipeConfig(string name, string pipeName, bool compressed)
+        public NamedPipeConfig(string name, string pipeName = null, bool compressed = false)
         {
-            _name = name;
-            _pipeName = pipeName;
+            _name = name ?? throw new ArgumentNullException(nameof(name));
+            _pipeName = pipeName ?? name;
             _compressed = compressed;
         }
 

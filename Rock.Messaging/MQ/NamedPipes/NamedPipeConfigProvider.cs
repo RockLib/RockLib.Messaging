@@ -14,16 +14,29 @@ namespace Rock.Messaging.NamedPipes
     /// </summary>
     public class NamedPipeConfigProvider : INamedPipeConfigProvider
     {
-        private readonly List<NamedPipeConfig> _configs;
+        private readonly IReadOnlyDictionary<string, NamedPipeConfig> _configs;
 
         /// <summary>
-        /// Initialized a new instance of the <see cref="NamedPipeConfigProvider"/> class.
+        /// Initializes a new instance of the <see cref="NamedPipeConfigProvider"/> class.
+        /// If <paramref name="namedPipeConfigs"/> is null, this instance will be configured
+        /// for "simple mode": where the name value passed to <see cref="GetConfig(string)"/>
+        /// is used for the pipe name, and <see cref="HasConfig(string)"/> always returns true.
         /// </summary>
-        /// <param name="namedPipeConfigs">A collection of named pipe configurations</param>
-        public NamedPipeConfigProvider(List<NamedPipeConfig> namedPipeConfigs = null)
+        /// <param name="namedPipeConfigs">
+        /// A collection of named pipe configurations, or null if this instance.
+        /// </param>
+        public NamedPipeConfigProvider(IEnumerable<NamedPipeConfig> namedPipeConfigs = null)
         {
-            _configs = namedPipeConfigs;
+            _configs = namedPipeConfigs?.ToDictionary(c => c.Name);
         }
+
+        /// <summary>
+        /// Gets the collection of <see cref="NamedPipeConfig"/> objects that represent the
+        /// backing store for this instance. Returns null if this instance is configured for
+        /// "simple mode": where the name value passed to <see cref="GetConfig(string)"/> is
+        /// used for the pipe name, and <see cref="HasConfig(string)"/> always returns true.
+        /// </summary>
+        public IEnumerable<NamedPipeConfig> Configurations { get { return _configs?.Values; } }
 
         /// <summary>
         /// Gets the configuration for the given name, if any configurations were provided.
@@ -40,7 +53,7 @@ namespace Rock.Messaging.NamedPipes
         /// </returns>
         public INamedPipeConfig GetConfig(string name)
         {
-            return _configs?.First(c => c.Name == name) ?? new NamedPipeConfig(name, name, false);
+            return _configs?[name] ?? new NamedPipeConfig(name);
         }
 
         /// <summary>
@@ -53,7 +66,7 @@ namespace Rock.Messaging.NamedPipes
         /// configurations were provided. Otherwise, false.</returns>
         public bool HasConfig(string name)
         {
-            return _configs?.Any(c => c.Name == name) ?? true;
+            return _configs?.ContainsKey(name) ?? true;
         }
     }
 }
