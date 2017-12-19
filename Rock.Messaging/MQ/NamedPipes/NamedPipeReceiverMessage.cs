@@ -31,6 +31,9 @@ namespace Rock.Messaging.NamedPipes
             _namedPipeMessage = namedPipeMessage;
         }
 
+        /// <summary>
+        /// Gets the priority of the received message.
+        /// </summary>
         public byte? Priority { get { return null; } }
 
         /// <summary>
@@ -93,6 +96,10 @@ namespace Rock.Messaging.NamedPipes
             return null;
         }
 
+        /// <summary>
+        /// Gets the names of the headers that are available for this message.
+        /// </summary>
+        /// <returns>An array containing the names of the headers for this message.</returns>
         public string[] GetHeaderNames()
         {
             return _namedPipeMessage.Headers.Keys.ToArray();
@@ -105,6 +112,10 @@ namespace Rock.Messaging.NamedPipes
         {
         }
 
+        /// <summary>
+        /// Returns an instance of <see cref="ISenderMessage"/> that is equivalent to this
+        /// instance of <see cref="NamedPipeReceiverMessage"/>.
+        /// </summary>
         public ISenderMessage ToSenderMessage()
         {
             // If the received message is compressed, then it will already have the compression

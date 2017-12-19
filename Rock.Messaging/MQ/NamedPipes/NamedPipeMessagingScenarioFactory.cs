@@ -86,6 +86,12 @@ namespace Rock.Messaging.NamedPipes
             return CreateQueueConsumer(name);
         }
 
+        /// <summary>
+        /// Returns a value indicating whether a scenario by the given name can be created by this
+        /// instance of <see cref="NamedPipeMessagingScenarioFactory"/>.
+        /// </summary>s
+        /// <param name="name">The name of the scenario.</param>
+        /// <returns>True, if the scenario can be created. Otherwise, false.</returns>
         public bool HasScenario(string name)
         {
             return _configProvider.HasConfig(name);

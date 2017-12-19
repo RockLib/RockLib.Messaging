@@ -122,6 +122,9 @@ namespace Rock.Messaging.NamedPipes
             }
         }
 
+        /// <summary>
+        /// Closes and flushes the internal buffer of messages.
+        /// </summary>
         public void Dispose()
         {
             if (_pipeServer != null)
