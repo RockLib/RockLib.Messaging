@@ -50,7 +50,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="RockLib.Compression" Version="0.0.1-alpha01" />
+    <PackageReference Include="RockLib.Compression" Version="1.0.0" />
     <PackageReference Include="RockLib.Configuration" Version="1.0.0" />
     <PackageReference Include="RockLib.Configuration.ObjectFactory" Version="1.0.0" />
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
