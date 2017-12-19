@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using Rock.BackgroundErrorLogging;
-using Rock.Messaging.NamedPipes;
+//using Rock.Messaging.NamedPipes;
 using Rock.Messaging.Routing;
 using Rock.StaticDependencyInjection;
 
@@ -14,7 +14,7 @@ namespace Rock.Messaging.Rock.StaticDependencyInjection
         public override void Bootstrap()
         {
             ImportFirst<IMessageParser>(DefaultMessageParser.SetCurrent);
-            ImportFirst<INamedPipeConfigProvider>(NamedPipeMessagingScenarioFactory.SetDefaultConfigProvider);
+            //ImportFirst<INamedPipeConfigProvider>(NamedPipeMessagingScenarioFactory.SetDefaultConfigProvider);
             ImportFirst<ITypeLocator>(DefaultTypeLocator.SetCurrent);
             ImportFirst<IMessagingScenarioFactory>(MessagingScenarioFactory.SetFallback);
             ImportFirst<IMessageCompressor>(DefaultMessageCompressor.SetCurrent);

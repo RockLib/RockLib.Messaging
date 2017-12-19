@@ -25,7 +25,8 @@ namespace Rock.Messaging.SQS
 #endif
         public SQSMessagingScenarioFactory(ISQSConfigurationProvider configurationProvider)
         {
-            _configurationProvider = configurationProvider ?? throw new ArgumentNullException(nameof(configurationProvider));
+            if (configurationProvider == null) throw new ArgumentNullException(nameof(configurationProvider));
+            _configurationProvider = configurationProvider;
         }
 
         public IReceiver CreateQueueConsumer(string name)

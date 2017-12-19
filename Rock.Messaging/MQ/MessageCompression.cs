@@ -1,4 +1,6 @@
-﻿using RockLib.Immutable;
+﻿#if ROCKLIB
+using RockLib.Immutable;
+#endif
 using System.Text;
 
 #if ROCKLIB

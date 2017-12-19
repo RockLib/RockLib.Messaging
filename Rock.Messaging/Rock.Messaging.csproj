@@ -78,8 +78,8 @@
     <Compile Include="MQ\NamedPipes\NamedPipeQueueProducer.cs" />
     <Compile Include="MQ\NamedPipes\NamedPipeReceiverMessage.cs" />
     <Compile Include="MQ\NamedPipes\NamedPipeMessage.cs" />
-    <Compile Include="MQ\NamedPipes\SimpleNamedPipeConfig.cs" />
-    <Compile Include="MQ\NamedPipes\SimpleNamedPipeConfigProvider.cs" />
+    <Compile Include="MQ\NamedPipes\NamedPipeConfig.cs" />
+    <Compile Include="MQ\NamedPipes\NamedPipeConfigProvider.cs" />
     <Compile Include="MQ\ReceiverMessageExtensions.cs" />
     <Compile Include="MQ\StringSenderMessage.cs" />
     <Compile Include="Rock.StaticDependencyInjection\CompositionRoot.cs" />

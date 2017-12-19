@@ -63,7 +63,7 @@
     <Compile Include="Configuration\ISQSConfiguration.cs" />
     <Compile Include="Configuration\ISQSConfigurationProvider.cs" />
     <Compile Include="Configuration\XmlSQSConfiguration.cs" />
-    <Compile Include="MQ\SQSMessage.cs" />
+    <Compile Include="MQ\SQSReceiverMessage.cs" />
     <Compile Include="MQ\SQSMessagingScenarioFactory.cs" />
     <Compile Include="MQ\SQSQueueSender.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
