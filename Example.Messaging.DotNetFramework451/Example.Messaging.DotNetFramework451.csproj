@@ -72,8 +72,8 @@
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="RockLib.Compression, Version=0.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RockLib.Compression.0.0.1-alpha01\lib\net45\RockLib.Compression.dll</HintPath>
+    <Reference Include="RockLib.Compression, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RockLib.Compression.1.0.0\lib\net45\RockLib.Compression.dll</HintPath>
     </Reference>
     <Reference Include="RockLib.Configuration, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RockLib.Configuration.1.0.0\lib\net451\RockLib.Configuration.dll</HintPath>
@@ -84,8 +84,8 @@
     <Reference Include="RockLib.Immutable, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RockLib.Immutable.1.0.0\lib\net45\RockLib.Immutable.dll</HintPath>
     </Reference>
-    <Reference Include="RockLib.Messaging, Version=0.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RockLib.Messaging.0.0.1-alpha03\lib\net451\RockLib.Messaging.dll</HintPath>
+    <Reference Include="RockLib.Messaging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RockLib.Messaging.1.0.0\lib\net451\RockLib.Messaging.dll</HintPath>
     </Reference>
     <Reference Include="RockLib.Threading, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RockLib.Threading.1.0.0\lib\net45\RockLib.Threading.dll</HintPath>
