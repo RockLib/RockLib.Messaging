@@ -26,6 +26,9 @@ namespace Rock.Messaging.SQS
         [XmlAttribute("compressed")]
         public bool Compressed { get; set; }
 
+        [XmlAttribute("parallelHandling")]
+        public bool ParallelHandling { get; set; }
+
         public void Validate()
         {
             if (Name == null)

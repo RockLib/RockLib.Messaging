@@ -1,8 +1,4 @@
-﻿#if ROCKLIB
-namespace RockLib.Messaging
-#else
-namespace Rock.Messaging
-#endif
+﻿namespace Rock.Messaging
 {
     public interface IRockMessagingConfiguration
     {

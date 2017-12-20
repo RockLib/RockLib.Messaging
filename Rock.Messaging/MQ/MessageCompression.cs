@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿#if ROCKLIB
+using RockLib.Immutable;
+#endif
+using System.Text;
 
 #if ROCKLIB
 namespace RockLib.Messaging
@@ -11,6 +14,26 @@ namespace Rock.Messaging
     /// </summary>
     public static class MessageCompression
     {
+#if ROCKLIB
+        private static readonly Semimutable<IMessageCompressor> _messageCompressor = new Semimutable<IMessageCompressor>(GetDefaultCompressor);
+
+        /// <summary>
+        /// Gets the <see cref="IMessageCompressor"/> used for operations of the <see cref="MessageCompression"/> class.
+        /// </summary>
+        public static IMessageCompressor Compressor => _messageCompressor.Value;
+
+        /// <summary>
+        /// Sets the <see cref="IMessageCompressor"/> used for operations of the <see cref="MessageCompression"/> class.
+        /// </summary>
+        /// <param name="compressor">
+        /// The <see cref="IMessageCompressor"/> used for operations of the <see cref="MessageCompression"/> class.
+        /// </param>
+        public static void SetCompressor(IMessageCompressor compressor) => _messageCompressor.Value = compressor;
+
+        private static IMessageCompressor GetDefaultCompressor() => new GZipBase64EncodedMessageCompressor();
+#else
+        private static IMessageCompressor Compressor { get { return DefaultMessageCompressor.Current; } }
+#endif
         /// <summary>
         /// Compress the string value of a message.
         /// </summary>
@@ -22,7 +45,7 @@ namespace Rock.Messaging
         /// <returns>The compressed string.</returns>
         public static string Compress(string value, Encoding encoding = null)
         {
-            return DefaultMessageCompressor.Current.Compress(value, encoding ?? Encoding.UTF8);
+            return Compressor.Compress(value, encoding ?? Encoding.UTF8);
         }
 
         /// <summary>
@@ -36,7 +59,7 @@ namespace Rock.Messaging
         /// <returns>The compressed byte array.</returns>
         public static byte[] Compress(byte[] value, Encoding encoding = null)
         {
-            return DefaultMessageCompressor.Current.Compress(value, encoding ?? Encoding.UTF8);
+            return Compressor.Compress(value, encoding ?? Encoding.UTF8);
         }
 
         /// <summary>
@@ -50,7 +73,7 @@ namespace Rock.Messaging
         /// <returns>The decompressed string.</returns>
         public static string Decompress(string value, Encoding encoding = null)
         {
-            return DefaultMessageCompressor.Current.Decompress(value, encoding ?? Encoding.UTF8);
+            return Compressor.Decompress(value, encoding ?? Encoding.UTF8);
         }
 
         /// <summary>
@@ -64,7 +87,7 @@ namespace Rock.Messaging
         /// <returns>The decompressed byte array.</returns>
         public static byte[] Decompress(byte[] value, Encoding encoding = null)
         {
-            return DefaultMessageCompressor.Current.Decompress(value, encoding ?? Encoding.UTF8);
+            return Compressor.Decompress(value, encoding ?? Encoding.UTF8);
         }
     }
 }

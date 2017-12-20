@@ -1,14 +1,6 @@
-﻿#if ROCKLIB
-using RockLib.Immutable;
-#else
-using Rock.Immutable;
-#endif
+﻿using Rock.Immutable;
 
-#if ROCKLIB
-namespace RockLib.Messaging
-#else
 namespace Rock.Messaging
-#endif
 {
     public static class DefaultMessageCompressor
     {

@@ -26,8 +26,20 @@ namespace Rock.Messaging
 
         private static IMessagingScenarioFactory _fallbackMessagingScenarioFactory;
 
+        /// <summary>
+        /// Gets the current instance of <see cref="IMessagingScenarioFactory"/> used for operations
+        /// of the <see cref="MessagingScenarioFactory"/> class.
+        /// </summary>
         public static IMessagingScenarioFactory Current => _messagingScenarioFactory.Value;
 
+        /// <summary>
+        /// Sets the current instance of <see cref="IMessagingScenarioFactory"/> used for operations
+        /// of the <see cref="MessagingScenarioFactory"/> class.
+        /// </summary>
+        /// <param name="messagingScenarioFactory">
+        /// The instance of <see cref="IMessagingScenarioFactory"/> to be used for operations of the
+        /// <see cref="MessagingScenarioFactory"/> class.
+        /// </param>
         public static void SetCurrent(IMessagingScenarioFactory messagingScenarioFactory)
         {
             _messagingScenarioFactory.SetValue(() =>
