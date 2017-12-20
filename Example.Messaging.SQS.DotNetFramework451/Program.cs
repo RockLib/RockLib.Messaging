@@ -2,6 +2,7 @@
 using Amazon;
 using Amazon.Runtime.CredentialManagement;
 using RockLib.Messaging;
+using System.Threading;
 
 namespace Example.Messaging.SQS.DotNetFramework451
 {
@@ -21,6 +22,9 @@ namespace Example.Messaging.SQS.DotNetFramework451
             var profile = new CredentialProfile("default", options) {Region = RegionEndpoint.USWest2};
             new NetSDKCredentialsFile().RegisterProfile(profile);
 
+            // Use a wait handle to pause the main thread while waiting for the message to be received.
+            var waitHandle = new AutoResetEvent(false);
+
             var producer = MessagingScenarioFactory.CreateQueueProducer("queue");
             var consumer = MessagingScenarioFactory.CreateQueueConsumer("queue");
 
@@ -31,9 +35,21 @@ namespace Example.Messaging.SQS.DotNetFramework451
                 var message = eventArgsMessage.GetStringValue();
 
                 Console.WriteLine($"Message: {message}");
-            };
 
-            producer.Send("Test SQS Message!");
+                waitHandle.Set();
+            };
+            consumer.Start();
+
+            producer.Send($"SQS test message from {typeof(Program).FullName}");
+
+            waitHandle.WaitOne();
+
+            consumer.Dispose();
+            producer.Dispose();
+            waitHandle.Dispose();
+
+            Console.Write("Press any key to exit...");
+            Console.ReadKey(true);
         }
     }
 }
