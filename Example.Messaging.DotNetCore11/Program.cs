@@ -1,7 +1,8 @@
-﻿using System;
+﻿using RockLib.Messaging;
+using System;
 using System.Threading;
 
-namespace RockLib.Messaging.Example.Core
+namespace Example.Messaging.DotNetCore11
 {
     class Program
     {

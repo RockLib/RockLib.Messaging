@@ -1,8 +1,9 @@
 ﻿using System;
 using Amazon;
 using Amazon.Runtime.CredentialManagement;
+using RockLib.Messaging;
 
-namespace RockLib.Messaging.SQS.Example.Framework
+namespace Example.Messaging.SQS.DotNetFramework451
 {
     class Program
     {

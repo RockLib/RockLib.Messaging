@@ -1,7 +1,8 @@
-﻿using System;
+﻿using RockLib.Messaging;
+using System;
 using System.Threading;
 
-namespace RockLib.Messaging.Example.Framework
+namespace Example.Messaging.DotNetFramework451
 {
     class Program
     {

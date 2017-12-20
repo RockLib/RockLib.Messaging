@@ -3,7 +3,7 @@ using Amazon;
 using Amazon.Runtime.CredentialManagement;
 using RockLib.Messaging;
 
-namespace Example.Messaging.SQS.Core
+namespace Example.Messaging.SQS.DotNetCore11
 {
     class Program
     {
