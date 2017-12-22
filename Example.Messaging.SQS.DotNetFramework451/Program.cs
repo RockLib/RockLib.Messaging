@@ -11,7 +11,7 @@ namespace Example.Messaging.SQS.DotNetFramework451
         static void Main(string[] args)
         {
             // The AWS credentials should be provide via a profile or other more secure means. This is only for example.
-            // See http://http://docs.aws.amazon.com/sdk-for-net/v3/developer-guide/net-dg-config-creds.html
+            // See http://docs.aws.amazon.com/sdk-for-net/v3/developer-guide/net-dg-config-creds.html
             var options = new CredentialProfileOptions
             {
                 AccessKey = "AKIAJWXCD7ZCUGRQYCMA",
@@ -54,7 +54,7 @@ namespace Example.Messaging.SQS.DotNetFramework451
 
         private static void RunSender()
         {
-            using (var sender = MessagingScenarioFactory.CreateQueueProducer("Pipe1"))
+            using (var sender = MessagingScenarioFactory.CreateQueueProducer("queue"))
             {
                 Console.WriteLine($"Enter a message for sender '{sender.Name}'. Leave blank to quit.");
                 string message;
@@ -70,7 +70,7 @@ namespace Example.Messaging.SQS.DotNetFramework451
 
         private static void RunReceiver()
         {
-            using (var receiver = MessagingScenarioFactory.CreateQueueConsumer("Pipe1"))
+            using (var receiver = MessagingScenarioFactory.CreateQueueConsumer("queue"))
             {
                 receiver.MessageReceived += (s, e) => Console.WriteLine(e.Message.GetStringValue());
                 Console.WriteLine($"Receiving messages from receiver '{receiver.Name}'. Press <enter> to quit.");
@@ -84,10 +84,10 @@ namespace Example.Messaging.SQS.DotNetFramework451
             // Use a wait handle to pause the main thread while waiting for the message to be received.
             var waitHandle = new AutoResetEvent(false);
 
-            var namedPipeProducer = MessagingScenarioFactory.CreateQueueProducer("Pipe1");
-            var namedPipeConsumer = MessagingScenarioFactory.CreateQueueConsumer("Pipe1");
+            var producer = MessagingScenarioFactory.CreateQueueProducer("queue");
+            var consumer = MessagingScenarioFactory.CreateQueueConsumer("queue");
 
-            namedPipeConsumer.MessageReceived += (sender, eventArgs) =>
+            consumer.MessageReceived += (sender, eventArgs) =>
             {
                 var eventArgsMessage = eventArgs.Message;
                 var message = eventArgsMessage.GetStringValue();
@@ -96,14 +96,14 @@ namespace Example.Messaging.SQS.DotNetFramework451
 
                 waitHandle.Set();
             };
-            namedPipeConsumer.Start();
+            consumer.Start();
 
-            namedPipeProducer.Send($"Named pipe test message from {typeof(Program).FullName}");
+            producer.Send($"SQS test message from {typeof(Program).FullName}");
 
             waitHandle.WaitOne();
 
-            namedPipeConsumer.Dispose();
-            namedPipeProducer.Dispose();
+            consumer.Dispose();
+            producer.Dispose();
             waitHandle.Dispose();
 
             Console.Write("Press any key to exit...");
