@@ -33,6 +33,9 @@ namespace Rock.Messaging.SQS
         /// </param>
         public SQSReceiverMessage(Message message, Action acknowledge)
         {
+            if (message == null) throw new ArgumentNullException(nameof(message));
+            if (acknowledge == null) throw new ArgumentNullException(nameof(acknowledge));
+
             _message = message;
             _acknowledge = acknowledge;
         }

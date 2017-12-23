@@ -27,7 +27,7 @@ namespace Rock.Messaging.SQS
         /// have a unique name.
         /// </param>
         public SQSMessagingScenarioFactory(IEnumerable<SQSConfiguration> sqsSettings)
-            : this(new SQSConfigurationProvider(sqsSettings))
+            : this(new SQSConfigurationProvider(sqsSettings ?? throw new ArgumentNullException(nameof(sqsSettings))))
         {
         }
 #else
@@ -47,6 +47,11 @@ namespace Rock.Messaging.SQS
             if (configurationProvider == null) throw new ArgumentNullException(nameof(configurationProvider));
             _configurationProvider = configurationProvider;
         }
+
+        /// <summary>
+        /// Gets the object that provides the configurations used by this instance to create objects.
+        /// </summary>
+        public ISQSConfigurationProvider ConfigurationProvider => _configurationProvider;
 
         /// <summary>
         /// Creates an instance of <see cref="IReceiver"/> that uses the queue consumer scenario.

@@ -36,7 +36,14 @@ namespace RockLib.Messaging.SQS
         /// Amazon SQS never returns more messages than this value (however, fewer messages
         /// might be returned). Valid values are 1 to 10. Default is 3.
         /// </summary>
-        public int MaxMessages { get => _maxMessages; set => _maxMessages = value > 0 ? value : throw new ArgumentException("MaxMessages must be greater than zero.", nameof(value)); }
+        public int MaxMessages
+        {
+            get => _maxMessages;
+            set => _maxMessages =
+                value >= 1 && value <= 10
+                    ? value
+                    : throw new ArgumentException("MaxMessages must be a number from one to ten.", nameof(value));
+        }
 
 
         /// <summary>

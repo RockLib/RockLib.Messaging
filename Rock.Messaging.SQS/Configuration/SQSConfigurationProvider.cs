@@ -36,7 +36,7 @@ namespace RockLib.Messaging.SQS
         /// </summary>
         /// <param name="name">The name of the <see cref="SQSConfiguration"/> to retrieve.</param>
         /// <returns>The <see cref="SQSConfiguration"/> with the provided name.</returns>
-        public ISQSConfiguration GetConfiguration(string name)
+        public SQSConfiguration GetConfiguration(string name)
         {
             return _configurations[name];
         }
@@ -50,6 +50,11 @@ namespace RockLib.Messaging.SQS
         public bool HasConfiguration(string name)
         {
             return _configurations.ContainsKey(name);
+        }
+
+        ISQSConfiguration ISQSConfigurationProvider.GetConfiguration(string name)
+        {
+            return GetConfiguration(name);
         }
     }
 }

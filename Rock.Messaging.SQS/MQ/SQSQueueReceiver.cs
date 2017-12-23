@@ -45,6 +45,9 @@ namespace Rock.Messaging.SQS
         /// <param name="sqs">An object that communicates with SQS.</param>
         public SQSQueueReceiver(ISQSConfiguration configuration, IAmazonSQS sqs)
         {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (sqs == null) throw new ArgumentNullException(nameof(sqs));
+
             _name = configuration.Name;
             _queueUrl = configuration.QueueUrl;
             _maxMessages = configuration.MaxMessages;
