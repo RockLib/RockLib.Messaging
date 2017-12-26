@@ -20,6 +20,9 @@ namespace RockLib.Messaging.SQS
 namespace Rock.Messaging.SQS
 #endif
 {
+    /// <summary>
+    /// An implementation of <see cref="IReceiver"/> that receives messages from SQS.
+    /// </summary>
     public class SQSQueueReceiver : IReceiver
     {
         private readonly string _name;
@@ -35,8 +38,16 @@ namespace Rock.Messaging.SQS
         private const int _maxAcknowledgeAttempts = 3;
         private const int _maxReceiveAttempts = 3;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SQSQueueReceiver"/> class.
+        /// </summary>
+        /// <param name="configuration">An object that defines the configuration of this istance.</param>
+        /// <param name="sqs">An object that communicates with SQS.</param>
         public SQSQueueReceiver(ISQSConfiguration configuration, IAmazonSQS sqs)
         {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (sqs == null) throw new ArgumentNullException(nameof(sqs));
+
             _name = configuration.Name;
             _queueUrl = configuration.QueueUrl;
             _maxMessages = configuration.MaxMessages;
@@ -48,13 +59,23 @@ namespace Rock.Messaging.SQS
             _worker = new Thread(DoStuff);
         }
 
+        /// <summary>
+        /// Occurs when a message is received.
+        /// </summary>
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
 
+        /// <summary>
+        /// Gets the name of this instance of <see cref="SQSQueueReceiver"/>.
+        /// </summary>
         public string Name
         {
             get { return _name; }
         }
 
+        /// <summary>
+        /// Starts listening for messages.
+        /// </summary>
+        /// <param name="selector">Also known as a 'routing key', this value enables only certain messages to be received.</param>
         public void Start(string selector)
         {
             if (!_worker.IsAlive && !_stopped)
@@ -191,6 +212,9 @@ namespace Rock.Messaging.SQS
             }
         }
 
+        /// <summary>
+        /// Stops listening to SQS and disposes resources.
+        /// </summary>
         public void Dispose()
         {
             _stopped = true;

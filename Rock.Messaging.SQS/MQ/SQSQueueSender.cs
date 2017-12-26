@@ -1,6 +1,7 @@
 ﻿using Amazon.SQS;
 using Amazon.SQS.Model;
 using System.Threading.Tasks;
+using System;
 
 #if ROCKLIB
 using RockLib.Messaging.Internal;
@@ -14,6 +15,9 @@ namespace RockLib.Messaging.SQS
 namespace Rock.Messaging.SQS
 #endif
 {
+    /// <summary>
+    /// An implementation of <see cref="ISender"/> that sends messages to SQS.
+    /// </summary>
     public class SQSQueueSender : ISender
     {
         private readonly string _name;
@@ -21,16 +25,31 @@ namespace Rock.Messaging.SQS
         private readonly IAmazonSQS _sqs;
         private readonly bool _compressed;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SQSQueueReceiver"/> class.
+        /// </summary>
+        /// <param name="configuration">An object that defines the configuration of this istance.</param>
+        /// <param name="sqs">An object that communicates with SQS.</param>
         public SQSQueueSender(ISQSConfiguration configuration, IAmazonSQS sqs)
         {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (sqs == null) throw new ArgumentNullException(nameof(sqs));
+
             _name = configuration.Name;
             _queueUrl = configuration.QueueUrl;
             _compressed = configuration.Compressed;
             _sqs = sqs;
         }
 
+        /// <summary>
+        /// Gets the name of this instance of <see cref="SQSQueueSender"/>.
+        /// </summary>
         public string Name { get { return _name; } }
 
+        /// <summary>
+        /// Asynchronously sends the specified message.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
         public Task SendAsync(ISenderMessage message)
         {
             var shouldCompress = message.ShouldCompress(_compressed);
@@ -79,6 +98,7 @@ namespace Rock.Messaging.SQS
             return _sqs.SendMessageAsync(sendMessageRequest);
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             _sqs.Dispose();
