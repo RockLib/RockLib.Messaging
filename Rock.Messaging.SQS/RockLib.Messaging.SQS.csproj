@@ -6,14 +6,14 @@
 
     <PropertyGroup>
         <PackageId>RockLib.Messaging.SQS</PackageId>
-        <PackageVersion>0.0.1-alpha03</PackageVersion>
+        <PackageVersion>1.0.0</PackageVersion>
         <Authors>Quicken Loans</Authors>
         <Description>Messaging extension for Rock Framework to add Amazon SQS support.</Description>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <PackageReleaseNotes></PackageReleaseNotes>
         <Copyright>Copyright 2017 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
         <PackageTags>rocklib messaging sqs</PackageTags>
-        <Version>0.0.1-alpha03</Version>
+        <Version>1.0.0</Version>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     </PropertyGroup>
 
