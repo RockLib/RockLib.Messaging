@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RockLib.Messaging.SQS" Version="0.0.1-alpha03" />
+    <PackageReference Include="RockLib.Messaging.SQS" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
