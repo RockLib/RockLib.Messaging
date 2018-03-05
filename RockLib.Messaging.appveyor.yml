@@ -14,10 +14,10 @@ skip_commits:
   - Rock.Messaging/Rock.StaticDependencyInjection/
   - Rock.Messaging/Routing/
   - Rock.Messaging/MQ/DefaultMessageCompressor.cs
-  - **/AssemblyInfo.cs
-  - **/packages.config
-  - **/*.nuspec
-  - **/*.DotSettings
+  - '**/AssemblyInfo.cs'
+  - '**/packages.config'
+  - '**/*.nuspec'
+  - '**/*.DotSettings'
 before_build:
 - ps: |
     # The path to the solution to restore.

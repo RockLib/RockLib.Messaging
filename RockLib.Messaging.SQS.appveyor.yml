@@ -10,10 +10,10 @@ skip_commits:
   files:
   - Rock.Messaging.SQS/Configuration/XmlDeserializingSQSConfigurationProvider.cs
   - Rock.Messaging.SQS/Configuration/XmlSQSConfiguration.cs
-  - **/AssemblyInfo.cs
-  - **/packages.config
-  - **/*.nuspec
-  - **/*.DotSettings
+  - '**/AssemblyInfo.cs'
+  - '**/packages.config'
+  - '**/*.nuspec'
+  - '**/*.DotSettings'
 before_build:
 - ps: |
     # The path to the solution to restore.
