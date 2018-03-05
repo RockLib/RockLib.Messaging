@@ -1,0 +1,118 @@
+version: 'RockLib.Messaging.SQS.{build}.0.0-ci'
+image: Visual Studio 2017
+configuration: Release
+only_commits:
+  files:
+  - Rock.Messaging.SQS/
+  - RockLib.Messaging.SQS.sln
+  - RockLib.Messaging.SQS.appveyor.yml
+skip_commits:
+  files:
+  - Rock.Messaging.SQS/Configuration/XmlDeserializingSQSConfigurationProvider.cs
+  - Rock.Messaging.SQS/Configuration/XmlSQSConfiguration.cs
+  - **/AssemblyInfo.cs
+  - **/packages.config
+  - **/*.nuspec
+  - **/*.DotSettings
+before_build:
+- ps: |
+    # The path to the solution to restore.
+    $sln_path = "RockLib.Messaging.SQS.sln"
+    
+    # The path to the main csproj file. It will be patched during the build.
+    $csproj_path = "Rock.Messaging.SQS\RockLib.Messaging.SQS.csproj"
+    
+    # The version of the build artifact's nuget package when created by CI builds.
+    $ci_package_version = "$Env:appveyor_build_number.0.0-ci"
+    
+    # This before_build script does four things:
+    #
+    # 1) Update the csproj's package release notes to be the current commit message.
+    # 2) Synchronize the AppVeyor build version and the csproj's package version.
+    #   a) If the current build is a deploy build*, update the AppVeyor build version to match
+    #      the csproj's nuget package version.
+    #   b) If the current build is a CI build*, update the csproj's package version to match
+    #      the AppVeyor build version.
+    # 3) Set an AppVeyor build variable named 'csproj_build_version' to the csproj's package version.
+    #    This value is used by deploy providers to determine whether the current commit should be deployed.
+    # 4) Restore packages for the sln. .NET Standard libraries won't build without restoring first.
+    #
+    # *The current build is a deploy build if the 'appveyor_repo_tag' variable is 'true' and the
+    #  'appveyor_repo_tag_name' variable is the the value of the 'csproj_build_version' variable, as set in
+    #  #3 above. Otherwise, the current build is a CI build.
+    
+    function Get-Csproj-Build-Version ($csproj)
+    {
+        $package_id = $csproj.SelectSingleNode("/Project/PropertyGroup/PackageId").InnerText
+        $package_version = $csproj.SelectSingleNode("/Project/PropertyGroup/PackageVersion").InnerText
+        Return "$package_id.$package_version"
+    }
+
+    function Update-Package-Release-Notes ($csproj)
+    {
+        $commit_message = "$Env:appveyor_repo_commit_message`n`n$Env:appveyor_repo_commit_message_extended"
+        $commit_message = $commit_message.Replace("\n", "`n").TrimEnd()
+
+        $package_release_notes_node = $csproj.SelectSingleNode("/Project/PropertyGroup/PackageReleaseNotes")
+        $package_release_notes_node.InnerText = $commit_message
+    }
+
+    function Synchronize-AppVeyor-And-Csproj-Versions ($csproj)
+    {
+        $csproj_build_version = Get-Csproj-Build-Version $csproj
+
+        If ($Env:appveyor_repo_tag -eq "true" -AND $Env:appveyor_repo_tag_name -eq $csproj_build_version) {
+            # If this is a deploy build, update the AppVeyor build version to match the csproj's package version.
+            Update-AppVeyorBuild -Version $csproj_build_version
+        } else {
+            # Else, update the csproj's package version to match the AppVeyor build version.
+            $package_version_node = $csproj.SelectSingleNode("/Project/PropertyGroup/PackageVersion")
+            $package_version_node.InnerText = $ci_package_version
+        }
+    }
+    
+    function Set-Csproj-Build-Version-Variable ($csproj)
+    {
+        $csproj_build_version = Get-Csproj-Build-Version $csproj
+        Set-AppVeyorBuildVariable -Name "csproj_build_version" -Value $csproj_build_version
+    }
+
+    # The $csproj xml object contains the contents of the csproj file.
+    $csproj = [xml](Get-Content $csproj_path)
+
+    Update-Package-Release-Notes $csproj
+    Synchronize-AppVeyor-And-Csproj-Versions $csproj
+    Set-Csproj-Build-Version-Variable $csproj
+
+    # Patch the csproj file with the modified xml object after all changes have been made.
+    $csproj.Save((Get-Item $csproj_path))
+
+    nuget restore $sln_path
+build:
+  project: RockLib.Messaging.SQS.sln
+  verbosity: minimal
+artifacts:
+- path: '**/RockLib.Messaging.SQS.*.nupkg'
+deploy:
+- provider: GitHub
+  tag: $(appveyor_repo_tag_name)
+  release: $(appveyor_repo_commit_message)
+  description: $(appveyor_repo_commit_message_extended)
+  auth_token:
+    secure: yjDw1QLeuxM3Wvq9ZEJIB8JaEK/L2e7MhwrKicm3/SBh0FwbAEb3Fpg82h0fFALU
+  on:
+    appveyor_repo_tag: true
+    appveyor_repo_tag_name: $(csproj_build_version)
+- provider: NuGet
+  api_key:
+    secure: n0btQo8iZJZTJ3S5vLWokuOxzv4dtYBi3cx6EbW41jTF5OfcshJs+dTMAGCTquLY
+  on:
+    appveyor_repo_tag: true
+    appveyor_repo_tag_name: $(csproj_build_version)
+notifications:
+- provider: Email
+  to:
+  - itteamappcore@quickenloans.com
+  on_build_success: false
+  on_build_failure: false
+  on_build_status_changed: true
