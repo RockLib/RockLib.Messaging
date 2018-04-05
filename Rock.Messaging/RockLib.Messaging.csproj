@@ -60,8 +60,8 @@
   
   <ItemGroup>
     <PackageReference Include="RockLib.Compression" Version="1.0.0" />
-    <PackageReference Include="RockLib.Configuration" Version="1.0.0" />
-    <PackageReference Include="RockLib.Configuration.ObjectFactory" Version="1.0.0" />
+    <PackageReference Include="RockLib.Configuration" Version="2.0.0" />
+    <PackageReference Include="RockLib.Configuration.ObjectFactory" Version="1.1.1" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.6'">
