@@ -2,7 +2,9 @@
 using System.Collections.Concurrent;
 using System.IO.Pipes;
 using System.Threading;
+#if NETSTANDARD1_6
 using System.Threading.Tasks;
+#endif
 
 namespace RockLib.Messaging.NamedPipes
 {
@@ -10,7 +12,7 @@ namespace RockLib.Messaging.NamedPipes
     /// An implementation of <see cref="IReceiver"/> that uses named pipes as
     /// its communication mechanism.
     /// </summary>
-    public class NamedPipeQueueConsumer : IReceiver
+    public class NamedPipeReceiver : IReceiver
     {
         private readonly BlockingCollection<NamedPipeMessage> _messages = new BlockingCollection<NamedPipeMessage>();
         private readonly Thread _consumerThread;
@@ -21,14 +23,14 @@ namespace RockLib.Messaging.NamedPipes
         private NamedPipeServerStream _pipeServer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NamedPipeQueueConsumer"/> class.
+        /// Initializes a new instance of the <see cref="NamedPipeReceiver"/> class.
         /// </summary>
-        /// <param name="name">The name of this instance of <see cref="NamedPipeQueueConsumer"/>.</param>
+        /// <param name="name">The name of this instance of <see cref="NamedPipeReceiver"/>.</param>
         /// <param name="pipeName">Name of the named pipe.</param>
-        public NamedPipeQueueConsumer(string name, string pipeName)
+        public NamedPipeReceiver(string name, string pipeName = null)
         {
-            Name = name;
-            _pipeName = pipeName;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            _pipeName = pipeName ?? Name;
             _consumerThread = new Thread(Consume);
         }
 

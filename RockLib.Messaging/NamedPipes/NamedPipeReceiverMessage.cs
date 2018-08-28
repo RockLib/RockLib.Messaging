@@ -6,7 +6,7 @@ using RockLib.Messaging.Internal;
 namespace RockLib.Messaging.NamedPipes
 {
     /// <summary>
-    /// An implementation of IReceiverMessage for use by the <see cref="NamedPipeQueueConsumer"/>
+    /// An implementation of IReceiverMessage for use by the <see cref="NamedPipeReceiver"/>
     /// class.
     /// </summary>
     public class NamedPipeReceiverMessage : IReceiverMessage

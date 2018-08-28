@@ -13,7 +13,7 @@ namespace RockLib.Messaging.NamedPipes
     /// An implementation of <see cref="ISender"/> that uses named pipes as
     /// its communication mechanism.
     /// </summary>
-    public class NamedPipeQueueProducer : ISender
+    public class NamedPipeSender : ISender
     {
         private readonly NamedPipeMessageSerializer _serializer = NamedPipeMessageSerializer.Instance;
         private static readonly Task _completedTask = Task.FromResult(0);
@@ -24,15 +24,15 @@ namespace RockLib.Messaging.NamedPipes
         private readonly Thread _runThread;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NamedPipeQueueProducer"/> class.
+        /// Initializes a new instance of the <see cref="NamedPipeSender"/> class.
         /// </summary>
-        /// <param name="name">The name of this instance of <see cref="NamedPipeQueueProducer"/>.</param>
+        /// <param name="name">The name of this instance of <see cref="NamedPipeSender"/>.</param>
         /// <param name="pipeName">Name of the named pipe.</param>
         /// <param name="compressed">Whether messages should be compressed.</param>
-        public NamedPipeQueueProducer(string name, string pipeName, bool compressed)
+        public NamedPipeSender(string name, string pipeName = null, bool compressed = false)
         {
-            Name = name;
-            _pipeName = pipeName;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            _pipeName = pipeName ?? Name;
             _compressed = compressed;
 
             _messages = new BlockingCollection<string>();
