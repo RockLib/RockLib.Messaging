@@ -5,18 +5,9 @@ using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
-
-#if ROCKLIB
 using RockLib.Messaging.Internal;
-#else
-using Rock.Messaging.Internal;
-#endif
 
-#if ROCKLIB
 namespace RockLib.Messaging.NamedPipes
-#else
-namespace Rock.Messaging.NamedPipes
-#endif
 {
     /// <summary>
     /// An implementation of <see cref="ISender"/> that uses named pipes as

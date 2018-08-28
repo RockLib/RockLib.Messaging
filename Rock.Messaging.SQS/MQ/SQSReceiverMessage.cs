@@ -2,18 +2,9 @@
 using System.Linq;
 using System.Text;
 using Amazon.SQS.Model;
-
-#if ROCKLIB
 using RockLib.Messaging.Internal;
-#else
-using Rock.Messaging.Internal;
-#endif
 
-#if ROCKLIB
 namespace RockLib.Messaging.SQS
-#else
-namespace Rock.Messaging.SQS
-#endif
 {
     /// <summary>
     /// An implementation of IReceiverMessage for use by the <see cref="SQSQueueReceiver"/>

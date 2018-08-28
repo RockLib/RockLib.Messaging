@@ -2,11 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-#if ROCKLIB
 namespace RockLib.Messaging.SQS
-#else
-namespace Rock.Messaging.SQS
-#endif
 {
     internal static class Sync
     {

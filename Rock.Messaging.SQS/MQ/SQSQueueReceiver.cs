@@ -7,18 +7,9 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-
-#if ROCKLIB
 using System.Diagnostics;
-#else
-using Rock.BackgroundErrorLogging;
-#endif
 
-#if ROCKLIB
 namespace RockLib.Messaging.SQS
-#else
-namespace Rock.Messaging.SQS
-#endif
 {
     /// <summary>
     /// An implementation of <see cref="IReceiver"/> that receives messages from SQS.
@@ -118,15 +109,7 @@ namespace Rock.Messaging.SQS
 
                 if (exception != null || response == null || response.HttpStatusCode != HttpStatusCode.OK)
                 {
-#if ROCKLIB
                     Trace.TraceError($"Unable to receive SQS messages from AWS. Additional Information - {GetAdditionalInformation(response, null)}");
-#else
-                    BackgroundErrorLogger.Log(
-                        exception,
-                        "Unable to receive SQS messages from AWS.",
-                        "Rock.Messaging.SQS",
-                        GetAdditionalInformation(response, null));
-#endif
                     continue;
                 }
 
@@ -187,15 +170,7 @@ namespace Rock.Messaging.SQS
                             }
                         }
 
-#if ROCKLIB
                         Trace.TraceError($"Unable to delete SQS message. Additional Information - {GetAdditionalInformation(deleteResponse, receiptHandle)}");
-#else
-                                BackgroundErrorLogger.Log(
-                                    deleteException,
-                                    "Unable to delete SQS message.",
-                                    "Rock.Messaging.SQS",
-                                    GetAdditionalInformation(deleteResponse, receiptHandle));
-#endif
                     };
 
                 try

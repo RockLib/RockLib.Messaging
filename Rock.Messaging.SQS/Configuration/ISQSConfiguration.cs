@@ -1,8 +1,4 @@
-﻿#if ROCKLIB
-namespace RockLib.Messaging.SQS
-#else
-namespace Rock.Messaging.SQS
-#endif
+﻿namespace RockLib.Messaging.SQS
 {
     /// <summary>
     /// Contains various settings required by <see cref="SQSQueueReceiver"/>

@@ -1,10 +1,6 @@
 ﻿using System;
 
-#if ROCKLIB
 namespace RockLib.Messaging
-#else
-namespace Rock.Messaging
-#endif
 {
     /// <summary>
     /// Defines an interface for receiving messages.

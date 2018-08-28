@@ -1,8 +1,4 @@
-﻿#if ROCKLIB
-namespace RockLib.Messaging.SQS
-#else
-namespace Rock.Messaging.SQS
-#endif
+﻿namespace RockLib.Messaging.SQS
 {
     /// <summary>
     /// Defineds methods for looking up instances of <see cref="ISQSConfiguration"/> by name.

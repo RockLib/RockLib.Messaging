@@ -17,10 +17,6 @@
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     </PropertyGroup>
 
-    <PropertyGroup>
-        <DefineConstants>ROCKLIB</DefineConstants>
-    </PropertyGroup>
-
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
         <DocumentationFile>bin\Release\netstandard2.0\RockLib.Messaging.SQS.xml</DocumentationFile>
     </PropertyGroup>

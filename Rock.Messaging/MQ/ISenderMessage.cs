@@ -1,10 +1,6 @@
 ﻿using System.Collections.Generic;
 
-#if ROCKLIB
 namespace RockLib.Messaging
-#else
-namespace Rock.Messaging
-#endif
 {
     /// <summary>
     /// Defines the interface for an outgoing message.

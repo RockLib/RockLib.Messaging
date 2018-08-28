@@ -1,20 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-#if ROCKLIB
 using System.Linq;
 using RockLib.Configuration;
 using RockLib.Immutable;
 using RockLib.Configuration.ObjectFactory;
-#else
-using System.Configuration;
-using Rock.Immutable;
-#endif
 
-#if ROCKLIB
 namespace RockLib.Messaging
-#else
-namespace Rock.Messaging
-#endif
 {
     /// <summary>
     /// Provides methods for creating instances of various messaging scenarios.
@@ -91,17 +82,12 @@ namespace Rock.Messaging
 
         internal static IMessagingScenarioFactory BuildFactory()
         {
-#if ROCKLIB
             var messagingSection = Config.Root.GetSection("RockLib.Messaging");
             var scenarioFactories = messagingSection.Create<List<IMessagingScenarioFactory>>();
 
             if( !scenarioFactories.Any()) { throw new InvalidOperationException("There must be at least one scenario factory, please make sure your configuration is correct."); }
 
             return scenarioFactories.Count == 1 ? scenarioFactories[0] : new CompositeMessagingScenarioFactory(scenarioFactories);
-#else
-            var rockMessagingConfiguration = (IRockMessagingConfiguration)ConfigurationManager.GetSection("rock.messaging");
-            return rockMessagingConfiguration.MessagingScenarioFactory;
-#endif
         }
         
 

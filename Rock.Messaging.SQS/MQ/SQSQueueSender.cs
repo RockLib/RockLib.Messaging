@@ -2,18 +2,9 @@
 using Amazon.SQS.Model;
 using System.Threading.Tasks;
 using System;
-
-#if ROCKLIB
 using RockLib.Messaging.Internal;
-#else
-using Rock.Messaging.Internal;
-#endif
 
-#if ROCKLIB
 namespace RockLib.Messaging.SQS
-#else
-namespace Rock.Messaging.SQS
-#endif
 {
     /// <summary>
     /// An implementation of <see cref="ISender"/> that sends messages to SQS.

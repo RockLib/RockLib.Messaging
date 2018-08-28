@@ -1,11 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-#if ROCKLIB
 namespace RockLib.Messaging.NamedPipes
-#else
-namespace Rock.Messaging.NamedPipes
-#endif
 {
     /// <summary>
     /// An blended implementation of <see cref="INamedPipeConfigProvider"/> that

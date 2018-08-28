@@ -4,11 +4,7 @@ using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
 
-#if ROCKLIB
 namespace RockLib.Messaging.NamedPipes
-#else
-namespace Rock.Messaging.NamedPipes
-#endif
 {
     /// <summary>
     /// An implementation of <see cref="IReceiver"/> that uses named pipes as

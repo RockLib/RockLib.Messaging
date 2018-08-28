@@ -2,11 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-#if ROCKLIB
 namespace RockLib.Messaging.SQS
-#else
-namespace Rock.Messaging.SQS
-#endif
 {
     /// <summary>
     /// An implementation of <see cref="IMessagingScenarioFactory"/> that creates
@@ -16,7 +12,6 @@ namespace Rock.Messaging.SQS
     {
         private readonly ISQSConfigurationProvider _configurationProvider;
 
-#if ROCKLIB
         /// <summary>
         /// Initializes a new instance of the <see cref="SQSMessagingScenarioFactory"/> class.
         /// </summary>
@@ -30,12 +25,7 @@ namespace Rock.Messaging.SQS
             : this(new SQSConfigurationProvider(sqsSettings ?? throw new ArgumentNullException(nameof(sqsSettings))))
         {
         }
-#else
-        public SQSMessagingScenarioFactory(XmlDeserializingSQSConfigurationProvider sqsSettings)
-            : this((ISQSConfigurationProvider)sqsSettings)
-        {
-        }
-#endif
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SQSMessagingScenarioFactory"/> class.
         /// </summary>

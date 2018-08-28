@@ -1,17 +1,8 @@
 using System;
 using System.Text;
-
-#if ROCKLIB
 using RockLib.Compression;
-#else
-using Rock.Compression;
-#endif
 
-#if ROCKLIB
 namespace RockLib.Messaging
-#else
-namespace Rock.Messaging
-#endif
 {
     /// <summary>
     /// An implementation of <see cref="IMessageCompressor"/> that uses GZip for compression

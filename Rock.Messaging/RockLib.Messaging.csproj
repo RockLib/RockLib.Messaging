@@ -18,10 +18,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefineConstants>ROCKLIB</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\RockLib.Messaging.xml</DocumentationFile>
   </PropertyGroup>
 

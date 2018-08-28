@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#if ROCKLIB
 namespace RockLib.Messaging.NamedPipes
-#else
-namespace Rock.Messaging.NamedPipes
-#endif
 {
     /// <summary>
     /// An implementation of <see cref="IMessagingScenarioFactory"/> that returns

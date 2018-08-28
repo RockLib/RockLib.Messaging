@@ -1,10 +1,6 @@
 ﻿using System.Text;
 
-#if ROCKLIB
 namespace RockLib.Messaging
-#else
-namespace Rock.Messaging
-#endif
 {
     /// <summary>
     /// Defines the interface for a received message.

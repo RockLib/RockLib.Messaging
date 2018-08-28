@@ -1,10 +1,6 @@
 ﻿using System.Text;
 
-#if ROCKLIB
 namespace RockLib.Messaging
-#else
-namespace Rock.Messaging
-#endif
 {
     /// <summary>
     /// Provides a set of methods for obtaining values from objects that implement

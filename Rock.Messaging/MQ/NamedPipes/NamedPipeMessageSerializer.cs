@@ -5,11 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-#if ROCKLIB
 namespace RockLib.Messaging.NamedPipes
-#else
-namespace Rock.Messaging.NamedPipes
-#endif
 {
     internal class NamedPipeMessageSerializer
     {

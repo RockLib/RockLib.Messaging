@@ -1,20 +1,13 @@
-﻿#if ROCKLIB
-using RockLib.Immutable;
-#endif
+﻿using RockLib.Immutable;
 using System.Text;
 
-#if ROCKLIB
 namespace RockLib.Messaging
-#else
-namespace Rock.Messaging
-#endif
 {
     /// <summary>
     /// Provides compression and decompression methods for use by queues.
     /// </summary>
     public static class MessageCompression
     {
-#if ROCKLIB
         private static readonly Semimutable<IMessageCompressor> _messageCompressor = new Semimutable<IMessageCompressor>(GetDefaultCompressor);
 
         /// <summary>
@@ -31,9 +24,7 @@ namespace Rock.Messaging
         public static void SetCompressor(IMessageCompressor compressor) => _messageCompressor.Value = compressor;
 
         private static IMessageCompressor GetDefaultCompressor() => new GZipBase64EncodedMessageCompressor();
-#else
-        private static IMessageCompressor Compressor { get { return DefaultMessageCompressor.Current; } }
-#endif
+
         /// <summary>
         /// Compress the string value of a message.
         /// </summary>
