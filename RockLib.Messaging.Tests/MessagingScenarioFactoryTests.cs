@@ -81,5 +81,36 @@ namespace RockLib.Messaging.Tests
             receiver2.Name.Should().Be("Pipe2");
             receiver2.PipeName.Should().Be("PipeName2");
         }
+
+        [Test]
+        public void CreateSenderCreatesSenderUsingDefaultSenderType()
+        {
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile(@"CustomConfigFiles\DefaultSender_appsettings.json", false)
+                .Build()
+                .GetSection("RockLib.Messaging");
+
+            var sender = (NamedPipeSender)config.CreateSender("Pipe1");
+
+            sender.Name.Should().Be("Pipe1");
+            sender.PipeName.Should().Be("PipeName1");
+            sender.Compressed.Should().BeTrue();
+        }
+
+        [Test]
+        public void CreateReceiverCreatesReceiverUsingDefaultReceiverType()
+        {
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile(@"CustomConfigFiles\DefaultReceiver_appsettings.json", false)
+                .Build()
+                .GetSection("RockLib.Messaging");
+
+            var receiver = (NamedPipeReceiver)config.CreateReceiver("Pipe1");
+
+            receiver.Name.Should().Be("Pipe1");
+            receiver.PipeName.Should().Be("PipeName1");
+        }
     }
 }
