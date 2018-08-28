@@ -34,11 +34,13 @@ namespace RockLib.Messaging
                 throw new KeyNotFoundException();
 
             if (sendersSection.IsList())
+            {
                 foreach (var senderSection in sendersSection.GetChildren())
                     if (name.Equals(GetSectionName(senderSection), StringComparison.OrdinalIgnoreCase))
                         return senderSection.Create<ISender>(configuration.GetDefaultTypes());
-                    else if (name.Equals(GetSectionName(sendersSection), StringComparison.OrdinalIgnoreCase))
-                        return sendersSection.Create<ISender>(configuration.GetDefaultTypes());
+            }
+            else if (name.Equals(GetSectionName(sendersSection), StringComparison.OrdinalIgnoreCase))
+                return sendersSection.Create<ISender>(configuration.GetDefaultTypes());
 
             throw new KeyNotFoundException();
         }
@@ -56,11 +58,13 @@ namespace RockLib.Messaging
                 throw new KeyNotFoundException();
 
             if (receiversSection.IsList())
+            {
                 foreach (var receiverSection in receiversSection.GetChildren())
                     if (name.Equals(GetSectionName(receiverSection), StringComparison.OrdinalIgnoreCase))
                         return receiverSection.Create<IReceiver>(configuration.GetDefaultTypes());
-                    else if (name.Equals(GetSectionName(receiversSection), StringComparison.OrdinalIgnoreCase))
-                        return receiversSection.Create<IReceiver>(configuration.GetDefaultTypes());
+            }
+            else if (name.Equals(GetSectionName(receiversSection), StringComparison.OrdinalIgnoreCase))
+                return receiversSection.Create<IReceiver>(configuration.GetDefaultTypes());
 
             throw new KeyNotFoundException();
         }

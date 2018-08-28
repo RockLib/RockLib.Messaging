@@ -1,0 +1,11 @@
+﻿{
+  "RockLib.Messaging": {
+    "Receivers": {
+      "Type": "RockLib.Messaging.NamedPipes.NamedPipeReceiver, RockLib.Messaging",
+      "Value": {
+        "Name": "Pipe1",
+        "PipeName": "PipeName1"
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+﻿{
+  "RockLib.Messaging": {
+    "Senders": [
+      {
+        "Type": "RockLib.Messaging.NamedPipes.NamedPipeSender, RockLib.Messaging",
+        "Value": {
+          "Name": "Pipe1",
+          "PipeName": "PipeName1",
+          "Compressed": true
+        }
+      },
+      {
+        "Type": "RockLib.Messaging.NamedPipes.NamedPipeSender, RockLib.Messaging",
+        "Value": {
+          "Name": "Pipe2",
+          "PipeName": "PipeName2",
+          "Compressed": false
+        }
+      }
+    ]
+  }
+}
