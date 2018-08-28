@@ -17,9 +17,6 @@ namespace RockLib.Messaging.NamedPipes
         private readonly BlockingCollection<NamedPipeMessage> _messages = new BlockingCollection<NamedPipeMessage>();
         private readonly Thread _consumerThread;
         private readonly NamedPipeMessageSerializer _serializer = NamedPipeMessageSerializer.Instance;
-
-        private readonly string _pipeName;
-
         private NamedPipeServerStream _pipeServer;
 
         /// <summary>
@@ -30,7 +27,7 @@ namespace RockLib.Messaging.NamedPipes
         public NamedPipeReceiver(string name, string pipeName = null)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
-            _pipeName = pipeName ?? Name;
+            PipeName = pipeName ?? Name;
             _consumerThread = new Thread(Consume);
         }
 
@@ -43,6 +40,11 @@ namespace RockLib.Messaging.NamedPipes
         /// Gets the name of this instance of <see cref="IReceiver" />.
         /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// Gets the name of the named pipe.
+        /// </summary>
+        public string PipeName { get; }
 
         /// <summary>
         /// Starts listening for messages.
@@ -59,7 +61,7 @@ namespace RockLib.Messaging.NamedPipes
 
         private void StartNewPipeServer()
         {
-            _pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.In, 254, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
+            _pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In, 254, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
 
 #if !NETSTANDARD1_6
             _pipeServer.BeginWaitForConnection(WaitForConnectionCallBack, null);

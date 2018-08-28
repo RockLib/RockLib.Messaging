@@ -17,9 +17,6 @@ namespace RockLib.Messaging.NamedPipes
     {
         private readonly NamedPipeMessageSerializer _serializer = NamedPipeMessageSerializer.Instance;
         private static readonly Task _completedTask = Task.FromResult(0);
-
-        private readonly string _pipeName;
-        private readonly bool _compressed;
         private readonly BlockingCollection<string> _messages;
         private readonly Thread _runThread;
 
@@ -32,8 +29,8 @@ namespace RockLib.Messaging.NamedPipes
         public NamedPipeSender(string name, string pipeName = null, bool compressed = false)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
-            _pipeName = pipeName ?? Name;
-            _compressed = compressed;
+            PipeName = pipeName ?? Name;
+            Compressed = compressed;
 
             _messages = new BlockingCollection<string>();
 
@@ -47,12 +44,22 @@ namespace RockLib.Messaging.NamedPipes
         public string Name { get; }
 
         /// <summary>
+        /// Gets the name of the named pipe.
+        /// </summary>
+        public string PipeName { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether message bodies send from this sender should be compressed.
+        /// </summary>
+        public bool Compressed { get; }
+
+        /// <summary>
         /// Sends the specified message.
         /// </summary>
         /// <param name="message">The message to send.</param>
         public Task SendAsync(ISenderMessage message)
         {
-            var shouldCompress = message.ShouldCompress(_compressed);
+            var shouldCompress = message.ShouldCompress(Compressed);
 
             var stringValue = shouldCompress
                 ? MessageCompression.Compress(message.StringValue)
@@ -111,7 +118,7 @@ namespace RockLib.Messaging.NamedPipes
             {
                 try
                 {
-                    var pipe = new NamedPipeClientStream(".", _pipeName, PipeDirection.Out, PipeOptions.Asynchronous);
+                    var pipe = new NamedPipeClientStream(".", PipeName, PipeDirection.Out, PipeOptions.Asynchronous);
 
                     try
                     {
