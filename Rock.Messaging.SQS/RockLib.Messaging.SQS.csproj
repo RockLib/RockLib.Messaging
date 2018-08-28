@@ -30,18 +30,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="Configuration\XmlDeserializingSQSConfigurationProvider.cs" />
-      <Compile Remove="Configuration\XmlSQSConfiguration.cs" />
-      <Compile Remove="Properties\AssemblyInfo.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Remove="packages.config" />
-      <None Remove="Rock.*" />
-      <None Remove="*.DotSettings" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="AWSSDK.SQS" Version="3.3.3" />
       <PackageReference Include="RockLib.Messaging" Version="1.0.0" />
     </ItemGroup>

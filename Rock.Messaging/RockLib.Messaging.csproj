@@ -20,31 +20,6 @@
   <PropertyGroup>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\RockLib.Messaging.xml</DocumentationFile>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Configuration\**" />
-    <Compile Remove="linqpad-samples\**" />
-    <Compile Remove="Rock.StaticDependencyInjection\**" />
-    <Compile Remove="Routing\**" />
-    <EmbeddedResource Remove="Configuration\**" />
-    <EmbeddedResource Remove="linqpad-samples\**" />
-    <EmbeddedResource Remove="Rock.StaticDependencyInjection\**" />
-    <EmbeddedResource Remove="Routing\**" />
-    <None Remove="Configuration\**" />
-    <None Remove="linqpad-samples\**" />
-    <None Remove="Rock.StaticDependencyInjection\**" />
-    <None Remove="Routing\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="MQ\DefaultMessageCompressor.cs" />
-    <Compile Remove="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="packages.config" />
-    <None Remove="Rock.*" />
-  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="RockLib.Compression" Version="1.0.0" />
