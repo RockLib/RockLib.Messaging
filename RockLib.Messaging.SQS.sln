@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SQS", "Rock.Messaging.SQS\RockLib.Messaging.SQS.csproj", "{C4385BD1-2B62-4232-ADC2-896BDBE34142}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SQS", "RockLib.Messaging.SQS\RockLib.Messaging.SQS.csproj", "{C4385BD1-2B62-4232-ADC2-896BDBE34142}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -3,28 +3,17 @@ image: Visual Studio 2017
 configuration: Release
 only_commits:
   files:
-  - Rock.Messaging/
+  - RockLib.Messaging/
   - RockLib.Messaging.Tests/
   - RockLib.Messaging.sln
   - RockLib.Messaging.appveyor.yml
-skip_commits:
-  files:
-  - Rock.Messaging/Configuration/
-  - Rock.Messaging/linqpad-samples/
-  - Rock.Messaging/Rock.StaticDependencyInjection/
-  - Rock.Messaging/Routing/
-  - Rock.Messaging/MQ/DefaultMessageCompressor.cs
-  - '**/AssemblyInfo.cs'
-  - '**/packages.config'
-  - '**/*.nuspec'
-  - '**/*.DotSettings'
 before_build:
 - ps: |
     # The path to the solution to restore.
     $sln_path = "RockLib.Messaging.sln"
     
     # The path to the main csproj file. It will be patched during the build.
-    $csproj_path = "Rock.Messaging\RockLib.Messaging.csproj"
+    $csproj_path = "RockLib.Messaging\RockLib.Messaging.csproj"
     
     # The version of the build artifact's nuget package when created by CI builds.
     $ci_package_version = "$Env:appveyor_build_number.0.0-ci"

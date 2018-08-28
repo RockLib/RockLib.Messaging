@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rock.Messaging\RockLib.Messaging.csproj" />
+    <ProjectReference Include="..\RockLib.Messaging\RockLib.Messaging.csproj" />
   </ItemGroup>
 
   <ItemGroup>

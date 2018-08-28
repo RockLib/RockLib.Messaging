@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging", "Rock.Messaging\RockLib.Messaging.csproj", "{E1860FD3-54D8-4EDB-82E0-E61ED8725F20}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging", "RockLib.Messaging\RockLib.Messaging.csproj", "{E1860FD3-54D8-4EDB-82E0-E61ED8725F20}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.Tests", "RockLib.Messaging.Tests\RockLib.Messaging.Tests.csproj", "{6B81F84C-A768-43DC-8F2E-F6F0EE9A9F32}"
 EndProject
@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.DotNetCor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Messaging.DotNetFramework451", "Example.Messaging.DotNetFramework451\Example.Messaging.DotNetFramework451.csproj", "{F828E6D1-F6D1-4325-8DFA-DA8826E1CE3C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SQS", "Rock.Messaging.SQS\RockLib.Messaging.SQS.csproj", "{C4385BD1-2B62-4232-ADC2-896BDBE34142}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SQS", "RockLib.Messaging.SQS\RockLib.Messaging.SQS.csproj", "{C4385BD1-2B62-4232-ADC2-896BDBE34142}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Messaging.SQS.DotNetFramework451", "Example.Messaging.SQS.DotNetFramework451\Example.Messaging.SQS.DotNetFramework451.csproj", "{845B884E-FE1E-46AF-B49D-1EFE76371130}"
 EndProject
