@@ -15,8 +15,8 @@ namespace RockLib.Messaging
         /// <summary>
         /// Starts listening for messages.
         /// </summary>
-        /// <param name="selector">Also known as a 'routing key', this value enables only certain messages to be received.</param>
-        void Start(string selector);
+        /// <param name="selector">Also known as a 'routing key' or 'filter', this value enables only certain messages to be received.</param>
+        void Start(string selector = null);
 
         /// <summary>
         /// Occurs when a message is received.

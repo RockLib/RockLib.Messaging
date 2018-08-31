@@ -6,7 +6,7 @@ namespace RockLib.Messaging
     /// Provides a set of methods that simplify usage of instances of <see cref="ISender"/>
     /// and <see cref="IReceiver"/>.
     /// </summary>
-    public static class MessagingScenarioExtensions
+    public static class SenderExtensions
     {
         /// <summary>
         /// Synchronously sends the specified message.
@@ -56,15 +56,6 @@ namespace RockLib.Messaging
         public static Task SendAsync(this ISender source, byte[] message)
         {
             return source.SendAsync(new SenderMessage(message));
-        }
-
-        /// <summary>
-        /// Starts listening for messages.
-        /// </summary>
-        /// <param name="source">The <see cref="IReceiver"/> from which to receive messages.</param>
-        public static void Start(this IReceiver source)
-        {
-            source.Start(null);
         }
     }
 }
