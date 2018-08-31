@@ -13,13 +13,13 @@ namespace RockLib.Messaging
         /// </summary>
         /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
         /// <param name="message">The message to send.</param>
-        public static void Send(this ISender source, ISenderMessage message)
+        public static void Send(this ISender source, SenderMessage message)
         {
             source.SendAsync(message).Wait();
         }
 
         /// <summary>
-        /// Synchronously sends the specified string message using the <see cref="MessageFormat.Text"/> format.
+        /// Synchronously sends the specified string message.
         /// </summary>
         /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
         /// <param name="message">The message to send.</param>
@@ -29,39 +29,17 @@ namespace RockLib.Messaging
         }
 
         /// <summary>
-        /// Asynchronously sends the specified string message using the <see cref="MessageFormat.Text"/> format.
+        /// Asynchronously sends the specified string message.
         /// </summary>
         /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
         /// <param name="message">The message to send.</param>
         public static Task SendAsync(this ISender source, string message)
         {
-            return source.SendAsync(message, MessageFormat.Text);
+            return source.SendAsync(new SenderMessage(message));
         }
 
         /// <summary>
-        /// Synchronously sends the specified string message.
-        /// </summary>
-        /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
-        /// <param name="message">The message to send.</param>
-        /// <param name="messageFormat">The message's format.</param>
-        public static void Send(this ISender source, string message, MessageFormat messageFormat)
-        {
-            source.SendAsync(message, messageFormat).Wait();
-        }
-
-        /// <summary>
-        /// Asynchronously sends the specified string message.
-        /// </summary>
-        /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
-        /// <param name="message">The message to send.</param>
-        /// <param name="messageFormat">The message's format.</param>
-        public static Task SendAsync(this ISender source, string message, MessageFormat messageFormat)
-        {
-            return source.SendAsync(new StringSenderMessage(message, messageFormat));
-        }
-
-        /// <summary>
-        /// Synchronously sends the specified binary message using the <see cref="MessageFormat.Binary"/> format.
+        /// Synchronously sends the specified binary message.
         /// </summary>
         /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
         /// <param name="message">The message to send.</param>
@@ -71,35 +49,13 @@ namespace RockLib.Messaging
         }
 
         /// <summary>
-        /// Asynchronously sends the specified binary message using the <see cref="MessageFormat.Binary"/> format.
+        /// Asynchronously sends the specified binary message.
         /// </summary>
         /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
         /// <param name="message">The message to send.</param>
         public static Task SendAsync(this ISender source, byte[] message)
         {
-            return source.SendAsync(message, MessageFormat.Binary);
-        }
-
-        /// <summary>
-        /// Synchronously sends the specified binary message.
-        /// </summary>
-        /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
-        /// <param name="message">The message to send.</param>
-        /// <param name="messageFormat">The message's format.</param>
-        public static void Send(this ISender source, byte[] message, MessageFormat messageFormat)
-        {
-            source.SendAsync(message, messageFormat).Wait();
-        }
-
-        /// <summary>
-        /// Asynchronously sends the specified binary message.
-        /// </summary>
-        /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
-        /// <param name="message">The message to send.</param>
-        /// <param name="messageFormat">The message's format.</param>
-        public static Task SendAsync(this ISender source, byte[] message, MessageFormat messageFormat)
-        {
-            return source.SendAsync(new BinarySenderMessage(message, messageFormat));
+            return source.SendAsync(new SenderMessage(message));
         }
 
         /// <summary>

@@ -2,7 +2,7 @@
   "RockLib.Messaging": {
     "Senders": [
       {
-        "Type": "RockLib.Messaging.NamedPipes.NamedPipeSender, RockLib.Messaging",
+        "Type": "RockLib.Messaging.Tests.FakeSender, RockLib.Messaging.Tests",
         "Value": {
           "Name": "Pipe1",
           "PipeName": "PipeName1",
@@ -10,7 +10,7 @@
         }
       },
       {
-        "Type": "RockLib.Messaging.NamedPipes.NamedPipeSender, RockLib.Messaging",
+        "Type": "RockLib.Messaging.Tests.FakeSender, RockLib.Messaging.Tests",
         "Value": {
           "Name": "Pipe2",
           "PipeName": "PipeName2",

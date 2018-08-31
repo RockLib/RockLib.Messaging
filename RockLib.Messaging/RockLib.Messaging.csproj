@@ -20,6 +20,12 @@
   <PropertyGroup>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\RockLib.Messaging.xml</DocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="NamedPipes\**" />
+    <EmbeddedResource Remove="NamedPipes\**" />
+    <None Remove="NamedPipes\**" />
+  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="RockLib.Compression" Version="1.0.0" />

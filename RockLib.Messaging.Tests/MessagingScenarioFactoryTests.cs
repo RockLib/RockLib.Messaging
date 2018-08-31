@@ -1,8 +1,9 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
-using RockLib.Messaging.NamedPipes;
+using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Tests
 {
@@ -18,11 +19,10 @@ namespace RockLib.Messaging.Tests
                 .Build()
                 .GetSection("RockLib.Messaging");
 
-            var sender = (NamedPipeSender)config.CreateSender("Pipe1");
+            var sender = (FakeSender)config.CreateSender("Pipe1");
 
             sender.Name.Should().Be("Pipe1");
             sender.PipeName.Should().Be("PipeName1");
-            sender.Compressed.Should().BeTrue();
         }
 
         [Test]
@@ -34,17 +34,15 @@ namespace RockLib.Messaging.Tests
                 .Build()
                 .GetSection("RockLib.Messaging");
 
-            var sender1 = (NamedPipeSender)config.CreateSender("Pipe1");
+            var sender1 = (FakeSender)config.CreateSender("Pipe1");
 
             sender1.Name.Should().Be("Pipe1");
             sender1.PipeName.Should().Be("PipeName1");
-            sender1.Compressed.Should().BeTrue();
 
-            var sender2 = (NamedPipeSender)config.CreateSender("Pipe2");
+            var sender2 = (FakeSender)config.CreateSender("Pipe2");
 
             sender2.Name.Should().Be("Pipe2");
             sender2.PipeName.Should().Be("PipeName2");
-            sender2.Compressed.Should().BeFalse();
         }
 
         [Test]
@@ -56,7 +54,7 @@ namespace RockLib.Messaging.Tests
                 .Build()
                 .GetSection("RockLib.Messaging");
 
-            var receiver = (NamedPipeReceiver)config.CreateReceiver("Pipe1");
+            var receiver = (FakeReceiver)config.CreateReceiver("Pipe1");
 
             receiver.Name.Should().Be("Pipe1");
             receiver.PipeName.Should().Be("PipeName1");
@@ -71,12 +69,12 @@ namespace RockLib.Messaging.Tests
                 .Build()
                 .GetSection("RockLib.Messaging");
 
-            var receiver1 = (NamedPipeReceiver)config.CreateReceiver("Pipe1");
+            var receiver1 = (FakeReceiver)config.CreateReceiver("Pipe1");
 
             receiver1.Name.Should().Be("Pipe1");
             receiver1.PipeName.Should().Be("PipeName1");
 
-            var receiver2 = (NamedPipeReceiver)config.CreateReceiver("Pipe2");
+            var receiver2 = (FakeReceiver)config.CreateReceiver("Pipe2");
 
             receiver2.Name.Should().Be("Pipe2");
             receiver2.PipeName.Should().Be("PipeName2");
@@ -91,11 +89,10 @@ namespace RockLib.Messaging.Tests
                 .Build()
                 .GetSection("RockLib.Messaging");
 
-            var sender = (NamedPipeSender)config.CreateSender("Pipe1");
+            var sender = (FakeSender)config.CreateSender("Pipe1");
 
             sender.Name.Should().Be("Pipe1");
             sender.PipeName.Should().Be("PipeName1");
-            sender.Compressed.Should().BeTrue();
         }
 
         [Test]
@@ -107,10 +104,44 @@ namespace RockLib.Messaging.Tests
                 .Build()
                 .GetSection("RockLib.Messaging");
 
-            var receiver = (NamedPipeReceiver)config.CreateReceiver("Pipe1");
+            var receiver = (FakeReceiver)config.CreateReceiver("Pipe1");
 
             receiver.Name.Should().Be("Pipe1");
             receiver.PipeName.Should().Be("PipeName1");
+        }
+    }
+
+    public class FakeSender : ISender
+    {
+        public string Name { get; set; }
+        public string PipeName { get; set; }
+
+        public void Dispose()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task SendAsync(SenderMessage message)
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
+    public class FakeReceiver : IReceiver
+    {
+        public string Name { get; set; }
+        public string PipeName { get; set; }
+
+        public event EventHandler<MessageReceivedEventArgs> MessageReceived;
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Start(string selector = null)
+        {
+            throw new NotImplementedException();
         }
     }
 }

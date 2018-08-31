@@ -61,9 +61,9 @@ namespace RockLib.Messaging
         void Acknowledge();
 
         /// <summary>
-        /// Returns an instance of <see cref="ISenderMessage"/> that is equivalent to this
+        /// Returns an instance of <see cref="SenderMessage"/> that is equivalent to this
         /// instance of <see cref="IReceiverMessage"/>.
         /// </summary>
-        ISenderMessage ToSenderMessage();
+        SenderMessage ToSenderMessage();
     }
 }

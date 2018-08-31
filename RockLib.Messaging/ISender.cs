@@ -17,6 +17,6 @@ namespace RockLib.Messaging
         /// Asynchronously sends the specified message.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        Task SendAsync(ISenderMessage message);
+        Task SendAsync(SenderMessage message);
     }
 }
