@@ -15,10 +15,9 @@ namespace RockLib.Messaging
         private readonly Lazy<byte[]> _binaryPayload;
         private readonly IDictionary<string, object> _headers;
 
-        public SenderMessage(string payload, byte? priority = null, bool compress = false, Action<object> validateHeaderValue = null)
+        public SenderMessage(string payload, byte? priority = null, bool compress = false, Func<object, object> validateHeaderValue = null)
         {
-            if (payload == null)
-                throw new ArgumentNullException(nameof(payload));
+            Payload = payload ?? throw new ArgumentNullException(nameof(payload));
 
             if (compress)
             {
@@ -33,18 +32,23 @@ namespace RockLib.Messaging
 
             Priority = priority;
             Compressed = compress;
-            _headers = new HeaderDictionary(validateHeaderValue ?? ValidateHeaderValue);
+            _headers = new ValidatingDictionary(validateHeaderValue ?? DefaultValidateHeaderValue);
         }
 
-        public SenderMessage(byte[] payload, byte? priority = null, bool compress = false, Action<object> validateHeaderValue = null)
+        public SenderMessage(byte[] payload, byte? priority = null, bool compress = false, Func<object, object> validateHeaderValue = null)
         {
-            if (payload == null)
-                throw new ArgumentNullException(nameof(payload));
+            Payload = payload ?? throw new ArgumentNullException(nameof(payload));
+
+            _headers = new ValidatingDictionary(validateHeaderValue ?? DefaultValidateHeaderValue)
+            {
+                [HeaderNames.MessageId] = Guid.NewGuid()
+            };
 
             if (compress)
             {
                 _binaryPayload = new Lazy<byte[]>(() => _compressor.Compress(payload));
                 _stringPayload = new Lazy<string>(() => Convert.ToBase64String(_binaryPayload.Value));
+                _headers[HeaderNames.CompressedPayload] = true;
             }
             else
             {
@@ -54,8 +58,9 @@ namespace RockLib.Messaging
 
             Priority = priority;
             Compressed = compress;
-            _headers = new HeaderDictionary(validateHeaderValue ?? ValidateHeaderValue);
         }
+
+        public object Payload { get; }
 
         public string StringPayload => _stringPayload.Value;
 
@@ -77,46 +82,43 @@ namespace RockLib.Messaging
 
         public bool Compressed { get; }
 
-        protected static void ValidateHeaderValue(object value)
+        private static object DefaultValidateHeaderValue(object value)
         {
             if (value == null)
                 throw new ArgumentNullException(nameof(value), "Value cannot be null.");
-            if (!(value is string || value.GetType().GetTypeInfo().IsPrimitive))
-                throw new ArgumentException("Value must be string or primitive.", nameof(value));
+            if (value is string || value is decimal || value.GetType().GetTypeInfo().IsPrimitive)
+                return value;
+            if (value is DateTime dateTime)
+                return dateTime.ToString("O");
+            if (value is Guid guid)
+                return guid.ToString("D");
+            if (value is DateTimeOffset dateTimeOffset)
+                return dateTimeOffset.ToString("O");
+            throw new ArgumentException("Value must be string or primitive.", nameof(value));
         }
 
-        private class HeaderDictionary : IDictionary<string, object>
+        private class ValidatingDictionary : IDictionary<string, object>
         {
             private readonly IDictionary<string, object> _headers = new Dictionary<string, object>();
 
-            public HeaderDictionary(Action<object> validate)
+            public ValidatingDictionary(Func<object, object> validateValue)
             {
-                Validate = validate;
+                ValidateValue = validateValue;
             }
-
-            public Action<object> Validate { get; }
 
             public object this[string key]
             {
                 get => _headers[key];
-                set
-                {
-                    Validate(value);
-                    _headers[key] = value;
-                }
+                set => _headers[key] = ValidateValue(value);
             }
 
-            public void Add(string key, object value)
-            {
-                Validate(value);
-                _headers.Add(key, value);
-            }
+            public void Add(string key, object value) =>
+                _headers.Add(key, ValidateValue(value));
 
-            public void Add(KeyValuePair<string, object> item)
-            {
-                Validate(item.Value);
-                _headers.Add(item);
-            }
+            public void Add(KeyValuePair<string, object> item) =>
+                _headers.Add(new KeyValuePair<string, object>(item.Key, ValidateValue(item.Value)));
+
+            public Func<object, object> ValidateValue { get; }
 
             public ICollection<string> Keys => _headers.Keys;
             public ICollection<object> Values => _headers.Values;
