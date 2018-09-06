@@ -28,5 +28,10 @@
         {
             get { return "core_originating_system"; }
         }
+
+        public static string IsBinaryMessage
+        {
+            get { return "core_is_binary_message"; }
+        }
     }
 }

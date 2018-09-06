@@ -18,7 +18,5 @@
         void Acknowledge();
 
         void Rollback();
-
-        SenderMessage ToSenderMessage();
     }
 }

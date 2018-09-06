@@ -80,6 +80,19 @@ namespace RockLib.Messaging
                     return true;
                 }
 
+                if (objectValue is string stringValue)
+                {
+                    switch (stringValue.ToLowerInvariant())
+                    {
+                        case "true":
+                            value = true;
+                            return true;
+                        case "false":
+                            value = false;
+                            return true;
+                    }
+                }
+
                 var converter = TypeDescriptor.GetConverter(objectValue);
                 if (converter.CanConvertTo(typeof(bool)))
                 {
