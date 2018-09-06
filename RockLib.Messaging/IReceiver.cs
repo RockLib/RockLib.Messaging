@@ -22,5 +22,15 @@ namespace RockLib.Messaging
         /// Occurs when a message is received.
         /// </summary>
         event EventHandler<MessageReceivedEventArgs> MessageReceived;
+
+        /// <summary>
+        /// Occurs when a connection is established.
+        /// </summary>
+        event EventHandler Connected;
+
+        /// <summary>
+        /// Occurs when a connection is lost.
+        /// </summary>
+        event EventHandler<DisconnectedEventArgs> Disconnected;
     }
 }

@@ -133,6 +133,8 @@ namespace RockLib.Messaging.Tests
         public string PipeName { get; set; }
 
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
+        public event EventHandler Connected;
+        public event EventHandler<DisconnectedEventArgs> Disconnected;
 
         public void Dispose()
         {
