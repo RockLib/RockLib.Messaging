@@ -28,10 +28,7 @@ namespace RockLib.Messaging
             _binaryPayload = new Lazy<byte[]>(() => Encoding.UTF8.GetBytes(payload));
 
             if (compress)
-            {
-                Compress(ref _binaryPayload, out _stringPayload);
-                _headers[HeaderNames.CompressedPayload] = true;
-            }
+                Compress(ref _binaryPayload, ref _stringPayload);
 
             Priority = priority;
         }
@@ -50,10 +47,7 @@ namespace RockLib.Messaging
             _binaryPayload = new Lazy<byte[]>(() => payload);
 
             if (compress)
-            {
-                Compress(ref _binaryPayload, out _stringPayload);
-                _headers[HeaderNames.CompressedPayload] = true;
-            }
+                Compress(ref _binaryPayload, ref _stringPayload);
 
             Priority = priority;
         }
@@ -92,14 +86,19 @@ namespace RockLib.Messaging
             set => Headers[HeaderNames.OriginatingSystem] = value;
         }
 
-        private static void Compress(
+        private void Compress(
             ref Lazy<byte[]> _binaryPayload,
-            out Lazy<string> _stringPayload)
+            ref Lazy<string> _stringPayload)
         {
             var uncompressedPayload = _binaryPayload;
             var compressedPayload = new Lazy<byte[]>(() => _gzip.Compress(uncompressedPayload.Value));
-            _binaryPayload = compressedPayload;
-            _stringPayload = new Lazy<string>(() => Convert.ToBase64String(compressedPayload.Value));
+
+            if (compressedPayload.Value.Length < uncompressedPayload.Value.Length)
+            {
+                _binaryPayload = compressedPayload;
+                _stringPayload = new Lazy<string>(() => Convert.ToBase64String(compressedPayload.Value));
+                _headers[HeaderNames.CompressedPayload] = true;
+            }
         }
 
         private static object DefaultValidateHeaderValue(object value)
