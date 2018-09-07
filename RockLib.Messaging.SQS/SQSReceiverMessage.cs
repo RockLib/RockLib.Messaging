@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Amazon.SQS.Model;
-using RockLib.Messaging.Internal;
+using RockLib.Messaging.ImplementationHelpers;
 
 namespace RockLib.Messaging.SQS
 {
@@ -15,6 +16,9 @@ namespace RockLib.Messaging.SQS
         private readonly Message _message;
         private readonly Action _acknowledge;
 
+        private readonly Lazy<string> _stringPayload;
+        private readonly Lazy<byte[]> _binaryPayload;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SQSReceiverMessage"/> class.
         /// </summary>
@@ -24,130 +28,29 @@ namespace RockLib.Messaging.SQS
         /// </param>
         public SQSReceiverMessage(Message message, Action acknowledge)
         {
-            if (message == null) throw new ArgumentNullException(nameof(message));
-            if (acknowledge == null) throw new ArgumentNullException(nameof(acknowledge));
+            _message = message ?? throw new ArgumentNullException(nameof(message));
+            _acknowledge = acknowledge ?? throw new ArgumentNullException(nameof(acknowledge));
 
-            _message = message;
-            _acknowledge = acknowledge;
+            var headers = new Dictionary<string, object>();
+            foreach (var attribute in message.MessageAttributes)
+                headers.Add(attribute.Key, attribute.Value.StringValue);
+            Headers = new HeaderDictionary(headers);
+
+            this.SetLazyPayloadFields(message.Body, out _stringPayload, out _binaryPayload);
         }
 
-        /// <summary>
-        /// Gets the priority of the received message. Always returns null.
-        /// </summary>
-        public byte? Priority { get { return null; } }
+        public string StringPayload => _stringPayload.Value;
 
-        /// <summary>
-        /// Gets the actual SQS message that was received.
-        /// </summary>
-        public Message Message { get { return _message; } }
+        public byte[] BinaryPayload => _binaryPayload.Value;
 
-        /// <summary>
-        /// Gets the string value of the message.
-        /// </summary>
-        /// <param name="encoding">The encoding to use. Ignored.</param>
-        /// <returns>The string value of the message.</returns>
-        public string GetStringValue(Encoding encoding)
-        {
-            var stringValue = RawStringValue;
+        public HeaderDictionary Headers { get; }
 
-            if (_message.MessageAttributes.ContainsKey(HeaderName.CompressedPayload)
-                && _message.MessageAttributes[HeaderName.CompressedPayload].StringValue == "true")
-            {
-                stringValue = MessageCompression.Decompress(stringValue);
-            }
+        public byte? Priority => null;
 
-            return stringValue;
-        }
+        public bool IsTransactional => true;
 
-        /// <summary>
-        /// Gets the binary value of the message by calling the <see cref="GetStringValue"/> method.
-        /// If <paramref name="encoding"/> is null, the string value is converted to a byte array
-        /// using base 64 encoding. Otherwise, <paramref name="encoding"/>.<see cref="Encoding.GetBytes(string)"/>
-        /// is used to convert the string.
-        /// </summary>
-        /// <param name="encoding">
-        /// The encoding to use. A null value indicates that base 64 encoding should be used.
-        /// </param>
-        /// <returns>The binary value of the message.</returns>
-        public byte[] GetBinaryValue(Encoding encoding)
-        {
-            var stringValue = GetStringValue(encoding);
+        public void Acknowledge() => _acknowledge();
 
-            return
-                stringValue == null
-                    ? null
-                    : encoding == null
-                        ? Convert.FromBase64String(stringValue)
-                        : encoding.GetBytes(stringValue);
-        }
-
-        /// <summary>
-        /// Gets a header value by key.
-        /// </summary>
-        /// <param name="key">The key of the header to retrieve.</param>
-        /// <param name="encoding">The encoding to use. Ignored.</param>
-        /// <returns>The string value of the header.</returns>
-        public string GetHeaderValue(string key, Encoding encoding)
-        {
-            return _message.MessageAttributes[key].StringValue;
-        }
-
-        /// <summary>
-        /// Gets the names of the headers that are available for this message.
-        /// </summary>
-        /// <returns>An array containing the names of the headers for this message.</returns>
-        public string[] GetHeaderNames()
-        {
-            return _message.MessageAttributes.Keys.ToArray();
-        }
-
-        /// <summary>
-        /// Acknowledges the message.
-        /// </summary>
-        public void Acknowledge()
-        {
-            _acknowledge();
-        }
-
-        /// <summary>
-        /// Returns an instance of <see cref="StringSenderMessage"/> that is equivalent to this
-        /// instance of <see cref="SQSReceiverMessage"/>.
-        /// </summary>
-        public ISenderMessage ToSenderMessage()
-        {
-            // If the received message is compressed, then it will already have the compression
-            // header, so it will pass it along to the sender message. But we don't want to
-            // double-compress the payload, so pass false for the compressed constructor parameter.
-            var senderMessage = new StringSenderMessage(RawStringValue, MessageFormat, compressed:false);
-
-            foreach (var attribute in _message.MessageAttributes)
-            {
-                senderMessage.Headers.Add(attribute.Key, attribute.Value.StringValue);
-            }
-
-            return senderMessage;
-        }
-
-        private string RawStringValue
-        {
-            get { return _message.Body; }
-        }
-
-        private MessageFormat MessageFormat
-        {
-            get
-            {
-                if (_message.MessageAttributes.ContainsKey(HeaderName.MessageFormat))
-                {
-                    MessageFormat messageFormat;
-                    if (Enum.TryParse(_message.MessageAttributes[HeaderName.MessageFormat].StringValue, out messageFormat))
-                    {
-                        return messageFormat;
-                    }
-                }
-
-                return MessageFormat.Text;
-            }
-        }
+        public void Rollback() {} // Nothing to do - SQS will automatically redeliver the message if it is not deleted.
     }
 }

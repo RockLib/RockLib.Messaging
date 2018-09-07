@@ -2,7 +2,6 @@
 using Amazon.SQS.Model;
 using System.Threading.Tasks;
 using System;
-using RockLib.Messaging.Internal;
 
 namespace RockLib.Messaging.SQS
 {
@@ -14,22 +13,30 @@ namespace RockLib.Messaging.SQS
         private readonly string _name;
         private readonly string _queueUrl;
         private readonly IAmazonSQS _sqs;
-        private readonly bool _compressed;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SQSQueueReceiver"/> class.
+        /// Uses a default implementation of the <see cref="AmazonSQSClient"/> to
+        /// communicate with SQS.
+        /// </summary>
+        /// <param name="name">The configuration name.</param>
+        /// <param name="queueUrl">The url of the SQS queue.</param>
+        public SQSQueueSender(string name, string queueUrl)
+            : this(new AmazonSQSClient(), name, queueUrl)
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SQSQueueReceiver"/> class.
         /// </summary>
-        /// <param name="configuration">An object that defines the configuration of this istance.</param>
         /// <param name="sqs">An object that communicates with SQS.</param>
-        public SQSQueueSender(ISQSConfiguration configuration, IAmazonSQS sqs)
+        /// <param name="name">The configuration name.</param>
+        /// <param name="queueUrl">The url of the SQS queue.</param>
+        public SQSQueueSender(IAmazonSQS sqs, string name, string queueUrl)
         {
-            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-            if (sqs == null) throw new ArgumentNullException(nameof(sqs));
-
-            _name = configuration.Name;
-            _queueUrl = configuration.QueueUrl;
-            _compressed = configuration.Compressed;
-            _sqs = sqs;
+            _sqs = sqs ?? throw new ArgumentNullException(nameof(sqs));
+            _name = name ?? throw new ArgumentNullException(nameof(name));
+            _queueUrl = queueUrl ?? throw new ArgumentNullException(nameof(queueUrl));
         }
 
         /// <summary>
@@ -41,49 +48,17 @@ namespace RockLib.Messaging.SQS
         /// Asynchronously sends the specified message.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        public Task SendAsync(ISenderMessage message)
+        public Task SendAsync(SenderMessage message)
         {
-            var shouldCompress = message.ShouldCompress(_compressed);
+            if (message.OriginatingSystem == null)
+                message.OriginatingSystem = "SQS";
 
-            var stringValue = message.StringValue;
+            var sendMessageRequest = new SendMessageRequest(_queueUrl, message.StringPayload);
 
-            if (shouldCompress)
+            foreach (var header in message.Headers)
             {
-                stringValue = MessageCompression.Compress(stringValue);
-            }
-
-            var sendMessageRequest = new SendMessageRequest(_queueUrl, stringValue);
-
-            var originatingSystemAlreadyExists = false;
-
-            if (message.Headers != null)
-            {
-                foreach (var header in message.Headers)
-                {
-                    if (header.Key == HeaderName.OriginatingSystem)
-                    {
-                        originatingSystemAlreadyExists = true;
-                    }
-
-                    sendMessageRequest.MessageAttributes.Add(
-                        header.Key,
-                        new MessageAttributeValue { StringValue = header.Value, DataType = "String" });
-                }
-            }
-
-            sendMessageRequest.MessageAttributes[HeaderName.MessageFormat] =
-                new MessageAttributeValue { StringValue = message.MessageFormat.ToString(), DataType = "String" };
-
-            if (!originatingSystemAlreadyExists)
-            {
-                sendMessageRequest.MessageAttributes[HeaderName.OriginatingSystem] =
-                    new MessageAttributeValue { StringValue = "SQS", DataType = "String" };
-            }
-
-            if (shouldCompress)
-            {
-                sendMessageRequest.MessageAttributes[HeaderName.CompressedPayload] =
-                    new MessageAttributeValue { StringValue = "true", DataType = "String" };
+                sendMessageRequest.MessageAttributes[header.Key] =
+                    new MessageAttributeValue { StringValue = header.Value.ToString(), DataType = "String" };
             }
 
             return _sqs.SendMessageAsync(sendMessageRequest);
