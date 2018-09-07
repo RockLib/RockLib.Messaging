@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;netstandard1.6;net451;</TargetFrameworks>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>RockLib.Messaging.NamedPipes</PackageId>
+        <PackageVersion>1.0.0-alpha01</PackageVersion>
+        <Authors>Quicken Loans</Authors>
+        <Description>Implementation of RockLib.Messaging API that sends and receives messages to a local named pipe.</Description>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PackageReleaseNotes></PackageReleaseNotes>
+        <Copyright>Copyright 2018 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
+        <PackageTags>rocklib messaging</PackageTags>
+        <Version>1.0.0</Version>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\RockLib.Messaging.NamedPipes.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\RockLib.Messaging\RockLib.Messaging.csproj" />
+    </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.6'">
+    <PackageReference Include="System.IO.Pipes" Version="4.3.0" />
+  </ItemGroup>
+
+</Project>

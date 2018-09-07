@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.DotNetCor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.SQS.DotNetCore20", "Example.Messaging.SQS.DotNetCore20\Example.Messaging.SQS.DotNetCore20.csproj", "{3DA3CFA0-9197-44F9-9F2D-FD385A0F1438}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.NamedPipes", "RockLib.Messaging.NamedPipes\RockLib.Messaging.NamedPipes.csproj", "{6224CEC6-4C5A-43BE-B7C4-E8D508393CF4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{3DA3CFA0-9197-44F9-9F2D-FD385A0F1438}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DA3CFA0-9197-44F9-9F2D-FD385A0F1438}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DA3CFA0-9197-44F9-9F2D-FD385A0F1438}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6224CEC6-4C5A-43BE-B7C4-E8D508393CF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6224CEC6-4C5A-43BE-B7C4-E8D508393CF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6224CEC6-4C5A-43BE-B7C4-E8D508393CF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6224CEC6-4C5A-43BE-B7C4-E8D508393CF4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
