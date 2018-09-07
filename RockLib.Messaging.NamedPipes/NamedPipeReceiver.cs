@@ -37,6 +37,16 @@ namespace RockLib.Messaging.NamedPipes
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
 
         /// <summary>
+        /// Occurs when a connection is established.
+        /// </summary>
+        public event EventHandler Connected;
+
+        /// <summary>
+        /// Occurs when a connection is lost.
+        /// </summary>
+        public event EventHandler<DisconnectedEventArgs> Disconnected;
+
+        /// <summary>
         /// Gets the name of this instance of <see cref="IReceiver" />.
         /// </summary>
         public string Name { get; }
@@ -50,7 +60,7 @@ namespace RockLib.Messaging.NamedPipes
         /// Starts listening for messages.
         /// </summary>
         /// <param name="selector">Also known as a 'routing key', this value enables only certain messages to be received.</param>
-        public void Start(string selector)
+        public void Start(string selector = null)
         {
             if (_pipeServer == null)
             {

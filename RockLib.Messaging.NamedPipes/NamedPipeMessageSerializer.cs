@@ -64,10 +64,10 @@ namespace RockLib.Messaging.NamedPipes
 
             sb.Append(_stringValueHeader)
                 .Append(Escape(message.StringValue))
-                .Append(_messageFormatHeader)
-                .Append(message.MessageFormat)
-                .Append(_priorityHeader)
-                .Append(message.Priority == null ? "null" : message.Priority.ToString())
+                .Append(_messageFormatHeader) // For backwards
+                .Append("Text")               // compatibility, send
+                .Append(_priorityHeader)      // a value for message
+                .Append("null")               // format and priority.
                 .Append(_headersHeader);
 
             if (message.Headers != null)
@@ -109,18 +109,16 @@ namespace RockLib.Messaging.NamedPipes
 
             Skip(enumerator, _stringValueHeader.Length);
             var stringValue = Unescape(GetStringValue(enumerator));
-            Skip(enumerator, _messageFormatHeader.Length - 1);
-            var messageFormat = (MessageFormat)Enum.Parse(typeof(MessageFormat), GetStringValue(enumerator));
-            Skip(enumerator, _priorityHeader.Length);
-            var priority = GetNullableByteValue(enumerator);
+            Skip(enumerator, _messageFormatHeader.Length - 1); // For backwards
+            GetStringValue(enumerator);                        // compatibility, expect
+            Skip(enumerator, _priorityHeader.Length);          // to receive message
+            GetNullableByteValue(enumerator);                  // format and priority.
             Skip(enumerator, _headersHeader.Length);
             var headers = GetHeaders(enumerator).ToDictionary(x => x.Key, x => x.Value);
 
             return new NamedPipeMessage
             {
                 StringValue = stringValue,
-                MessageFormat = messageFormat,
-                Priority = priority,
                 Headers = headers
             };
         }
@@ -233,6 +231,15 @@ namespace RockLib.Messaging.NamedPipes
                     case '"':
                         sb.Append(@"\""");
                         break;
+                    case '\r':
+                        sb.Append(@"\r");
+                        break;
+                    case '\n':
+                        sb.Append(@"\n");
+                        break;
+                    case '\t':
+                        sb.Append(@"\t");
+                        break;
                     default:
                         sb.Append(c);
                         break;
@@ -265,6 +272,27 @@ namespace RockLib.Messaging.NamedPipes
                         break;
                     case '"':
                         sb.Append('"');
+                        wasPrevBackslash = false;
+                        break;
+                    case 'r':
+                        if (wasPrevBackslash)
+                            sb.Append('\r');
+                        else
+                            sb.Append(c);
+                        wasPrevBackslash = false;
+                        break;
+                    case 'n':
+                        if (wasPrevBackslash)
+                            sb.Append('\n');
+                        else
+                            sb.Append(c);
+                        wasPrevBackslash = false;
+                        break;
+                    case 't':
+                        if (wasPrevBackslash)
+                            sb.Append('\t');
+                        else
+                            sb.Append(c);
                         wasPrevBackslash = false;
                         break;
                     default:

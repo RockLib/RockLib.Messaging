@@ -5,7 +5,6 @@ using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
-using RockLib.Messaging.Internal;
 
 namespace RockLib.Messaging.NamedPipes
 {
@@ -17,7 +16,7 @@ namespace RockLib.Messaging.NamedPipes
     {
         private readonly NamedPipeMessageSerializer _serializer = NamedPipeMessageSerializer.Instance;
         private static readonly Task _completedTask = Task.FromResult(0);
-        private readonly BlockingCollection<string> _messages;
+        private readonly BlockingCollection<WorkItem> _workItems;
         private readonly Thread _runThread;
 
         /// <summary>
@@ -25,14 +24,12 @@ namespace RockLib.Messaging.NamedPipes
         /// </summary>
         /// <param name="name">The name of this instance of <see cref="NamedPipeSender"/>.</param>
         /// <param name="pipeName">Name of the named pipe.</param>
-        /// <param name="compressed">Whether messages should be compressed.</param>
-        public NamedPipeSender(string name, string pipeName = null, bool compressed = false)
+        public NamedPipeSender(string name, string pipeName = null)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             PipeName = pipeName ?? Name;
-            Compressed = compressed;
 
-            _messages = new BlockingCollection<string>();
+            _workItems = new BlockingCollection<WorkItem>();
 
             _runThread = new Thread(Run);
             _runThread.Start();
@@ -49,58 +46,29 @@ namespace RockLib.Messaging.NamedPipes
         public string PipeName { get; }
 
         /// <summary>
-        /// Gets a value indicating whether message bodies send from this sender should be compressed.
-        /// </summary>
-        public bool Compressed { get; }
-
-        /// <summary>
         /// Sends the specified message.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        public Task SendAsync(ISenderMessage message)
+        public Task SendAsync(SenderMessage message)
         {
-            var shouldCompress = message.ShouldCompress(Compressed);
-
-            var stringValue = shouldCompress
-                ? MessageCompression.Compress(message.StringValue)
-                : message.StringValue;
+            if (message.OriginatingSystem == null)
+                message.OriginatingSystem = "NamedPipe";
 
             var namedPipeMessage = new NamedPipeMessage
             {
-                StringValue = stringValue,
-                MessageFormat = message.MessageFormat,
-                Priority = message.Priority,
+                StringValue = message.StringPayload,
                 Headers = new Dictionary<string, string>()
             };
 
-            var originatingSystemAlreadyExists = false;
-
             foreach (var header in message.Headers)
-            {
-                if (header.Key == HeaderName.OriginatingSystem)
-                {
-                    originatingSystemAlreadyExists = true;
-                }
-
-                namedPipeMessage.Headers.Add(header.Key, header.Value);
-            }
-
-            namedPipeMessage.Headers[HeaderName.MessageFormat] = message.MessageFormat.ToString();
-
-            if (!originatingSystemAlreadyExists)
-            {
-                namedPipeMessage.Headers[HeaderName.OriginatingSystem] = "NamedPipe";
-            }
-
-            if (shouldCompress)
-            {
-                namedPipeMessage.Headers[HeaderName.CompressedPayload] = "true";
-            }
+                namedPipeMessage.Headers.Add(header.Key, header.Value.ToString());
 
             var messageString = _serializer.SerializeToString(namedPipeMessage);
-            _messages.Add(messageString);
+            var completion = new TaskCompletionSource<bool>();
 
-            return _completedTask;
+            _workItems.Add(new WorkItem { Message = messageString, Completion = completion });
+
+            return completion.Task;
         }
 
         /// <summary>
@@ -108,13 +76,13 @@ namespace RockLib.Messaging.NamedPipes
         /// </summary>
         public void Dispose()
         {
-            _messages.CompleteAdding();
+            _workItems.CompleteAdding();
             _runThread.Join();
         }
 
         private void Run()
         {
-            foreach (var message in _messages.GetConsumingEnumerable())
+            foreach (var workItem in _workItems.GetConsumingEnumerable())
             {
                 try
                 {
@@ -124,22 +92,31 @@ namespace RockLib.Messaging.NamedPipes
                     {
                         pipe.Connect(0);
                     }
-                    catch (TimeoutException)
+                    catch (TimeoutException ex)
                     {
+                        workItem.Completion.SetException(ex);
                         continue;
                     }
 
                     using (var writer = new StreamWriter(pipe))
                     {
-                        writer.WriteLine(message);
+                        writer.WriteLine(workItem.Message);
                     }
+
+                    workItem.Completion.SetResult(true);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    // TODO: Something?
+                    workItem.Completion.SetException(ex);
                     continue;
                 }
             }
+        }
+
+        private struct WorkItem
+        {
+            public string Message;
+            public TaskCompletionSource<bool> Completion;
         }
     }
 }
