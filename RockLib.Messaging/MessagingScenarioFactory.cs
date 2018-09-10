@@ -10,19 +10,45 @@ using System.Reflection;
 namespace RockLib.Messaging
 {
     /// <summary>
-    /// Provides methods for creating instances of various messaging scenarios.
+    /// Provides methods for creating instances of various messaging scenarios from
+    /// an <see cref="IConfiguration"/> object.
     /// </summary>
     public static class MessagingScenarioFactory
     {
         private static readonly Semimutable<IConfiguration> _configuration =
             new Semimutable<IConfiguration>(() => Config.Root.GetSection("RockLib.Messaging"));
 
+        /// <summary>
+        /// Sets the value of the <see cref="Configuration"/> property. Note that this
+        /// method must be called at the beginning of the application. Once the
+        /// <see cref="Configuration"/> property has been read from, it cannot be changed.
+        /// </summary>
+        /// <param name="configuration"></param>
         public static void SetConfiguration(IConfiguration configuration) => _configuration.Value = configuration;
 
+        /// <summary>
+        /// Gets the instance of <see cref="IConfiguration"/> used by
+        /// <see cref="MessagingScenarioFactory"/> to construct messaging scenarios.
+        /// </summary>
         public static IConfiguration Configuration => _configuration.Value;
 
+        /// <summary>
+        /// Creates an instance of the <see cref="ISender"/> interface identified by
+        /// its name from the 'senders' section of the <see cref="Configuration"/> property.
+        /// </summary>
+        /// <param name="name">The name that identifies which sender from configuration to create.</param>
+        /// <returns>A new instance of the <see cref="ISender"/> interface.</returns>
         public static ISender CreateSender(string name) => Configuration.CreateSender(name);
 
+        /// <summary>
+        /// Creates an instance of the <see cref="ISender"/> interface identified by
+        /// its name from the 'senders' section of the <paramref name="configuration"/> parameter.
+        /// </summary>
+        /// <param name="configuration">
+        /// A configuration object that contains the specified sender in its 'senders' section.
+        /// </param>
+        /// <param name="name">The name that identifies which sender from configuration to create.</param>
+        /// <returns>A new instance of the <see cref="ISender"/> interface.</returns>
         public static ISender CreateSender(this IConfiguration configuration, string name)
         {
             if (name == null)
@@ -45,8 +71,23 @@ namespace RockLib.Messaging
             throw new KeyNotFoundException();
         }
 
+        /// <summary>
+        /// Creates an instance of the <see cref="IReceiver"/> interface identified by
+        /// its name from the 'receivers' section of the <see cref="Configuration"/> property.
+        /// </summary>
+        /// <param name="name">The name that identifies which receiver from configuration to create.</param>
+        /// <returns>A new instance of the <see cref="IReceiver"/> interface.</returns>
         public static IReceiver CreateReceiver(string name) => Configuration.CreateReceiver(name);
 
+        /// <summary>
+        /// Creates an instance of the <see cref="IReceiver"/> interface identified by
+        /// its name from the 'receivers' section of the <paramref name="configuration"/> parameter.
+        /// </summary>
+        /// <param name="configuration">
+        /// A configuration object that contains the specified receiver in its 'receivers' section.
+        /// </param>
+        /// <param name="name">The name that identifies which receiver from configuration to create.</param>
+        /// <returns>A new instance of the <see cref="IReceiver"/> interface.</returns>
         public static IReceiver CreateReceiver(this IConfiguration configuration, string name)
         {
             if (name == null)

@@ -7,6 +7,9 @@ using System.Text;
 
 namespace RockLib.Messaging
 {
+    /// <summary>
+    /// Defines an outgoing message.
+    /// </summary>
     public sealed class SenderMessage
     {
         private static readonly GZipCompressor _gzip = new GZipCompressor();
@@ -15,6 +18,18 @@ namespace RockLib.Messaging
         private readonly Lazy<byte[]> _binaryPayload;
         private readonly IDictionary<string, object> _headers;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SenderMessage"/> class.
+        /// </summary>
+        /// <param name="payload">The payload of the message.</param>
+        /// <param name="priority">The priority of the message.</param>
+        /// <param name="compress">Whether to compress the payload of the message.</param>
+        /// <param name="validateHeaderValue">
+        /// A function that validates header values, returning either the value passed to it
+        /// or an equivalent value. If a value is invalid, the function should attempt to
+        /// convert it to another type that is valid. If a value cannot be converted, the
+        /// function should throw an exception.
+        /// </param>
         public SenderMessage(string payload, byte? priority = null, bool compress = false, Func<object, object> validateHeaderValue = null)
         {
             if (payload == null) throw new ArgumentNullException(nameof(payload));
@@ -33,6 +48,18 @@ namespace RockLib.Messaging
             Priority = priority;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SenderMessage"/> class.
+        /// </summary>
+        /// <param name="payload">The payload of the message.</param>
+        /// <param name="priority">The priority of the message.</param>
+        /// <param name="compress">Whether to compress the payload of the message.</param>
+        /// <param name="validateHeaderValue">
+        /// A function that validates header values, returning either the value passed to it
+        /// or an equivalent value. If a value is invalid, the function should attempt to
+        /// convert it to another type that is valid. If a value cannot be converted, the
+        /// function should throw an exception.
+        /// </param>
         public SenderMessage(byte[] payload, byte? priority = null, bool compress = false, Func<object, object> validateHeaderValue = null)
         {
             if (payload == null) throw new ArgumentNullException(nameof(payload));
@@ -52,10 +79,19 @@ namespace RockLib.Messaging
             Priority = priority;
         }
 
+        /// <summary>
+        /// Gets the payload of the message as a string.
+        /// </summary>
         public string StringPayload => _stringPayload.Value;
 
+        /// <summary>
+        /// Gets the payload of the message as a byte array.
+        /// </summary>
         public byte[] BinaryPayload => _binaryPayload.Value;
 
+        /// <summary>
+        /// Gets or sets the headers of the message.
+        /// </summary>
         public IDictionary<string, object> Headers
         {
             get => _headers;
@@ -68,16 +104,32 @@ namespace RockLib.Messaging
             }
         }
 
+        /// <summary>
+        /// Gets the priority of the message.
+        /// </summary>
         public byte? Priority { get; }
 
+        /// <summary>
+        /// Gets the ID of the message.
+        /// </summary>
         public Guid MessageId => (Guid)Headers[HeaderNames.MessageId];
 
+        /// <summary>
+        /// Gets a value indicating whether the message is compressed.
+        /// </summary>
         public bool IsCompressed =>
             Headers.TryGetValue(HeaderNames.CompressedPayload, out var value) && value is bool isCompressed && isCompressed;
 
+        /// <summary>
+        /// Gets a value indicating whether the message was constructed with a byte array
+        /// payload. False indicates that the message was constructed with a string payload.
+        /// </summary>
         public bool IsBinary =>
             Headers.TryGetValue(HeaderNames.IsBinaryMessage, out var value) && value is bool isBinary && isBinary;
 
+        /// <summary>
+        /// Gets or sets the originating system of the message.
+        /// </summary>
         public string OriginatingSystem
         {
             get => Headers.TryGetValue(HeaderNames.OriginatingSystem, out var value) && value is string originatingSystem

@@ -29,6 +29,10 @@
             get { return "core_originating_system"; }
         }
 
+        /// <summary>
+        /// The name of the header used to indicate that a message was originally constructed with
+        /// a binary message.
+        /// </summary>
         public static string IsBinaryMessage
         {
             get { return "core_is_binary_message"; }
