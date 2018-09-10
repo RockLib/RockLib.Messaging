@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Amazon.SQS.Model;
 using RockLib.Messaging.ImplementationHelpers;
 
@@ -39,18 +37,39 @@ namespace RockLib.Messaging.SQS
             this.SetLazyPayloadFields(message.Body, out _stringPayload, out _binaryPayload);
         }
 
+        /// <summary>
+        /// Gets the payload of the message as a string.
+        /// </summary>
         public string StringPayload => _stringPayload.Value;
 
+        /// <summary>
+        /// Gets the payload of the message as a byte array.
+        /// </summary>
         public byte[] BinaryPayload => _binaryPayload.Value;
 
+        /// <summary>
+        /// Gets the headers of the message.
+        /// </summary>
         public HeaderDictionary Headers { get; }
 
+        /// <summary>
+        /// Returns null.
+        /// </summary>
         public byte? Priority => null;
 
+        /// <summary>
+        /// Returns true,
+        /// </summary>
         public bool IsTransactional => true;
 
+        /// <summary>
+        /// Deletes the message from the SQS queue, ensuring it is not redelivered.
+        /// </summary>
         public void Acknowledge() => _acknowledge();
 
-        public void Rollback() {} // Nothing to do - SQS will automatically redeliver the message if it is not deleted.
+        /// <summary>
+        /// Does nothing - the message will automatically be redelivered by SQS if left unacknowledged.
+        /// </summary>
+        public void Rollback() {}
     }
 }

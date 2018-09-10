@@ -64,7 +64,9 @@ namespace RockLib.Messaging.SQS
             return _sqs.SendMessageAsync(sendMessageRequest);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Disposes the backing <see cref="IAmazonSQS"/> field.
+        /// </summary>
         public void Dispose()
         {
             _sqs.Dispose();

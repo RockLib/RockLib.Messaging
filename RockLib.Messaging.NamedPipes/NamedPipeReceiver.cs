@@ -36,15 +36,8 @@ namespace RockLib.Messaging.NamedPipes
         /// </summary>
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
 
-        /// <summary>
-        /// Occurs when a connection is established.
-        /// </summary>
-        public event EventHandler Connected;
-
-        /// <summary>
-        /// Occurs when a connection is lost.
-        /// </summary>
-        public event EventHandler<DisconnectedEventArgs> Disconnected;
+        event EventHandler IReceiver.Connected { add {} remove {} }
+        event EventHandler<DisconnectedEventArgs> IReceiver.Disconnected { add {} remove {} }
 
         /// <summary>
         /// Gets the name of this instance of <see cref="IReceiver" />.

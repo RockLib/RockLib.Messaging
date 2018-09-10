@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using RockLib.Messaging.ImplementationHelpers;
 
 namespace RockLib.Messaging.NamedPipes
@@ -28,18 +26,39 @@ namespace RockLib.Messaging.NamedPipes
             this.SetLazyPayloadFields(namedPipeMessage.StringValue, out _stringPayload, out _binaryPayload);
         }
 
+        /// <summary>
+        /// Gets the payload of the message as a string.
+        /// </summary>
         public string StringPayload => _stringPayload.Value;
 
+        /// <summary>
+        /// Gets the payload of the message as a byte array.
+        /// </summary>
         public byte[] BinaryPayload => _binaryPayload.Value;
 
+        /// <summary>
+        /// Gets the headers of the message.
+        /// </summary>
         public HeaderDictionary Headers { get; }
 
+        /// <summary>
+        /// Returns null.
+        /// </summary>
         public byte? Priority => null;
 
+        /// <summary>
+        /// Returns false.
+        /// </summary>
         public bool IsTransactional => false;
 
+        /// <summary>
+        /// Does nothing.
+        /// </summary>
         public void Acknowledge() {}
 
+        /// <summary>
+        /// Does nothing.
+        /// </summary>
         public void Rollback() {}
     }
 }
