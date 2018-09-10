@@ -54,21 +54,7 @@ namespace RockLib.Messaging
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
-            var sendersSection = configuration.GetSection("senders");
-
-            if (sendersSection.IsEmpty())
-                throw new KeyNotFoundException();
-
-            if (sendersSection.IsList())
-            {
-                foreach (var senderSection in sendersSection.GetChildren())
-                    if (name.Equals(senderSection.GetSectionName(), StringComparison.OrdinalIgnoreCase))
-                        return senderSection.Create<ISender>(configuration.GetDefaultTypes());
-            }
-            else if (name.Equals(sendersSection.GetSectionName(), StringComparison.OrdinalIgnoreCase))
-                return sendersSection.Create<ISender>(configuration.GetDefaultTypes());
-
-            throw new KeyNotFoundException();
+            return configuration.CreateScenario<ISender>("senders", name);
         }
 
         /// <summary>
@@ -93,21 +79,28 @@ namespace RockLib.Messaging
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
-            var receiversSection = configuration.GetSection("receivers");
+            return configuration.CreateScenario<IReceiver>("receivers", name);
+        }
 
-            if (receiversSection.IsEmpty())
-                throw new KeyNotFoundException();
+        private static T CreateScenario<T>(this IConfiguration configuration, string sectionName, string scenarioName)
+        {
+            var section = configuration.GetSection(sectionName);
 
-            if (receiversSection.IsList())
+            if (section.IsEmpty())
+                throw new KeyNotFoundException($"The '{sectionName}' section is empty.");
+
+            var defaultTypes = configuration.GetDefaultTypes();
+
+            if (section.IsList())
             {
-                foreach (var receiverSection in receiversSection.GetChildren())
-                    if (name.Equals(receiverSection.GetSectionName(), StringComparison.OrdinalIgnoreCase))
-                        return receiverSection.Create<IReceiver>(configuration.GetDefaultTypes());
+                foreach (var child in section.GetChildren())
+                    if (scenarioName.Equals(child.GetSectionName(), StringComparison.OrdinalIgnoreCase))
+                        return child.Create<T>(defaultTypes);
             }
-            else if (name.Equals(receiversSection.GetSectionName(), StringComparison.OrdinalIgnoreCase))
-                return receiversSection.Create<IReceiver>(configuration.GetDefaultTypes());
+            else if (scenarioName.Equals(section.GetSectionName(), StringComparison.OrdinalIgnoreCase))
+                return section.Create<T>(defaultTypes);
 
-            throw new KeyNotFoundException();
+            throw new KeyNotFoundException($"No {sectionName} were found matching the name '{scenarioName}'.");
         }
 
         private static bool IsEmpty(this IConfigurationSection section) =>
