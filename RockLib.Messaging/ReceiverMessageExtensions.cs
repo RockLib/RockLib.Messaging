@@ -59,19 +59,7 @@ namespace RockLib.Messaging
         /// A new <see cref="SenderMessage"/> instance that is equivalent to the specified
         /// <paramref name="receiverMessage"/> parameter.
         /// </returns>
-        public static SenderMessage ToSenderMessage(this IReceiverMessage receiverMessage, Func<object, object> validateHeaderValue = null)
-        {
-            SenderMessage senderMessage;
-
-            if (receiverMessage.IsBinary())
-                senderMessage = new SenderMessage(receiverMessage.BinaryPayload, receiverMessage.Priority, validateHeaderValue: validateHeaderValue);
-            else
-                senderMessage = new SenderMessage(receiverMessage.StringPayload, receiverMessage.Priority, validateHeaderValue: validateHeaderValue);
-
-            foreach (var header in receiverMessage.Headers)
-                senderMessage.Headers[header.Key] = header.Value;
-
-            return senderMessage;
-        }
+        public static SenderMessage ToSenderMessage(this IReceiverMessage receiverMessage, Func<object, object> validateHeaderValue = null) =>
+            new SenderMessage(receiverMessage, validateHeaderValue);
     }
 }

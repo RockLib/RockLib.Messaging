@@ -34,17 +34,12 @@ namespace RockLib.Messaging
         {
             if (payload == null) throw new ArgumentNullException(nameof(payload));
 
-            _headers = new ValidatingDictionary(validateHeaderValue ?? DefaultValidateHeaderValue)
+            _headers = new ValidatingDictionary(validateHeaderValue)
             {
                 [HeaderNames.MessageId] = Guid.NewGuid()
             };
 
-            _stringPayload = new Lazy<string>(() => payload);
-            _binaryPayload = new Lazy<byte[]>(() => Encoding.UTF8.GetBytes(payload));
-
-            if (compress)
-                Compress(ref _binaryPayload, ref _stringPayload);
-
+            InitString(payload, compress, out _stringPayload, out _binaryPayload);
             Priority = priority;
         }
 
@@ -64,19 +59,65 @@ namespace RockLib.Messaging
         {
             if (payload == null) throw new ArgumentNullException(nameof(payload));
 
-            _headers = new ValidatingDictionary(validateHeaderValue ?? DefaultValidateHeaderValue)
+            _headers = new ValidatingDictionary(validateHeaderValue)
             {
                 [HeaderNames.MessageId] = Guid.NewGuid(),
                 [HeaderNames.IsBinaryMessage] = true
             };
 
+            InitBinary(payload, compress, out _stringPayload, out _binaryPayload);
+            Priority = priority;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SenderMessage"/> as a copy of
+        /// the specified <see cref="IReceiverMessage"/>.
+        /// </summary>
+        /// <param name="receiverMessage">The <see cref="IReceiverMessage"/> to make a copy of.</param>
+        /// <param name="validateHeaderValue">
+        /// A function that validates header values, returning either the value passed to it
+        /// or an equivalent value. If a value is invalid, the function should attempt to
+        /// convert it to another type that is valid. If a value cannot be converted, the
+        /// function should throw an exception.
+        /// </param>
+        public SenderMessage(IReceiverMessage receiverMessage, Func<object, object> validateHeaderValue = null)
+        {
+            if (receiverMessage == null)
+                throw new ArgumentNullException(nameof(receiverMessage));
+
+            _headers = new ValidatingDictionary(validateHeaderValue)
+            {
+                [HeaderNames.MessageId] = Guid.NewGuid()
+            };
+
+            if (receiverMessage.IsBinary())
+                InitBinary(receiverMessage.BinaryPayload, receiverMessage.IsCompressed(), out _stringPayload, out _binaryPayload);
+            else
+                InitString(receiverMessage.StringPayload, receiverMessage.IsCompressed(), out _stringPayload, out _binaryPayload);
+
+            foreach (var header in receiverMessage.Headers)
+                if (header.Key != HeaderNames.MessageId) // Don't copy the message id
+                    _headers[header.Key] = header.Value;
+
+            Priority = receiverMessage.Priority;
+        }
+
+        private void InitString(string payload, bool compress, out Lazy<string> _stringPayload, out Lazy<byte[]> _binaryPayload)
+        {
+            _stringPayload = new Lazy<string>(() => payload);
+            _binaryPayload = new Lazy<byte[]>(() => Encoding.UTF8.GetBytes(payload));
+
+            if (compress)
+                Compress(ref _stringPayload, ref _binaryPayload);
+        }
+
+        private void InitBinary(byte[] payload, bool compress, out Lazy<string> _stringPayload, out Lazy<byte[]> _binaryPayload)
+        {
             _stringPayload = new Lazy<string>(() => Convert.ToBase64String(payload));
             _binaryPayload = new Lazy<byte[]>(() => payload);
 
             if (compress)
-                Compress(ref _binaryPayload, ref _stringPayload);
-
-            Priority = priority;
+                Compress(ref _stringPayload, ref _binaryPayload);
         }
 
         /// <summary>
@@ -112,20 +153,27 @@ namespace RockLib.Messaging
         /// <summary>
         /// Gets the ID of the message.
         /// </summary>
-        public Guid MessageId => (Guid)Headers[HeaderNames.MessageId];
+        public string MessageId => Headers.TryGetValue(HeaderNames.MessageId, out var value)
+            && value is string messageId
+                ? messageId
+                : null;
 
         /// <summary>
         /// Gets a value indicating whether the message is compressed.
         /// </summary>
         public bool IsCompressed =>
-            Headers.TryGetValue(HeaderNames.CompressedPayload, out var value) && value is bool isCompressed && isCompressed;
+            Headers.TryGetValue(HeaderNames.CompressedPayload, out var value)
+                && ((value is bool isCompressed && isCompressed)
+                    || value is string isCompressedString && isCompressedString.ToLowerInvariant() == "true");
 
         /// <summary>
         /// Gets a value indicating whether the message was constructed with a byte array
         /// payload. False indicates that the message was constructed with a string payload.
         /// </summary>
         public bool IsBinary =>
-            Headers.TryGetValue(HeaderNames.IsBinaryMessage, out var value) && value is bool isBinary && isBinary;
+            Headers.TryGetValue(HeaderNames.IsBinaryMessage, out var value)
+                && ((value is bool isBinary && isBinary)
+                    || value is string isBinaryString && isBinaryString.ToLowerInvariant() == "true");
 
         /// <summary>
         /// Gets or sets the originating system of the message.
@@ -139,16 +187,16 @@ namespace RockLib.Messaging
         }
 
         private void Compress(
-            ref Lazy<byte[]> _binaryPayload,
-            ref Lazy<string> _stringPayload)
+            ref Lazy<string> _stringPayload,
+            ref Lazy<byte[]> _binaryPayload)
         {
             var uncompressedPayload = _binaryPayload;
             var compressedPayload = new Lazy<byte[]>(() => _gzip.Compress(uncompressedPayload.Value));
 
             if (compressedPayload.Value.Length < uncompressedPayload.Value.Length)
             {
-                _binaryPayload = compressedPayload;
                 _stringPayload = new Lazy<string>(() => Convert.ToBase64String(compressedPayload.Value));
+                _binaryPayload = compressedPayload;
                 _headers[HeaderNames.CompressedPayload] = true;
             }
         }
@@ -176,7 +224,7 @@ namespace RockLib.Messaging
 
             public ValidatingDictionary(Func<object, object> validateValue)
             {
-                ValidateValue = validateValue;
+                ValidateValue = validateValue ?? DefaultValidateHeaderValue;
             }
 
             public object this[string key]
