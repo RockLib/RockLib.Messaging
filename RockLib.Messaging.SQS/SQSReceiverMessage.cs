@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Amazon.SQS.Model;
-using RockLib.Messaging.ImplementationHelpers;
 
 namespace RockLib.Messaging.SQS
 {
@@ -9,13 +8,10 @@ namespace RockLib.Messaging.SQS
     /// An implementation of IReceiverMessage for use by the <see cref="SQSQueueReceiver"/>
     /// class.
     /// </summary>
-    public class SQSReceiverMessage : IReceiverMessage
+    public sealed class SQSReceiverMessage : ReceiverMessage
     {
         private readonly Message _message;
         private readonly Action _acknowledge;
-
-        private readonly Lazy<string> _stringPayload;
-        private readonly Lazy<byte[]> _binaryPayload;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SQSReceiverMessage"/> class.
@@ -25,51 +21,37 @@ namespace RockLib.Messaging.SQS
         /// The <see cref="Action"/> that is invoked when the <see cref="Acknowledge"/> method is called.
         /// </param>
         public SQSReceiverMessage(Message message, Action acknowledge)
+            : base(() => message.Body)
         {
             _message = message ?? throw new ArgumentNullException(nameof(message));
             _acknowledge = acknowledge ?? throw new ArgumentNullException(nameof(acknowledge));
-
-            var headers = new Dictionary<string, object>();
-            foreach (var attribute in message.MessageAttributes)
-                headers.Add(attribute.Key, attribute.Value.StringValue);
-            Headers = new HeaderDictionary(headers);
-
-            this.SetLazyPayloadFields(message.Body, out _stringPayload, out _binaryPayload);
         }
-
-        /// <summary>
-        /// Gets the payload of the message as a string.
-        /// </summary>
-        public string StringPayload => _stringPayload.Value;
-
-        /// <summary>
-        /// Gets the payload of the message as a byte array.
-        /// </summary>
-        public byte[] BinaryPayload => _binaryPayload.Value;
-
-        /// <summary>
-        /// Gets the headers of the message.
-        /// </summary>
-        public HeaderDictionary Headers { get; }
 
         /// <summary>
         /// Returns null.
         /// </summary>
-        public byte? Priority => null;
+        public override byte? Priority => null;
 
         /// <summary>
         /// Returns true,
         /// </summary>
-        public bool IsTransactional => true;
+        public override bool IsTransactional => true;
 
         /// <summary>
         /// Deletes the message from the SQS queue, ensuring it is not redelivered.
         /// </summary>
-        public void Acknowledge() => _acknowledge();
+        public override void Acknowledge() => _acknowledge();
 
         /// <summary>
         /// Does nothing - the message will automatically be redelivered by SQS if left unacknowledged.
         /// </summary>
-        public void Rollback() {}
+        public override void Rollback() {}
+
+        /// <inheritdoc />
+        protected override void InitializeHeaders(IDictionary<string, object> headers)
+        {
+            foreach (var attribute in _message.MessageAttributes)
+                headers.Add(attribute.Key, attribute.Value.StringValue);
+        }
     }
 }

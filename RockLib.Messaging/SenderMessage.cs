@@ -226,7 +226,7 @@ namespace RockLib.Messaging
                 this[HeaderNames.MessageId] = Guid.NewGuid().ToString("D");
                 if (isBinary)
                     this[HeaderNames.IsBinaryMessage] = true;
-        }
+            }
 
             public object this[string key]
             {

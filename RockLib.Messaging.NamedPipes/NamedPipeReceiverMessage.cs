@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using RockLib.Messaging.ImplementationHelpers;
 
 namespace RockLib.Messaging.NamedPipes
 {
@@ -8,57 +7,45 @@ namespace RockLib.Messaging.NamedPipes
     /// An implementation of IReceiverMessage for use by the <see cref="NamedPipeReceiver"/>
     /// class.
     /// </summary>
-    public class NamedPipeReceiverMessage : IReceiverMessage
+    public class NamedPipeReceiverMessage : ReceiverMessage
     {
-        private readonly Lazy<string> _stringPayload;
-        private readonly Lazy<byte[]> _binaryPayload;
+        private readonly NamedPipeMessage _namedPipeMessage;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NamedPipeReceiverMessage"/> class.
         /// </summary>
         /// <param name="namedPipeMessage">The message that was sent.</param>
         internal NamedPipeReceiverMessage(NamedPipeMessage namedPipeMessage)
+            : base(() => namedPipeMessage.StringValue)
         {
-            var headers = new Dictionary<string, object>();
-            foreach (var header in namedPipeMessage.Headers)
-                headers.Add(header.Key, header.Value);
-            Headers = new HeaderDictionary(headers);
-            this.SetLazyPayloadFields(namedPipeMessage.StringValue, out _stringPayload, out _binaryPayload);
+            _namedPipeMessage = namedPipeMessage;
         }
-
-        /// <summary>
-        /// Gets the payload of the message as a string.
-        /// </summary>
-        public string StringPayload => _stringPayload.Value;
-
-        /// <summary>
-        /// Gets the payload of the message as a byte array.
-        /// </summary>
-        public byte[] BinaryPayload => _binaryPayload.Value;
-
-        /// <summary>
-        /// Gets the headers of the message.
-        /// </summary>
-        public HeaderDictionary Headers { get; }
 
         /// <summary>
         /// Returns null.
         /// </summary>
-        public byte? Priority => null;
+        public override byte? Priority => null;
 
         /// <summary>
         /// Returns false.
         /// </summary>
-        public bool IsTransactional => false;
+        public override bool IsTransactional => false;
 
         /// <summary>
         /// Does nothing.
         /// </summary>
-        public void Acknowledge() {}
+        public override void Acknowledge() {}
 
         /// <summary>
         /// Does nothing.
         /// </summary>
-        public void Rollback() {}
+        public override void Rollback() {}
+        
+        /// <inheritdoc />
+        protected override void InitializeHeaders(IDictionary<string, object> headers)
+        {
+            foreach (var header in _namedPipeMessage.Headers)
+                headers.Add(header.Key, header.Value);
+        }
     }
 }

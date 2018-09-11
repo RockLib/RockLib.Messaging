@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using NUnit.Framework;
-using RockLib.Messaging.ImplementationHelpers;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -214,36 +213,35 @@ namespace RockLib.Messaging.Tests
 
         private static string GetStringExample() => "abcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefgh";
 
-        private class TestReceiverMessage : IReceiverMessage
+        private class TestReceiverMessage : ReceiverMessage
         {
-            private readonly Lazy<string> _stringPayload;
-            private readonly Lazy<byte[]> _binaryPayload;
+            private readonly IDictionary<string, object> _headers;
 
             public TestReceiverMessage(string rawStringPayload, IDictionary<string, object> headers)
+                : base(() => rawStringPayload)
             {
-                Headers = new HeaderDictionary(new Dictionary<string, object>(headers));
-                this.SetLazyPayloadFields(rawStringPayload, out _stringPayload, out _binaryPayload);
+                _headers = headers;
             }
 
             public TestReceiverMessage(byte[] rawBinaryPayload, IDictionary<string, object> headers)
+                : base(() => rawBinaryPayload)
             {
-                Headers = new HeaderDictionary(new Dictionary<string, object>(headers));
-                this.SetLazyPayloadFields(rawBinaryPayload, out _stringPayload, out _binaryPayload);
+                _headers = headers;
             }
 
-            public string StringPayload => _stringPayload.Value;
+            public override byte? Priority => null;
 
-            public byte[] BinaryPayload => _binaryPayload.Value;
+            public override bool IsTransactional => throw new NotImplementedException();
 
-            public HeaderDictionary Headers { get; }
+            public override void Acknowledge() => throw new NotImplementedException();
 
-            public byte? Priority => null;
+            public override void Rollback() => throw new NotImplementedException();
 
-            public bool IsTransactional => throw new NotImplementedException();
-
-            public void Acknowledge() => throw new NotImplementedException();
-
-            public void Rollback() => throw new NotImplementedException();
+            protected override void InitializeHeaders(IDictionary<string, object> headers)
+            {
+                foreach (var header in _headers)
+                    headers.Add(header);
+            }
         }
     }
 }
