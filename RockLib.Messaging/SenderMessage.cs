@@ -32,14 +32,11 @@ namespace RockLib.Messaging
         /// </param>
         public SenderMessage(string payload, byte? priority = null, bool compress = false, Func<object, object> validateHeaderValue = null)
         {
-            if (payload == null) throw new ArgumentNullException(nameof(payload));
+            if (payload == null)
+                throw new ArgumentNullException(nameof(payload));
 
-            _headers = new ValidatingDictionary(validateHeaderValue)
-            {
-                [HeaderNames.MessageId] = Guid.NewGuid()
-            };
-
-            InitString(payload, compress, out _stringPayload, out _binaryPayload);
+            _headers = new HeaderDictionary(validateHeaderValue);
+            InitAsString(payload, compress, out _stringPayload, out _binaryPayload);
             Priority = priority;
         }
 
@@ -57,15 +54,11 @@ namespace RockLib.Messaging
         /// </param>
         public SenderMessage(byte[] payload, byte? priority = null, bool compress = false, Func<object, object> validateHeaderValue = null)
         {
-            if (payload == null) throw new ArgumentNullException(nameof(payload));
+            if (payload == null)
+                throw new ArgumentNullException(nameof(payload));
 
-            _headers = new ValidatingDictionary(validateHeaderValue)
-            {
-                [HeaderNames.MessageId] = Guid.NewGuid(),
-                [HeaderNames.IsBinaryMessage] = true
-            };
-
-            InitBinary(payload, compress, out _stringPayload, out _binaryPayload);
+            _headers = new HeaderDictionary(validateHeaderValue, isBinary: true);
+            InitAsBinary(payload, compress, out _stringPayload, out _binaryPayload);
             Priority = priority;
         }
 
@@ -85,39 +78,18 @@ namespace RockLib.Messaging
             if (receiverMessage == null)
                 throw new ArgumentNullException(nameof(receiverMessage));
 
-            _headers = new ValidatingDictionary(validateHeaderValue)
-            {
-                [HeaderNames.MessageId] = Guid.NewGuid()
-            };
+            _headers = new HeaderDictionary(validateHeaderValue);
 
             if (receiverMessage.IsBinary())
-                InitBinary(receiverMessage.BinaryPayload, receiverMessage.IsCompressed(), out _stringPayload, out _binaryPayload);
+                InitAsBinary(receiverMessage.BinaryPayload, receiverMessage.IsCompressed(), out _stringPayload, out _binaryPayload);
             else
-                InitString(receiverMessage.StringPayload, receiverMessage.IsCompressed(), out _stringPayload, out _binaryPayload);
+                InitAsString(receiverMessage.StringPayload, receiverMessage.IsCompressed(), out _stringPayload, out _binaryPayload);
 
             foreach (var header in receiverMessage.Headers)
                 if (header.Key != HeaderNames.MessageId) // Don't copy the message id
                     _headers[header.Key] = header.Value;
 
             Priority = receiverMessage.Priority;
-        }
-
-        private void InitString(string payload, bool compress, out Lazy<string> _stringPayload, out Lazy<byte[]> _binaryPayload)
-        {
-            _stringPayload = new Lazy<string>(() => payload);
-            _binaryPayload = new Lazy<byte[]>(() => Encoding.UTF8.GetBytes(payload));
-
-            if (compress)
-                Compress(ref _stringPayload, ref _binaryPayload);
-        }
-
-        private void InitBinary(byte[] payload, bool compress, out Lazy<string> _stringPayload, out Lazy<byte[]> _binaryPayload)
-        {
-            _stringPayload = new Lazy<string>(() => Convert.ToBase64String(payload));
-            _binaryPayload = new Lazy<byte[]>(() => payload);
-
-            if (compress)
-                Compress(ref _stringPayload, ref _binaryPayload);
         }
 
         /// <summary>
@@ -186,6 +158,24 @@ namespace RockLib.Messaging
             set => Headers[HeaderNames.OriginatingSystem] = value;
         }
 
+        private void InitAsString(string payload, bool compress, out Lazy<string> _stringPayload, out Lazy<byte[]> _binaryPayload)
+        {
+            _stringPayload = new Lazy<string>(() => payload);
+            _binaryPayload = new Lazy<byte[]>(() => Encoding.UTF8.GetBytes(payload));
+
+            if (compress)
+                Compress(ref _stringPayload, ref _binaryPayload);
+        }
+
+        private void InitAsBinary(byte[] payload, bool compress, out Lazy<string> _stringPayload, out Lazy<byte[]> _binaryPayload)
+        {
+            _stringPayload = new Lazy<string>(() => Convert.ToBase64String(payload));
+            _binaryPayload = new Lazy<byte[]>(() => payload);
+
+            if (compress)
+                Compress(ref _stringPayload, ref _binaryPayload);
+        }
+
         private void Compress(
             ref Lazy<string> _stringPayload,
             ref Lazy<byte[]> _binaryPayload)
@@ -213,19 +203,30 @@ namespace RockLib.Messaging
                 return dateTime.ToString("O");
             if (value is Guid guid)
                 return guid.ToString("D");
+            if (value is Uri uri)
+                return uri.ToString();
             if (value is DateTimeOffset dateTimeOffset)
                 return dateTimeOffset.ToString("O");
             throw new ArgumentException("Value must be primitive type or one of: String, DateTime, Guid, or DateTimeOffset.", nameof(value));
         }
 
-        private class ValidatingDictionary : IDictionary<string, object>
+        private class HeaderDictionary : IDictionary<string, object>
         {
             private readonly IDictionary<string, object> _headers = new Dictionary<string, object>();
 
-            public ValidatingDictionary(Func<object, object> validateValue)
+            /// <summary>
+            /// Initializes a new instance of the <see cref="HeaderDictionary"/> class and
+            /// sets the value of the <see cref="HeaderNames.MessageId"/> header to a new
+            /// <see cref="Guid"/>. If the <paramref name="isBinary"/> parameter is true,
+            /// then the <see cref="HeaderNames.IsBinaryMessage"/> header is set to true.
+            /// </summary>
+            public HeaderDictionary(Func<object, object> validateValue, bool isBinary = false)
             {
                 ValidateValue = validateValue ?? DefaultValidateHeaderValue;
-            }
+                this[HeaderNames.MessageId] = Guid.NewGuid().ToString("D");
+                if (isBinary)
+                    this[HeaderNames.IsBinaryMessage] = true;
+        }
 
             public object this[string key]
             {
