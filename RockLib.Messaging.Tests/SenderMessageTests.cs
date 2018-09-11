@@ -27,10 +27,10 @@ namespace RockLib.Messaging.Tests
             message.Headers.Should().ContainKey(HeaderNames.MessageId);
             message.MessageId.Should().NotBeNull();
 
-            message.Headers.Should().NotContainKey(HeaderNames.IsBinaryMessage);
+            message.Headers.Should().NotContainKey(HeaderNames.IsBinaryPayload);
             message.IsBinary.Should().BeFalse();
 
-            message.Headers.Should().NotContainKey(HeaderNames.CompressedPayload);
+            message.Headers.Should().NotContainKey(HeaderNames.IsCompressedPayload);
             message.IsCompressed.Should().BeFalse();
         }
 
@@ -49,10 +49,10 @@ namespace RockLib.Messaging.Tests
             message.Headers.Should().ContainKey(HeaderNames.MessageId);
             message.MessageId.Should().NotBeNull();
 
-            message.Headers.Should().NotContainKey(HeaderNames.IsBinaryMessage);
+            message.Headers.Should().NotContainKey(HeaderNames.IsBinaryPayload);
             message.IsBinary.Should().BeFalse();
 
-            message.Headers[HeaderNames.CompressedPayload].Should().Be("true");
+            message.Headers[HeaderNames.IsCompressedPayload].Should().Be("true");
             message.IsCompressed.Should().BeTrue();
         }
 
@@ -71,10 +71,10 @@ namespace RockLib.Messaging.Tests
             message.Headers.Should().ContainKey(HeaderNames.MessageId);
             message.MessageId.Should().NotBeNull();
 
-            message.Headers[HeaderNames.IsBinaryMessage].Should().Be("true");
+            message.Headers[HeaderNames.IsBinaryPayload].Should().Be("true");
             message.IsBinary.Should().BeTrue();
 
-            message.Headers.Should().NotContainKey(HeaderNames.CompressedPayload);
+            message.Headers.Should().NotContainKey(HeaderNames.IsCompressedPayload);
             message.IsCompressed.Should().BeFalse();
         }
 
@@ -93,10 +93,10 @@ namespace RockLib.Messaging.Tests
             message.Headers.Should().ContainKey(HeaderNames.MessageId);
             message.MessageId.Should().NotBeNull();
 
-            message.Headers[HeaderNames.IsBinaryMessage].Should().Be("true");
+            message.Headers[HeaderNames.IsBinaryPayload].Should().Be("true");
             message.IsBinary.Should().BeTrue();
 
-            message.Headers[HeaderNames.CompressedPayload].Should().Be("true");
+            message.Headers[HeaderNames.IsCompressedPayload].Should().Be("true");
             message.IsCompressed.Should().BeTrue();
         }
 
@@ -116,10 +116,10 @@ namespace RockLib.Messaging.Tests
             message.Headers.Should().ContainKey(HeaderNames.MessageId);
             message.MessageId.Should().NotBeNull();
 
-            message.Headers.Should().NotContainKey(HeaderNames.IsBinaryMessage);
+            message.Headers.Should().NotContainKey(HeaderNames.IsBinaryPayload);
             message.IsBinary.Should().BeFalse();
 
-            message.Headers.Should().NotContainKey(HeaderNames.CompressedPayload);
+            message.Headers.Should().NotContainKey(HeaderNames.IsCompressedPayload);
             message.IsCompressed.Should().BeFalse();
         }
 
@@ -139,10 +139,10 @@ namespace RockLib.Messaging.Tests
             message.Headers.Should().ContainKey(HeaderNames.MessageId);
             message.MessageId.Should().NotBeNull();
 
-            message.Headers.Should().NotContainKey(HeaderNames.IsBinaryMessage);
+            message.Headers.Should().NotContainKey(HeaderNames.IsBinaryPayload);
             message.IsBinary.Should().BeFalse();
 
-            message.Headers[HeaderNames.CompressedPayload].Should().Be("true");
+            message.Headers[HeaderNames.IsCompressedPayload].Should().Be("true");
             message.IsCompressed.Should().BeTrue();
         }
 
@@ -162,10 +162,10 @@ namespace RockLib.Messaging.Tests
             message.Headers.Should().ContainKey(HeaderNames.MessageId);
             message.MessageId.Should().NotBeNull();
 
-            message.Headers[HeaderNames.IsBinaryMessage].Should().Be("true");
+            message.Headers[HeaderNames.IsBinaryPayload].Should().Be("true");
             message.IsBinary.Should().BeTrue();
 
-            message.Headers.Should().NotContainKey(HeaderNames.CompressedPayload);
+            message.Headers.Should().NotContainKey(HeaderNames.IsCompressedPayload);
             message.IsCompressed.Should().BeFalse();
         }
 
@@ -185,10 +185,10 @@ namespace RockLib.Messaging.Tests
             message.Headers.Should().ContainKey(HeaderNames.MessageId);
             message.MessageId.Should().NotBeNull();
 
-            message.Headers[HeaderNames.IsBinaryMessage].Should().Be("true");
+            message.Headers[HeaderNames.IsBinaryPayload].Should().Be("true");
             message.IsBinary.Should().BeTrue();
 
-            message.Headers[HeaderNames.CompressedPayload].Should().Be("true");
+            message.Headers[HeaderNames.IsCompressedPayload].Should().Be("true");
             message.IsCompressed.Should().BeTrue();
         }
 
@@ -242,9 +242,9 @@ namespace RockLib.Messaging.Tests
                 var headers = new Dictionary<string, object>();
                 headers[HeaderNames.MessageId] = Guid.NewGuid().ToString("D");
                 if (binary)
-                    headers[HeaderNames.IsBinaryMessage] = "true";
+                    headers[HeaderNames.IsBinaryPayload] = "true";
                 if (compressed)
-                    headers[HeaderNames.CompressedPayload] = "true";
+                    headers[HeaderNames.IsCompressedPayload] = "true";
                 return headers;
             }
         }

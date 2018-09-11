@@ -134,7 +134,7 @@ namespace RockLib.Messaging
         /// Gets a value indicating whether the message is compressed.
         /// </summary>
         public bool IsCompressed =>
-            Headers.TryGetValue(HeaderNames.CompressedPayload, out var value)
+            Headers.TryGetValue(HeaderNames.IsCompressedPayload, out var value)
                 && ((value is bool isCompressed && isCompressed)
                     || value is string isCompressedString && isCompressedString.ToLowerInvariant() == "true");
 
@@ -143,7 +143,7 @@ namespace RockLib.Messaging
         /// payload. False indicates that the message was constructed with a string payload.
         /// </summary>
         public bool IsBinary =>
-            Headers.TryGetValue(HeaderNames.IsBinaryMessage, out var value)
+            Headers.TryGetValue(HeaderNames.IsBinaryPayload, out var value)
                 && ((value is bool isBinary && isBinary)
                     || value is string isBinaryString && isBinaryString.ToLowerInvariant() == "true");
 
@@ -187,7 +187,7 @@ namespace RockLib.Messaging
             {
                 _stringPayload = new Lazy<string>(() => Convert.ToBase64String(compressedPayload.Value));
                 _binaryPayload = compressedPayload;
-                _headers[HeaderNames.CompressedPayload] = true;
+                _headers[HeaderNames.IsCompressedPayload] = true;
             }
         }
 
@@ -218,14 +218,14 @@ namespace RockLib.Messaging
             /// Initializes a new instance of the <see cref="HeaderDictionary"/> class and
             /// sets the value of the <see cref="HeaderNames.MessageId"/> header to a new
             /// <see cref="Guid"/>. If the <paramref name="isBinary"/> parameter is true,
-            /// then the <see cref="HeaderNames.IsBinaryMessage"/> header is set to true.
+            /// then the <see cref="HeaderNames.IsBinaryPayload"/> header is set to true.
             /// </summary>
             public HeaderDictionary(Func<object, object> validateValue, bool isBinary = false)
             {
                 ValidateValue = validateValue ?? DefaultValidateHeaderValue;
                 this[HeaderNames.MessageId] = Guid.NewGuid().ToString("D");
                 if (isBinary)
-                    this[HeaderNames.IsBinaryMessage] = true;
+                    this[HeaderNames.IsBinaryPayload] = true;
             }
 
             public object this[string key]

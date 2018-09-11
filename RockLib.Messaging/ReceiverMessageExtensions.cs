@@ -27,7 +27,7 @@ namespace RockLib.Messaging
         /// <returns>Whether the message's payload was sent compressed.</returns>
         public static bool IsCompressed(this IReceiverMessage receiverMessage) =>
             receiverMessage.GetHeaders()
-                .TryGetBooleanValue(HeaderNames.CompressedPayload, out var isCompressed)
+                .TryGetBooleanValue(HeaderNames.IsCompressedPayload, out var isCompressed)
                 && isCompressed;
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace RockLib.Messaging
         /// <returns>Whether the original message was constructed with a byte array.</returns>
         public static bool IsBinary(this IReceiverMessage receiverMessage) =>
             receiverMessage.GetHeaders()
-                .TryGetBooleanValue(HeaderNames.IsBinaryMessage, out var isBinary)
+                .TryGetBooleanValue(HeaderNames.IsBinaryPayload, out var isBinary)
                 && isBinary;
 
         /// <summary>
