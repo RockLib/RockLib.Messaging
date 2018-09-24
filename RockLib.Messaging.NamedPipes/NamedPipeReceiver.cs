@@ -2,9 +2,6 @@
 using System.Collections.Concurrent;
 using System.IO.Pipes;
 using System.Threading;
-#if NETSTANDARD1_6
-using System.Threading.Tasks;
-#endif
 
 namespace RockLib.Messaging.NamedPipes
 {
@@ -66,25 +63,11 @@ namespace RockLib.Messaging.NamedPipes
         {
             _pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In, 254, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
 
-#if !NETSTANDARD1_6
             _pipeServer.BeginWaitForConnection(WaitForConnectionCallBack, null);
-            
-#elif NETSTANDARD1_6
-            Task.Run(async () =>
-            {
-                await _pipeServer.WaitForConnectionAsync();
-                try
-                {
-                    WaitForConnectionCallBack(null);
-                }
-                catch (ObjectDisposedException) { }
-            });
-#endif
         }
         
         private void WaitForConnectionCallBack(IAsyncResult result)
         {
-#if !NETSTANDARD1_6
             try
             {
                 _pipeServer.EndWaitForConnection(result);
@@ -93,7 +76,7 @@ namespace RockLib.Messaging.NamedPipes
             {
                 return;
             }
-#endif
+
             try
             {
                 var sentMessage = _serializer.DeserializeFromStream<NamedPipeMessage>(_pipeServer);
