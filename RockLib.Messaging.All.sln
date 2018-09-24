@@ -7,13 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging", "RockLi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.Tests", "RockLib.Messaging.Tests\RockLib.Messaging.Tests.csproj", "{6B81F84C-A768-43DC-8F2E-F6F0EE9A9F32}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Messaging.DotNetFramework451", "Example.Messaging.DotNetFramework451\Example.Messaging.DotNetFramework451.csproj", "{F828E6D1-F6D1-4325-8DFA-DA8826E1CE3C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Messaging.NamedPipes.DotNetFramework451", "Example.Messaging.NamedPipes.DotNetFramework451\Example.Messaging.NamedPipes.DotNetFramework451.csproj", "{F828E6D1-F6D1-4325-8DFA-DA8826E1CE3C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SQS", "RockLib.Messaging.SQS\RockLib.Messaging.SQS.csproj", "{C4385BD1-2B62-4232-ADC2-896BDBE34142}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Messaging.SQS.DotNetFramework451", "Example.Messaging.SQS.DotNetFramework451\Example.Messaging.SQS.DotNetFramework451.csproj", "{845B884E-FE1E-46AF-B49D-1EFE76371130}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.DotNetCore20", "Example.Messaging.DotNetCore20\Example.Messaging.DotNetCore20.csproj", "{9AC58943-9171-4B88-B36E-ED2600494A68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.NamedPipes.DotNetCore20", "Example.Messaging.NamedPipes.DotNetCore20\Example.Messaging.NamedPipes.DotNetCore20.csproj", "{9AC58943-9171-4B88-B36E-ED2600494A68}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.SQS.DotNetCore20", "Example.Messaging.SQS.DotNetCore20\Example.Messaging.SQS.DotNetCore20.csproj", "{3DA3CFA0-9197-44F9-9F2D-FD385A0F1438}"
 EndProject
