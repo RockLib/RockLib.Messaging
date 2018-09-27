@@ -1,0 +1,2 @@
+# RockLib.Messaging Configuration
+

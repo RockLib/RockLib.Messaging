@@ -1,26 +1,21 @@
-# Rock.Messaging
+# RockLib.Messaging
 
-## Table of Contents
-* [Nuget](#nuget)
-  * Install via [Nuget UI](#install-nuget-via-ui)
-  * Install via [Command Line](#install-nuget-via-command-limne)
-* [Api Documentation](#api-documentation)
+*A simple API for sending and receiving messages.*
 
-## Nuget
-Rock.Messaging is available via [NuGet](https://www.nuget.org/packages/Rock.Messaging/), please reference this link for more information on the package.
-
-### Install Nuget via UI
-If you want to install this package via the NuGet UI, this ca be done as well.  Make sure to switch to the QuGet package source.
-
-If you are unsure how to use the UI to reference the package source checkout out these [docs](https://docs.microsoft.com/en-us/nuget/tools/package-manager-ui#package-sources).
-
-### Install Nuget via Command Line
-
-How to install from the package manager console:
-
-```
-PM> Install-Package Rock.Messaging
-```
-
-## Api Documentation
-See [Rock.Messaging Documentation](http://rockframework.org/documentation/Rock.Messaging/html/R_Project_Documentation.htm)
+- [Getting started](GettingStarted.md)
+- How to:
+  - [Configure RockLib.Messaging](Configuration.md)
+  - [Use RockLib.Messaging without configuration](NoConfiguration.md)
+  - [Configure a .NET Framework application with app.config/web.config](NetFramework.md)
+  - [Send and receive compressed messages](Compressed.md)
+  - [Receive messages transactionally](TransactionalReceive.md)
+  - [Send messages transactionally](TransactionalSend.md)
+- [Understanding MessagingScenarioFactory](MessagingScenarioFactory.md)
+- API Reference:
+  - [RockLib.Messaging](https://www.fuget.org/packages/RockLib.Messaging)
+  - RockLib.Messaging.NamedPipes
+  - [RockLib.Messaging.SQS](https://www.fuget.org/packages/RockLib.Messaging.SQS)
+- Build Status:
+  - RockLib.Messaging [![Build status](https://ci.appveyor.com/api/projects/status/wuoo2f6bdct92ekf?svg=true)](https://ci.appveyor.com/project/bfriesen/rocklib-messaging)
+  - RockLib.Messaging.NamedPipes
+  - RockLib.Messaging.SQS [![Build status](https://ci.appveyor.com/api/projects/status/lamk2f940oy95077?svg=true)](https://ci.appveyor.com/project/bfriesen/rocklib-messaging-60vs9)
