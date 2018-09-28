@@ -1,2 +1,0 @@
-# Receiving messages transactionally
-
