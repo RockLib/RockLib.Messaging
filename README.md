@@ -7,6 +7,7 @@
   - [Configure RockLib.Messaging](Configuration.md)
   - [Use RockLib.Messaging without configuration](NoConfiguration.md)
   - [Configure a .NET Framework application with app.config/web.config](NetFramework.md)
+  - [Use RockLib.Messaging with a DI/IOC container](DIContainer.md)
   - [Send and receive compressed messages](Compressed.md)
   - [Receive messages transactionally](TransactionalReceive.md)
   - [Send messages transactionally](TransactionalSend.md)
