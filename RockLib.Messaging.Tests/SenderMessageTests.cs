@@ -233,7 +233,6 @@ namespace RockLib.Messaging.Tests
             public byte[] BinaryPayload => _binaryPayload.Value;
             public HeaderDictionary Headers { get; }
             public byte? Priority { get; }
-            public bool IsTransactional => false;
             public void Acknowledge() {}
             public void Rollback() { }
 

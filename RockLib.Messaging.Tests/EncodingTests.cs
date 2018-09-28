@@ -231,8 +231,6 @@ namespace RockLib.Messaging.Tests
 
             public override byte? Priority => null;
 
-            public override bool IsTransactional => throw new NotImplementedException();
-
             public override void Acknowledge() => throw new NotImplementedException();
 
             public override void Rollback() => throw new NotImplementedException();

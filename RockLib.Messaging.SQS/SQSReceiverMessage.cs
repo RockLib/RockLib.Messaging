@@ -33,11 +33,6 @@ namespace RockLib.Messaging.SQS
         public override byte? Priority => null;
 
         /// <summary>
-        /// Returns true,
-        /// </summary>
-        public override bool IsTransactional => true;
-
-        /// <summary>
         /// Deletes the message from the SQS queue, ensuring it is not redelivered.
         /// </summary>
         public override void Acknowledge() => _acknowledge();

@@ -27,11 +27,6 @@ namespace RockLib.Messaging.NamedPipes
         public override byte? Priority => null;
 
         /// <summary>
-        /// Returns false.
-        /// </summary>
-        public override bool IsTransactional => false;
-
-        /// <summary>
         /// Does nothing.
         /// </summary>
         public override void Acknowledge() {}

@@ -110,20 +110,13 @@ namespace RockLib.Messaging
         public abstract byte? Priority { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the message is transactional. If true,
-        /// either the <see cref="Acknowledge"/> or <see cref="Rollback"/> method must
-        /// be called when processing the message.
-        /// </summary>
-        public abstract bool IsTransactional { get; }
-
-        /// <summary>
-        /// If <see cref="IsTransactional"/> is true, communicate to the server that
+        /// If supported by the inheritor, communicate to the server that
         /// the message was successfully processed and should not be redelivered.
         /// </summary>
         public abstract void Acknowledge();
 
         /// <summary>
-        /// If <see cref="IsTransactional"/> is true, communicate to the server that
+        /// If supported by the inheritor, communicate to the server that
         /// the message was not successfully processed and should be redelivered.
         /// </summary>
         public abstract void Rollback();
@@ -166,7 +159,6 @@ namespace RockLib.Messaging
             /// <summary>
             /// Converts a binary value to a <see cref="Payload"/> struct.
             /// </summary>
-            /// <param name="value"></param>
             public static implicit operator Payload(byte[] value) => new Payload(value);
         }
     }
