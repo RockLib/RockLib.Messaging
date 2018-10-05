@@ -14,9 +14,8 @@ namespace RockLib.Messaging.SQS
     /// <summary>
     /// An implementation of <see cref="IReceiver"/> that receives messages from SQS.
     /// </summary>
-    public class SQSQueueReceiver : IReceiver
+    public class SQSQueueReceiver : Receiver
     {
-        private readonly string _name;
         private readonly string _queueUrl;
         private readonly int _maxMessages;
         private readonly bool _autoAcknwoledge;
@@ -82,11 +81,12 @@ namespace RockLib.Messaging.SQS
             int maxMessages = _defaultMaxMessages,
             bool autoAcknowledge = true,
             bool parallelHandling = false)
+            : base(name)
         {
             if (maxMessages < 1 || maxMessages > 10)
                 throw new ArgumentOutOfRangeException(nameof(maxMessages), "Value must be from 1 to 10, inclusive.");
 
-            _name = name ?? throw new ArgumentNullException(nameof(name));
+            _sqs = sqs ?? throw new ArgumentNullException(nameof(sqs));
             _queueUrl = queueUrl ?? throw new ArgumentNullException(nameof(queueUrl));
             _maxMessages = maxMessages;
             _autoAcknwoledge = autoAcknowledge;
@@ -96,33 +96,9 @@ namespace RockLib.Messaging.SQS
         }
 
         /// <summary>
-        /// Occurs when a message is received.
+        /// Starts the polling background thread that listens for messages.
         /// </summary>
-        public event EventHandler<MessageReceivedEventArgs> MessageReceived;
-
-        /// <summary>
-        /// Occurs when a connection is established.
-        /// </summary>
-        public event EventHandler Connected;
-
-        /// <summary>
-        /// Occurs when a connection is lost.
-        /// </summary>
-        public event EventHandler<DisconnectedEventArgs> Disconnected;
-
-        /// <summary>
-        /// Gets the name of this instance of <see cref="SQSQueueReceiver"/>.
-        /// </summary>
-        public string Name
-        {
-            get { return _name; }
-        }
-
-        /// <summary>
-        /// Starts listening for messages.
-        /// </summary>
-        /// <param name="selector">Also known as a 'routing key', this value enables only certain messages to be received.</param>
-        public void Start(string selector = null)
+        protected override void Start()
         {
             if (!_worker.IsAlive && !_stopped)
             {
@@ -157,7 +133,7 @@ namespace RockLib.Messaging.SQS
                             if (connected != true)
                             {
                                 connected = true;
-                                Connected?.Invoke(this, EventArgs.Empty);
+                                OnConnected();
                             }
 
                             exception = null;
@@ -184,7 +160,7 @@ namespace RockLib.Messaging.SQS
                         }
 
                         connected = false;
-                        Disconnected?.Invoke(this, new DisconnectedEventArgs(GetErrorMessage()));
+                        OnDisconnected(GetErrorMessage());
                     }
 
                     Trace.TraceError($"Unable to receive SQS messages from AWS. Additional Information - {GetAdditionalInformation(response, null)}");
@@ -212,22 +188,17 @@ namespace RockLib.Messaging.SQS
                 return;
             }
 
-            var handler = MessageReceived;
+            var receiptHandle = message.ReceiptHandle;
+            void Acknowledge() => Delete(receiptHandle);
 
-            if (handler != null)
+            try
             {
-                var receiptHandle = message.ReceiptHandle;
-                void Acknowledge() => Delete(receiptHandle);
-
-                try
-                {
-                    handler(this, new MessageReceivedEventArgs(new SQSReceiverMessage(message, Acknowledge)));
-                }
-                finally
-                {
-                    if (_autoAcknwoledge)
-                        Acknowledge();
-                }
+                MessageHandler.OnMessageReceived(this, new SQSReceiverMessage(message, Acknowledge));
+            }
+            finally
+            {
+                if (_autoAcknwoledge)
+                    Acknowledge();
             }
         }
 
@@ -264,13 +235,14 @@ namespace RockLib.Messaging.SQS
         }
 
         /// <summary>
-        /// Stops listening to SQS and disposes resources.
+        /// Signals the polling background thread to exit then waits for it to finish.
         /// </summary>
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
             _stopped = true;
             _worker.Join();
             _sqs.Dispose();
+            base.Dispose(disposing);
         }
 
         private static string GetAdditionalInformation(AmazonWebServiceResponse response, string receiptHandle)

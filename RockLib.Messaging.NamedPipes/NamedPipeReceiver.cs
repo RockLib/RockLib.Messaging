@@ -9,7 +9,7 @@ namespace RockLib.Messaging.NamedPipes
     /// An implementation of <see cref="IReceiver"/> that uses named pipes as
     /// its communication mechanism.
     /// </summary>
-    public class NamedPipeReceiver : IReceiver
+    public class NamedPipeReceiver : Receiver
     {
         private readonly BlockingCollection<NamedPipeMessage> _messages = new BlockingCollection<NamedPipeMessage>();
         private readonly Thread _consumerThread;
@@ -22,24 +22,11 @@ namespace RockLib.Messaging.NamedPipes
         /// <param name="name">The name of this instance of <see cref="NamedPipeReceiver"/>.</param>
         /// <param name="pipeName">Name of the named pipe.</param>
         public NamedPipeReceiver(string name, string pipeName = null)
+            : base(name)
         {
-            Name = name ?? throw new ArgumentNullException(nameof(name));
-            PipeName = pipeName ?? Name;
+            PipeName = pipeName ?? name;
             _consumerThread = new Thread(Consume);
         }
-
-        /// <summary>
-        /// Occurs when a message is received.
-        /// </summary>
-        public event EventHandler<MessageReceivedEventArgs> MessageReceived;
-
-        event EventHandler IReceiver.Connected { add {} remove {} }
-        event EventHandler<DisconnectedEventArgs> IReceiver.Disconnected { add {} remove {} }
-
-        /// <summary>
-        /// Gets the name of this instance of <see cref="IReceiver" />.
-        /// </summary>
-        public string Name { get; }
 
         /// <summary>
         /// Gets the name of the named pipe.
@@ -47,10 +34,9 @@ namespace RockLib.Messaging.NamedPipes
         public string PipeName { get; }
 
         /// <summary>
-        /// Starts listening for messages.
+        /// Starts a new pipe server and the consumer background thread.
         /// </summary>
-        /// <param name="selector">Also known as a 'routing key', this value enables only certain messages to be received.</param>
-        public void Start(string selector = null)
+        protected override void Start()
         {
             if (_pipeServer == null)
             {
@@ -62,7 +48,6 @@ namespace RockLib.Messaging.NamedPipes
         private void StartNewPipeServer()
         {
             _pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In, 254, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
-
             _pipeServer.BeginWaitForConnection(WaitForConnectionCallBack, null);
         }
         
@@ -98,20 +83,13 @@ namespace RockLib.Messaging.NamedPipes
         private void Consume()
         {
             foreach (var sentMessage in _messages.GetConsumingEnumerable())
-            {
-                var handler = MessageReceived;
-                if (handler != null)
-                {
-                    var message = new NamedPipeReceiverMessage(sentMessage);
-                    handler(this, new MessageReceivedEventArgs(message));
-                }
-            }
+                MessageHandler.OnMessageReceived(this, new NamedPipeReceiverMessage(sentMessage));
         }
 
         /// <summary>
-        /// Closes and flushes the internal buffer of messages.
+        /// Stop the pipe server and wait for the background thread to finish.
         /// </summary>
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
             if (_pipeServer != null)
             {
@@ -122,6 +100,8 @@ namespace RockLib.Messaging.NamedPipes
                 try { _consumerThread.Join(); } // ReSharper disable once EmptyGeneralCatchClause
                 catch { }
             }
+
+            base.Dispose(disposing);
         }
     }
 }

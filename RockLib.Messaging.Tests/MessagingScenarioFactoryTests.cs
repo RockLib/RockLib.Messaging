@@ -131,17 +131,12 @@ namespace RockLib.Messaging.Tests
     {
         public string Name { get; set; }
         public string PipeName { get; set; }
+        public IMessageHandler MessageHandler { get; set; }
 
-        public event EventHandler<MessageReceivedEventArgs> MessageReceived;
         public event EventHandler Connected;
         public event EventHandler<DisconnectedEventArgs> Disconnected;
 
         public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Start(string selector = null)
         {
             throw new NotImplementedException();
         }
