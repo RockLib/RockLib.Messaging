@@ -95,10 +95,10 @@ namespace RockLib.Messaging
             {
                 foreach (var child in section.GetChildren())
                     if (scenarioName.Equals(child.GetSectionName(), StringComparison.OrdinalIgnoreCase))
-                        return child.Create<T>(defaultTypes);
+                        return child.CreateReloadingProxy<T>(defaultTypes);
             }
             else if (scenarioName.Equals(section.GetSectionName(), StringComparison.OrdinalIgnoreCase))
-                return section.Create<T>(defaultTypes);
+                return section.CreateReloadingProxy<T>(defaultTypes);
 
             throw new KeyNotFoundException($"No {sectionName} were found matching the name '{scenarioName}'.");
         }
