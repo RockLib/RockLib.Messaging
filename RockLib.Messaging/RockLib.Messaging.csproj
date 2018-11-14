@@ -22,7 +22,7 @@
   <PropertyGroup>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\RockLib.Messaging.xml</DocumentationFile>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="RockLib.Compression" Version="1.0.0" />
     <PackageReference Include="RockLib.Configuration" Version="2.3.0" />
