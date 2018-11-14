@@ -49,7 +49,8 @@ namespace RockLib.Messaging.NamedPipes
         /// Sends the specified message.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        public Task SendAsync(SenderMessage message)
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
         {
             if (message.OriginatingSystem == null)
                 message.OriginatingSystem = "NamedPipe";
@@ -66,7 +67,7 @@ namespace RockLib.Messaging.NamedPipes
             var messageString = _serializer.SerializeToString(namedPipeMessage);
             var completion = new TaskCompletionSource<bool>();
 
-            _workItems.Add(new WorkItem { Message = messageString, Completion = completion });
+            _workItems.Add(new WorkItem { Message = messageString, Completion = completion, CancellationToken = cancellationToken });
 
             return completion.Task;
         }
@@ -84,6 +85,12 @@ namespace RockLib.Messaging.NamedPipes
         {
             foreach (var workItem in _workItems.GetConsumingEnumerable())
             {
+                if (workItem.CancellationToken.IsCancellationRequested)
+                {
+                    workItem.Completion.SetCanceled();
+                    continue;
+                }
+
                 try
                 {
                     var pipe = new NamedPipeClientStream(".", PipeName, PipeDirection.Out, PipeOptions.Asynchronous);
@@ -95,6 +102,12 @@ namespace RockLib.Messaging.NamedPipes
                     catch (TimeoutException ex)
                     {
                         workItem.Completion.SetException(ex);
+                        continue;
+                    }
+
+                    if (workItem.CancellationToken.IsCancellationRequested)
+                    {
+                        workItem.Completion.SetCanceled();
                         continue;
                     }
 
@@ -117,6 +130,7 @@ namespace RockLib.Messaging.NamedPipes
         {
             public string Message;
             public TaskCompletionSource<bool> Completion;
+            public CancellationToken CancellationToken;
         }
     }
 }

@@ -2,6 +2,7 @@
 using Amazon.SQS.Model;
 using System.Threading.Tasks;
 using System;
+using System.Threading;
 
 namespace RockLib.Messaging.SQS
 {
@@ -10,7 +11,6 @@ namespace RockLib.Messaging.SQS
     /// </summary>
     public class SQSQueueSender : ISender
     {
-        private readonly string _name;
         private readonly string _queueUrl;
         private readonly IAmazonSQS _sqs;
 
@@ -35,20 +35,21 @@ namespace RockLib.Messaging.SQS
         public SQSQueueSender(IAmazonSQS sqs, string name, string queueUrl)
         {
             _sqs = sqs ?? throw new ArgumentNullException(nameof(sqs));
-            _name = name ?? throw new ArgumentNullException(nameof(name));
+            Name = name ?? throw new ArgumentNullException(nameof(name));
             _queueUrl = queueUrl ?? throw new ArgumentNullException(nameof(queueUrl));
         }
 
         /// <summary>
         /// Gets the name of this instance of <see cref="SQSQueueSender"/>.
         /// </summary>
-        public string Name { get { return _name; } }
+        public string Name { get; }
 
         /// <summary>
         /// Asynchronously sends the specified message.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        public Task SendAsync(SenderMessage message)
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
         {
             if (message.OriginatingSystem == null)
                 message.OriginatingSystem = "SQS";
@@ -61,7 +62,7 @@ namespace RockLib.Messaging.SQS
                     new MessageAttributeValue { StringValue = header.Value.ToString(), DataType = "String" };
             }
 
-            return _sqs.SendMessageAsync(sendMessageRequest);
+            return _sqs.SendMessageAsync(sendMessageRequest, cancellationToken);
         }
 
         /// <summary>
