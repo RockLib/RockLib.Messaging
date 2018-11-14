@@ -6,7 +6,7 @@
 
     <PropertyGroup>
         <PackageId>RockLib.Messaging.SQS</PackageId>
-        <PackageVersion>2.0.0-alpha01</PackageVersion>
+        <PackageVersion>2.0.0-alpha02</PackageVersion>
         <Authors>Quicken Loans</Authors>
         <Description>Messaging extension for Rock Framework to add Amazon SQS support.</Description>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
