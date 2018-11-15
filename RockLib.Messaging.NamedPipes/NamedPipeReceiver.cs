@@ -16,6 +16,8 @@ namespace RockLib.Messaging.NamedPipes
         private readonly NamedPipeMessageSerializer _serializer = NamedPipeMessageSerializer.Instance;
         private NamedPipeServerStream _pipeServer;
 
+        private bool _disposed;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="NamedPipeReceiver"/> class.
         /// </summary>
@@ -25,7 +27,7 @@ namespace RockLib.Messaging.NamedPipes
             : base(name)
         {
             PipeName = pipeName ?? name;
-            _consumerThread = new Thread(Consume);
+            _consumerThread = new Thread(Consume) { IsBackground = true };
         }
 
         /// <summary>
@@ -57,8 +59,10 @@ namespace RockLib.Messaging.NamedPipes
             {
                 _pipeServer.EndWaitForConnection(result);
             }
-            catch (ObjectDisposedException)
+            catch
             {
+                if (!_disposed)
+                    StartNewPipeServer();
                 return;
             }
 
@@ -91,6 +95,11 @@ namespace RockLib.Messaging.NamedPipes
         /// </summary>
         protected override void Dispose(bool disposing)
         {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
             if (_pipeServer != null)
             {
                 _messages.CompleteAdding();

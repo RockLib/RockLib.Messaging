@@ -31,7 +31,7 @@ namespace RockLib.Messaging.NamedPipes
 
             _workItems = new BlockingCollection<WorkItem>();
 
-            _runThread = new Thread(Run);
+            _runThread = new Thread(Run) { IsBackground = true };
             _runThread.Start();
         }
 
@@ -93,30 +93,31 @@ namespace RockLib.Messaging.NamedPipes
 
                 try
                 {
-                    var pipe = new NamedPipeClientStream(".", PipeName, PipeDirection.Out, PipeOptions.Asynchronous);
-
-                    try
+                    using (var pipe = new NamedPipeClientStream(".", PipeName, PipeDirection.Out, PipeOptions.Asynchronous))
                     {
-                        pipe.Connect(0);
-                    }
-                    catch (TimeoutException ex)
-                    {
-                        workItem.Completion.SetException(ex);
-                        continue;
-                    }
+                        try
+                        {
+                            pipe.Connect(0);
+                        }
+                        catch (TimeoutException ex)
+                        {
+                            workItem.Completion.SetException(ex);
+                            continue;
+                        }
 
-                    if (workItem.CancellationToken.IsCancellationRequested)
-                    {
-                        workItem.Completion.SetCanceled();
-                        continue;
-                    }
+                        if (workItem.CancellationToken.IsCancellationRequested)
+                        {
+                            workItem.Completion.SetCanceled();
+                            continue;
+                        }
 
-                    using (var writer = new StreamWriter(pipe))
-                    {
-                        writer.WriteLine(workItem.Message);
-                    }
+                        using (var writer = new StreamWriter(pipe))
+                        {
+                            writer.WriteLine(workItem.Message);
+                        }
 
-                    workItem.Completion.SetResult(true);
+                        workItem.Completion.SetResult(true);
+                    }
                 }
                 catch (Exception ex)
                 {
