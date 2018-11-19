@@ -71,10 +71,10 @@ namespace Example.Messaging.DotNetCore20
             // Use a wait handle to pause the main thread while waiting for the message to be received.
             var waitHandle = new AutoResetEvent(false);
 
-            var namedPipeProducer = MessagingScenarioFactory.CreateSender("Sender1");
-            var namedPipeConsumer = MessagingScenarioFactory.CreateReceiver("Receiver1");
+            var sender = MessagingScenarioFactory.CreateSender("Sender1");
+            var receiver = MessagingScenarioFactory.CreateReceiver("Receiver1");
 
-            namedPipeConsumer.Start(m =>
+            receiver.Start(m =>
             {
                 var message = m.StringPayload;
 
@@ -83,12 +83,12 @@ namespace Example.Messaging.DotNetCore20
                 waitHandle.Set();
             });
 
-            namedPipeProducer.Send($"Named pipe test message from {typeof(Program).FullName}");
+            sender.Send($"Named pipe test message from {typeof(Program).FullName}");
 
             waitHandle.WaitOne();
 
-            namedPipeConsumer.Dispose();
-            namedPipeProducer.Dispose();
+            receiver.Dispose();
+            sender.Dispose();
             waitHandle.Dispose();
 
             Console.Write("Press any key to exit...");
