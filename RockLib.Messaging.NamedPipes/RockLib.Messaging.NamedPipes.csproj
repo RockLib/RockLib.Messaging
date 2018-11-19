@@ -1,30 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;net451;</TargetFrameworks>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net451;net462</TargetFrameworks>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <PackageId>RockLib.Messaging.NamedPipes</PackageId>
-        <PackageVersion>2.0.0-alpha01</PackageVersion>
-        <Authors>Quicken Loans</Authors>
-        <Description>Implementation of RockLib.Messaging API that sends and receives messages to a local named pipe.</Description>
-        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-        <PackageReleaseNotes></PackageReleaseNotes>
-        <PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
-        <PackageLicenseUrl>https://github.com/RockLib/RockLib.Messaging/blob/master/LICENSE.md</PackageLicenseUrl>
-        <Copyright>Copyright 2018 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
-        <PackageTags>rocklib messaging</PackageTags>
-      <Version>2.0.0</Version>
-        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>RockLib.Messaging.NamedPipes</PackageId>
+    <PackageVersion>2.0.0-alpha03</PackageVersion>
+    <Authors>Quicken Loans</Authors>
+    <Description>Implementation of RockLib.Messaging API that sends and receives messages to a local named pipe.</Description>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes></PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/RockLib/RockLib.Messaging/blob/master/LICENSE.md</PackageLicenseUrl>
+    <Copyright>Copyright 2018 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
+    <PackageTags>rocklib messaging</PackageTags>
+    <Version>2.0.0</Version>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\RockLib.Messaging.NamedPipes.xml</DocumentationFile>
-    </PropertyGroup>
+  <PropertyGroup>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\RockLib.Messaging.NamedPipes.xml</DocumentationFile>
+  </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RockLib.Messaging" Version="2.0.0-alpha01" />
+    <PackageReference Include="RockLib.Messaging" Version="2.0.0-alpha04" />
   </ItemGroup>
 
 </Project>

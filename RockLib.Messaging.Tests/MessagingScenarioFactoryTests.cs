@@ -4,6 +4,7 @@ using NUnit.Framework;
 using RockLib.Configuration.ObjectFactory;
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Tests
@@ -119,12 +120,12 @@ namespace RockLib.Messaging.Tests
 
         public void Dispose()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
-        public Task SendAsync(SenderMessage message)
+        public Task SendAsync(SenderMessage message, CancellationToken token)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 
@@ -134,8 +135,8 @@ namespace RockLib.Messaging.Tests
         public string PipeName { get; set; }
         public IMessageHandler MessageHandler { get; set; }
 
-        public event EventHandler Connected;
-        public event EventHandler<DisconnectedEventArgs> Disconnected;
+        event EventHandler IReceiver.Connected { add { } remove { } }
+        event EventHandler<DisconnectedEventArgs> IReceiver.Disconnected { add { } remove { } }
 
         public void Dispose()
         {

@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net451;</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net451;net462</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging</PackageId>
-    <PackageVersion>2.0.0-alpha01</PackageVersion>
+    <PackageVersion>2.0.0-alpha04</PackageVersion>
     <Authors>Quicken Loans</Authors>
     <Description>A simple API for sending and receiving messages.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -22,11 +22,11 @@
   <PropertyGroup>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\RockLib.Messaging.xml</DocumentationFile>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="RockLib.Compression" Version="1.0.0" />
-    <PackageReference Include="RockLib.Configuration" Version="2.3.0" />
-    <PackageReference Include="RockLib.Configuration.ObjectFactory" Version="1.2.2" />
+    <PackageReference Include="RockLib.Configuration" Version="2.3.1" />
+    <PackageReference Include="RockLib.Configuration.ObjectFactory" Version="1.2.3" />
   </ItemGroup>
 
 </Project>

@@ -31,7 +31,7 @@ namespace RockLib.Messaging.NamedPipes
 
             _workItems = new BlockingCollection<WorkItem>();
 
-            _runThread = new Thread(Run);
+            _runThread = new Thread(Run) { IsBackground = true };
             _runThread.Start();
         }
 
@@ -49,7 +49,8 @@ namespace RockLib.Messaging.NamedPipes
         /// Sends the specified message.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        public Task SendAsync(SenderMessage message)
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
         {
             if (message.OriginatingSystem == null)
                 message.OriginatingSystem = "NamedPipe";
@@ -66,7 +67,7 @@ namespace RockLib.Messaging.NamedPipes
             var messageString = _serializer.SerializeToString(namedPipeMessage);
             var completion = new TaskCompletionSource<bool>();
 
-            _workItems.Add(new WorkItem { Message = messageString, Completion = completion });
+            _workItems.Add(new WorkItem { Message = messageString, Completion = completion, CancellationToken = cancellationToken });
 
             return completion.Task;
         }
@@ -84,26 +85,39 @@ namespace RockLib.Messaging.NamedPipes
         {
             foreach (var workItem in _workItems.GetConsumingEnumerable())
             {
+                if (workItem.CancellationToken.IsCancellationRequested)
+                {
+                    workItem.Completion.SetCanceled();
+                    continue;
+                }
+
                 try
                 {
-                    var pipe = new NamedPipeClientStream(".", PipeName, PipeDirection.Out, PipeOptions.Asynchronous);
-
-                    try
+                    using (var pipe = new NamedPipeClientStream(".", PipeName, PipeDirection.Out, PipeOptions.Asynchronous))
                     {
-                        pipe.Connect(0);
-                    }
-                    catch (TimeoutException ex)
-                    {
-                        workItem.Completion.SetException(ex);
-                        continue;
-                    }
+                        try
+                        {
+                            pipe.Connect(0);
+                        }
+                        catch (TimeoutException ex)
+                        {
+                            workItem.Completion.SetException(ex);
+                            continue;
+                        }
 
-                    using (var writer = new StreamWriter(pipe))
-                    {
-                        writer.WriteLine(workItem.Message);
-                    }
+                        if (workItem.CancellationToken.IsCancellationRequested)
+                        {
+                            workItem.Completion.SetCanceled();
+                            continue;
+                        }
 
-                    workItem.Completion.SetResult(true);
+                        using (var writer = new StreamWriter(pipe))
+                        {
+                            writer.WriteLine(workItem.Message);
+                        }
+
+                        workItem.Completion.SetResult(true);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -117,6 +131,7 @@ namespace RockLib.Messaging.NamedPipes
         {
             public string Message;
             public TaskCompletionSource<bool> Completion;
+            public CancellationToken CancellationToken;
         }
     }
 }

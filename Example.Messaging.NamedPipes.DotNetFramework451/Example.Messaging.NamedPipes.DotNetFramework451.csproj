@@ -66,17 +66,20 @@
     <Reference Include="RockLib.Compression, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RockLib.Compression.1.0.0\lib\net45\RockLib.Compression.dll</HintPath>
     </Reference>
-    <Reference Include="RockLib.Configuration, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RockLib.Configuration.1.0.0\lib\net451\RockLib.Configuration.dll</HintPath>
+    <Reference Include="RockLib.Configuration, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RockLib.Configuration.2.3.1\lib\net451\RockLib.Configuration.dll</HintPath>
     </Reference>
-    <Reference Include="RockLib.Configuration.ObjectFactory, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RockLib.Configuration.ObjectFactory.1.0.0\lib\net451\RockLib.Configuration.ObjectFactory.dll</HintPath>
+    <Reference Include="RockLib.Configuration.ObjectFactory, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RockLib.Configuration.ObjectFactory.1.2.3\lib\net451\RockLib.Configuration.ObjectFactory.dll</HintPath>
     </Reference>
     <Reference Include="RockLib.Immutable, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RockLib.Immutable.1.0.0\lib\net45\RockLib.Immutable.dll</HintPath>
     </Reference>
-    <Reference Include="RockLib.Messaging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RockLib.Messaging.1.0.0\lib\net451\RockLib.Messaging.dll</HintPath>
+    <Reference Include="RockLib.Messaging, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RockLib.Messaging.2.0.0-alpha04\lib\net451\RockLib.Messaging.dll</HintPath>
+    </Reference>
+    <Reference Include="RockLib.Messaging.NamedPipes, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RockLib.Messaging.NamedPipes.2.0.0-alpha03\lib\net451\RockLib.Messaging.NamedPipes.dll</HintPath>
     </Reference>
     <Reference Include="RockLib.Threading, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RockLib.Threading.1.0.0\lib\net45\RockLib.Threading.dll</HintPath>
@@ -97,6 +100,7 @@
       <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -108,11 +112,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
-    <None Include="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

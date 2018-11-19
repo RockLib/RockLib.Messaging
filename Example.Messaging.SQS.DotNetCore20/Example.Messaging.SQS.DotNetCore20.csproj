@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RockLib.Messaging.SQS" Version="1.0.0" />
+    <PackageReference Include="RockLib.Messaging.SQS" Version="2.0.0-alpha03" />
   </ItemGroup>
 
   <ItemGroup>

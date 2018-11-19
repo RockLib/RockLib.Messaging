@@ -42,7 +42,7 @@ namespace Example.Messaging.DotNetFramework451
 
         private static void RunSender()
         {
-            using (var sender = MessagingScenarioFactory.CreateQueueProducer("Pipe1"))
+            using (var sender = MessagingScenarioFactory.CreateSender("Sender1"))
             {
                 Console.WriteLine($"Enter a message for sender '{sender.Name}'. Leave blank to quit.");
                 string message;
@@ -58,11 +58,10 @@ namespace Example.Messaging.DotNetFramework451
 
         private static void RunReceiver()
         {
-            using (var receiver = MessagingScenarioFactory.CreateQueueConsumer("Pipe1"))
+            using (var receiver = MessagingScenarioFactory.CreateReceiver("Receiver1"))
             {
-                receiver.MessageReceived += (s, e) => Console.WriteLine(e.Message.GetStringValue());
+                receiver.Start(m => Console.WriteLine(m.StringPayload));
                 Console.WriteLine($"Receiving messages from receiver '{receiver.Name}'. Press <enter> to quit.");
-                receiver.Start();
                 while (Console.ReadKey(true).Key != ConsoleKey.Enter) { }
             }
         }
@@ -72,26 +71,24 @@ namespace Example.Messaging.DotNetFramework451
             // Use a wait handle to pause the main thread while waiting for the message to be received.
             var waitHandle = new AutoResetEvent(false);
 
-            var namedPipeProducer = MessagingScenarioFactory.CreateQueueProducer("Pipe1");
-            var namedPipeConsumer = MessagingScenarioFactory.CreateQueueConsumer("Pipe1");
+            var sender = MessagingScenarioFactory.CreateSender("Sender1");
+            var receiver = MessagingScenarioFactory.CreateReceiver("Receiver1");
 
-            namedPipeConsumer.MessageReceived += (sender, eventArgs) =>
+            receiver.Start(m =>
             {
-                var eventArgsMessage = eventArgs.Message;
-                var message = eventArgsMessage.GetStringValue();
+                var message = m.StringPayload;
 
                 Console.WriteLine($"Message received: {message}");
 
                 waitHandle.Set();
-            };
-            namedPipeConsumer.Start();
+            });
 
-            namedPipeProducer.Send($"Named pipe test message from {typeof(Program).FullName}");
+            sender.Send($"Named pipe test message from {typeof(Program).FullName}");
 
             waitHandle.WaitOne();
 
-            namedPipeConsumer.Dispose();
-            namedPipeProducer.Dispose();
+            receiver.Dispose();
+            sender.Dispose();
             waitHandle.Dispose();
 
             Console.Write("Press any key to exit...");
