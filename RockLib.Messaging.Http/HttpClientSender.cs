@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Http
@@ -25,7 +26,7 @@ namespace RockLib.Messaging.Http
             _client.Dispose();
         }
 
-        public async Task SendAsync(SenderMessage message)
+        public async Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
         {
             if (message.OriginatingSystem == null)
                 message.OriginatingSystem = "HTTP";
@@ -37,13 +38,15 @@ namespace RockLib.Messaging.Http
                     : new StringContent(message.StringPayload)
             };
 
+            // TODO: if the message is compressed, add the correct http compression header
+
             foreach (var header in message.Headers)
             {
                 // TODO: better validation?
                 request.Headers.TryAddWithoutValidation(header.Key, header.Value?.ToString()); // TODO: better string conversion
             }
 
-            var response = await _client.SendAsync(request);
+            var response = await _client.SendAsync(request, cancellationToken);
             response.EnsureSuccessStatusCode();
         }
     }
