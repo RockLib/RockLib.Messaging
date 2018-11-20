@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,23 +31,49 @@ namespace RockLib.Messaging.Http
             if (message.OriginatingSystem == null)
                 message.OriginatingSystem = "HTTP";
 
-            var request = new HttpRequestMessage(HttpMethod.Post, Url)
+            var headers = new Dictionary<string, object>(message.Headers);
+
+            var url = GetUrl(headers);
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
-                Content = message.IsBinary
+                Content = message.IsBinary || message.IsCompressed
                     ? new ByteArrayContent(message.BinaryPayload)
                     : new StringContent(message.StringPayload)
             };
 
             // TODO: if the message is compressed, add the correct http compression header
 
-            foreach (var header in message.Headers)
+            foreach (var header in headers)
             {
-                // TODO: better validation?
-                request.Headers.TryAddWithoutValidation(header.Key, header.Value?.ToString()); // TODO: better string conversion
+                if (header.Value != null)
+                    request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToString());
             }
 
-            var response = await _client.SendAsync(request, cancellationToken);
+            var response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
+        }
+
+        /// <summary>
+        /// Get the url for the specified message, replacing any tokens with corresponding header
+        /// values. If a header is used to replace a token in the url, it is removed from the
+        /// <paramref name="headers"/> dictionary.
+        /// </summary>
+        private string GetUrl(Dictionary<string, object> headers)
+        {
+            return Regex.Replace(Url, "{([^}]+)}", match =>
+            {
+                var token = match.Groups[1].Value;
+
+                if (headers.ContainsKey(token))
+                {
+                    var value = headers[token];
+                    headers.Remove(token);
+                    return value?.ToString();
+                }
+
+                throw new InvalidOperationException($"The url for this {nameof(HttpClientSender)} contains a token, '{token}', that is not present in the headers of the sender message.");
+            });
         }
     }
 }

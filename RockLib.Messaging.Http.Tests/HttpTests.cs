@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace RockLib.Messaging.Http.Tests
@@ -50,6 +47,52 @@ namespace RockLib.Messaging.Http.Tests
                 }
 
                 Assert.Equal("Hello, world!", payload);
+            }
+        }
+
+        [Fact]
+        public void TokensInHttpClientSenderUrlAreReplacedByMatchingHeaders()
+        {
+            using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }))
+            {
+                string payload = null;
+
+                receiver.Start(m =>
+                {
+                    payload = m.StringPayload;
+                    m.Acknowledge();
+                });
+
+                using (var sender = new HttpClientSender("foo", "http://{server}:5000/"))
+                {
+                    var message = new SenderMessage("Hello, world!") { Headers = { ["server"] = "localhost" } };
+                    sender.Send(message);
+                }
+
+                Assert.Equal("Hello, world!", payload);
+            }
+        }
+
+        [Fact]
+        public void TokensInHttpClientSenderUrlWithoutACorrespondingHeaderThrowsInvalidOperationException()
+        {
+            using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }))
+            {
+                string payload = null;
+
+                receiver.Start(m =>
+                {
+                    payload = m.StringPayload;
+                    m.Acknowledge();
+                });
+
+                using (var sender = new HttpClientSender("foo", "http://{server}:5000/"))
+                {
+                    var message = new SenderMessage("Hello, world!");
+                    Assert.Throws<InvalidOperationException>(() => sender.Send(message));
+                }
+
+                Assert.Null(payload);
             }
         }
     }
