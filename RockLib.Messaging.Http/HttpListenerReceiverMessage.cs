@@ -7,27 +7,51 @@ namespace RockLib.Messaging.Http
 {
     public class HttpListenerReceiverMessage : ReceiverMessage
     {
-        public HttpListenerReceiverMessage(HttpListenerContext context)
+        public HttpListenerReceiverMessage(HttpListenerContext context, IResponseGenerator responseGenerator)
             : base(() => GetPayload(context))
         {
-            Context = context;
+            Context = context ?? throw new ArgumentNullException(nameof(context));
+            ResponseGenerator = responseGenerator ?? throw new ArgumentNullException(nameof(responseGenerator));
         }
 
         public override byte? Priority => null;
 
         public HttpListenerContext Context { get; }
 
+        public IResponseGenerator ResponseGenerator { get; }
+
         public override void Acknowledge()
         {
-            Context.Response.StatusCode = 200;
-            Context.Response.StatusDescription = "OK";
-            Context.Response.Close();
+            var response = ResponseGenerator.GetAcknowledgeResponse(this);
+            WriteResponse(response);
         }
 
         public override void Rollback()
         {
-            Context.Response.StatusCode = 500;
-            Context.Response.StatusDescription = "Internal Server Error";
+            var response = ResponseGenerator.GetRollbackResponse(this);
+            WriteResponse(response);
+        }
+
+        private void WriteResponse(Response response)
+        {
+            Context.Response.StatusCode = response.StatusCode;
+            Context.Response.StatusDescription = response.StatusDescription;
+
+            switch (response.Content)
+            {
+                case string stringContent:
+                    Context.Response.ContentEncoding = Encoding.UTF8;
+                    var buffer = Encoding.UTF8.GetBytes(stringContent);
+                    Context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                    break;
+                case byte[] binaryContent:
+                    Context.Response.OutputStream.Write(binaryContent, 0, binaryContent.Length);
+                    break;
+            }
+
+            foreach (var header in response.Headers)
+                Context.Response.Headers.Add(header.Key, header.Value);
+
             Context.Response.Close();
         }
 
