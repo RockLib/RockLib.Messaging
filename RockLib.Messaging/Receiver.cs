@@ -85,7 +85,7 @@ namespace RockLib.Messaging
 
         /// <summary>
         /// Unregisters all event handlers from the <see cref="Connected"/> and
-        /// <see cref="Disconnected"/> events a sets <see cref="MessageHandler"/>
+        /// <see cref="Disconnected"/> events and sets <see cref="MessageHandler"/>
         /// to null.
         /// </summary>
         /// <param name="disposing">
