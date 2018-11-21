@@ -11,15 +11,17 @@ namespace RockLib.Messaging.Http
     {
         private readonly HttpClient _client;
 
-        public HttpClientSender(string name, string url)
+        public HttpClientSender(string name, string url, string method = "POST")
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Url = url ?? throw new ArgumentNullException(nameof(url));
+            Method = new HttpMethod(method ?? throw new ArgumentNullException(nameof(method)));
             _client = new HttpClient();
         }
 
         public string Name { get; }
         public string Url { get; }
+        public HttpMethod Method { get; }
 
         public void Dispose()
         {
@@ -35,7 +37,7 @@ namespace RockLib.Messaging.Http
 
             var url = GetUrl(headers);
 
-            var request = new HttpRequestMessage(HttpMethod.Post, url)
+            var request = new HttpRequestMessage(Method, url)
             {
                 Content = message.IsBinary || message.IsCompressed
                     ? new ByteArrayContent(message.BinaryPayload)

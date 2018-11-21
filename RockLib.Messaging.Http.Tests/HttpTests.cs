@@ -95,5 +95,28 @@ namespace RockLib.Messaging.Http.Tests
                 Assert.Null(payload);
             }
         }
+
+        [Fact]
+        public void MismatchedMethodsResultsIn405()
+        {
+            using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }, "POST"))
+            {
+                string payload = null;
+
+                receiver.Start(m =>
+                {
+                    payload = m.StringPayload;
+                    m.Acknowledge();
+                });
+
+                using (var sender = new HttpClientSender("foo", "http://localhost:5000/", "PUT"))
+                {
+                    var exception = Assert.Throws<HttpRequestException>(() => sender.Send("Hello, world!"));
+                    Assert.Contains("405 (Method Not Allowed)", exception.Message);
+                }
+
+                Assert.Null(payload);
+            }
+        }
     }
 }

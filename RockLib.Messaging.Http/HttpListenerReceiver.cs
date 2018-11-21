@@ -10,19 +10,25 @@ namespace RockLib.Messaging.Http
 
         private bool disposed;
 
-        public HttpListenerReceiver(string name, IEnumerable<string> prefixes,
+        public HttpListenerReceiver(string name, IEnumerable<string> prefixes, string method = "POST",
             int acknowledgeStatusCode = 200, string acknowledgeStatusDescription = "OK",
             int rollbackStatusCode = 500, string rollbackStatusDescription = "Internal Server Error")
-            : this(name, prefixes, new DefaultHttpResponseGenerator(acknowledgeStatusCode, acknowledgeStatusDescription, rollbackStatusCode, rollbackStatusDescription))
+            : this(name, prefixes, method, new DefaultHttpResponseGenerator(acknowledgeStatusCode, acknowledgeStatusDescription, rollbackStatusCode, rollbackStatusDescription))
         {
         }
 
         public HttpListenerReceiver(string name, IEnumerable<string> prefixes, IHttpResponseGenerator httpResponseGenerator)
+            : this(name, prefixes, "POST", httpResponseGenerator)
+        {
+        }
+
+        public HttpListenerReceiver(string name, IEnumerable<string> prefixes, string method, IHttpResponseGenerator httpResponseGenerator)
             : base(name)
         {
             if (prefixes == null)
                 throw new ArgumentNullException(nameof(prefixes));
 
+            Method = method ?? throw new ArgumentNullException(nameof(method));
             HttpResponseGenerator = httpResponseGenerator ?? throw new ArgumentNullException(nameof(httpResponseGenerator));
 
             _listener = new HttpListener();
@@ -30,6 +36,7 @@ namespace RockLib.Messaging.Http
                 _listener.Prefixes.Add(prefix);
         }
 
+        public string Method { get; }
         public IHttpResponseGenerator HttpResponseGenerator { get; }
 
         protected override void Start()
@@ -46,6 +53,14 @@ namespace RockLib.Messaging.Http
             var context = _listener.EndGetContext(result);
 
             _listener.BeginGetContext(CompleteGetContext, null);
+
+            if (context.Request.HttpMethod != Method)
+            {
+                context.Response.StatusCode = 405;
+                context.Response.StatusDescription = "Method Not Allowed";
+                context.Response.Close();
+                return;
+            }
 
             MessageHandler.OnMessageReceived(this, new HttpListenerReceiverMessage(context, HttpResponseGenerator));
         }
