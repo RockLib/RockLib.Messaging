@@ -88,9 +88,15 @@ namespace RockLib.Messaging
                 }
 
                 var converter = TypeDescriptor.GetConverter(objectValue);
-                if (converter.CanConvertTo(typeof(int)))
+                if (converter.CanConvertTo(typeof(int)) && converter.IsValid(objectValue))
                 {
                     value = (int)converter.ConvertTo(objectValue, typeof(int));
+                    return true;
+                }
+                converter = TypeDescriptor.GetConverter(typeof(int));
+                if (converter.CanConvertFrom(objectValue.GetType()) && converter.IsValid(objectValue))
+                {
+                    value = (int)converter.ConvertFrom(objectValue);
                     return true;
                 }
             }
@@ -143,9 +149,15 @@ namespace RockLib.Messaging
                 }
 
                 var converter = TypeDescriptor.GetConverter(objectValue);
-                if (converter.CanConvertTo(typeof(bool)))
+                if (converter.CanConvertTo(typeof(bool)) && converter.IsValid(objectValue))
                 {
                     value = (bool)converter.ConvertTo(objectValue, typeof(bool));
+                    return true;
+                }
+                converter = TypeDescriptor.GetConverter(typeof(bool));
+                if (converter.CanConvertFrom(objectValue.GetType()) && converter.IsValid(objectValue))
+                {
+                    value = (bool)converter.ConvertFrom(objectValue);
                     return true;
                 }
             }
