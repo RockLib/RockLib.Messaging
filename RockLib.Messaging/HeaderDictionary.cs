@@ -21,148 +21,64 @@ namespace RockLib.Messaging
 
         /// <summary>
         /// Gets the value that is associated with the specified header name as a
-        /// <see cref="string"/>.
+        /// <typeparamref name="T"/> type.
         /// </summary>
         /// <param name="key">The name of the header.</param>
         /// <param name="value">
         /// When this method returns, the value associated with the specified header name,
-        /// if the header name is found and its value can be converted to a <see cref="string"/>;
-        /// otherwise, null. This parameter is passed uninitialized.
+        /// if the header name is found and its value can be converted to type <typeparamref name="T"/>;
+        /// otherwise, the default value of type <typeparamref name="T"/>. This parameter is passed
+        /// uninitialized.
         /// </param>
         /// <returns>
         /// True if the dictionary contains a header with the specified name and its value
-        /// can be converted to a <see cref="string"/>; otherwise false.
+        /// can be converted to type <typeparamref name="T"/>; otherwise false.
         /// </returns>
-        public bool TryGetStringValue(string key, out string value)
+        /// <typeparam name="T">The type to convert the value to.</typeparam>
+        public bool TryGetValue<T>(string key, out T value)
         {
-            if (_headers.TryGetValue(key, out var objectValue))
+            if (_headers.TryGetValue(key, out object objectValue))
             {
                 if (objectValue == null)
                 {
-                    value = null;
-                    return true;
-                }
-
-                if (objectValue is string stringValue)
-                {
-                    value = stringValue;
-                    return true;
-                }
-
-                value = objectValue.ToString();
-                return true;
-            }
-
-            value = null;
-            return false;
-        }
-
-        /// <summary>
-        /// Gets the value that is associated with the specified header name as an
-        /// <see cref="int"/>.
-        /// </summary>
-        /// <param name="key">The name of the header.</param>
-        /// <param name="value">
-        /// When this method returns, the value associated with the specified header name,
-        /// if the header name is found and its value can be converted to an <see cref="int"/>;
-        /// otherwise, null. This parameter is passed uninitialized.
-        /// </param>
-        /// <returns>
-        /// True if the dictionary contains a header with the specified name and its value
-        /// can be converted to a <see cref="int"/>; otherwise false.
-        /// </returns>
-        public bool TryGetInt32Value(string key, out int value)
-        {
-            if (_headers.TryGetValue(key, out var objectValue))
-            {
-                if (objectValue == null)
-                {
-                    value = 0;
+                    value = default(T);
                     return false;
                 }
 
-                if (objectValue is int int32Value)
+                if (objectValue is T)
                 {
-                    value = int32Value;
+                    value = (T)objectValue;
                     return true;
                 }
 
-                var converter = TypeDescriptor.GetConverter(objectValue);
-                if (converter.CanConvertTo(typeof(int)) && converter.IsValid(objectValue))
+                var converter = TypeDescriptor.GetConverter(typeof(T));
+                if (converter.CanConvertFrom(objectValue.GetType()))
                 {
-                    value = (int)converter.ConvertTo(objectValue, typeof(int));
-                    return true;
-                }
-                converter = TypeDescriptor.GetConverter(typeof(int));
-                if (converter.CanConvertFrom(objectValue.GetType()) && converter.IsValid(objectValue))
-                {
-                    value = (int)converter.ConvertFrom(objectValue);
-                    return true;
-                }
-            }
-
-            value = 0;
-            return false;
-        }
-
-        /// <summary>
-        /// Gets the value that is associated with the specified header name as an
-        /// <see cref="bool"/>.
-        /// </summary>
-        /// <param name="key">The name of the header.</param>
-        /// <param name="value">
-        /// When this method returns, the value associated with the specified header name,
-        /// if the header name is found and its value can be converted to an <see cref="bool"/>;
-        /// otherwise, null. This parameter is passed uninitialized.
-        /// </param>
-        /// <returns>
-        /// True if the dictionary contains a header with the specified name and its value
-        /// can be converted to a <see cref="bool"/>; otherwise false.
-        /// </returns>
-        public bool TryGetBooleanValue(string key, out bool value)
-        {
-            if (_headers.TryGetValue(key, out var objectValue))
-            {
-                if (objectValue == null)
-                {
-                    value = false;
-                    return false;
-                }
-
-                if (objectValue is bool boolValue)
-                {
-                    value = boolValue;
-                    return true;
-                }
-
-                if (objectValue is string stringValue)
-                {
-                    switch (stringValue.ToLowerInvariant())
+                    try
                     {
-                        case "true":
-                            value = true;
-                            return true;
-                        case "false":
-                            value = false;
-                            return true;
+                        value = (T)converter.ConvertFrom(objectValue);
+                        return true;
+                    }
+                    catch
+                    {
                     }
                 }
 
-                var converter = TypeDescriptor.GetConverter(objectValue);
-                if (converter.CanConvertTo(typeof(bool)) && converter.IsValid(objectValue))
+                converter = TypeDescriptor.GetConverter(objectValue);
+                if (converter.CanConvertTo(typeof(T)))
                 {
-                    value = (bool)converter.ConvertTo(objectValue, typeof(bool));
-                    return true;
-                }
-                converter = TypeDescriptor.GetConverter(typeof(bool));
-                if (converter.CanConvertFrom(objectValue.GetType()) && converter.IsValid(objectValue))
-                {
-                    value = (bool)converter.ConvertFrom(objectValue);
-                    return true;
+                    try
+                    {
+                        value = (T)converter.ConvertTo(objectValue, typeof(T));
+                        return true;
+                    }
+                    catch
+                    {
+                    }
                 }
             }
 
-            value = false;
+            value = default(T);
             return false;
         }
 
@@ -214,6 +130,6 @@ namespace RockLib.Messaging
         /// </returns>
         public bool TryGetValue(string key, out object value) => _headers.TryGetValue(key, out value);
 
-        IEnumerator IEnumerable.GetEnumerator() => _headers.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_headers).GetEnumerator();
     }
 }

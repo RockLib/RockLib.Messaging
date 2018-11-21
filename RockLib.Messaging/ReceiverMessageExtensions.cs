@@ -15,7 +15,7 @@ namespace RockLib.Messaging
         /// <returns>The ID of the message.</returns>
         public static string GetMessageId(this IReceiverMessage receiverMessage) =>
             receiverMessage.GetHeaders()
-                .TryGetStringValue(HeaderNames.MessageId, out var messageId)
+                .TryGetValue(HeaderNames.MessageId, out string messageId)
                     ? messageId
                     : null;
 
@@ -27,7 +27,7 @@ namespace RockLib.Messaging
         /// <returns>Whether the message's payload was sent compressed.</returns>
         public static bool IsCompressed(this IReceiverMessage receiverMessage) =>
             receiverMessage.GetHeaders()
-                .TryGetBooleanValue(HeaderNames.IsCompressedPayload, out var isCompressed)
+                .TryGetValue(HeaderNames.IsCompressedPayload, out bool isCompressed)
                 && isCompressed;
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace RockLib.Messaging
         /// <returns>Whether the original message was constructed with a byte array.</returns>
         public static bool IsBinary(this IReceiverMessage receiverMessage) =>
             receiverMessage.GetHeaders()
-                .TryGetBooleanValue(HeaderNames.IsBinaryPayload, out var isBinary)
+                .TryGetValue(HeaderNames.IsBinaryPayload, out bool isBinary)
                 && isBinary;
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace RockLib.Messaging
         /// <returns>The originating system of the message.</returns>
         public static string GetOriginatingSystem(this IReceiverMessage receiverMessage) =>
             receiverMessage.GetHeaders()
-                .TryGetStringValue(HeaderNames.OriginatingSystem, out var originatingSystem)
+                .TryGetValue(HeaderNames.OriginatingSystem, out string originatingSystem)
                     ? originatingSystem
                     : null;
 
