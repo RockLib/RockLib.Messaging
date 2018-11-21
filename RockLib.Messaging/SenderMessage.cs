@@ -199,15 +199,19 @@ namespace RockLib.Messaging
                 return b ? "true" : "false";
             if (value is string || value is decimal || value.GetType().GetTypeInfo().IsPrimitive)
                 return value;
+            if (value is Enum e)
+                return e.ToString();
             if (value is DateTime dateTime)
                 return dateTime.ToString("O");
+            if (value is TimeSpan timeSpan)
+                return timeSpan.ToString("c");
             if (value is Guid guid)
                 return guid.ToString("D");
             if (value is Uri uri)
                 return uri.ToString();
             if (value is DateTimeOffset dateTimeOffset)
                 return dateTimeOffset.ToString("O");
-            throw new ArgumentException("Value must be primitive type or one of: String, DateTime, Guid, or DateTimeOffset.", nameof(value));
+            throw new ArgumentException("Header value must be primitive or enum type or one of: String, Decimal, DateTime, TimeSpan, Guid, Uri, or DateTimeOffset.", nameof(value));
         }
 
         private class HeaderDictionary : IDictionary<string, object>
@@ -223,7 +227,7 @@ namespace RockLib.Messaging
             public HeaderDictionary(Func<object, object> validateValue, bool isBinary = false)
             {
                 ValidateValue = validateValue ?? DefaultValidateHeaderValue;
-                this[HeaderNames.MessageId] = Guid.NewGuid().ToString("D");
+                this[HeaderNames.MessageId] = Guid.NewGuid();
                 if (isBinary)
                     this[HeaderNames.IsBinaryPayload] = true;
             }
