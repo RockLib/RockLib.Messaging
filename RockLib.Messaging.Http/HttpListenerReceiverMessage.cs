@@ -7,32 +7,32 @@ namespace RockLib.Messaging.Http
 {
     public class HttpListenerReceiverMessage : ReceiverMessage
     {
-        public HttpListenerReceiverMessage(HttpListenerContext context, IResponseGenerator responseGenerator)
+        public HttpListenerReceiverMessage(HttpListenerContext context, IHttpResponseGenerator httpResponseGenerator)
             : base(() => GetPayload(context))
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
-            ResponseGenerator = responseGenerator ?? throw new ArgumentNullException(nameof(responseGenerator));
+            HttpResponseGenerator = httpResponseGenerator ?? throw new ArgumentNullException(nameof(httpResponseGenerator));
         }
 
         public override byte? Priority => null;
 
         public HttpListenerContext Context { get; }
 
-        public IResponseGenerator ResponseGenerator { get; }
+        public IHttpResponseGenerator HttpResponseGenerator { get; }
 
         public override void Acknowledge()
         {
-            var response = ResponseGenerator.GetAcknowledgeResponse(this);
+            var response = HttpResponseGenerator.GetAcknowledgeResponse(this);
             WriteResponse(response);
         }
 
         public override void Rollback()
         {
-            var response = ResponseGenerator.GetRollbackResponse(this);
+            var response = HttpResponseGenerator.GetRollbackResponse(this);
             WriteResponse(response);
         }
 
-        private void WriteResponse(Response response)
+        private void WriteResponse(HttpResponse response)
         {
             Context.Response.StatusCode = response.StatusCode;
             Context.Response.StatusDescription = response.StatusDescription;
