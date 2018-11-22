@@ -1,17 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace RockLib.Messaging.Http
 {
     public class HttpListenerReceiverMessage : ReceiverMessage
     {
-        public HttpListenerReceiverMessage(HttpListenerContext context, IHttpResponseGenerator httpResponseGenerator)
+        private readonly Regex _pathRegex;
+        private readonly IReadOnlyCollection<string> _pathTokens;
+
+        internal HttpListenerReceiverMessage(HttpListenerContext context, IHttpResponseGenerator httpResponseGenerator, Regex pathRegex, IReadOnlyCollection<string> pathTokens)
             : base(() => GetPayload(context))
         {
-            Context = context ?? throw new ArgumentNullException(nameof(context));
-            HttpResponseGenerator = httpResponseGenerator ?? throw new ArgumentNullException(nameof(httpResponseGenerator));
+            Context = context;
+            HttpResponseGenerator = httpResponseGenerator;
+            _pathRegex = pathRegex;
+            _pathTokens = pathTokens;
         }
 
         public override byte? Priority => null;
@@ -68,6 +73,14 @@ namespace RockLib.Messaging.Http
 
             foreach (var key in Context.Request.QueryString.AllKeys)
                 headers.Add(key, Context.Request.QueryString[key]);
+
+            if (_pathTokens.Count > 0)
+            {
+                var path = Context.Request.Url.AbsolutePath.ToLowerInvariant().Trim('/');
+                var match = _pathRegex.Match(path);
+                foreach (var token in _pathTokens)
+                    headers.Add(token, match.Groups[token].Value);
+            }
         }
 
         private static byte[] GetPayload(HttpListenerContext context)
