@@ -234,7 +234,8 @@ namespace RockLib.Messaging.Tests
             public HeaderDictionary Headers { get; }
             public byte? Priority { get; }
             public void Acknowledge() {}
-            public void Rollback() { }
+            public void Rollback() {}
+            public void Reject() {}
 
             private static IReadOnlyDictionary<string, object> GetBackingHeaderDictionary(bool binary, bool compressed)
             {

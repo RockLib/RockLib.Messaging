@@ -235,6 +235,8 @@ namespace RockLib.Messaging.Tests
 
             public override void Rollback() => throw new NotImplementedException();
 
+            public override void Reject() => throw new NotImplementedException();
+
             protected override void InitializeHeaders(IDictionary<string, object> headers)
             {
                 foreach (var header in _headers)
