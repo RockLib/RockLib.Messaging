@@ -40,7 +40,12 @@ namespace RockLib.Messaging.SQS
         /// <summary>
         /// Does nothing - the message will automatically be redelivered by SQS if left unacknowledged.
         /// </summary>
-        public override void Rollback() {}
+        public override void Rollback() { }
+
+        /// <summary>
+        /// Deletes the message from the SQS queue, ensuring it is not redelivered.
+        /// </summary>
+        public override void Reject() => _acknowledge();
 
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
