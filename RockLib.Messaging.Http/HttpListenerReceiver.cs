@@ -12,8 +12,9 @@ namespace RockLib.Messaging.Http
 
         public HttpListenerReceiver(string name, IEnumerable<string> prefixes, string method = "POST",
             int acknowledgeStatusCode = 200, string acknowledgeStatusDescription = "OK",
-            int rollbackStatusCode = 500, string rollbackStatusDescription = "Internal Server Error")
-            : this(name, prefixes, method, new DefaultHttpResponseGenerator(acknowledgeStatusCode, acknowledgeStatusDescription, rollbackStatusCode, rollbackStatusDescription))
+            int rollbackStatusCode = 500, string rollbackStatusDescription = "Internal Server Error",
+            int rejectStatusCode = 400, string rejectStatusDescription = "Bad Request")
+            : this(name, prefixes, method, new DefaultHttpResponseGenerator(acknowledgeStatusCode, acknowledgeStatusDescription, rollbackStatusCode, rollbackStatusDescription, rejectStatusCode, rejectStatusDescription))
         {
         }
 

@@ -4,5 +4,6 @@
     {
         HttpResponse GetAcknowledgeResponse(HttpListenerReceiverMessage message);
         HttpResponse GetRollbackResponse(HttpListenerReceiverMessage message);
+        HttpResponse GetRejectResponse(HttpListenerReceiverMessage message);
     }
 }

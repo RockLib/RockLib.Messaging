@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RockLib.Messaging" Version="2.0.0-alpha06" />
+    <PackageReference Include="RockLib.Messaging" Version="2.0.0-alpha07" />
   </ItemGroup>
 
 </Project>

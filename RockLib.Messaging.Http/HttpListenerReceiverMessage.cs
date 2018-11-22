@@ -32,6 +32,12 @@ namespace RockLib.Messaging.Http
             WriteResponse(response);
         }
 
+        public override void Reject()
+        {
+            var response = HttpResponseGenerator.GetRejectResponse(this);
+            WriteResponse(response);
+        }
+
         private void WriteResponse(HttpResponse response)
         {
             Context.Response.StatusCode = response.StatusCode;
