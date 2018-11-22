@@ -26,15 +26,21 @@
         byte? Priority { get; }
 
         /// <summary>
-        /// If supported by the implementation, communicate to the server that
+        /// If supported by the implementation, communicate to the sender that
         /// the message was successfully processed and should not be redelivered.
         /// </summary>
         void Acknowledge();
 
         /// <summary>
-        /// If supported by the implementation, communicate to the server that
+        /// If supported by the implementation, communicate to the sender that
         /// the message was not successfully processed and should be redelivered.
         /// </summary>
         void Rollback();
+
+        /// <summary>
+        /// If supported by the implementation, communicate to the sender that
+        /// the message was not successfully processed and should not be redelivered.
+        /// </summary>
+        void Reject();
     }
 }

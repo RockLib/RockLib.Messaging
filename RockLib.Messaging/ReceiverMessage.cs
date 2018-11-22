@@ -110,16 +110,22 @@ namespace RockLib.Messaging
         public abstract byte? Priority { get; }
 
         /// <summary>
-        /// If supported by the inheritor, communicate to the server that
+        /// If supported by the inheritor, communicate to the sender that
         /// the message was successfully processed and should not be redelivered.
         /// </summary>
         public abstract void Acknowledge();
 
         /// <summary>
-        /// If supported by the inheritor, communicate to the server that
+        /// If supported by the inheritor, communicate to the sender that
         /// the message was not successfully processed and should be redelivered.
         /// </summary>
         public abstract void Rollback();
+
+        /// <summary>
+        /// If supported by the inheritor, communicate to the sender that
+        /// the message was not successfully processed and should not be redelivered.
+        /// </summary>
+        public abstract void Reject();
 
         /// <summary>
         /// Initialize the <paramref name="headers"/> parameter with the headers
