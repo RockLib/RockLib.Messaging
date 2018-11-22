@@ -58,9 +58,10 @@ namespace RockLib.Messaging.Http
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
             foreach (var key in Context.Request.Headers.AllKeys)
-            {
                 headers.Add(key, Context.Request.Headers[key]);
-            }
+
+            foreach (var key in Context.Request.QueryString.AllKeys)
+                headers.Add(key, Context.Request.QueryString[key]);
         }
 
         private static byte[] GetPayload(HttpListenerContext context)
