@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace RockLib.Messaging.NamedPipes
 {
@@ -35,6 +34,11 @@ namespace RockLib.Messaging.NamedPipes
         /// Does nothing.
         /// </summary>
         public override void Rollback() {}
+
+        /// <summary>
+        /// Does nothing.
+        /// </summary>
+        public override void Reject() {}
         
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
