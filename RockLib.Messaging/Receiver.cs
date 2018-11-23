@@ -25,8 +25,9 @@ namespace RockLib.Messaging
         public string Name { get; }
 
         /// <summary>
-        /// Gets or sets the message handler for this receiver. When set for the
-        /// first time, this receiver starts receiving messages.
+        /// Gets or sets the message handler for this receiver. When set, the receiver is started
+        /// and will invoke the value's <see cref="IMessageHandler.OnMessageReceived"/> method
+        /// when messages are received.
         /// </summary>
         public IMessageHandler MessageHandler
         {
@@ -35,16 +36,11 @@ namespace RockLib.Messaging
             {
                 if (value == null)
                     throw new ArgumentNullException(nameof(value));
-
-                if (ReferenceEquals(_messageHandler, value))
-                    return;
-
-                var isFirstTime = _messageHandler == null;
+                if (_messageHandler != null)
+                    throw new InvalidOperationException("The receiver is already started.");
 
                 _messageHandler = value;
-
-                if (isFirstTime)
-                    Start();
+                Start();
             }
         }
 
