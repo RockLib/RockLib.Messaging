@@ -97,6 +97,31 @@ namespace RockLib.Messaging.Http.Tests
         }
 
         [Fact]
+        public void TokensInHttpListenerReceiverPathAreExtractedIntoHeaders()
+        {
+            using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }, path: "/api/{api_version}/"))
+            {
+                string payload = null;
+                string apiVersion = null;
+
+                receiver.Start(m =>
+                {
+                    payload = m.StringPayload;
+                    m.Headers.TryGetValue("api_version", out apiVersion);
+                    m.Acknowledge();
+                });
+
+                using (var sender = new HttpClientSender("foo", "http://localhost:5000/API/v2/"))
+                {
+                    sender.Send("Hello, world!");
+                }
+
+                Assert.Equal("Hello, world!", payload);
+                Assert.Equal("v2", apiVersion);
+            }
+        }
+
+        [Fact]
         public void MismatchedMethodsResultsIn405()
         {
             using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }, "POST"))

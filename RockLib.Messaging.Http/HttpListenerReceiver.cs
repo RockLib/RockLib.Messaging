@@ -13,17 +13,20 @@ namespace RockLib.Messaging.Http
 
         private bool disposed;
 
-        public HttpListenerReceiver(string name, IEnumerable<string> prefixes, string path, string method = "POST",
+        public HttpListenerReceiver(string name, IEnumerable<string> prefixes,
+            string method = "POST", string path = "/",
             int acknowledgeStatusCode = 200, string acknowledgeStatusDescription = "OK",
             int rollbackStatusCode = 500, string rollbackStatusDescription = "Internal Server Error",
             int rejectStatusCode = 400, string rejectStatusDescription = "Bad Request")
-            : this(name, prefixes, path,
+            : this(name, prefixes,
                   new DefaultHttpResponseGenerator(acknowledgeStatusCode, acknowledgeStatusDescription, rollbackStatusCode, rollbackStatusDescription, rejectStatusCode, rejectStatusDescription),
-                  method)
+                  method, path)
         {
         }
 
-        public HttpListenerReceiver(string name, IEnumerable<string> prefixes, string path, IHttpResponseGenerator httpResponseGenerator, string method = "POST")
+        public HttpListenerReceiver(string name, IEnumerable<string> prefixes,
+            IHttpResponseGenerator httpResponseGenerator,
+            string method = "POST", string path = "/")
             : base(name)
         {
             if (prefixes == null)
@@ -32,15 +35,15 @@ namespace RockLib.Messaging.Http
             HttpResponseGenerator = httpResponseGenerator ?? throw new ArgumentNullException(nameof(httpResponseGenerator));
             Method = method ?? throw new ArgumentNullException(nameof(method));
 
-            Path = path?.ToLowerInvariant().Trim('/') ?? throw new ArgumentNullException(nameof(path));
+            Path = path?.Trim('/') ?? throw new ArgumentNullException(nameof(path));
             var pathTokens = new List<string>();
-            var pathPattern = "^" + Regex.Replace(Path ?? "", "{([^}]+)}", m =>
+            var pathPattern = "^/?" + Regex.Replace(Path ?? "", "{([^}]+)}", m =>
             {
                 var token = m.Groups[1].Value;
                 pathTokens.Add(token);
                 return $"(?<{token}>.*?)";
-            }) + "$";
-            _pathRegex = new Regex(pathPattern);
+            }) + "/?$";
+            _pathRegex = new Regex(pathPattern, RegexOptions.IgnoreCase);
             _pathTokens = pathTokens;
 
             _listener = new HttpListener();
@@ -67,7 +70,7 @@ namespace RockLib.Messaging.Http
 
             _listener.BeginGetContext(CompleteGetContext, null);
 
-            if (!_pathRegex.IsMatch(context.Request.Url.AbsolutePath.ToLowerInvariant().Trim('/')))
+            if (!_pathRegex.IsMatch(context.Request.Url.AbsolutePath))
             {
                 context.Response.StatusCode = 404;
                 context.Response.StatusDescription = "Not Found";

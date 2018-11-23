@@ -76,8 +76,7 @@ namespace RockLib.Messaging.Http
 
             if (_pathTokens.Count > 0)
             {
-                var path = Context.Request.Url.AbsolutePath.ToLowerInvariant().Trim('/');
-                var match = _pathRegex.Match(path);
+                var match = _pathRegex.Match(Context.Request.Url.AbsolutePath);
                 foreach (var token in _pathTokens)
                     headers.Add(token, match.Groups[token].Value);
             }
