@@ -7,10 +7,20 @@ using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Http
 {
+    /// <summary>
+    /// An implementation of <see cref="ISender" /> that sends messages with an
+    /// <see cref="HttpClient"/>.
+    /// </summary>
     public class HttpClientSender : ISender
     {
         private readonly HttpClient _client;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpClientSender"/> class.
+        /// </summary>
+        /// <param name="name">The name of the sender.</param>
+        /// <param name="url">The url to send messages to.</param>
+        /// <param name="method">The http method to use when sending messages.</param>
         public HttpClientSender(string name, string url, string method = "POST")
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -19,15 +29,34 @@ namespace RockLib.Messaging.Http
             _client = new HttpClient();
         }
 
+        /// <summary>
+        /// Gets the name of this instance of <see cref="HttpClientSender"/>.
+        /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// Gets the url that messages are sent to.
+        /// </summary>
         public string Url { get; }
+
+        /// <summary>
+        /// Gets the http method that is used when sending messages.
+        /// </summary>
         public HttpMethod Method { get; }
 
+        /// <summary>
+        /// Disposes the <see cref="HttpClient"/>.
+        /// </summary>
         public void Dispose()
         {
             _client.Dispose();
         }
 
+        /// <summary>
+        /// Asynchronously sends the specified message.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public async Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
         {
             if (message.OriginatingSystem == null)

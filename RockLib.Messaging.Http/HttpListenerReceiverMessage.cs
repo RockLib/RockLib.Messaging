@@ -5,6 +5,10 @@ using System.Text.RegularExpressions;
 
 namespace RockLib.Messaging.Http
 {
+    /// <summary>
+    /// An implementation of IReceiverMessage for use by the <see cref="HttpListenerReceiver"/>
+    /// class.
+    /// </summary>
     public class HttpListenerReceiverMessage : ReceiverMessage
     {
         private readonly Regex _pathRegex;
@@ -19,24 +23,43 @@ namespace RockLib.Messaging.Http
             _pathTokens = pathTokens;
         }
 
+        /// <summary>
+        /// Returns null.
+        /// </summary>
         public override byte? Priority => null;
 
+        /// <summary>
+        /// Gets the <see cref="HttpListenerContext"/> for the current request/response.
+        /// </summary>
         public HttpListenerContext Context { get; }
 
+        /// <summary>
+        /// Gets the object that determines the http response that is returned to clients,
+        /// depending on whether the message is acknowledged, rejected, or rolled back.
+        /// </summary>
         public IHttpResponseGenerator HttpResponseGenerator { get; }
 
+        /// <summary>
+        /// Sends an acknowledge response to the client.
+        /// </summary>
         public override void Acknowledge()
         {
             var response = HttpResponseGenerator.GetAcknowledgeResponse(this);
             WriteResponse(response);
         }
 
+        /// <summary>
+        /// Sends an rollback response to the client.
+        /// </summary>
         public override void Rollback()
         {
             var response = HttpResponseGenerator.GetRollbackResponse(this);
             WriteResponse(response);
         }
 
+        /// <summary>
+        /// Sends a reject response to the client.
+        /// </summary>
         public override void Reject()
         {
             var response = HttpResponseGenerator.GetRejectResponse(this);
@@ -66,6 +89,7 @@ namespace RockLib.Messaging.Http
             Context.Response.Close();
         }
 
+        /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
             foreach (var key in Context.Request.Headers.AllKeys)
