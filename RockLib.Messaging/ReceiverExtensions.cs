@@ -36,8 +36,14 @@ namespace RockLib.Messaging
         /// <param name="messageHandler">The object that handles received messages.</param>
         public static void Start(this IReceiver receiver, IMessageHandler messageHandler)
         {
-            if (receiver == null) throw new ArgumentNullException(nameof(receiver));
-            receiver.MessageHandler = messageHandler ?? throw new ArgumentNullException(nameof(messageHandler));
+            if (receiver == null)
+                throw new ArgumentNullException(nameof(receiver));
+            if (messageHandler == null)
+                throw new ArgumentNullException(nameof(messageHandler));
+            if (receiver.MessageHandler != null)
+                throw new InvalidOperationException("The receiver is already started.");
+
+            receiver.MessageHandler = messageHandler;
         }
 
         private class DelegateMessageHandler : IMessageHandler
