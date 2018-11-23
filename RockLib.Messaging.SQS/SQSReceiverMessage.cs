@@ -20,7 +20,7 @@ namespace RockLib.Messaging.SQS
         /// <param name="acknowledge">
         /// The <see cref="Action"/> that is invoked when the <see cref="Acknowledge"/> method is called.
         /// </param>
-        public SQSReceiverMessage(Message message, Action acknowledge)
+        internal SQSReceiverMessage(Message message, Action acknowledge)
             : base(() => message.Body)
         {
             _message = message ?? throw new ArgumentNullException(nameof(message));
