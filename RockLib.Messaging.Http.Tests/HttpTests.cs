@@ -29,7 +29,7 @@ namespace RockLib.Messaging.Http.Tests
         }
 
         [Fact]
-        public void HttpMessagesAreSendAndReceivedWhenReceiverDoesRollback()
+        public void HttpMessagesAreSentAndReceivedWhenReceiverDoesRollback()
         {
             using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }))
             {
