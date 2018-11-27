@@ -13,6 +13,13 @@ PM> Install-Package RockLib.Messaging
 ```powershell
 PM> Install-Package RockLib.Messaging.NamedPipes
 ```
+```
+
+### RockLib.Messaging.Http
+
+```powershell
+PM> Install-Package RockLib.Messaging.Http
+```
 
 ### RockLib.Messaging.SQS [![Build status](https://ci.appveyor.com/api/projects/status/lamk2f940oy95077?svg=true)](https://ci.appveyor.com/project/bfriesen/rocklib-messaging-60vs9)
 
@@ -24,6 +31,7 @@ PM> Install-Package RockLib.Messaging.SQS
 - How to:
   - [Configure and use RockLib.Messaging.NamedPipes](docs/NamedPipes.md)
   - [Configure and use RockLib.Messaging.SQS](docs/SQS.md)
+  - [Configure and use RockLib.Messaging.Http](docs/Http.md)
   - [Configure a .NET Framework application with app.config/web.config](docs/NetFramework.md)
   - [Use RockLib.Messaging with a DI/IOC container](docs/DIContainer.md)
   - [Send and receive compressed messages](docs/Compressed.md)
@@ -34,3 +42,4 @@ PM> Install-Package RockLib.Messaging.SQS
   - [RockLib.Messaging](https://www.fuget.org/packages/RockLib.Messaging)
   - [RockLib.Messaging.NamedPipes](https://www.fuget.org/packages/RockLib.Messaging.NamedPipes)
   - [RockLib.Messaging.SQS](https://www.fuget.org/packages/RockLib.Messaging.SQS)
+  - [RockLib.Messaging.Http](https://www.fuget.org/packages/RockLib.Messaging.Http)
