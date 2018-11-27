@@ -2,28 +2,28 @@
 
 *A simple API for sending and receiving messages.*
 
-### RockLib.Messaging [![Build status](https://ci.appveyor.com/api/projects/status/wuoo2f6bdct92ekf?svg=true)](https://ci.appveyor.com/project/bfriesen/rocklib-messaging)
+### RockLib.Messaging [![Build status](https://ci.appveyor.com/api/projects/status/wuoo2f6bdct92ekf?svg=true)](https://ci.appveyor.com/project/bfriesen/rocklib-messaging) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.svg)](https://www.nuget.org/packages/RockLib.Messaging)
 
 ```powershell
 PM> Install-Package RockLib.Messaging
 ```
 
-### RockLib.Messaging.NamedPipes [![Build status](https://ci.appveyor.com/api/projects/status/fh73e3rjx76hnoqg?svg=true)](https://ci.appveyor.com/project/RockLib/rocklib-messaging-bvk30)
+### RockLib.Messaging.NamedPipes [![Build status](https://ci.appveyor.com/api/projects/status/fh73e3rjx76hnoqg?svg=true)](https://ci.appveyor.com/project/RockLib/rocklib-messaging-bvk30) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.NamedPipes.svg)](https://www.nuget.org/packages/RockLib.Messaging.NamedPipes)
 
 ```powershell
 PM> Install-Package RockLib.Messaging.NamedPipes
 ```
 
-### RockLib.Messaging.Http [![Build status](https://ci.appveyor.com/api/projects/status/ses76e2jw7kha6aa?svg=true)](https://ci.appveyor.com/project/RockLib/rocklib-messaging)
-
-```powershell
-PM> Install-Package RockLib.Messaging.Http
-```
-
-### RockLib.Messaging.SQS [![Build status](https://ci.appveyor.com/api/projects/status/lamk2f940oy95077?svg=true)](https://ci.appveyor.com/project/bfriesen/rocklib-messaging-60vs9)
+### RockLib.Messaging.SQS [![Build status](https://ci.appveyor.com/api/projects/status/lamk2f940oy95077?svg=true)](https://ci.appveyor.com/project/bfriesen/rocklib-messaging-60vs9) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.SQS.svg)](https://www.nuget.org/packages/RockLib.Messaging.SQS)
 
 ```powershell
 PM> Install-Package RockLib.Messaging.SQS
+```
+
+### RockLib.Messaging.Http [![Build status](https://ci.appveyor.com/api/projects/status/ses76e2jw7kha6aa?svg=true)](https://ci.appveyor.com/project/RockLib/rocklib-messaging) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.Http.svg)](https://www.nuget.org/packages/RockLib.Messaging.Http)
+
+```powershell
+PM> Install-Package RockLib.Messaging.Http
 ```
 
 - [Getting started](docs/GettingStarted.md)
