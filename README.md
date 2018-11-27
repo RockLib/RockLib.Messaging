@@ -8,14 +8,13 @@
 PM> Install-Package RockLib.Messaging
 ```
 
-### RockLib.Messaging.NamedPipes
+### RockLib.Messaging.NamedPipes [![Build status](https://ci.appveyor.com/api/projects/status/fh73e3rjx76hnoqg?svg=true)](https://ci.appveyor.com/project/RockLib/rocklib-messaging-bvk30)
 
 ```powershell
 PM> Install-Package RockLib.Messaging.NamedPipes
 ```
-```
 
-### RockLib.Messaging.Http
+### RockLib.Messaging.Http [![Build status](https://ci.appveyor.com/api/projects/status/ses76e2jw7kha6aa?svg=true)](https://ci.appveyor.com/project/RockLib/rocklib-messaging)
 
 ```powershell
 PM> Install-Package RockLib.Messaging.Http
