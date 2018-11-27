@@ -11,7 +11,7 @@ The NamedPipeSender class can be directly instantiated and has the following par
 - pipeName (optional)
   - Name of the named pipe. If not provided, the value of the `name` parameter is used.
 
-MessagingScenarioFactory can be configured to use named pipes as follows:
+MessagingScenarioFactory can be configured with a `NamedPipeSender` named "commands" as follows:
 
 ```json
 {
@@ -54,7 +54,7 @@ The NamedPipeReceiver class can be directly instantiated and has the following p
 - pipeName (optional)
   - Name of the named pipe. If not provided, the value of the `name` parameter is used.
 
-MessagingScenarioFactory can be configured to use named pipes as follows:
+MessagingScenarioFactory can be configured with a `NamedPipeReceiver` named "commands" as follows:
 
 ```json
 {
@@ -77,23 +77,21 @@ IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
 // NamedPipeReceiver can also be instantiated directly:
 // IReceiver receiver = new NamedPipeReceiver("commands", "my-pipe-name");
 
-// Register to receive messages:
-receiver.MessageReceived += OnMessageReceived;
-
-// Start listening for messages:
-receiver.Start();
+// Start the receiver, passing in a lambda function callback to be invoked when a message is received.
+receiver.Start(message =>
+{
+    Console.WriteLine(message.StringPayload);
+    
+    // Since AutoAcknowledge is false in this example, the message must be acknowledged.
+    message.Acknowledge();
+});
 
 // Wait for messages (demo code, don't judge)
 Console.ReadLine();
 
 // When finished listening, dispose the receiver.
 receiver.Dispose();
-
-void OnMessageReceived(object sender, MessageReceivedEventArgs args)
-{
-    Console.WriteLine(args.Message.StringPayload);
-}
 ```
 
-[.NET Core example]: https://github.com/RockLib/RockLib.Messaging/tree/master/Example.Messaging.NamedPipes.DotNetCore20
-[.NET Framework example]: https://github.com/RockLib/RockLib.Messaging/tree/master/Example.Messaging.NamedPipes.DotNetFramework451
+[.NET Core example]: ../Example.Messaging.NamedPipes.DotNetCore20
+[.NET Framework example]: ../Example.Messaging.NamedPipes.DotNetFramework451

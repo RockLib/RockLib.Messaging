@@ -11,7 +11,7 @@ The SQSQueueSender class can be directly instantiated and has the following para
 - queueUrl
   - The url of the SQS queue.
 
-MessagingScenarioFactory can be configured to use SQS as follows:
+MessagingScenarioFactory can be configured with an `SQSQueueSender` named "commands" as follows:
 
 ```json
 {
@@ -60,7 +60,7 @@ The SQSQueueReceiver class can be directly instantiated and has the following pa
 - parallelHandling (optional, defaults to false)
   - Whether, in the case of when multiple messages are received from an SQS request, messages are handled in parallel or sequentially.
 
-MessagingScenarioFactory can be configured to use SQS as follows:
+MessagingScenarioFactory can be configured with an `SQSQueueReceiver` named "commands" as follows:
 
 ```json
 {
@@ -87,26 +87,23 @@ IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
 // IReceiver receiver = new SQSQueueReceiver("commands", "https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name",
 //     maxMessages: 3, autoAcknowledge: false, parallelHandling: false);
 
-// Register to receive messages:
-receiver.MessageReceived += OnMessageReceived;
-
-// Start listening for messages:
-receiver.Start();
+// Start the receiver, passing in a lambda function callback to be invoked when a message is received.
+receiver.Start(message =>
+{
+    Console.WriteLine(message.StringPayload);
+    
+    // Since AutoAcknowledge is false in this example, the message must be acknowledged.
+    message.Acknowledge();
+});
 
 // Wait for messages (demo code, don't judge)
 Console.ReadLine();
 
 // When finished listening, dispose the receiver.
 receiver.Dispose();
-
-void OnMessageReceived(object sender, MessageReceivedEventArgs args)
-{
-    Console.WriteLine(args.Message.StringPayload);
-    
-    // Since AutoAcknowledge is false in this example, the message must be acknowledged.
-    args.Message.Acknowledge();
-}
 ```
 
-[.NET Core example]: https://github.com/RockLib/RockLib.Messaging/tree/master/Example.Messaging.SQS.DotNetCore20
-[.NET Framework example]: https://github.com/RockLib/RockLib.Messaging/tree/master/Example.Messaging.SQS.DotNetFramework451
+---
+
+[.NET Core example]: ../Example.Messaging.SQS.DotNetCore20
+[.NET Framework example]: ../Example.Messaging.SQS.DotNetFramework451
