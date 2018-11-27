@@ -12,19 +12,35 @@ Add a nuget reference for "RockLib.Messaging.NamedPipes" to each project.
 
 ---
 
-Add a new JSON file to each project named 'appsettings.json'. Set its 'Copy to Output Directory' setting to 'Copy always'. Add the following configuration to each file:
+Add a new JSON file to each project named 'appsettings.json'. Set its 'Copy to Output Directory' setting to 'Copy always'. Add the following configuration for the SenderApp project:
 
 ```json
 {
-  "RockLib.Messaging": {
-    "Type": "RockLib.Messaging.NamedPipes.NamedPipeMessagingScenarioFactory, RockLib.Messaging",
-    "Value": {
-      "NamedPipeConfigs": {
-        "Name": "Example",
-        "PipeName": "example_pipe"
-      }
+    "RockLib.Messaging": {
+        "senders": {
+            "type": "RockLib.Messaging.NamedPipes.NamedPipeSender, RockLib.Messaging.NamedPipes",
+            "value": {
+                "name": "Sender1",
+                "pipeName": "Example.Messaging"
+            }
+        }
     }
-  }
+}
+```
+
+Add the following configuration for the ReceiverApp project:
+
+```json
+{
+    "RockLib.Messaging": {
+        "receivers": {
+            "type": "RockLib.Messaging.NamedPipes.NamedPipeReceiver, RockLib.Messaging.NamedPipes",
+            "value": {
+                "name": "Receiver1",
+                "pipeName": "Example.Messaging"
+            }
+        }
+    }
 }
 ```
 
@@ -42,7 +58,7 @@ namespace SenderApp
     {
         static void Main(string[] args)
         {
-            using (ISender sender = MessagingScenarioFactory.CreateQueueProducer("Example"))
+            using (ISender sender = MessagingScenarioFactory.CreateSender("Sender1"))
             {
                 Console.WriteLine($"Enter a message for sender '{sender.Name}'. Leave blank to quit.");
                 string message;
@@ -73,12 +89,11 @@ namespace ReceiverApp
     {
         static void Main(string[] args)
         {
-            using (IReceiver receiver = MessagingScenarioFactory.CreateQueueConsumer("Example"))
+            using (IReceiver receiver = MessagingScenarioFactory.CreateReceiver("Receiver1"))
             {
-                receiver.MessageReceived += (s, e) => Console.WriteLine(e.Message.GetStringValue());
+                receiver.Start(message => Console.WriteLine(message.StringPayload));
                 Console.WriteLine($"Receiving messages from receiver '{receiver.Name}'. Press <enter> to quit.");
-                receiver.Start();
-                while (Console.ReadKey(true).Key != ConsoleKey.Enter) {}
+                while (Console.ReadKey(true).Key != ConsoleKey.Enter) { }
             }
         }
     }
@@ -87,4 +102,4 @@ namespace ReceiverApp
 
 ---
 
-Start both apps. SenderApp will receive input from the user, send it to the named pipe, then exit. ReceiverApp will listen to the named pipe, display any received messages, wait for the user to press any key, then exit.
+Start both apps. SenderApp will receive input from the user and send it to the named pipe. ReceiverApp will listen to the named pipe and display any received messages.
