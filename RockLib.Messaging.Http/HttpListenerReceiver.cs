@@ -28,10 +28,6 @@ namespace RockLib.Messaging.Http
         /// https://docs.microsoft.com/en-us/dotnet/api/system.net.httplistener for
         /// moe information.
         /// </param>
-        /// <param name="method">
-        /// The http method that requests must have in order to be handled. Any request
-        /// that does not have this method will receive a 405 Method Not Allowed response.
-        /// </param>
         /// <param name="path">
         /// The path that requests must match in order to be handled. Any request whose
         /// path does not match this value will receive a 404 Not Found response.
@@ -54,14 +50,17 @@ namespace RockLib.Messaging.Http
         /// <param name="rejectStatusDescription">
         /// The status description to be returned to the client when a message is rejected.
         /// </param>
-        public HttpListenerReceiver(string name, IEnumerable<string> prefixes,
-            string method = "POST", string path = "/",
+        /// <param name="method">
+        /// The http method that requests must have in order to be handled. Any request
+        /// that does not have this method will receive a 405 Method Not Allowed response.
+        /// </param>
+        public HttpListenerReceiver(string name, IEnumerable<string> prefixes, string path,
             int acknowledgeStatusCode = 200, string acknowledgeStatusDescription = "OK",
             int rollbackStatusCode = 500, string rollbackStatusDescription = "Internal Server Error",
-            int rejectStatusCode = 400, string rejectStatusDescription = "Bad Request")
-            : this(name, prefixes,
-                  new DefaultHttpResponseGenerator(acknowledgeStatusCode, acknowledgeStatusDescription, rollbackStatusCode, rollbackStatusDescription, rejectStatusCode, rejectStatusDescription),
-                  method, path)
+            int rejectStatusCode = 400, string rejectStatusDescription = "Bad Request",
+            string method = "POST")
+            : this(name, prefixes, path,
+                new DefaultHttpResponseGenerator(acknowledgeStatusCode, acknowledgeStatusDescription, rollbackStatusCode, rollbackStatusDescription, rejectStatusCode, rejectStatusDescription), method)
         {
         }
 
@@ -74,6 +73,10 @@ namespace RockLib.Messaging.Http
         /// https://docs.microsoft.com/en-us/dotnet/api/system.net.httplistener for
         /// moe information.
         /// </param>
+        /// <param name="path">
+        /// The path that requests must match in order to be handled. Any request whose
+        /// path does not match this value will receive a 404 Not Found response.
+        /// </param>
         /// <param name="httpResponseGenerator">
         /// An object that determines the http response that is returned to clients,
         /// depending on whether the message is acknowledged, rejected, or rolled back.
@@ -82,13 +85,8 @@ namespace RockLib.Messaging.Http
         /// The http method that requests must have in order to be handled. Any request
         /// that does not have this method will receive a 405 Method Not Allowed response.
         /// </param>
-        /// <param name="path">
-        /// The path that requests must match in order to be handled. Any request whose
-        /// path does not match this value will receive a 404 Not Found response.
-        /// </param>
-        public HttpListenerReceiver(string name, IEnumerable<string> prefixes,
-            IHttpResponseGenerator httpResponseGenerator,
-            string method = "POST", string path = "/")
+        public HttpListenerReceiver(string name, IEnumerable<string> prefixes, string path,
+            IHttpResponseGenerator httpResponseGenerator, string method = "POST")
             : base(name)
         {
             if (prefixes == null)

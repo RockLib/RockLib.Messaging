@@ -9,7 +9,7 @@ namespace RockLib.Messaging.Http.Tests
         [Fact]
         public void HttpMessagesAreSentAndReceived()
         {
-            using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }))
+            using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }, "/"))
             {
                 string payload = null;
 
@@ -31,7 +31,7 @@ namespace RockLib.Messaging.Http.Tests
         [Fact]
         public void HttpMessagesAreSentAndReceivedWhenReceiverDoesRollback()
         {
-            using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }))
+            using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }, "/"))
             {
                 string payload = null;
 
@@ -53,7 +53,7 @@ namespace RockLib.Messaging.Http.Tests
         [Fact]
         public void TokensInHttpClientSenderUrlAreReplacedByMatchingHeaders()
         {
-            using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }))
+            using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }, "/"))
             {
                 string payload = null;
 
@@ -76,7 +76,7 @@ namespace RockLib.Messaging.Http.Tests
         [Fact]
         public void TokensInHttpClientSenderUrlWithoutACorrespondingHeaderThrowsInvalidOperationException()
         {
-            using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }))
+            using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }, "/"))
             {
                 string payload = null;
 
@@ -99,7 +99,7 @@ namespace RockLib.Messaging.Http.Tests
         [Fact]
         public void TokensInHttpListenerReceiverPathAreExtractedIntoHeaders()
         {
-            using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }, path: "/api/{api_version}/"))
+            using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/api/" }, path: "/api/{api_version}/"))
             {
                 string payload = null;
                 string apiVersion = null;
@@ -124,7 +124,7 @@ namespace RockLib.Messaging.Http.Tests
         [Fact]
         public void MismatchedMethodsResultsIn405()
         {
-            using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }, "POST"))
+            using (var receiver = new HttpListenerReceiver("foo", new[] { "http://localhost:5000/" }, "/", method: "POST"))
             {
                 string payload = null;
 
