@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RockLib.Messaging.NamedPipes" Version="2.0.0-alpha03" />
+    <PackageReference Include="RockLib.Messaging.NamedPipes" Version="2.0.0-alpha05" />
   </ItemGroup>
 
   <ItemGroup>

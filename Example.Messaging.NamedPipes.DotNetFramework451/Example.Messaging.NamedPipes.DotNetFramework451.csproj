@@ -76,10 +76,10 @@
       <HintPath>..\packages\RockLib.Immutable.1.0.0\lib\net45\RockLib.Immutable.dll</HintPath>
     </Reference>
     <Reference Include="RockLib.Messaging, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RockLib.Messaging.2.0.0-alpha04\lib\net451\RockLib.Messaging.dll</HintPath>
+      <HintPath>..\packages\RockLib.Messaging.2.0.0-alpha08\lib\net451\RockLib.Messaging.dll</HintPath>
     </Reference>
     <Reference Include="RockLib.Messaging.NamedPipes, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RockLib.Messaging.NamedPipes.2.0.0-alpha03\lib\net451\RockLib.Messaging.NamedPipes.dll</HintPath>
+      <HintPath>..\packages\RockLib.Messaging.NamedPipes.2.0.0-alpha05\lib\net451\RockLib.Messaging.NamedPipes.dll</HintPath>
     </Reference>
     <Reference Include="RockLib.Threading, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RockLib.Threading.1.0.0\lib\net45\RockLib.Threading.dll</HintPath>
