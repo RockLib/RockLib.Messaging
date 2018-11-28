@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 
 namespace RockLib.Messaging.Http
@@ -28,8 +29,11 @@ namespace RockLib.Messaging.Http
         /// <summary>The default http method to listen for.</summary>
         public const string DefaultMethod = "POST";
 
+        private readonly MediaTypeHeaderValue _contentType;
+
         private readonly Regex _pathRegex;
         private readonly IReadOnlyCollection<string> _pathTokens;
+
         private readonly HttpListener _listener;
 
         private bool disposed;
@@ -65,13 +69,17 @@ namespace RockLib.Messaging.Http
         /// The http method that requests must have in order to be handled. Any request
         /// that does not have this method will receive a 405 Method Not Allowed response.
         /// </param>
+        /// <param name="contentType">
+        /// The content type that requests must match in order to be handled. If not null, any request whose
+        /// content type does not match this value will receive a 415 Unsupported Media Type response.
+        /// </param>
         public HttpListenerReceiver(string name, string url,
             int acknowledgeStatusCode = DefaultAcknowledgeStatusCode, string acknowledgeStatusDescription = DefaultAcknowledgeStatusDescription,
             int rollbackStatusCode = DefaultRollbackStatusCode, string rollbackStatusDescription = DefaultRollbackStatusDescription,
             int rejectStatusCode = DefaultRejectStatusCode, string rejectStatusDescription = DefaultRejectStatusDescription,
-            string method = DefaultMethod)
+            string method = DefaultMethod, string contentType = null)
             : this(name, url,
-                new DefaultHttpResponseGenerator(acknowledgeStatusCode, acknowledgeStatusDescription, rollbackStatusCode, rollbackStatusDescription, rejectStatusCode, rejectStatusDescription), method)
+                new DefaultHttpResponseGenerator(acknowledgeStatusCode, acknowledgeStatusDescription, rollbackStatusCode, rollbackStatusDescription, rejectStatusCode, rejectStatusDescription), method, contentType)
         {
         }
 
@@ -110,13 +118,17 @@ namespace RockLib.Messaging.Http
         /// The http method that requests must have in order to be handled. Any request
         /// that does not have this method will receive a 405 Method Not Allowed response.
         /// </param>
+        /// <param name="contentType">
+        /// The content type that requests must match in order to be handled. If not null, any request whose
+        /// content type does not match this value will receive a 415 Unsupported Media Type response.
+        /// </param>
         public HttpListenerReceiver(string name, IEnumerable<string> prefixes, string path,
             int acknowledgeStatusCode = DefaultAcknowledgeStatusCode, string acknowledgeStatusDescription = DefaultAcknowledgeStatusDescription,
             int rollbackStatusCode = DefaultRollbackStatusCode, string rollbackStatusDescription = DefaultRollbackStatusDescription,
             int rejectStatusCode = DefaultRejectStatusCode, string rejectStatusDescription = DefaultRejectStatusDescription,
-            string method = DefaultMethod)
+            string method = DefaultMethod, string contentType = null)
             : this(name, prefixes, path,
-                new DefaultHttpResponseGenerator(acknowledgeStatusCode, acknowledgeStatusDescription, rollbackStatusCode, rollbackStatusDescription, rejectStatusCode, rejectStatusDescription), method)
+                new DefaultHttpResponseGenerator(acknowledgeStatusCode, acknowledgeStatusDescription, rollbackStatusCode, rollbackStatusDescription, rejectStatusCode, rejectStatusDescription), method, contentType)
         {
         }
 
@@ -137,9 +149,13 @@ namespace RockLib.Messaging.Http
         /// The http method that requests must have in order to be handled. Any request
         /// that does not have this method will receive a 405 Method Not Allowed response.
         /// </param>
+        /// <param name="contentType">
+        /// The content type that requests must match in order to be handled. If not null, any request whose
+        /// content type does not match this value will receive a 415 Unsupported Media Type response.
+        /// </param>
         public HttpListenerReceiver(string name, string url,
-            IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod)
-            : this(name, GetPrefixes(url), GetPath(url), httpResponseGenerator, method)
+            IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod, string contentType = null)
+            : this(name, GetPrefixes(url), GetPath(url), httpResponseGenerator, method, contentType)
         {
         }
 
@@ -164,8 +180,12 @@ namespace RockLib.Messaging.Http
         /// The http method that requests must have in order to be handled. Any request
         /// that does not have this method will receive a 405 Method Not Allowed response.
         /// </param>
+        /// <param name="contentType">
+        /// The content type that requests must match in order to be handled. If not null, any request whose
+        /// content type does not match this value will receive a 415 Unsupported Media Type response.
+        /// </param>
         public HttpListenerReceiver(string name, IEnumerable<string> prefixes, string path,
-            IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod)
+            IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod, string contentType = null)
             : base(name)
         {
             if (prefixes == null)
@@ -173,6 +193,18 @@ namespace RockLib.Messaging.Http
 
             HttpResponseGenerator = httpResponseGenerator ?? throw new ArgumentNullException(nameof(httpResponseGenerator));
             Method = method ?? throw new ArgumentNullException(nameof(method));
+
+            if (contentType != null)
+            {
+                try
+                {
+                    _contentType = MediaTypeHeaderValue.Parse(contentType);
+                }
+                catch (FormatException ex)
+                {
+                    throw new ArgumentException("Invalid value for 'Content-Type' header.", nameof(contentType), ex);
+                }
+            }
 
             Path = path?.Trim('/') ?? throw new ArgumentNullException(nameof(path));
             var pathTokens = new List<string>();
@@ -208,6 +240,13 @@ namespace RockLib.Messaging.Http
         /// </summary>
         public string Path { get; }
 
+        /// <summary>
+        /// Gets the content type that requests must match in order to be handled. If not null, any
+        /// request whose content type does not match this value will receive a 415 Unsupported Media
+        /// Type response.
+        /// </summary>
+        public string ContentType => _contentType?.ToString();
+
         /// <inheritdoc />
         protected override void Start()
         {
@@ -238,6 +277,28 @@ namespace RockLib.Messaging.Http
                 context.Response.StatusDescription = "Method Not Allowed";
                 context.Response.Close();
                 return;
+            }
+
+            if (_contentType != null)
+            {
+                MediaTypeHeaderValue requestContentType;
+
+                try
+                {
+                    requestContentType = MediaTypeHeaderValue.Parse(context.Request.ContentType);
+                }
+                catch
+                {
+                    requestContentType = null;
+                }
+
+                if (requestContentType == null || requestContentType.MediaType != _contentType.MediaType)
+                {
+                    context.Response.StatusCode = 415;
+                    context.Response.StatusDescription = "Unsupported Media Type";
+                    context.Response.Close();
+                    return;
+                }
             }
 
             MessageHandler.OnMessageReceived(this, new HttpListenerReceiverMessage(context, HttpResponseGenerator, _pathRegex, _pathTokens));

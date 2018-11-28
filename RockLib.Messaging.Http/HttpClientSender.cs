@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -15,6 +16,7 @@ namespace RockLib.Messaging.Http
     public class HttpClientSender : ISender
     {
         private readonly HttpClient _client;
+        private readonly MediaTypeHeaderValue _defaultContentType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientSender"/> class.
@@ -28,12 +30,31 @@ namespace RockLib.Messaging.Http
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Url = url ?? throw new ArgumentNullException(nameof(url));
             Method = new HttpMethod(method ?? throw new ArgumentNullException(nameof(method)));
+
             _client = new HttpClient();
 
             if (defaultHeaders != null)
+            {
                 foreach (var defaultHeader in defaultHeaders)
-                    foreach (var defaultHeaderValue in GetHeaderValues(defaultHeader.Value))
-                        _client.DefaultRequestHeaders.TryAddWithoutValidation(defaultHeader.Key, defaultHeaderValue);
+                {
+                    if (defaultHeader.Key == "Content-Type")
+                    {
+                        try
+                        {
+                            _defaultContentType = MediaTypeHeaderValue.Parse(defaultHeader.Value);
+                        }
+                        catch (FormatException ex)
+                        {
+                            throw new ArgumentException("Invalid 'Content-Type' header value.", nameof(defaultHeaders), ex);
+                        }
+                    }
+                    else
+                    {
+                        foreach (var defaultHeaderValue in GetHeaderValues(defaultHeader.Value))
+                            _client.DefaultRequestHeaders.Add(defaultHeader.Key, defaultHeaderValue);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -80,11 +101,17 @@ namespace RockLib.Messaging.Http
                     : new StringContent(message.StringPayload)
             };
 
+            if (headers.TryGetValue("Content-Type", out var obj) && obj is string contentType)
+                request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
+            else if (_defaultContentType != null)
+                request.Content.Headers.ContentType = _defaultContentType;
+
             // TODO: if the message is compressed, add an http compression header?
 
             foreach (var header in headers)
-                foreach (var headerValue in GetHeaderValues(header.Value.ToString()))
-                    request.Headers.TryAddWithoutValidation(header.Key, headerValue);
+                if (header.Key != "Content-Type")
+                    foreach (var headerValue in GetHeaderValues(header.Value.ToString()))
+                        request.Headers.Add(header.Key, headerValue);
 
             var response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
