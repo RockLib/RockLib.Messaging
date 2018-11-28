@@ -69,7 +69,9 @@ namespace RockLib.Messaging.Http
         private void WriteResponse(HttpResponse response)
         {
             Context.Response.StatusCode = response.StatusCode;
-            Context.Response.StatusDescription = response.StatusDescription;
+
+            if (response.StatusDescription != null)
+                Context.Response.StatusDescription = response.StatusDescription;
 
             switch (response.Content)
             {

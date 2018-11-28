@@ -14,7 +14,7 @@ namespace RockLib.Messaging.Http
         /// <param name="statusCode">The http status code of the response.</param>
         /// <param name="statusDescription">The http status description of the response.</param>
         /// <param name="content">The string content of the response.</param>
-        public HttpResponse(int statusCode, string statusDescription, string content = null)
+        public HttpResponse(int statusCode, string content = null, string statusDescription = null)
             : this(statusCode, statusDescription, (object)content)
         {
         }
@@ -25,7 +25,7 @@ namespace RockLib.Messaging.Http
         /// <param name="statusCode">The http status code of the response.</param>
         /// <param name="statusDescription">The http status description of the response.</param>
         /// <param name="content">The binary content of the response.</param>
-        public HttpResponse(int statusCode, string statusDescription, byte[] content)
+        public HttpResponse(int statusCode, byte[] content, string statusDescription = null)
             : this(statusCode, statusDescription, (object)content)
         {
         }
@@ -35,7 +35,7 @@ namespace RockLib.Messaging.Http
             if (statusCode < 100 || statusCode > 999)
                 throw new ArgumentException("statusCode cannot be less than 100 or greater than 999.", nameof(statusCode));
             StatusCode = statusCode;
-            StatusDescription = statusDescription ?? throw new ArgumentNullException(nameof(statusDescription));
+            StatusDescription = statusDescription;
             Content = content;
         }
 

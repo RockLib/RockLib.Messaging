@@ -11,29 +11,17 @@
         /// <param name="acknowledgeStatusCode">
         /// The status code to be returned to the client when a message is acknowledged.
         /// </param>
-        /// <param name="acknowledgeStatusDescription">
-        /// The status description to be returned to the client when a message is acknowledged.
-        /// </param>
         /// <param name="rollbackStatusCode">
         /// The status code to be returned to the client when a message is rolled back.
-        /// </param>
-        /// <param name="rollbackStatusDescription">
-        /// The status description to be returned to the client when a message is rolled back.
         /// </param>
         /// <param name="rejectStatusCode">
         /// The status code to be returned to the client when a message is acknowledged.
         /// </param>
-        /// <param name="rejectStatusDescription">
-        /// The status description to be returned to the client when a message is rejected.
-        /// </param>
-        public DefaultHttpResponseGenerator(
-            int acknowledgeStatusCode, string acknowledgeStatusDescription,
-            int rollbackStatusCode, string rollbackStatusDescription,
-            int rejectStatusCode, string rejectStatusDescription)
+        public DefaultHttpResponseGenerator(int acknowledgeStatusCode, int rollbackStatusCode, int rejectStatusCode)
         {
-            AcknowledgeResponse = new HttpResponse(acknowledgeStatusCode, acknowledgeStatusDescription);
-            RollbackResponse = new HttpResponse(rollbackStatusCode, rollbackStatusDescription);
-            RejectResponse = new HttpResponse(rejectStatusCode, rejectStatusDescription);
+            AcknowledgeResponse = new HttpResponse(acknowledgeStatusCode);
+            RollbackResponse = new HttpResponse(rollbackStatusCode);
+            RejectResponse = new HttpResponse(rejectStatusCode);
         }
 
         /// <summary>

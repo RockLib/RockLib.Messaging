@@ -16,16 +16,10 @@ namespace RockLib.Messaging.Http
     {
         /// <summary>The default status code for messages that are acknowledged.</summary>
         public const int DefaultAcknowledgeStatusCode = 200;
-        /// <summary>The default status description for messages that are acknowledged.</summary>
-        public const string DefaultAcknowledgeStatusDescription = "OK";
         /// <summary>The default status code for messages that are rolled back.</summary>
         public const int DefaultRollbackStatusCode = 500;
-        /// <summary>The default status description for messages that are rolled back.</summary>
-        public const string DefaultRollbackStatusDescription = "Internal Server Error";
         /// <summary>The default status code for messages that are rejected.</summary>
         public const int DefaultRejectStatusCode = 400;
-        /// <summary>The default status description for messages that are rejected.</summary>
-        public const string DefaultRejectStatusDescription = "Bad Request";
         /// <summary>The default http method to listen for.</summary>
         public const string DefaultMethod = "POST";
 
@@ -50,20 +44,11 @@ namespace RockLib.Messaging.Http
         /// <param name="acknowledgeStatusCode">
         /// The status code to be returned to the client when a message is acknowledged.
         /// </param>
-        /// <param name="acknowledgeStatusDescription">
-        /// The status description to be returned to the client when a message is acknowledged.
-        /// </param>
         /// <param name="rollbackStatusCode">
         /// The status code to be returned to the client when a message is rolled back.
         /// </param>
-        /// <param name="rollbackStatusDescription">
-        /// The status description to be returned to the client when a message is rolled back.
-        /// </param>
         /// <param name="rejectStatusCode">
         /// The status code to be returned to the client when a message is acknowledged.
-        /// </param>
-        /// <param name="rejectStatusDescription">
-        /// The status description to be returned to the client when a message is rejected.
         /// </param>
         /// <param name="method">
         /// The http method that requests must have in order to be handled. Any request
@@ -74,12 +59,11 @@ namespace RockLib.Messaging.Http
         /// content type does not match this value will receive a 415 Unsupported Media Type response.
         /// </param>
         public HttpListenerReceiver(string name, string url,
-            int acknowledgeStatusCode = DefaultAcknowledgeStatusCode, string acknowledgeStatusDescription = DefaultAcknowledgeStatusDescription,
-            int rollbackStatusCode = DefaultRollbackStatusCode, string rollbackStatusDescription = DefaultRollbackStatusDescription,
-            int rejectStatusCode = DefaultRejectStatusCode, string rejectStatusDescription = DefaultRejectStatusDescription,
+            int acknowledgeStatusCode = DefaultAcknowledgeStatusCode,
+            int rollbackStatusCode = DefaultRollbackStatusCode,
+            int rejectStatusCode = DefaultRejectStatusCode,
             string method = DefaultMethod, string contentType = null)
-            : this(name, url,
-                new DefaultHttpResponseGenerator(acknowledgeStatusCode, acknowledgeStatusDescription, rollbackStatusCode, rollbackStatusDescription, rejectStatusCode, rejectStatusDescription), method, contentType)
+            : this(name, url, new DefaultHttpResponseGenerator(acknowledgeStatusCode, rollbackStatusCode, rejectStatusCode), method, contentType)
         {
         }
 
@@ -99,20 +83,11 @@ namespace RockLib.Messaging.Http
         /// <param name="acknowledgeStatusCode">
         /// The status code to be returned to the client when a message is acknowledged.
         /// </param>
-        /// <param name="acknowledgeStatusDescription">
-        /// The status description to be returned to the client when a message is acknowledged.
-        /// </param>
         /// <param name="rollbackStatusCode">
         /// The status code to be returned to the client when a message is rolled back.
         /// </param>
-        /// <param name="rollbackStatusDescription">
-        /// The status description to be returned to the client when a message is rolled back.
-        /// </param>
         /// <param name="rejectStatusCode">
         /// The status code to be returned to the client when a message is acknowledged.
-        /// </param>
-        /// <param name="rejectStatusDescription">
-        /// The status description to be returned to the client when a message is rejected.
         /// </param>
         /// <param name="method">
         /// The http method that requests must have in order to be handled. Any request
@@ -123,12 +98,12 @@ namespace RockLib.Messaging.Http
         /// content type does not match this value will receive a 415 Unsupported Media Type response.
         /// </param>
         public HttpListenerReceiver(string name, IEnumerable<string> prefixes, string path,
-            int acknowledgeStatusCode = DefaultAcknowledgeStatusCode, string acknowledgeStatusDescription = DefaultAcknowledgeStatusDescription,
-            int rollbackStatusCode = DefaultRollbackStatusCode, string rollbackStatusDescription = DefaultRollbackStatusDescription,
-            int rejectStatusCode = DefaultRejectStatusCode, string rejectStatusDescription = DefaultRejectStatusDescription,
+            int acknowledgeStatusCode = DefaultAcknowledgeStatusCode,
+            int rollbackStatusCode = DefaultRollbackStatusCode,
+            int rejectStatusCode = DefaultRejectStatusCode,
             string method = DefaultMethod, string contentType = null)
             : this(name, prefixes, path,
-                new DefaultHttpResponseGenerator(acknowledgeStatusCode, acknowledgeStatusDescription, rollbackStatusCode, rollbackStatusDescription, rejectStatusCode, rejectStatusDescription), method, contentType)
+                new DefaultHttpResponseGenerator(acknowledgeStatusCode, rollbackStatusCode, rejectStatusCode), method, contentType)
         {
         }
 
@@ -266,7 +241,6 @@ namespace RockLib.Messaging.Http
             if (!_pathRegex.IsMatch(context.Request.Url.AbsolutePath))
             {
                 context.Response.StatusCode = 404;
-                context.Response.StatusDescription = "Not Found";
                 context.Response.Close();
                 return;
             }
@@ -274,7 +248,6 @@ namespace RockLib.Messaging.Http
             if (context.Request.HttpMethod != Method)
             {
                 context.Response.StatusCode = 405;
-                context.Response.StatusDescription = "Method Not Allowed";
                 context.Response.Close();
                 return;
             }
@@ -295,7 +268,6 @@ namespace RockLib.Messaging.Http
                 if (requestContentType == null || requestContentType.MediaType != _contentType.MediaType)
                 {
                     context.Response.StatusCode = 415;
-                    context.Response.StatusDescription = "Unsupported Media Type";
                     context.Response.Close();
                     return;
                 }
