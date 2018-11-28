@@ -79,7 +79,7 @@
       <HintPath>..\packages\RockLib.Messaging.2.0.0-alpha08\lib\net451\RockLib.Messaging.dll</HintPath>
     </Reference>
     <Reference Include="RockLib.Messaging.Http, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RockLib.Messaging.Http.1.0.0-alpha02\lib\net451\RockLib.Messaging.Http.dll</HintPath>
+      <HintPath>..\packages\RockLib.Messaging.Http.1.0.0-alpha03\lib\net451\RockLib.Messaging.Http.dll</HintPath>
     </Reference>
     <Reference Include="RockLib.Threading, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RockLib.Threading.1.0.0\lib\net45\RockLib.Threading.dll</HintPath>

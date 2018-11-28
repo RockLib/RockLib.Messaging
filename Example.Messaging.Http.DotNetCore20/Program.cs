@@ -2,7 +2,7 @@
 using System;
 using System.Threading;
 
-namespace Example.Messaging.Http.DotNetFramework451
+namespace Example.Messaging.Http.DotNetCore20
 {
     class Program
     {
