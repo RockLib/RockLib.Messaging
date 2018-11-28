@@ -13,11 +13,67 @@ namespace RockLib.Messaging.Http
     /// </summary>
     public class HttpListenerReceiver : Receiver
     {
+        /// <summary>The default status code for messages that are acknowledged.</summary>
+        public const int DefaultAcknowledgeStatusCode = 200;
+        /// <summary>The default status description for messages that are acknowledged.</summary>
+        public const string DefaultAcknowledgeStatusDescription = "OK";
+        /// <summary>The default status code for messages that are rolled back.</summary>
+        public const int DefaultRollbackStatusCode = 500;
+        /// <summary>The default status description for messages that are rolled back.</summary>
+        public const string DefaultRollbackStatusDescription = "Internal Server Error";
+        /// <summary>The default status code for messages that are rejected.</summary>
+        public const int DefaultRejectStatusCode = 400;
+        /// <summary>The default status description for messages that are rejected.</summary>
+        public const string DefaultRejectStatusDescription = "Bad Request";
+        /// <summary>The default http method to listen for.</summary>
+        public const string DefaultMethod = "POST";
+
         private readonly Regex _pathRegex;
         private readonly IReadOnlyCollection<string> _pathTokens;
         private readonly HttpListener _listener;
 
         private bool disposed;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpListenerReceiver"/> class.
+        /// </summary>
+        /// <param name="name">The name of the receiver.</param>
+        /// /// <param name="url">
+        /// The url that the <see cref="HttpListener"/> should listen to. See
+        /// https://docs.microsoft.com/en-us/dotnet/api/system.net.httplistener for
+        /// moe information.
+        /// </param>
+        /// <param name="acknowledgeStatusCode">
+        /// The status code to be returned to the client when a message is acknowledged.
+        /// </param>
+        /// <param name="acknowledgeStatusDescription">
+        /// The status description to be returned to the client when a message is acknowledged.
+        /// </param>
+        /// <param name="rollbackStatusCode">
+        /// The status code to be returned to the client when a message is rolled back.
+        /// </param>
+        /// <param name="rollbackStatusDescription">
+        /// The status description to be returned to the client when a message is rolled back.
+        /// </param>
+        /// <param name="rejectStatusCode">
+        /// The status code to be returned to the client when a message is acknowledged.
+        /// </param>
+        /// <param name="rejectStatusDescription">
+        /// The status description to be returned to the client when a message is rejected.
+        /// </param>
+        /// <param name="method">
+        /// The http method that requests must have in order to be handled. Any request
+        /// that does not have this method will receive a 405 Method Not Allowed response.
+        /// </param>
+        public HttpListenerReceiver(string name, string url,
+            int acknowledgeStatusCode = DefaultAcknowledgeStatusCode, string acknowledgeStatusDescription = DefaultAcknowledgeStatusDescription,
+            int rollbackStatusCode = DefaultRollbackStatusCode, string rollbackStatusDescription = DefaultRollbackStatusDescription,
+            int rejectStatusCode = DefaultRejectStatusCode, string rejectStatusDescription = DefaultRejectStatusDescription,
+            string method = DefaultMethod)
+            : this(name, url,
+                new DefaultHttpResponseGenerator(acknowledgeStatusCode, acknowledgeStatusDescription, rollbackStatusCode, rollbackStatusDescription, rejectStatusCode, rejectStatusDescription), method)
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpListenerReceiver"/> class.
@@ -55,12 +111,35 @@ namespace RockLib.Messaging.Http
         /// that does not have this method will receive a 405 Method Not Allowed response.
         /// </param>
         public HttpListenerReceiver(string name, IEnumerable<string> prefixes, string path,
-            int acknowledgeStatusCode = 200, string acknowledgeStatusDescription = "OK",
-            int rollbackStatusCode = 500, string rollbackStatusDescription = "Internal Server Error",
-            int rejectStatusCode = 400, string rejectStatusDescription = "Bad Request",
-            string method = "POST")
+            int acknowledgeStatusCode = DefaultAcknowledgeStatusCode, string acknowledgeStatusDescription = DefaultAcknowledgeStatusDescription,
+            int rollbackStatusCode = DefaultRollbackStatusCode, string rollbackStatusDescription = DefaultRollbackStatusDescription,
+            int rejectStatusCode = DefaultRejectStatusCode, string rejectStatusDescription = DefaultRejectStatusDescription,
+            string method = DefaultMethod)
             : this(name, prefixes, path,
                 new DefaultHttpResponseGenerator(acknowledgeStatusCode, acknowledgeStatusDescription, rollbackStatusCode, rollbackStatusDescription, rejectStatusCode, rejectStatusDescription), method)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpListenerReceiver"/> class.
+        /// </summary>
+        /// <param name="name">The name of the receiver.</param>
+        /// <param name="url">
+        /// The url that the <see cref="HttpListener"/> should listen to. See
+        /// https://docs.microsoft.com/en-us/dotnet/api/system.net.httplistener for
+        /// moe information.
+        /// </param>
+        /// <param name="httpResponseGenerator">
+        /// An object that determines the http response that is returned to clients,
+        /// depending on whether the message is acknowledged, rejected, or rolled back.
+        /// </param>
+        /// <param name="method">
+        /// The http method that requests must have in order to be handled. Any request
+        /// that does not have this method will receive a 405 Method Not Allowed response.
+        /// </param>
+        public HttpListenerReceiver(string name, string url,
+            IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod)
+            : this(name, GetPrefixes(url), GetPath(url), httpResponseGenerator, method)
         {
         }
 
@@ -86,7 +165,7 @@ namespace RockLib.Messaging.Http
         /// that does not have this method will receive a 405 Method Not Allowed response.
         /// </param>
         public HttpListenerReceiver(string name, IEnumerable<string> prefixes, string path,
-            IHttpResponseGenerator httpResponseGenerator, string method = "POST")
+            IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod)
             : base(name)
         {
             if (prefixes == null)
@@ -173,6 +252,24 @@ namespace RockLib.Messaging.Http
             _listener.Stop();
             base.Dispose(disposing);
             _listener.Close();
+        }
+
+        private static IEnumerable<string> GetPrefixes(string url)
+        {
+            if (url == null)
+                throw new ArgumentNullException(nameof(url));
+
+            var match = Regex.Match(url, ".*?(?={[^}]+})");
+
+            if (match.Success)
+                return new[] { match.Value };
+            return new[] { url.Trim('/') + '/' };
+        }
+
+        private static string GetPath(string url)
+        {
+            var uri = new Uri(url.Replace('*', '-').Replace('+', '-'));
+            return uri.LocalPath;
         }
     }
 }
