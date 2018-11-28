@@ -22,12 +22,18 @@ namespace RockLib.Messaging.Http
         /// <param name="name">The name of the sender.</param>
         /// <param name="url">The url to send messages to.</param>
         /// <param name="method">The http method to use when sending messages.</param>
-        public HttpClientSender(string name, string url, string method = "POST")
+        /// <param name="defaultHeaders">Optional headers that are added to each http request.</param>
+        public HttpClientSender(string name, string url, string method = "POST", IReadOnlyDictionary<string, string> defaultHeaders = null)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Url = url ?? throw new ArgumentNullException(nameof(url));
             Method = new HttpMethod(method ?? throw new ArgumentNullException(nameof(method)));
             _client = new HttpClient();
+
+            if (defaultHeaders != null)
+                foreach (var defaultHeader in defaultHeaders)
+                    foreach (var defaultHeaderValue in GetHeaderValues(defaultHeader.Value))
+                        _client.DefaultRequestHeaders.TryAddWithoutValidation(defaultHeader.Key, defaultHeaderValue);
         }
 
         /// <summary>
@@ -74,7 +80,7 @@ namespace RockLib.Messaging.Http
                     : new StringContent(message.StringPayload)
             };
 
-            // TODO: if the message is compressed, add the correct http compression header
+            // TODO: if the message is compressed, add an http compression header?
 
             foreach (var header in headers)
                 foreach (var headerValue in GetHeaderValues(header.Value.ToString()))
@@ -102,7 +108,7 @@ namespace RockLib.Messaging.Http
                             if (sb.Length > 0)
                             {
                                 yield return sb.ToString().Trim();
-                            sb.Clear();
+                                sb.Clear();
                             }
                             break;
                         default:
