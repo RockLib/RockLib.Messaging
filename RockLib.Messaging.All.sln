@@ -19,9 +19,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.SQS.DotNe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.NamedPipes", "RockLib.Messaging.NamedPipes\RockLib.Messaging.NamedPipes.csproj", "{6224CEC6-4C5A-43BE-B7C4-E8D508393CF4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockLib.Messaging.Http", "RockLib.Messaging.Http\RockLib.Messaging.Http.csproj", "{A84FCE16-E330-498F-A4A2-B4467153D731}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.Http", "RockLib.Messaging.Http\RockLib.Messaging.Http.csproj", "{A84FCE16-E330-498F-A4A2-B4467153D731}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockLib.Messaging.Http.Tests", "RockLib.Messaging.Http.Tests\RockLib.Messaging.Http.Tests.csproj", "{D220B88D-C3CF-4028-84EE-96AFB5B8EA91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.Http.Tests", "RockLib.Messaging.Http.Tests\RockLib.Messaging.Http.Tests.csproj", "{D220B88D-C3CF-4028-84EE-96AFB5B8EA91}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.Http.DotNetCore20", "Example.Messaging.Http.DotNetCore20\Example.Messaging.Http.DotNetCore20.csproj", "{96B672B5-CD2A-498E-A17D-0FC26AA46343}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Messaging.Http.DotNetFramework451", "Example.Messaging.Http.DotNetFramework451\Example.Messaging.Http.DotNetFramework451.csproj", "{24795847-BD1C-47B3-8332-2E28FD34132E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +73,14 @@ Global
 		{D220B88D-C3CF-4028-84EE-96AFB5B8EA91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D220B88D-C3CF-4028-84EE-96AFB5B8EA91}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D220B88D-C3CF-4028-84EE-96AFB5B8EA91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96B672B5-CD2A-498E-A17D-0FC26AA46343}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96B672B5-CD2A-498E-A17D-0FC26AA46343}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96B672B5-CD2A-498E-A17D-0FC26AA46343}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96B672B5-CD2A-498E-A17D-0FC26AA46343}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24795847-BD1C-47B3-8332-2E28FD34132E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24795847-BD1C-47B3-8332-2E28FD34132E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24795847-BD1C-47B3-8332-2E28FD34132E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24795847-BD1C-47B3-8332-2E28FD34132E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
