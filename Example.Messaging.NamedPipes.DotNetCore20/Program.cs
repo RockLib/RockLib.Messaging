@@ -1,5 +1,7 @@
-﻿using RockLib.Messaging;
+﻿using Newtonsoft.Json.Linq;
+using RockLib.Messaging;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace Example.Messaging.NamedPipes.DotNetCore20
@@ -44,14 +46,18 @@ namespace Example.Messaging.NamedPipes.DotNetCore20
         {
             using (var sender = MessagingScenarioFactory.CreateSender("Sender1"))
             {
-                Console.WriteLine($"Enter a message for sender '{sender.Name}'. Leave blank to quit.");
+                Console.WriteLine($"Enter a message for sender '{sender.Name}'. Add headers as a trailing JSON object. Leave blank to quit.");
                 string message;
                 while (true)
                 {
                     Console.Write("message>");
                     if ((message = Console.ReadLine()) == "")
                         return;
-                    sender.Send(message);
+
+                    if (TryExtractHeaders(ref message, out var headers))
+                        sender.Send(new SenderMessage(message) { Headers = headers });
+                    else
+                        sender.Send(message);
                 }
             }
         }
@@ -60,7 +66,13 @@ namespace Example.Messaging.NamedPipes.DotNetCore20
         {
             using (var receiver = MessagingScenarioFactory.CreateReceiver("Receiver1"))
             {
-                receiver.Start(m => Console.WriteLine(m.StringPayload));
+                receiver.Start(m =>
+                {
+                    foreach (var header in m.Headers)
+                        Console.WriteLine($"{header.Key}: {header.Value}");
+
+                    Console.WriteLine(m.StringPayload);
+                });
                 Console.WriteLine($"Receiving messages from receiver '{receiver.Name}'. Press <enter> to quit.");
                 while (Console.ReadKey(true).Key != ConsoleKey.Enter) { }
             }
@@ -93,6 +105,58 @@ namespace Example.Messaging.NamedPipes.DotNetCore20
 
             Console.Write("Press any key to exit...");
             Console.ReadKey(true);
+        }
+
+        private static bool TryExtractHeaders(ref string message, out IDictionary<string, object> headers)
+        {
+            headers = new Dictionary<string, object>();
+            var trim = message.TrimEnd();
+            if (trim.Length > 1 && trim[trim.Length - 1] == '}' && trim[trim.Length - 2] != '\\')
+            {
+                var stack = new Stack<char>();
+                stack.Push('}');
+                for (int i = trim.Length - 2; i >= 0; i--)
+                {
+                    if (trim[i] == '{')
+                    {
+                        stack.Pop();
+
+                        if (stack.Count == 0)
+                        {
+                            JObject json;
+                            try
+                            {
+                                json = JObject.Parse(message.Substring(i));
+                                message = message.Substring(0, i);
+                            }
+                            catch (Exception)
+                            {
+                                return false;
+                            }
+                            string GetString(object value)
+                            {
+                                switch (value)
+                                {
+                                    case string stringValue:
+                                        return stringValue;
+                                    case bool boolValue:
+                                        return boolValue ? "true" : "false";
+                                    default:
+                                        return value.ToString();
+                                }
+                            }
+                            foreach (var field in json)
+                                if (field.Value is JValue value)
+                                    headers.Add(field.Key, GetString(value.Value));
+                            return true;
+                        }
+                    }
+                    else if (trim[i] == '}')
+                        stack.Push('}');
+                }
+            }
+
+            return false;
         }
     }
 }
