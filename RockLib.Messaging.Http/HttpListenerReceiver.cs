@@ -10,7 +10,7 @@ namespace RockLib.Messaging.Http
     /// An implementation of <see cref="IReceiver"/> that receives http
     /// messages with an <see cref="HttpListener"/>. See
     /// https://docs.microsoft.com/en-us/dotnet/api/system.net.httplistener for
-    /// moe information.
+    /// more information.
     /// </summary>
     public class HttpListenerReceiver : Receiver
     {
@@ -23,12 +23,12 @@ namespace RockLib.Messaging.Http
         /// <summary>The default http method to listen for.</summary>
         public const string DefaultMethod = "POST";
 
+        private readonly HttpListener _listener = new HttpListener();
+
         private readonly MediaTypeHeaderValue _contentType;
 
         private readonly Regex _pathRegex;
         private readonly IReadOnlyCollection<string> _pathTokens;
-
-        private readonly HttpListener _listener;
 
         private bool disposed;
 
@@ -39,7 +39,7 @@ namespace RockLib.Messaging.Http
         /// /// <param name="url">
         /// The url that the <see cref="HttpListener"/> should listen to. See
         /// https://docs.microsoft.com/en-us/dotnet/api/system.net.httplistener for
-        /// moe information.
+        /// more information.
         /// </param>
         /// <param name="acknowledgeStatusCode">
         /// The status code to be returned to the client when a message is acknowledged.
@@ -63,7 +63,9 @@ namespace RockLib.Messaging.Http
             int rollbackStatusCode = DefaultRollbackStatusCode,
             int rejectStatusCode = DefaultRejectStatusCode,
             string method = DefaultMethod, string contentType = null)
-            : this(name, url, new DefaultHttpResponseGenerator(acknowledgeStatusCode, rollbackStatusCode, rejectStatusCode), method, contentType)
+            : this(name, url,
+                  new DefaultHttpResponseGenerator(acknowledgeStatusCode, rollbackStatusCode, rejectStatusCode),
+                  method, contentType)
         {
         }
 
@@ -74,7 +76,7 @@ namespace RockLib.Messaging.Http
         /// <param name="prefixes">
         /// The URI prefixes handled by the <see cref="HttpListener"/>. See
         /// https://docs.microsoft.com/en-us/dotnet/api/system.net.httplistener for
-        /// moe information.
+        /// more information.
         /// </param>
         /// <param name="path">
         /// The path that requests must match in order to be handled. Any request whose
@@ -97,13 +99,14 @@ namespace RockLib.Messaging.Http
         /// The content type that requests must match in order to be handled. If not null, any request whose
         /// content type does not match this value will receive a 415 Unsupported Media Type response.
         /// </param>
-        public HttpListenerReceiver(string name, IEnumerable<string> prefixes, string path,
+        public HttpListenerReceiver(string name, IReadOnlyList<string> prefixes, string path,
             int acknowledgeStatusCode = DefaultAcknowledgeStatusCode,
             int rollbackStatusCode = DefaultRollbackStatusCode,
             int rejectStatusCode = DefaultRejectStatusCode,
             string method = DefaultMethod, string contentType = null)
             : this(name, prefixes, path,
-                new DefaultHttpResponseGenerator(acknowledgeStatusCode, rollbackStatusCode, rejectStatusCode), method, contentType)
+                new DefaultHttpResponseGenerator(acknowledgeStatusCode, rollbackStatusCode, rejectStatusCode),
+                method, contentType)
         {
         }
 
@@ -114,7 +117,7 @@ namespace RockLib.Messaging.Http
         /// <param name="url">
         /// The url that the <see cref="HttpListener"/> should listen to. See
         /// https://docs.microsoft.com/en-us/dotnet/api/system.net.httplistener for
-        /// moe information.
+        /// more information.
         /// </param>
         /// <param name="httpResponseGenerator">
         /// An object that determines the http response that is returned to clients,
@@ -141,7 +144,7 @@ namespace RockLib.Messaging.Http
         /// <param name="prefixes">
         /// The URI prefixes handled by the <see cref="HttpListener"/>. See
         /// https://docs.microsoft.com/en-us/dotnet/api/system.net.httplistener for
-        /// moe information.
+        /// more information.
         /// </param>
         /// <param name="path">
         /// The path that requests must match in order to be handled. Any request whose
@@ -159,12 +162,27 @@ namespace RockLib.Messaging.Http
         /// The content type that requests must match in order to be handled. If not null, any request whose
         /// content type does not match this value will receive a 415 Unsupported Media Type response.
         /// </param>
-        public HttpListenerReceiver(string name, IEnumerable<string> prefixes, string path,
+        public HttpListenerReceiver(string name, IReadOnlyList<string> prefixes, string path,
             IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod, string contentType = null)
             : base(name)
         {
-            if (prefixes == null)
-                throw new ArgumentNullException(nameof(prefixes));
+            if (path == null)
+                throw new ArgumentNullException(nameof(path));
+
+            Prefixes = prefixes ?? throw new ArgumentNullException(nameof(prefixes));
+            foreach (var prefix in Prefixes)
+                _listener.Prefixes.Add(prefix);
+
+            Path = path.Trim('/');
+            var pathTokens = new List<string>();
+            var pathPattern = "^/?" + Regex.Replace(Path ?? "", "{([^}]+)}", m =>
+            {
+                var token = m.Groups[1].Value;
+                pathTokens.Add(token);
+                return $"(?<{token}>.*?)";
+            }) + "/?$";
+            _pathRegex = new Regex(pathPattern, RegexOptions.IgnoreCase);
+            _pathTokens = pathTokens;
 
             HttpResponseGenerator = httpResponseGenerator ?? throw new ArgumentNullException(nameof(httpResponseGenerator));
             Method = method ?? throw new ArgumentNullException(nameof(method));
@@ -180,21 +198,6 @@ namespace RockLib.Messaging.Http
                     throw new ArgumentException("Invalid value for 'Content-Type' header.", nameof(contentType), ex);
                 }
             }
-
-            Path = path?.Trim('/') ?? throw new ArgumentNullException(nameof(path));
-            var pathTokens = new List<string>();
-            var pathPattern = "^/?" + Regex.Replace(Path ?? "", "{([^}]+)}", m =>
-            {
-                var token = m.Groups[1].Value;
-                pathTokens.Add(token);
-                return $"(?<{token}>.*?)";
-            }) + "/?$";
-            _pathRegex = new Regex(pathPattern, RegexOptions.IgnoreCase);
-            _pathTokens = pathTokens;
-
-            _listener = new HttpListener();
-            foreach (var prefix in prefixes)
-                _listener.Prefixes.Add(prefix);
         }
 
         /// <summary>
@@ -208,6 +211,13 @@ namespace RockLib.Messaging.Http
         /// that does not have this method will receive a 405 Method Not Allowed response.
         /// </summary>
         public string Method { get; }
+
+        /// <summary>
+        /// Gets the URI prefixes handled by the <see cref="HttpListener"/>. See
+        /// https://docs.microsoft.com/en-us/dotnet/api/system.net.httplistener for
+        /// more information.
+        /// </summary>
+        public IReadOnlyList<string> Prefixes { get; }
 
         /// <summary>
         /// Gets the path that requests must match in order to be handled. Any request whose
@@ -287,7 +297,7 @@ namespace RockLib.Messaging.Http
             _listener.Close();
         }
 
-        private static IEnumerable<string> GetPrefixes(string url)
+        private static IReadOnlyList<string> GetPrefixes(string url)
         {
             if (url == null)
                 throw new ArgumentNullException(nameof(url));
