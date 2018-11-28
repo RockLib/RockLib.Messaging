@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,13 +77,45 @@ namespace RockLib.Messaging.Http
             // TODO: if the message is compressed, add the correct http compression header
 
             foreach (var header in headers)
-            {
-                if (header.Value != null)
-                    request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToString());
-            }
+                foreach (var headerValue in GetHeaderValues(header.Value.ToString()))
+                    request.Headers.TryAddWithoutValidation(header.Key, headerValue);
 
             var response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
+        }
+
+        private IEnumerable<string> GetHeaderValues(string value)
+        {
+            if (value == null)
+                yield break;
+
+            if (Regex.IsMatch(value, "[,;]"))
+            {
+                var sb = new StringBuilder();
+
+                for (int i = 0; i < value.Length; i++)
+                {
+                    switch (value[i])
+                    {
+                        case ',':
+                        case ';':
+                            if (sb.Length > 0)
+                            {
+                                yield return sb.ToString().Trim();
+                            sb.Clear();
+                            }
+                            break;
+                        default:
+                            sb.Append(value[i]);
+                            break;
+                    }
+                }
+
+                if (sb.Length > 0)
+                    yield return sb.ToString().Trim();
+            }
+            else
+                yield return value.Trim();
         }
 
         /// <summary>
