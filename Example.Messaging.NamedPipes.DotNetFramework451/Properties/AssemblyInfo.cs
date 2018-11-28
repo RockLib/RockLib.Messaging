@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("RockLib.Messaging.Example.Framework")]
+[assembly: AssemblyTitle("Example.Messaging.NamedPipes.DotNetFramework451")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("RockLib.Messaging.Example.Framework")]
+[assembly: AssemblyProduct("Example.Messaging.NamedPipes.DotNetFramework451")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

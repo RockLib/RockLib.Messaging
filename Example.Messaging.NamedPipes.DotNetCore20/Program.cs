@@ -2,7 +2,7 @@
 using System;
 using System.Threading;
 
-namespace Example.Messaging.DotNetCore20
+namespace Example.Messaging.NamedPipes.DotNetCore20
 {
     class Program
     {

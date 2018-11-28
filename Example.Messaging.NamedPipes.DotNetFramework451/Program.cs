@@ -2,7 +2,7 @@
 using System;
 using System.Threading;
 
-namespace Example.Messaging.DotNetFramework451
+namespace Example.Messaging.NamedPipes.DotNetFramework451
 {
     class Program
     {
