@@ -28,6 +28,8 @@ PM> Install-Package RockLib.Messaging.Http
 
 - [Getting started](docs/GettingStarted.md)
 - How to:
+  - [Send messages](docs/SendingMessages.md)
+  - [Receive messages](docs/ReceivingMessages.md)
   - [Configure and use RockLib.Messaging.NamedPipes](docs/NamedPipes.md)
   - [Configure and use RockLib.Messaging.SQS](docs/SQS.md)
   - [Configure and use RockLib.Messaging.Http](docs/Http.md)
