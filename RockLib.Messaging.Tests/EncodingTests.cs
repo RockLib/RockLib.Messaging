@@ -229,8 +229,6 @@ namespace RockLib.Messaging.Tests
                 _headers = headers;
             }
 
-            public override byte? Priority => null;
-
             public override void Acknowledge() => throw new NotImplementedException();
 
             public override void Rollback() => throw new NotImplementedException();

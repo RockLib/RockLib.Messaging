@@ -22,7 +22,6 @@ namespace RockLib.Messaging
         /// Initializes a new instance of the <see cref="SenderMessage"/> class.
         /// </summary>
         /// <param name="payload">The payload of the message.</param>
-        /// <param name="priority">The priority of the message.</param>
         /// <param name="compress">Whether to compress the payload of the message.</param>
         /// <param name="validateHeaderValue">
         /// A function that validates header values, returning either the value passed to it
@@ -30,21 +29,19 @@ namespace RockLib.Messaging
         /// convert it to another type that is valid. If a value cannot be converted, the
         /// function should throw an exception.
         /// </param>
-        public SenderMessage(string payload, byte? priority = null, bool compress = false, Func<object, object> validateHeaderValue = null)
+        public SenderMessage(string payload, bool compress = false, Func<object, object> validateHeaderValue = null)
         {
             if (payload == null)
                 throw new ArgumentNullException(nameof(payload));
 
             _headers = new HeaderDictionary(validateHeaderValue);
             InitAsString(payload, compress, out _stringPayload, out _binaryPayload);
-            Priority = priority;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SenderMessage"/> class.
         /// </summary>
         /// <param name="payload">The payload of the message.</param>
-        /// <param name="priority">The priority of the message.</param>
         /// <param name="compress">Whether to compress the payload of the message.</param>
         /// <param name="validateHeaderValue">
         /// A function that validates header values, returning either the value passed to it
@@ -52,14 +49,13 @@ namespace RockLib.Messaging
         /// convert it to another type that is valid. If a value cannot be converted, the
         /// function should throw an exception.
         /// </param>
-        public SenderMessage(byte[] payload, byte? priority = null, bool compress = false, Func<object, object> validateHeaderValue = null)
+        public SenderMessage(byte[] payload, bool compress = false, Func<object, object> validateHeaderValue = null)
         {
             if (payload == null)
                 throw new ArgumentNullException(nameof(payload));
 
             _headers = new HeaderDictionary(validateHeaderValue, isBinary: true);
             InitAsBinary(payload, compress, out _stringPayload, out _binaryPayload);
-            Priority = priority;
         }
 
         /// <summary>
@@ -88,8 +84,6 @@ namespace RockLib.Messaging
             foreach (var header in receiverMessage.Headers)
                 if (header.Key != HeaderNames.MessageId) // Don't copy the message id
                     _headers[header.Key] = header.Value;
-
-            Priority = receiverMessage.Priority;
         }
 
         /// <summary>
@@ -116,11 +110,6 @@ namespace RockLib.Messaging
                         _headers.Add(header);
             }
         }
-
-        /// <summary>
-        /// Gets the priority of the message.
-        /// </summary>
-        public byte? Priority { get; }
 
         /// <summary>
         /// Gets the ID of the message.

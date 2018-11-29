@@ -21,11 +21,6 @@
         HeaderDictionary Headers { get; }
 
         /// <summary>
-        /// Gets the priority of the message, if applicable.
-        /// </summary>
-        byte? Priority { get; }
-
-        /// <summary>
         /// If supported by the implementation, communicate to the sender that
         /// the message was successfully processed and should not be redelivered.
         /// </summary>
