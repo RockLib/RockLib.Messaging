@@ -83,6 +83,63 @@ namespace RockLib.Messaging
         }
 
         /// <summary>
+        /// Gets the value that is associated with the specified header name as a
+        /// <typeparamref name="T"/> type.
+        /// </summary>
+        /// <param name="key">The name of the header.</param>
+        /// <returns>
+        /// The value associated with the specified header name if the header name is found and its
+        /// value can be converted to type <typeparamref name="T"/>.
+        /// </returns>
+        /// <typeparam name="T">The type to convert the value to.</typeparam>
+        /// <exception cref="KeyNotFoundException">
+        /// If the specified key cannot be found, or if its value is null.
+        /// </exception>
+        /// <exception cref="InvalidCastException">
+        /// If the specified key can be found, but its value cannot be converted to type
+        /// <typeparamref name="T"/>.
+        /// </exception>
+        public T GetValue<T>(string key)
+        {
+            if (_headers.TryGetValue(key, out object objectValue))
+            {
+                if (objectValue == null)
+                    throw new KeyNotFoundException($"The specified header, '{key}', has a null value.");
+
+                if (objectValue is T)
+                    return (T)objectValue;
+
+                var converter = TypeDescriptor.GetConverter(typeof(T));
+                if (converter.CanConvertFrom(objectValue.GetType()))
+                {
+                    try
+                    {
+                        return (T)converter.ConvertFrom(objectValue);
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                converter = TypeDescriptor.GetConverter(objectValue);
+                if (converter.CanConvertTo(typeof(T)))
+                {
+                    try
+                    {
+                        return (T)converter.ConvertTo(objectValue, typeof(T));
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                throw new InvalidCastException($"The specified header, '{key}', has a value, {objectValue} (with type {objectValue.GetType().FullName}), that cannot be converted to target type {typeof(T).FullName}.");
+            }
+
+            throw new KeyNotFoundException($"The specified header, '{key}', was not found.");
+        }
+
+        /// <summary>
         /// Gets the header value with the specified name.
         /// </summary>
         /// <param name="key">The name of the header.</param>
