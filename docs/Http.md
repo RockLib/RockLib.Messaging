@@ -64,7 +64,7 @@ sender.Dispose();
 
 #### URL Tokens
 
-The `HttpClientSender.Url` property supports the concept of "URL tokens" - where its value contains some identifier surrounded by curly braces. When a message is sent, the actual URL is calculated by replacing the token with the value of corresponding message header.
+The `url` parameter supports the concept of "URL tokens" - where its value contains some identifier surrounded by curly braces. When a message is sent, the actual URL is calculated by replacing the token with the value of corresponding message header.
 
 ```c#
 ISender sender = new HttpClientSender("my_sender", "http://foo.com/api/{api_version}/commands");
@@ -77,6 +77,107 @@ sender.Send(message);
 ```
 
 *Note that if a sender message does not have a header for each URL token, an exception will be thrown when sending that message.*
+
+## HttpListenerReceiver
+
+The  HttpListenerReceiver class ultimately uses a `System.Net.HttpListener` behind the scenes to receive and handle incoming http requests. See https://docs.microsoft.com/en-us/dotnet/api/system.net.httplistener for information on how to use and configure the `HttpListener` class.
+
+#### Constructor 1
+
+This constructor calls [Constructor 2](#constructor-2), passing along the values of all identically named parameters. It uses the value of its `url` parameter to derive values for the other constructor's `prefixes` and `path` parameters.
+
+- name
+  - The name of the instance of HttpListenerReceiver.
+- url
+  - The url that the `HttpListener` should listen to.
+  - See [Path Tokens](#path-tokens) below.
+- acknowledgeStatusCode (optional, defaults to `200`)
+  - The status code to be returned to the client when a message is acknowledged.
+- rollbackStatusCode (optional, defaults to `500`)
+  - The status code to be returned to the client when a message is rolled back.
+- rejectStatusCode (optional, defaults to `400`)
+  - The status code to be returned to the client when a message is acknowledged.
+- method (optional, defaults to `POST`)
+  - The http method that requests must have in order to be handled. Any request that does not have this method will receive a `405 Method Not Allowed` response.
+- contentType (optional, defaults to `null`)
+  - The content type that requests must match in order to be handled. When specified, any request whose content type does not match this value will receive a `415 Unsupported Media Type` response.
+
+#### Constructor 2
+
+This constructor calls [Constructor 4](#constructor-4), passing along the values of all identically named parameters. It uses the values of its `acknowledgeStatusCode`, `rollbackStatusCode`, and `rejectStatusCode` parameters to create an instance of `DefaultHttpResponseGenerator` which is passed as the value of the other constructor's `httpResponseGenerator` parameter.
+
+- name
+  - The name of the instance of HttpListenerReceiver.
+- prefixes
+  - The URI prefixes handled by the `HttpListener`.
+- path
+  - The path that requests must match in order to be handled. Any request whose path does not match this value will receive a `404 Not Found` response.
+  - See [Path Tokens](#path-tokens) below.
+- acknowledgeStatusCode (optional, defaults to `200`)
+  - The status code to be returned to the client when a message is acknowledged.
+- rollbackStatusCode (optional, defaults to `500`)
+  - The status code to be returned to the client when a message is rolled back.
+- rejectStatusCode (optional, defaults to `400`)
+  - The status code to be returned to the client when a message is acknowledged.
+- method (optional, defaults to `POST`)
+  - The http method that requests must have in order to be handled. Any request that does not have this method will receive a `405 Method Not Allowed` response.
+- contentType (optional, defaults to `null`)
+  - The content type that requests must match in order to be handled. When specified, any request whose content type does not match this value will receive a `415 Unsupported Media Type` response.
+
+#### Constructor 3
+
+This constructor calls [Constructor 4](#constructor-4), passing along the values of all identically named parameters. It uses the value of its `url` parameter to derive values for the other constructor's `prefixes` and `path` parameters.
+
+- name
+  - The name of the instance of HttpListenerReceiver.
+- url
+  - The url that the `HttpListener` should listen to.
+  - See [Path Tokens](#path-tokens) below.
+- httpResponseGenerator
+  - An object that determines the http response that is returned to clients, depending on whether the message is acknowledged, rejected, or rolled back.
+- method (optional, defaults to `POST`)
+  - The http method that requests must have in order to be handled. Any request that does not have this method will receive a `405 Method Not Allowed` response.
+- contentType (optional, defaults to `null`)
+  - The content type that requests must match in order to be handled. When specified, any request whose content type does not match this value will receive a `415 Unsupported Media Type` response.
+
+#### Constructor 4
+
+This constructor actually does the initialization.
+
+- name
+  - The name of the instance of HttpListenerReceiver.
+- prefixes
+  - The URI prefixes handled by the `HttpListener`.
+- path
+  - The path that requests must match in order to be handled. Any request whose path does not match this value will receive a `404 Not Found` response.
+  - See [Path Tokens](#path-tokens) below.
+- httpResponseGenerator
+  - An object that determines the http response that is returned to clients, depending on whether the message is acknowledged, rejected, or rolled back.
+- method (optional, defaults to `POST`)
+  - The http method that requests must have in order to be handled. Any request that does not have this method will receive a `405 Method Not Allowed` response.
+- contentType (optional, defaults to `null`)
+  - The content type that requests must match in order to be handled. When specified, any request whose content type does not match this value will receive a `415 Unsupported Media Type` response.
+
+#### Path Tokens
+
+The `path` and `url` parameters in the constructors above support the concept of "path tokens" - where a header is added to the receiver message for each token. The path of the incoming http request determines the value of the token header.
+
+```c#
+IReceiver receiver = new HttpListenerReceiver("my_receiver", "http://localhost:5000/api/{api_version}/commands");
+
+receiver.Start(message =>
+{
+    if (message.Headers.TryGetValue("api_version", out string apiVersion))
+    {
+        // If the incoming http request had a path of "/api/v1/commands",
+        // then the value of the apiVersion variable here would be "v1".
+    }
+
+    message.Acknowledge();
+});
+```
+
+*Note that since all handled requests are guaranteed to match the path, messages from a receiver with path tokens will always have a header for each token.*
 
 [.NET Core example]: ../Example.Messaging.Http.DotNetCore20
 [.NET Framework example]: ../Example.Messaging.Http.DotNetFramework451
