@@ -229,11 +229,11 @@ namespace RockLib.Messaging.Tests
                 _headers = headers;
             }
 
-            public override void Acknowledge() => throw new NotImplementedException();
+            protected override void AcknowledgeMessage() => throw new NotImplementedException();
 
-            public override void Rollback() => throw new NotImplementedException();
+            protected override void RollbackMessage() => throw new NotImplementedException();
 
-            public override void Reject() => throw new NotImplementedException();
+            protected override void RejectMessage() => throw new NotImplementedException();
 
             protected override void InitializeHeaders(IDictionary<string, object> headers)
             {

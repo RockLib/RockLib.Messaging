@@ -214,6 +214,7 @@ namespace RockLib.Messaging.Tests
             public string StringPayload => _stringPayload.Value;
             public byte[] BinaryPayload => _binaryPayload.Value;
             public HeaderDictionary Headers { get; }
+            public bool Handled => false;
             public void Acknowledge() {}
             public void Rollback() {}
             public void Reject() {}

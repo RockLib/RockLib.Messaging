@@ -1,6 +1,7 @@
 ﻿using RockLib.Compression;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace RockLib.Messaging
@@ -17,6 +18,8 @@ namespace RockLib.Messaging
         private readonly Lazy<string> _stringPayload;
         private readonly Lazy<byte[]> _binaryPayload;
         private readonly Lazy<HeaderDictionary> _headers;
+
+        private string _handledBy;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ReceiverMessage"/> class using
@@ -45,7 +48,6 @@ namespace RockLib.Messaging
                             return Convert.ToBase64String(_gzip.Decompress(Convert.FromBase64String(stringPayload)));
                         return Encoding.UTF8.GetString(_gzip.Decompress(Convert.FromBase64String(stringPayload)));
                     }
-
                     return stringPayload;
                 }
                 if (rawPayload is byte[] binaryPayload)
@@ -105,31 +107,106 @@ namespace RockLib.Messaging
         public HeaderDictionary Headers => _headers.Value;
 
         /// <summary>
-        /// If supported by the inheritor, communicate to the sender that
-        /// the message was successfully processed and should not be redelivered.
+        /// Gets a value indicating whether this message has been handled by one of the
+        /// <see cref="Acknowledge"/>, <see cref="Rollback"/> or <see cref="Reject"/>
+        /// methods.
         /// </summary>
-        public abstract void Acknowledge();
+        public bool Handled => _handledBy != null;
 
         /// <summary>
-        /// If supported by the inheritor, communicate to the sender that
-        /// the message was not successfully processed and should be redelivered.
+        /// Indicates that the message was successfully processed and should not
+        /// be redelivered.
         /// </summary>
-        public abstract void Rollback();
+        public void Acknowledge()
+        {
+            lock (this)
+            {
+                CheckHandled();
+                AcknowledgeMessage();
+                SetHandled();
+            }
+        }
 
         /// <summary>
-        /// If supported by the inheritor, communicate to the sender that
-        /// the message was not successfully processed and should not be redelivered.
+        /// Indicates that the message was not successfully processed but should be
+        /// (or should be allowed to be) redelivered.
         /// </summary>
-        public abstract void Reject();
+        public void Rollback()
+        {
+            lock (this)
+            {
+                CheckHandled();
+                RollbackMessage();
+                SetHandled();
+            }
+        }
 
         /// <summary>
-        /// Initialize the <paramref name="headers"/> parameter with the headers
-        /// for this receiver message.
+        /// Indicates that the message could not be successfully processed and should
+        /// not be redelivered.
+        /// </summary>
+        public void Reject()
+        {
+            lock (this)
+            {
+                CheckHandled();
+                RejectMessage();
+                SetHandled();
+            }
+        }
+
+        /// <summary>
+        /// When overridden in a derived class, indicates that the message was
+        /// successfully processed and should not be redelivered.
+        /// </summary>
+        /// <remarks>
+        /// If the concept of acknowledging a message doesn't make sense for an derived
+        /// class, then the overriden method should do nothing instead of throwing a
+        /// <see cref="NotImplementedException"/> or similar exception.
+        /// </remarks>
+        protected abstract void AcknowledgeMessage();
+
+        /// <summary>
+        /// When overridden in a derived class, indicates that the message was not
+        /// successfully processed but should be (or should be allowed to be) redelivered.
+        /// </summary>
+        /// <remarks>
+        /// If the concept of rolling back a message doesn't make sense for an derived
+        /// class, then the overriden method should do nothing instead of throwing a
+        /// <see cref="NotImplementedException"/> or similar exception.
+        /// </remarks>
+        protected abstract void RollbackMessage();
+
+        /// <summary>
+        /// When overridden in a derived class, indicates that the message could not be
+        /// successfully processed and should not be redelivered.
+        /// </summary>
+        /// <remarks>
+        /// If the concept of rejecting a message doesn't make sense for an derived
+        /// class, then the overriden method should do nothing instead of throwing a
+        /// <see cref="NotImplementedException"/> or similar exception.
+        /// </remarks>
+        protected abstract void RejectMessage();
+
+        /// <summary>
+        /// When overridden in a derived class, initializes the <paramref name="headers"/>
+        /// parameter with the headers for this receiver message.
         /// </summary>
         /// <param name="headers">
         /// A dictionary to be filled with the headers for this receiver message.
         /// </param>
         protected abstract void InitializeHeaders(IDictionary<string, object> headers);
+
+        private void CheckHandled([CallerMemberName] string memberName = null)
+        {
+            if (Handled)
+                throw new InvalidOperationException($"Cannot {memberName} message: the message has already been handled by {_handledBy}.");
+        }
+
+        private void SetHandled([CallerMemberName] string memberName = null)
+        {
+            _handledBy = memberName;
+        }
 
         /// <summary>
         /// A struct that contains a payload value. Implicitly convertable from the
