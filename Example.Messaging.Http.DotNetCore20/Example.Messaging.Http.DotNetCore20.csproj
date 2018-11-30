@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RockLib.Messaging.Http" Version="1.0.0-alpha03" />
+    <PackageReference Include="RockLib.Messaging.Http" Version="1.0.0-alpha04" />
   </ItemGroup>
 
   <ItemGroup>
