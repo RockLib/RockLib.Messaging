@@ -11,26 +11,26 @@ namespace RockLib.Messaging.SQS
     public sealed class SQSReceiverMessage : ReceiverMessage
     {
         private readonly Message _message;
-        private readonly Action _acknowledge;
+        private readonly Action _deleteMessage;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SQSReceiverMessage"/> class.
         /// </summary>
         /// <param name="message">The SQS message that was received.</param>
-        /// <param name="acknowledge">
-        /// The <see cref="Action"/> that is invoked when the <see cref="Acknowledge"/> method is called.
+        /// <param name="deleteMessage">
+        /// A delegate that deletes the message when invoked.
         /// </param>
-        internal SQSReceiverMessage(Message message, Action acknowledge)
+        internal SQSReceiverMessage(Message message, Action deleteMessage)
             : base(() => message.Body)
         {
             _message = message ?? throw new ArgumentNullException(nameof(message));
-            _acknowledge = acknowledge ?? throw new ArgumentNullException(nameof(acknowledge));
+            _deleteMessage = deleteMessage ?? throw new ArgumentNullException(nameof(deleteMessage));
         }
 
         /// <summary>
         /// Deletes the message from the SQS queue, ensuring it is not redelivered.
         /// </summary>
-        protected override void AcknowledgeMessage() => _acknowledge();
+        protected override void AcknowledgeMessage() => _deleteMessage();
 
         /// <summary>
         /// Does nothing - the message will automatically be redelivered by SQS if left unacknowledged.
@@ -40,7 +40,7 @@ namespace RockLib.Messaging.SQS
         /// <summary>
         /// Deletes the message from the SQS queue, ensuring it is not redelivered.
         /// </summary>
-        protected override void RejectMessage() => _acknowledge();
+        protected override void RejectMessage() => _deleteMessage();
 
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)

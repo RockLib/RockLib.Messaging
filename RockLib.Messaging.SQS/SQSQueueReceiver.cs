@@ -189,16 +189,16 @@ namespace RockLib.Messaging.SQS
             }
 
             var receiptHandle = message.ReceiptHandle;
-            void Acknowledge() => Delete(receiptHandle);
+            void DeleteMessage() => Delete(receiptHandle);
 
             try
             {
-                MessageHandler.OnMessageReceived(this, new SQSReceiverMessage(message, Acknowledge));
+                MessageHandler.OnMessageReceived(this, new SQSReceiverMessage(message, DeleteMessage));
             }
             finally
             {
                 if (_autoAcknwoledge)
-                    Acknowledge();
+                    DeleteMessage();
             }
         }
 
