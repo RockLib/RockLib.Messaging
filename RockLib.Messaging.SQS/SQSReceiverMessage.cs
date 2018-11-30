@@ -27,19 +27,13 @@ namespace RockLib.Messaging.SQS
             _deleteMessage = deleteMessage ?? throw new ArgumentNullException(nameof(deleteMessage));
         }
 
-        /// <summary>
-        /// Deletes the message from the SQS queue, ensuring it is not redelivered.
-        /// </summary>
+        /// <inheritdoc />
         protected override void AcknowledgeMessage() => _deleteMessage();
 
-        /// <summary>
-        /// Does nothing - the message will automatically be redelivered by SQS if left unacknowledged.
-        /// </summary>
-        protected override void RollbackMessage() { }
+        /// <inheritdoc />
+        protected override void RollbackMessage() { } // Do nothing - the message will automatically be redelivered by SQS when left unacknowledged.
 
-        /// <summary>
-        /// Deletes the message from the SQS queue, ensuring it is not redelivered.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RejectMessage() => _deleteMessage();
 
         /// <inheritdoc />

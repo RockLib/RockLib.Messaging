@@ -20,19 +20,13 @@ namespace RockLib.Messaging.NamedPipes
             _namedPipeMessage = namedPipeMessage;
         }
 
-        /// <summary>
-        /// Does nothing.
-        /// </summary>
+        /// <inheritdoc />
         protected override void AcknowledgeMessage() {}
 
-        /// <summary>
-        /// Does nothing.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RollbackMessage() {}
 
-        /// <summary>
-        /// Does nothing.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RejectMessage() {}
         
         /// <inheritdoc />

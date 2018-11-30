@@ -34,27 +34,21 @@ namespace RockLib.Messaging.Http
         /// </summary>
         public IHttpResponseGenerator HttpResponseGenerator { get; }
 
-        /// <summary>
-        /// Sends an acknowledge response to the client.
-        /// </summary>
+        /// <inheritdoc />
         protected override void AcknowledgeMessage()
         {
             var response = HttpResponseGenerator.GetAcknowledgeResponse(this);
             WriteResponse(response);
         }
 
-        /// <summary>
-        /// Sends an rollback response to the client.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RollbackMessage()
         {
             var response = HttpResponseGenerator.GetRollbackResponse(this);
             WriteResponse(response);
         }
 
-        /// <summary>
-        /// Sends a reject response to the client.
-        /// </summary>
+        /// <inheritdoc />
         protected override void RejectMessage()
         {
             var response = HttpResponseGenerator.GetRejectResponse(this);
