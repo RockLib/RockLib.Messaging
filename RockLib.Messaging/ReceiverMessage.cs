@@ -35,12 +35,12 @@ namespace RockLib.Messaging
             if (getRawPayload == null)
                 throw new ArgumentNullException(nameof(getRawPayload));
 
+            var rawPayload = new Lazy<object>(() => getRawPayload().Value
+                ?? throw new InvalidOperationException("Cannot decode/decompress null payload."));
+
             _stringPayload = new Lazy<string>(() =>
             {
-                var rawPayload = getRawPayload().Value
-                    ?? throw new InvalidOperationException("Cannot decode/decompress null payload.");
-
-                if (rawPayload is string stringPayload)
+                if (rawPayload.Value is string stringPayload)
                 {
                     if (this.IsCompressed())
                     {
@@ -50,7 +50,7 @@ namespace RockLib.Messaging
                     }
                     return stringPayload;
                 }
-                if (rawPayload is byte[] binaryPayload)
+                if (rawPayload.Value is byte[] binaryPayload)
                 {
                     if (this.IsCompressed())
                         binaryPayload = _gzip.Decompress(binaryPayload);
@@ -63,10 +63,7 @@ namespace RockLib.Messaging
 
             _binaryPayload = new Lazy<byte[]>(() =>
             {
-                var rawPayload = getRawPayload().Value
-                    ?? throw new InvalidOperationException("Cannot decode/decompress null payload.");
-
-                if (rawPayload is string stringPayload)
+                if (rawPayload.Value is string stringPayload)
                 {
                     if (this.IsCompressed())
                         return _gzip.Decompress(Convert.FromBase64String(stringPayload));
@@ -74,7 +71,7 @@ namespace RockLib.Messaging
                         return Convert.FromBase64String(stringPayload);
                     return Encoding.UTF8.GetBytes(stringPayload);
                 }
-                if (rawPayload is byte[] binaryPayload)
+                if (rawPayload.Value is byte[] binaryPayload)
                 {
                     if (this.IsCompressed())
                         return _gzip.Decompress(binaryPayload);
@@ -121,7 +118,7 @@ namespace RockLib.Messaging
         {
             lock (this)
             {
-                CheckHandled();
+                ThrowIfHandled();
                 AcknowledgeMessage();
                 SetHandled();
             }
@@ -135,7 +132,7 @@ namespace RockLib.Messaging
         {
             lock (this)
             {
-                CheckHandled();
+                ThrowIfHandled();
                 RollbackMessage();
                 SetHandled();
             }
@@ -149,11 +146,31 @@ namespace RockLib.Messaging
         {
             lock (this)
             {
-                CheckHandled();
+                ThrowIfHandled();
                 RejectMessage();
                 SetHandled();
             }
         }
+
+        private void ThrowIfHandled([CallerMemberName] string callerMemberName = null)
+        {
+            if (Handled)
+                throw new InvalidOperationException($"Cannot {callerMemberName} message: the message has already been handled by {_handledBy}.");
+        }
+
+        private void SetHandled([CallerMemberName] string callerMemberName = null)
+        {
+            _handledBy = callerMemberName;
+        }
+
+        /// <summary>
+        /// When overridden in a derived class, initializes the <paramref name="headers"/>
+        /// parameter with the headers for this receiver message.
+        /// </summary>
+        /// <param name="headers">
+        /// A dictionary to be filled with the headers for this receiver message.
+        /// </param>
+        protected abstract void InitializeHeaders(IDictionary<string, object> headers);
 
         /// <summary>
         /// When overridden in a derived class, indicates that the message was
@@ -187,26 +204,6 @@ namespace RockLib.Messaging
         /// <see cref="NotImplementedException"/> or similar exception.
         /// </remarks>
         protected abstract void RejectMessage();
-
-        /// <summary>
-        /// When overridden in a derived class, initializes the <paramref name="headers"/>
-        /// parameter with the headers for this receiver message.
-        /// </summary>
-        /// <param name="headers">
-        /// A dictionary to be filled with the headers for this receiver message.
-        /// </param>
-        protected abstract void InitializeHeaders(IDictionary<string, object> headers);
-
-        private void CheckHandled([CallerMemberName] string memberName = null)
-        {
-            if (Handled)
-                throw new InvalidOperationException($"Cannot {memberName} message: the message has already been handled by {_handledBy}.");
-        }
-
-        private void SetHandled([CallerMemberName] string memberName = null)
-        {
-            _handledBy = memberName;
-        }
 
         /// <summary>
         /// A struct that contains a payload value. Implicitly convertable from the
