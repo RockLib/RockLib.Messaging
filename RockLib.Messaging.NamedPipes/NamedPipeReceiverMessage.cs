@@ -21,24 +21,19 @@ namespace RockLib.Messaging.NamedPipes
         }
 
         /// <summary>
-        /// Returns null.
+        /// Does nothing.
         /// </summary>
-        public override byte? Priority => null;
+        protected override void AcknowledgeMessage() {}
 
         /// <summary>
         /// Does nothing.
         /// </summary>
-        public override void Acknowledge() {}
+        protected override void RollbackMessage() {}
 
         /// <summary>
         /// Does nothing.
         /// </summary>
-        public override void Rollback() {}
-
-        /// <summary>
-        /// Does nothing.
-        /// </summary>
-        public override void Reject() {}
+        protected override void RejectMessage() {}
         
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)

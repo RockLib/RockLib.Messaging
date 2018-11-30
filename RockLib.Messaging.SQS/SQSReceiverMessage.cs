@@ -28,24 +28,19 @@ namespace RockLib.Messaging.SQS
         }
 
         /// <summary>
-        /// Returns null.
-        /// </summary>
-        public override byte? Priority => null;
-
-        /// <summary>
         /// Deletes the message from the SQS queue, ensuring it is not redelivered.
         /// </summary>
-        public override void Acknowledge() => _acknowledge();
+        protected override void AcknowledgeMessage() => _acknowledge();
 
         /// <summary>
         /// Does nothing - the message will automatically be redelivered by SQS if left unacknowledged.
         /// </summary>
-        public override void Rollback() { }
+        protected override void RollbackMessage() { }
 
         /// <summary>
         /// Deletes the message from the SQS queue, ensuring it is not redelivered.
         /// </summary>
-        public override void Reject() => _acknowledge();
+        protected override void RejectMessage() => _acknowledge();
 
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)

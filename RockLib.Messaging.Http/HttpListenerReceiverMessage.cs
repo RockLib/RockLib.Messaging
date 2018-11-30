@@ -24,11 +24,6 @@ namespace RockLib.Messaging.Http
         }
 
         /// <summary>
-        /// Returns null.
-        /// </summary>
-        public override byte? Priority => null;
-
-        /// <summary>
         /// Gets the <see cref="HttpListenerContext"/> for the current request/response.
         /// </summary>
         public HttpListenerContext Context { get; }
@@ -42,7 +37,7 @@ namespace RockLib.Messaging.Http
         /// <summary>
         /// Sends an acknowledge response to the client.
         /// </summary>
-        public override void Acknowledge()
+        protected override void AcknowledgeMessage()
         {
             var response = HttpResponseGenerator.GetAcknowledgeResponse(this);
             WriteResponse(response);
@@ -51,7 +46,7 @@ namespace RockLib.Messaging.Http
         /// <summary>
         /// Sends an rollback response to the client.
         /// </summary>
-        public override void Rollback()
+        protected override void RollbackMessage()
         {
             var response = HttpResponseGenerator.GetRollbackResponse(this);
             WriteResponse(response);
@@ -60,7 +55,7 @@ namespace RockLib.Messaging.Http
         /// <summary>
         /// Sends a reject response to the client.
         /// </summary>
-        public override void Reject()
+        protected override void RejectMessage()
         {
             var response = HttpResponseGenerator.GetRejectResponse(this);
             WriteResponse(response);
