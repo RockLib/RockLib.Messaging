@@ -179,7 +179,7 @@ namespace RockLib.Messaging.Http
             {
                 var token = m.Groups[1].Value;
                 pathTokens.Add(token);
-                return $"(?<{token}>.*?)";
+                return $"(?<{token}>[^/]+)";
             }) + "/?$";
             _pathRegex = new Regex(pathPattern, RegexOptions.IgnoreCase);
             _pathTokens = pathTokens;

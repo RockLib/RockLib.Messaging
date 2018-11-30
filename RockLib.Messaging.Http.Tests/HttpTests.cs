@@ -122,6 +122,31 @@ namespace RockLib.Messaging.Http.Tests
         }
 
         [Fact]
+        public void ExtraPathAfterTokenResultIn404()
+        {
+            using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5000/api/{api_version}"))
+            {
+                string payload = null;
+                string apiVersion = null;
+
+                receiver.Start(m =>
+                {
+                    payload = m.StringPayload;
+                    apiVersion = m.Headers.GetValue<string>("api_version");
+                    m.Acknowledge();
+                });
+
+                using (var sender = new HttpClientSender("foo", "http://localhost:5000/API/v2/extra"))
+                {
+                    var exception = Assert.Throws<HttpRequestException>(() => sender.Send("Hello, world!"));
+                    Assert.Contains("404 (Not Found)", exception.Message);
+                }
+
+                Assert.Null(payload);
+            }
+        }
+
+        [Fact]
         public void MismatchedMethodsResultsIn405()
         {
             using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5000/", method: "POST"))
