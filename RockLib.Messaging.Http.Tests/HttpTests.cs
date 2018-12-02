@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using Xunit;
 
@@ -9,7 +10,7 @@ namespace RockLib.Messaging.Http.Tests
         [Fact]
         public void HttpMessagesAreSentAndReceived()
         {
-            using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5000/"))
+            using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5000/", method: "PUT", contentType: "application/json", accept: "application/json"))
             {
                 string payload = null;
 
@@ -19,7 +20,7 @@ namespace RockLib.Messaging.Http.Tests
                     m.Acknowledge();
                 });
 
-                using (var sender = new HttpClientSender("foo", "http://localhost:5000/"))
+                using (var sender = new HttpClientSender("foo", "http://localhost:5000/", method: "PUT", headers: new Dictionary<string, string> { { "Content-Type", "application/json"}, { "Accept", "application/json" } }))
                 {
                     sender.Send("Hello, world!");
                 }
@@ -163,6 +164,52 @@ namespace RockLib.Messaging.Http.Tests
                 {
                     var exception = Assert.Throws<HttpRequestException>(() => sender.Send("Hello, world!"));
                     Assert.Contains("405 (Method Not Allowed)", exception.Message);
+                }
+
+                Assert.Null(payload);
+            }
+        }
+
+        [Fact]
+        public void MismatchedContentTypeResultsIn415()
+        {
+            using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5000/", contentType: "application/json"))
+            {
+                string payload = null;
+
+                receiver.Start(m =>
+                {
+                    payload = m.StringPayload;
+                    m.Acknowledge();
+                });
+
+                using (var sender = new HttpClientSender("foo", "http://localhost:5000/", headers: new Dictionary<string, string> { { "Content-Type", "application/xml" } }))
+                {
+                    var exception = Assert.Throws<HttpRequestException>(() => sender.Send("Hello, world!"));
+                    Assert.Contains("415 (Unsupported Media Type)", exception.Message);
+                }
+
+                Assert.Null(payload);
+            }
+        }
+
+        [Fact]
+        public void MismatchedAcceptResultsIn406()
+        {
+            using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5000/", accept: "application/json"))
+            {
+                string payload = null;
+
+                receiver.Start(m =>
+                {
+                    payload = m.StringPayload;
+                    m.Acknowledge();
+                });
+
+                using (var sender = new HttpClientSender("foo", "http://localhost:5000/", headers: new Dictionary<string, string> { { "Accept", "application/xml" } }))
+                {
+                    var exception = Assert.Throws<HttpRequestException>(() => sender.Send("Hello, world!"));
+                    Assert.Contains("406 (Not Acceptable)", exception.Message);
                 }
 
                 Assert.Null(payload);

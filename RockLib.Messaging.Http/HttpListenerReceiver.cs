@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
@@ -26,6 +27,7 @@ namespace RockLib.Messaging.Http
         private readonly HttpListener _listener = new HttpListener();
 
         private readonly MediaTypeHeaderValue _contentType;
+        private readonly MediaTypeWithQualityHeaderValue _accept;
 
         private readonly Regex _pathRegex;
         private readonly IReadOnlyCollection<string> _pathTokens;
@@ -55,17 +57,23 @@ namespace RockLib.Messaging.Http
         /// that does not have this method will receive a 405 Method Not Allowed response.
         /// </param>
         /// <param name="contentType">
-        /// The content type that requests must match in order to be handled. If not null, any request whose
-        /// content type does not match this value will receive a 415 Unsupported Media Type response.
+        /// The <c>Content-Type</c> header value that requests must match in order to be handled. If not
+        /// null, any request that does not have a <c>Content-Type</c> header that matches this value will
+        /// receive a 415 Unsupported Media Type response.
+        /// </param>
+        /// <param name="accept">
+        /// The <c>Accept</c> header value that requests must match in order to be handled. If not null,
+        /// any request that does not have an <c>Accept</c> header that matches this value will receive
+        /// a 406 Not Acceptable response.
         /// </param>
         public HttpListenerReceiver(string name, string url,
             int acknowledgeStatusCode = DefaultAcknowledgeStatusCode,
             int rollbackStatusCode = DefaultRollbackStatusCode,
             int rejectStatusCode = DefaultRejectStatusCode,
-            string method = DefaultMethod, string contentType = null)
+            string method = DefaultMethod, string contentType = null, string accept = null)
             : this(name, url,
                   new DefaultHttpResponseGenerator(acknowledgeStatusCode, rollbackStatusCode, rejectStatusCode),
-                  method, contentType)
+                  method, contentType, accept)
         {
         }
 
@@ -96,17 +104,23 @@ namespace RockLib.Messaging.Http
         /// that does not have this method will receive a 405 Method Not Allowed response.
         /// </param>
         /// <param name="contentType">
-        /// The content type that requests must match in order to be handled. If not null, any request whose
-        /// content type does not match this value will receive a 415 Unsupported Media Type response.
+        /// The <c>Content-Type</c> header value that requests must match in order to be handled. If not
+        /// null, any request that does not have a <c>Content-Type</c> header that matches this value will
+        /// receive a 415 Unsupported Media Type response.
+        /// </param>
+        /// <param name="accept">
+        /// The <c>Accept</c> header value that requests must match in order to be handled. If not null,
+        /// any request that does not have an <c>Accept</c> header that matches this value will receive
+        /// a 406 Not Acceptable response.
         /// </param>
         public HttpListenerReceiver(string name, IReadOnlyList<string> prefixes, string path,
             int acknowledgeStatusCode = DefaultAcknowledgeStatusCode,
             int rollbackStatusCode = DefaultRollbackStatusCode,
             int rejectStatusCode = DefaultRejectStatusCode,
-            string method = DefaultMethod, string contentType = null)
+            string method = DefaultMethod, string contentType = null, string accept = null)
             : this(name, prefixes, path,
                 new DefaultHttpResponseGenerator(acknowledgeStatusCode, rollbackStatusCode, rejectStatusCode),
-                method, contentType)
+                method, contentType, accept)
         {
         }
 
@@ -128,12 +142,18 @@ namespace RockLib.Messaging.Http
         /// that does not have this method will receive a 405 Method Not Allowed response.
         /// </param>
         /// <param name="contentType">
-        /// The content type that requests must match in order to be handled. If not null, any request whose
-        /// content type does not match this value will receive a 415 Unsupported Media Type response.
+        /// The <c>Content-Type</c> header value that requests must match in order to be handled. If not
+        /// null, any request that does not have a <c>Content-Type</c> header that matches this value will
+        /// receive a 415 Unsupported Media Type response.
+        /// </param>
+        /// <param name="accept">
+        /// The <c>Accept</c> header value that requests must match in order to be handled. If not null,
+        /// any request that does not have an <c>Accept</c> header that matches this value will receive
+        /// a 406 Not Acceptable response.
         /// </param>
         public HttpListenerReceiver(string name, string url,
-            IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod, string contentType = null)
-            : this(name, GetPrefixes(url), GetPath(url), httpResponseGenerator, method, contentType)
+            IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod, string contentType = null, string accept = null)
+            : this(name, GetPrefixes(url), GetPath(url), httpResponseGenerator, method, contentType, accept)
         {
         }
 
@@ -159,11 +179,17 @@ namespace RockLib.Messaging.Http
         /// that does not have this method will receive a 405 Method Not Allowed response.
         /// </param>
         /// <param name="contentType">
-        /// The content type that requests must match in order to be handled. If not null, any request whose
-        /// content type does not match this value will receive a 415 Unsupported Media Type response.
+        /// The <c>Content-Type</c> header value that requests must match in order to be handled. If not
+        /// null, any request that does not have a <c>Content-Type</c> header that matches this value will
+        /// receive a 415 Unsupported Media Type response.
+        /// </param>
+        /// <param name="accept">
+        /// The <c>Accept</c> header value that requests must match in order to be handled. If not null,
+        /// any request that does not have an <c>Accept</c> header that matches this value will receive
+        /// a 406 Not Acceptable response.
         /// </param>
         public HttpListenerReceiver(string name, IReadOnlyList<string> prefixes, string path,
-            IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod, string contentType = null)
+            IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod, string contentType = null, string accept = null)
             : base(name)
         {
             if (path == null)
@@ -196,6 +222,18 @@ namespace RockLib.Messaging.Http
                 catch (FormatException ex)
                 {
                     throw new ArgumentException("Invalid value for 'Content-Type' header.", nameof(contentType), ex);
+                }
+            }
+
+            if (accept != null)
+            {
+                try
+                {
+                    _accept = MediaTypeWithQualityHeaderValue.Parse(accept);
+                }
+                catch (FormatException ex)
+                {
+                    throw new ArgumentException("Invalid value for 'Accept' header.", nameof(accept), ex);
                 }
             }
         }
@@ -278,6 +316,31 @@ namespace RockLib.Messaging.Http
                 if (requestContentType == null || requestContentType.MediaType != _contentType.MediaType)
                 {
                     context.Response.StatusCode = 415;
+                    context.Response.Close();
+                    return;
+                }
+            }
+
+            if (_accept != null)
+            {
+                var accept = new List<MediaTypeWithQualityHeaderValue>();
+
+                foreach (var acceptType in context.Request.AcceptTypes)
+                {
+                    try
+                    {
+                        accept.Add(MediaTypeWithQualityHeaderValue.Parse(acceptType));
+                    }
+                    catch
+                    {
+                        accept = null;
+                        break;
+                    }
+                }
+
+                if (accept == null || accept.All(a => a.MediaType != _accept.MediaType))
+                {
+                    context.Response.StatusCode = 406;
                     context.Response.Close();
                     return;
                 }
