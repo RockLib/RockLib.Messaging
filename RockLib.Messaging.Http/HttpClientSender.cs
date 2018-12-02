@@ -15,8 +15,10 @@ namespace RockLib.Messaging.Http
     /// </summary>
     public class HttpClientSender : ISender
     {
+        private readonly HttpContentHeaders _defaultContentHeaders = new ByteArrayContent(new byte[0]).Headers;
+        private readonly HttpRequestHeaders _defaultRequestHeaders = new HttpRequestMessage().Headers;
+
         private readonly HttpClient _client;
-        private readonly MediaTypeHeaderValue _defaultContentType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientSender"/> class.
@@ -24,8 +26,8 @@ namespace RockLib.Messaging.Http
         /// <param name="name">The name of the sender.</param>
         /// <param name="url">The url to send messages to.</param>
         /// <param name="method">The http method to use when sending messages.</param>
-        /// <param name="defaultHeaders">Optional headers that are added to each http request.</param>
-        public HttpClientSender(string name, string url, string method = "POST", IReadOnlyDictionary<string, string> defaultHeaders = null)
+        /// <param name="headers">Default headers that are added to each http request.</param>
+        public HttpClientSender(string name, string url, string method = "POST", IReadOnlyDictionary<string, string> headers = null)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Url = url ?? throw new ArgumentNullException(nameof(url));
@@ -33,26 +35,14 @@ namespace RockLib.Messaging.Http
 
             _client = new HttpClient();
 
-            if (defaultHeaders != null)
+            if (headers != null)
             {
-                foreach (var defaultHeader in defaultHeaders)
+                foreach (var header in headers)
                 {
-                    if (defaultHeader.Key == "Content-Type")
-                    {
-                        try
-                        {
-                            _defaultContentType = MediaTypeHeaderValue.Parse(defaultHeader.Value);
-                        }
-                        catch (FormatException ex)
-                        {
-                            throw new ArgumentException("Invalid 'Content-Type' header value.", nameof(defaultHeaders), ex);
-                        }
-                    }
+                    if (IsContentHeader(header.Key))
+                        AddHeader(_defaultContentHeaders, header.Key, header.Value);
                     else
-                    {
-                        foreach (var defaultHeaderValue in GetHeaderValues(defaultHeader.Value))
-                            _client.DefaultRequestHeaders.Add(defaultHeader.Key, defaultHeaderValue);
-                    }
+                        AddHeader(_defaultRequestHeaders, header.Key, header.Value);
                 }
             }
         }
@@ -96,59 +86,29 @@ namespace RockLib.Messaging.Http
 
             var request = new HttpRequestMessage(Method, url)
             {
-                Content = message.IsBinary || message.IsCompressed
-                    ? new ByteArrayContent(message.BinaryPayload)
-                    : new StringContent(message.StringPayload)
+                Content = new ByteArrayContent(message.BinaryPayload)
             };
 
-            if (headers.TryGetValue("Content-Type", out var obj) && obj is string contentType)
-                request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
-            else if (_defaultContentType != null)
-                request.Content.Headers.ContentType = _defaultContentType;
+            foreach (var defaultContentHeader in _defaultContentHeaders)
+                if (!message.Headers.ContainsKey(defaultContentHeader.Key))
+                    request.Content.Headers.Add(defaultContentHeader.Key, defaultContentHeader.Value);
+
+            foreach (var defaultRequestHeader in _defaultRequestHeaders)
+                if (!message.Headers.ContainsKey(defaultRequestHeader.Key))
+                    request.Headers.Add(defaultRequestHeader.Key, defaultRequestHeader.Value);
+
+            foreach (var header in message.Headers)
+            {
+                if (IsContentHeader(header.Key))
+                    AddHeader(request.Content.Headers, header.Key, header.Value?.ToString());
+                else
+                    AddHeader(request.Headers, header.Key, header.Value?.ToString());
+            }
 
             // TODO: if the message is compressed, add an http compression header?
 
-            foreach (var header in headers)
-                if (header.Key != "Content-Type")
-                    foreach (var headerValue in GetHeaderValues(header.Value.ToString()))
-                        request.Headers.Add(header.Key, headerValue);
-
             var response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-        }
-
-        private IEnumerable<string> GetHeaderValues(string value)
-        {
-            if (value == null)
-                yield break;
-
-            if (Regex.IsMatch(value, "[,;]"))
-            {
-                var sb = new StringBuilder();
-
-                for (int i = 0; i < value.Length; i++)
-                {
-                    switch (value[i])
-                    {
-                        case ',':
-                        case ';':
-                            if (sb.Length > 0)
-                            {
-                                yield return sb.ToString().Trim();
-                                sb.Clear();
-                            }
-                            break;
-                        default:
-                            sb.Append(value[i]);
-                            break;
-                    }
-                }
-
-                if (sb.Length > 0)
-                    yield return sb.ToString().Trim();
-            }
-            else
-                yield return value.Trim();
         }
 
         /// <summary>
@@ -171,6 +131,106 @@ namespace RockLib.Messaging.Http
 
                 throw new InvalidOperationException($"The url for this {nameof(HttpClientSender)} contains a token, '{token}', that is not present in the headers of the sender message.");
             });
+        }
+
+        private static void AddHeader(HttpHeaders headers, string headerName, string headerValue)
+        {
+            if (headerValue == null)
+                return;
+
+            if (SupportsMultipleValues(headerName))
+                headers.Add(headerName, SplitByComma(headerValue));
+            else
+                headers.Add(headerName, headerValue);
+        }
+
+        private static bool IsContentHeader(string headerName)
+        {
+            switch (headerName)
+            {
+                case "Allow":
+                case "Content-Disposition":
+                case "Content-Encoding":
+                case "Content-Language":
+                case "Content-Length":
+                case "Content-Location":
+                case "Content-MD5":
+                case "Content-Range":
+                case "Content-Type":
+                case "Expires":
+                case "Last-Modified":
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        private static bool SupportsMultipleValues(string headerName)
+        {
+            switch (headerName)
+            {
+                case "Allow":
+                case "Content-Encoding":
+                case "Content-Language":
+                case "Accept":
+                case "Accept-Charset":
+                case "Accept-Encoding":
+                case "Accept-Language":
+                case "Cache-Control":
+                case "Connection":
+                case "Expect":
+                case "If-Match":
+                case "If-None-Match":
+                case "Pragma":
+                case "TE":
+                case "Trailer":
+                case "Transfer-Encoding":
+                case "Upgrade":
+                case "Via":
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        private static IEnumerable<string> SplitByComma(string headerValue)
+        {
+            string value;
+
+            if (!headerValue.Contains(","))
+            {
+                value = headerValue.Trim();
+                if (value.Length > 0)
+                    yield return value;
+                yield break;
+            }
+
+            var sb = new StringBuilder();
+
+            for (int i = 0; i < headerValue.Length; i++)
+            {
+                switch (headerValue[i])
+                {
+                    case ',':
+                        value = sb.ToString().Trim();
+                        if (value.Length > 0)
+                            yield return value;
+                        sb.Clear();
+                        continue;
+                    default:
+                        sb.Append(headerValue[i]);
+                        continue;
+                }
+            }
+
+            if (sb.Length > 0)
+            {
+                value = sb.ToString().Trim();
+                if (value.Length > 0)
+                    yield return value;
+            }
         }
     }
 }
