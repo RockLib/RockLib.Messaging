@@ -2,7 +2,6 @@
 using NUnit.Framework;
 using RockLib.Messaging.Testing;
 using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace RockLib.Messaging.Tests
