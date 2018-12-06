@@ -19,7 +19,7 @@ namespace RockLib.Messaging.SQS
         /// Uses a default implementation of the <see cref="AmazonSQSClient"/> to
         /// communicate with SQS.
         /// </summary>
-        /// <param name="name">The configuration name.</param>
+        /// <param name="name">The name of the sender.</param>
         /// <param name="queueUrl">The url of the SQS queue.</param>
         public SQSQueueSender(string name, string queueUrl)
             : this(new AmazonSQSClient(), name, queueUrl)
@@ -30,7 +30,7 @@ namespace RockLib.Messaging.SQS
         /// Initializes a new instance of the <see cref="SQSQueueReceiver"/> class.
         /// </summary>
         /// <param name="sqs">An object that communicates with SQS.</param>
-        /// <param name="name">The configuration name.</param>
+        /// <param name="name">The name of the sender.</param>
         /// <param name="queueUrl">The url of the SQS queue.</param>
         public SQSQueueSender(IAmazonSQS sqs, string name, string queueUrl)
         {
