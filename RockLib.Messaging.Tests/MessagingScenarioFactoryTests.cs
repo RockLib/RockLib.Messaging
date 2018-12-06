@@ -112,35 +112,4 @@ namespace RockLib.Messaging.Tests
             receiver.PipeName.Should().Be("PipeName1");
         }
     }
-
-    public class FakeSender : ISender
-    {
-        public string Name { get; set; }
-        public string PipeName { get; set; }
-
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task SendAsync(SenderMessage message, CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class FakeReceiver : IReceiver
-    {
-        public string Name { get; set; }
-        public string PipeName { get; set; }
-        public IMessageHandler MessageHandler { get; set; }
-
-        event EventHandler IReceiver.Connected { add { } remove { } }
-        event EventHandler<DisconnectedEventArgs> IReceiver.Disconnected { add { } remove { } }
-
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-    }
 }

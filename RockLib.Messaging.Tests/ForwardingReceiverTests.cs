@@ -9,10 +9,10 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void SettingMessageHandlerSetsTheMessageHandlerOfTheReceiverToAForwardingMessageHandler()
         {
-            var receiver = new TestReceiver();
+            var receiver = new FakeReceiver();
             var forwardingReceiver = new ForwardingReceiver("foo", receiver);
 
-            var messageHandler = new TestMessageHandler();
+            var messageHandler = new FakeMessageHandler();
 
             forwardingReceiver.MessageHandler = messageHandler;
 

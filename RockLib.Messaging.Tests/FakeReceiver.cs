@@ -2,9 +2,10 @@
 
 namespace RockLib.Messaging.Tests
 {
-    public class TestReceiver : IReceiver
+    public class FakeReceiver : IReceiver
     {
-        public string Name => "TestReceiver";
+        public string Name { get; set; }
+        public string PipeName { get; set; }
 
         public IMessageHandler MessageHandler { get; set; }
 

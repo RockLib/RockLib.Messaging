@@ -12,7 +12,7 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void StringPayloadIsSetFromStringPayload()
         {
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             message.StringPayload.Should().BeSameAs("Hello, world!");
         }
@@ -20,7 +20,7 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void BinaryPayloadIsSetFromUTF8EncodedStringPayload()
         {
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             message.BinaryPayload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes("Hello, world!"), x => x.WithStrictOrdering());
         }
@@ -30,7 +30,7 @@ namespace RockLib.Messaging.Tests
         {
             var payload = new byte[] { 1, 2, 3, 4, 5 };
 
-            var message = new TestReceiverMessage(payload);
+            var message = new FakeReceiverMessage(payload);
 
             message.BinaryPayload.Should().BeSameAs(payload);
         }
@@ -40,7 +40,7 @@ namespace RockLib.Messaging.Tests
         {
             var payload = new byte[] { 1, 2, 3, 4, 5 };
 
-            var message = new TestReceiverMessage(payload);
+            var message = new FakeReceiverMessage(payload);
 
             message.StringPayload.Should().Be(Convert.ToBase64String(payload));
         }
@@ -48,7 +48,7 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void PublicHeaderPropertyIsNotTheSameAsExplicitInterfaceHeaderProperty()
         {
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             ((object)message.Headers).Should().NotBeSameAs(((IReceiverMessage)message).Headers);
         }
@@ -56,7 +56,7 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void PublicHeaderPropertyHasSameContentsAsExplicitInterfaceHeaderProperty()
         {
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             message.Headers.Add("foo", "abc");
             message.Headers.Add("bar", 123);
@@ -73,7 +73,7 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void HandledIsFalseBeforeMessageIsHandled()
         {
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             message.Handled.Should().BeFalse();
         }
@@ -81,7 +81,7 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void HandledByIsNullBeforeMessageIsHandled()
         {
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             message.HandledBy.Should().BeNull();
         }
@@ -89,7 +89,7 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void HandledIsTrueAfterAcknowledgeIsCalled()
         {
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             message.Acknowledge();
 
@@ -99,7 +99,7 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void HandledByIsAcknowledgeAfterAcknowledgeIsCalled()
         {
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             message.Acknowledge();
 
@@ -109,7 +109,7 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void HandledIsTrueAfterRollbackIsCalled()
         {
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             message.Rollback();
 
@@ -119,7 +119,7 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void HandledByIsRollbackAfterRollbackIsCalled()
         {
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             message.Rollback();
 
@@ -129,7 +129,7 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void HandledIsTrueAfterRejectIsCalled()
         {
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             message.Reject();
 
@@ -139,7 +139,7 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void HandledByIsRejectAfterRejectIsCalled()
         {
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             message.Reject();
 
@@ -149,7 +149,7 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void AcknowledgeThrowsIfHandledIsTrue()
         {
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             message.Acknowledge();
 
@@ -162,7 +162,7 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void RollbackThrowsIfHandledIsTrue()
         {
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             message.Acknowledge();
 
@@ -175,7 +175,7 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void RejectThrowsIfHandledIsTrue()
         {
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             message.Acknowledge();
 

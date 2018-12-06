@@ -10,9 +10,9 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void AcknowledgeCallsInnerMessageAcknowledgeIfAcknowledgeForwarderIsNull()
         {
-            var receiver = new TestReceiver();
+            var receiver = new FakeReceiver();
             var forwardingReceiver = new ForwardingReceiver("foo", receiver, acknowledgeForwarder: null);
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
@@ -24,11 +24,11 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void AcknowledgeSendsMessageToAcknowledgeForwarderWhenAcknowledgeForwarderIsNotNull()
         {
-            var forwarder = new TestSender();
+            var forwarder = new FakeSender();
 
-            var receiver = new TestReceiver();
+            var receiver = new FakeReceiver();
             var forwardingReceiver = new ForwardingReceiver("foo", receiver, acknowledgeForwarder: forwarder);
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
@@ -43,11 +43,11 @@ namespace RockLib.Messaging.Tests
         [TestCase(ForwardingOutcome.Reject)]
         public void AcknowledgeHandlesInnerMessageAccordingToAcknowledgeOutcomeWhenAcknowledgeForwarderIsNotNull(ForwardingOutcome outcome)
         {
-            var forwarder = new TestSender();
+            var forwarder = new FakeSender();
 
-            var receiver = new TestReceiver();
+            var receiver = new FakeReceiver();
             var forwardingReceiver = new ForwardingReceiver("foo", receiver, acknowledgeForwarder: forwarder, acknowledgeOutcome: outcome);
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
@@ -59,9 +59,9 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void RollbackCallsInnerMessageRollbackIfRollbackForwarderIsNull()
         {
-            var receiver = new TestReceiver();
+            var receiver = new FakeReceiver();
             var forwardingReceiver = new ForwardingReceiver("foo", receiver, rollbackForwarder: null);
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
@@ -73,11 +73,11 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void RollbackSendsMessageToRollbackForwarderWhenRollbackForwarderIsNotNull()
         {
-            var forwarder = new TestSender();
+            var forwarder = new FakeSender();
 
-            var receiver = new TestReceiver();
+            var receiver = new FakeReceiver();
             var forwardingReceiver = new ForwardingReceiver("foo", receiver, rollbackForwarder: forwarder);
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
@@ -92,11 +92,11 @@ namespace RockLib.Messaging.Tests
         [TestCase(ForwardingOutcome.Reject)]
         public void RollbackHandlesInnerMessageAccordingToRollbackOutcomeWhenRollbackForwarderIsNotNull(ForwardingOutcome outcome)
         {
-            var forwarder = new TestSender();
+            var forwarder = new FakeSender();
 
-            var receiver = new TestReceiver();
+            var receiver = new FakeReceiver();
             var forwardingReceiver = new ForwardingReceiver("foo", receiver, rollbackForwarder: forwarder, rollbackOutcome: outcome);
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
@@ -108,9 +108,9 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void RejectCallsInnerMessageRejectWhenRejectForwarderIsNull()
         {
-            var receiver = new TestReceiver();
+            var receiver = new FakeReceiver();
             var forwardingReceiver = new ForwardingReceiver("foo", receiver, rejectForwarder: null);
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
@@ -122,11 +122,11 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void RejectSendsMessageToRejectForwarderWhenRejectForwarderIsNotNull()
         {
-            var forwarder = new TestSender();
+            var forwarder = new FakeSender();
 
-            var receiver = new TestReceiver();
+            var receiver = new FakeReceiver();
             var forwardingReceiver = new ForwardingReceiver("foo", receiver, rejectForwarder: forwarder);
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
@@ -141,11 +141,11 @@ namespace RockLib.Messaging.Tests
         [TestCase(ForwardingOutcome.Reject)]
         public void RejectHandlesInnerMessageAccordingToRejectOutcomeWhenRejectForwarderIsNotNull(ForwardingOutcome outcome)
         {
-            var forwarder = new TestSender();
+            var forwarder = new FakeSender();
 
-            var receiver = new TestReceiver();
+            var receiver = new FakeReceiver();
             var forwardingReceiver = new ForwardingReceiver("foo", receiver, rejectForwarder: forwarder, rejectOutcome: outcome);
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 

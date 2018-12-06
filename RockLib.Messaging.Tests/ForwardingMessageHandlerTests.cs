@@ -10,13 +10,13 @@ namespace RockLib.Messaging.Tests
         [Test]
         public void OnMessageReceivedCallsInnerHandlerOnMessageReceivedWithForwardingReceiverMessage()
         {
-            var receiver = new TestReceiver();
+            var receiver = new FakeReceiver();
             var forwardingReceiver = new ForwardingReceiver("foo", receiver);
-            var messageHandler = new TestMessageHandler();
+            var messageHandler = new FakeMessageHandler();
 
             var handler = new ForwardingMessageHandler(forwardingReceiver, messageHandler);
 
-            var message = new TestReceiverMessage("Hello, world!");
+            var message = new FakeReceiverMessage("Hello, world!");
 
             handler.OnMessageReceived(receiver, message);
 

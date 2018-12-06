@@ -4,11 +4,12 @@ using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Tests
 {
-    public class TestSender : ISender
+    public class FakeSender : ISender
     {
         public List<SenderMessage> SentMessages { get; } = new List<SenderMessage>();
 
-        public string Name => "TestSender";
+        public string Name { get; set; }
+        public string PipeName { get; set; }
 
         public void Dispose()
         {

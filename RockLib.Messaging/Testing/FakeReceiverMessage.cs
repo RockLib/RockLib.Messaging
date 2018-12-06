@@ -9,15 +9,15 @@ namespace RockLib.Messaging.Testing
     /// An implementation of <see cref="IReceiverMessage"/> that makes testing
     /// <see cref="IReceiver"/> message handlers easier.
     /// </summary>
-    public class TestReceiverMessage : IReceiverMessage
+    public class FakeReceiverMessage : IReceiverMessage
     {
         private readonly HeaderDictionary _headerDictionary;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TestReceiverMessage"/> class.
+        /// Initializes a new instance of the <see cref="FakeReceiverMessage"/> class.
         /// </summary>
-        /// <param name="payload">The payload of the test message.</param>
-        public TestReceiverMessage(string payload)
+        /// <param name="payload">The payload of the fake message.</param>
+        public FakeReceiverMessage(string payload)
             : this()
         {
             StringPayload = payload ?? throw new ArgumentNullException(nameof(payload));
@@ -25,17 +25,17 @@ namespace RockLib.Messaging.Testing
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TestReceiverMessage"/> class.
+        /// Initializes a new instance of the <see cref="FakeReceiverMessage"/> class.
         /// </summary>
-        /// <param name="payload">The payload of the test message.</param>
-        public TestReceiverMessage(byte[] payload)
+        /// <param name="payload">The payload of the fake message.</param>
+        public FakeReceiverMessage(byte[] payload)
             : this()
         {
             BinaryPayload = payload ?? throw new ArgumentNullException(nameof(payload));
             StringPayload = Convert.ToBase64String(payload);
         }
 
-        private TestReceiverMessage()
+        private FakeReceiverMessage()
         {
             var headers = new Dictionary<string, object>();
             Headers = headers;
