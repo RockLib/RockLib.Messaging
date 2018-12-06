@@ -54,7 +54,7 @@ namespace RockLib.Messaging
 
         public IMessageHandler MessageHandler
         {
-            get => ((ForwardingMessageHandler)Receiver.MessageHandler).MessageHandler;
+            get => ((ForwardingMessageHandler)Receiver.MessageHandler)?.MessageHandler;
             set => Receiver.MessageHandler = new ForwardingMessageHandler(this, value);
         }
 
