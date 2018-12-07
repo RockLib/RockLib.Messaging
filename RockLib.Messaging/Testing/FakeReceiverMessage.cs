@@ -6,8 +6,9 @@ using System.Text;
 namespace RockLib.Messaging.Testing
 {
     /// <summary>
-    /// An implementation of <see cref="IReceiverMessage"/> that makes testing
-    /// <see cref="IReceiver"/> message handlers easier.
+    /// A fake implementation of the <see cref="IReceiverMessage"/> interface that allows
+    /// an application's <see cref="IReceiver"/> message handler implementation to be unit
+    /// tested without requiring a mocking framework.
     /// </summary>
     public class FakeReceiverMessage : IReceiverMessage
     {

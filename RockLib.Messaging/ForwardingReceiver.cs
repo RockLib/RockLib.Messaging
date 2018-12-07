@@ -3,9 +3,8 @@
 namespace RockLib.Messaging
 {
     /// <summary>
-    /// A decorator for the <see cref="IReceiver"/> interface that forwards
-    /// received messages to configured <see cref="ISender"/> instances when
-    /// messages are acknowledged, rolled back, or rejected.
+    /// A decorator for the <see cref="IReceiver"/> interface that can forward messages using an
+    /// <see cref="ISender"/> instance when acknowledged, rolled back, or rejected.
     /// </summary>
     public sealed class ForwardingReceiver : IReceiver
     {
