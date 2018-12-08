@@ -26,8 +26,8 @@ namespace RockLib.Messaging.Http
         /// <param name="name">The name of the sender.</param>
         /// <param name="url">The url to send messages to.</param>
         /// <param name="method">The http method to use when sending messages.</param>
-        /// <param name="headers">Default headers that are added to each http request.</param>
-        public HttpClientSender(string name, string url, string method = "POST", IReadOnlyDictionary<string, string> headers = null)
+        /// <param name="defaultHeaders">Default headers that are added to each http request.</param>
+        public HttpClientSender(string name, string url, string method = "POST", IReadOnlyDictionary<string, string> defaultHeaders = null)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Url = url ?? throw new ArgumentNullException(nameof(url));
@@ -35,9 +35,9 @@ namespace RockLib.Messaging.Http
 
             _client = new HttpClient();
 
-            if (headers != null)
+            if (defaultHeaders != null)
             {
-                foreach (var header in headers)
+                foreach (var header in defaultHeaders)
                 {
                     if (IsContentHeader(header.Key))
                         AddHeader(_defaultContentHeaders, header.Key, header.Value);
