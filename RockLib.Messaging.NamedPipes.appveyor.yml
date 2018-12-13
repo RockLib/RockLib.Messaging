@@ -4,6 +4,7 @@ configuration: Release
 only_commits:
   files:
   - RockLib.Messaging.NamedPipes/
+  - RockLib.Messaging.NamedPipes.Tests/
   - RockLib.Messaging.NamedPipes.sln
   - RockLib.Messaging.NamedPipes.appveyor.yml
 before_build:

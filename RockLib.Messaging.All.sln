@@ -27,6 +27,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.Http.DotN
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Messaging.Http.DotNetFramework451", "Example.Messaging.Http.DotNetFramework451\Example.Messaging.Http.DotNetFramework451.csproj", "{24795847-BD1C-47B3-8332-2E28FD34132E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockLib.Messaging.NamedPipes.Tests", "RockLib.Messaging.NamedPipes.Tests\RockLib.Messaging.NamedPipes.Tests.csproj", "{601CD260-2B20-49B6-9417-E1B95C2588B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +83,10 @@ Global
 		{24795847-BD1C-47B3-8332-2E28FD34132E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24795847-BD1C-47B3-8332-2E28FD34132E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24795847-BD1C-47B3-8332-2E28FD34132E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{601CD260-2B20-49B6-9417-E1B95C2588B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{601CD260-2B20-49B6-9417-E1B95C2588B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{601CD260-2B20-49B6-9417-E1B95C2588B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{601CD260-2B20-49B6-9417-E1B95C2588B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
