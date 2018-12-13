@@ -275,24 +275,15 @@ namespace RockLib.Messaging.NamedPipes
                         wasPrevBackslash = false;
                         break;
                     case 'r':
-                        if (wasPrevBackslash)
-                            sb.Append('\r');
-                        else
-                            sb.Append(c);
+                        sb.Append(wasPrevBackslash ? '\r' : c);
                         wasPrevBackslash = false;
                         break;
                     case 'n':
-                        if (wasPrevBackslash)
-                            sb.Append('\n');
-                        else
-                            sb.Append(c);
+                        sb.Append(wasPrevBackslash ? '\n' : c);
                         wasPrevBackslash = false;
                         break;
                     case 't':
-                        if (wasPrevBackslash)
-                            sb.Append('\t');
-                        else
-                            sb.Append(c);
+                        sb.Append(wasPrevBackslash ? '\t' : c);
                         wasPrevBackslash = false;
                         break;
                     default:

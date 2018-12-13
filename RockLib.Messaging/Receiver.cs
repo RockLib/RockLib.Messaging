@@ -7,7 +7,7 @@ namespace RockLib.Messaging
     /// </summary>
     public abstract class Receiver : IReceiver
     {
-        private bool disposed;
+        private bool _disposed;
         private IMessageHandler _messageHandler;
 
         /// <summary>
@@ -34,12 +34,10 @@ namespace RockLib.Messaging
             get => _messageHandler;
             set
             {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(value));
                 if (_messageHandler != null)
                     throw new InvalidOperationException("The receiver is already started.");
 
-                _messageHandler = value;
+                _messageHandler = value ?? throw new ArgumentNullException(nameof(value));
                 Start();
             }
         }
@@ -90,7 +88,7 @@ namespace RockLib.Messaging
         /// </param>
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed)
+            if (_disposed)
                 return;
 
             if (disposing)
@@ -100,7 +98,7 @@ namespace RockLib.Messaging
                 _messageHandler = null;
             }
 
-            disposed = true;
+            _disposed = true;
         }
     }
 }

@@ -39,16 +39,14 @@ namespace RockLib.Messaging
         {
             if (_headers.TryGetValue(key, out object objectValue))
             {
-                if (objectValue == null)
+                switch (objectValue)
                 {
-                    value = default(T);
-                    return false;
-                }
-
-                if (objectValue is T)
-                {
-                    value = (T)objectValue;
-                    return true;
+                    case null:
+                        value = default(T);
+                        return false;
+                    case T variable:
+                        value = variable;
+                        return true;
                 }
 
                 var converter = TypeDescriptor.GetConverter(typeof(T));
@@ -101,42 +99,42 @@ namespace RockLib.Messaging
         /// </exception>
         public T GetValue<T>(string key)
         {
-            if (_headers.TryGetValue(key, out object objectValue))
+            if (!_headers.TryGetValue(key, out object objectValue))
+                throw new KeyNotFoundException($"The specified header, '{key}', was not found.");
+
+            switch (objectValue)
             {
-                if (objectValue == null)
+                case null:
                     throw new KeyNotFoundException($"The specified header, '{key}', has a null value.");
-
-                if (objectValue is T)
-                    return (T)objectValue;
-
-                var converter = TypeDescriptor.GetConverter(typeof(T));
-                if (converter.CanConvertFrom(objectValue.GetType()))
-                {
-                    try
-                    {
-                        return (T)converter.ConvertFrom(objectValue);
-                    }
-                    catch
-                    {
-                    }
-                }
-
-                converter = TypeDescriptor.GetConverter(objectValue);
-                if (converter.CanConvertTo(typeof(T)))
-                {
-                    try
-                    {
-                        return (T)converter.ConvertTo(objectValue, typeof(T));
-                    }
-                    catch
-                    {
-                    }
-                }
-
-                throw new InvalidCastException($"The specified header, '{key}', has a value, {objectValue} (with type {objectValue.GetType().FullName}), that cannot be converted to target type {typeof(T).FullName}.");
+                case T variable:
+                    return variable;
             }
 
-            throw new KeyNotFoundException($"The specified header, '{key}', was not found.");
+            var converter = TypeDescriptor.GetConverter(typeof(T));
+            if (converter.CanConvertFrom(objectValue.GetType()))
+            {
+                try
+                {
+                    return (T)converter.ConvertFrom(objectValue);
+                }
+                catch
+                {
+                }
+            }
+
+            converter = TypeDescriptor.GetConverter(objectValue);
+            if (converter.CanConvertTo(typeof(T)))
+            {
+                try
+                {
+                    return (T)converter.ConvertTo(objectValue, typeof(T));
+                }
+                catch
+                {
+                }
+            }
+
+            throw new InvalidCastException($"The specified header, '{key}', has a value, {objectValue} (with type {objectValue.GetType().FullName}), that cannot be converted to target type {typeof(T).FullName}.");
         }
 
         /// <summary>

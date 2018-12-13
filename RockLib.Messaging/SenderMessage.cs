@@ -147,35 +147,33 @@ namespace RockLib.Messaging
             set => Headers[HeaderNames.OriginatingSystem] = value;
         }
 
-        private void InitAsString(string payload, bool compress, out Lazy<string> _stringPayload, out Lazy<byte[]> _binaryPayload)
+        private void InitAsString(string payload, bool compress, out Lazy<string> stringPayload, out Lazy<byte[]> binaryPayload)
         {
-            _stringPayload = new Lazy<string>(() => payload);
-            _binaryPayload = new Lazy<byte[]>(() => Encoding.UTF8.GetBytes(payload));
+            stringPayload = new Lazy<string>(() => payload);
+            binaryPayload = new Lazy<byte[]>(() => Encoding.UTF8.GetBytes(payload));
 
             if (compress)
-                Compress(ref _stringPayload, ref _binaryPayload);
+                Compress(ref stringPayload, ref binaryPayload);
         }
 
-        private void InitAsBinary(byte[] payload, bool compress, out Lazy<string> _stringPayload, out Lazy<byte[]> _binaryPayload)
+        private void InitAsBinary(byte[] payload, bool compress, out Lazy<string> stringPayload, out Lazy<byte[]> binaryPayload)
         {
-            _stringPayload = new Lazy<string>(() => Convert.ToBase64String(payload));
-            _binaryPayload = new Lazy<byte[]>(() => payload);
+            stringPayload = new Lazy<string>(() => Convert.ToBase64String(payload));
+            binaryPayload = new Lazy<byte[]>(() => payload);
 
             if (compress)
-                Compress(ref _stringPayload, ref _binaryPayload);
+                Compress(ref stringPayload, ref binaryPayload);
         }
 
-        private void Compress(
-            ref Lazy<string> _stringPayload,
-            ref Lazy<byte[]> _binaryPayload)
+        private void Compress(ref Lazy<string> stringPayload, ref Lazy<byte[]> binaryPayload)
         {
-            var uncompressedPayload = _binaryPayload;
+            var uncompressedPayload = binaryPayload;
             var compressedPayload = new Lazy<byte[]>(() => _gzip.Compress(uncompressedPayload.Value));
 
             if (compressedPayload.Value.Length < uncompressedPayload.Value.Length)
             {
-                _stringPayload = new Lazy<string>(() => Convert.ToBase64String(compressedPayload.Value));
-                _binaryPayload = compressedPayload;
+                stringPayload = new Lazy<string>(() => Convert.ToBase64String(compressedPayload.Value));
+                binaryPayload = compressedPayload;
                 _headers[HeaderNames.IsCompressedPayload] = true;
             }
         }

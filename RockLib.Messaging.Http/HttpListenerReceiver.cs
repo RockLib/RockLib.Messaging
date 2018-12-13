@@ -29,7 +29,7 @@ namespace RockLib.Messaging.Http
         private readonly Regex _pathRegex;
         private readonly IReadOnlyCollection<string> _pathTokens;
 
-        private bool disposed;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpListenerReceiver"/> class.
@@ -228,7 +228,7 @@ namespace RockLib.Messaging.Http
 
         private void CompleteGetContext(IAsyncResult result)
         {
-            if (disposed)
+            if (_disposed)
                 return;
 
             var context = _listener.EndGetContext(result);
@@ -272,9 +272,9 @@ namespace RockLib.Messaging.Http
         /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
-            if (disposed)
+            if (_disposed)
                 return;
-            disposed = true;
+            _disposed = true;
             _listener.Stop();
             base.Dispose(disposing);
             _listener.Close();
@@ -287,9 +287,9 @@ namespace RockLib.Messaging.Http
 
             var match = Regex.Match(url, ".*?(?={[^}]+})");
 
-            if (match.Success)
-                return new[] { match.Value };
-            return new[] { url.Trim('/') + '/' };
+            return match.Success 
+                ? new[] { match.Value } 
+                : new[] { url.Trim('/') + '/' };
         }
 
         private static string GetPath(string url)

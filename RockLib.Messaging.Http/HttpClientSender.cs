@@ -209,9 +209,9 @@ namespace RockLib.Messaging.Http
 
             var sb = new StringBuilder();
 
-            for (int i = 0; i < headerValue.Length; i++)
+            foreach (var header in headerValue)
             {
-                switch (headerValue[i])
+                switch (header)
                 {
                     case ',':
                         value = sb.ToString().Trim();
@@ -220,7 +220,7 @@ namespace RockLib.Messaging.Http
                         sb.Clear();
                         continue;
                     default:
-                        sb.Append(headerValue[i]);
+                        sb.Append(header);
                         continue;
                 }
             }

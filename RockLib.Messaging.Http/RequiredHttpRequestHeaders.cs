@@ -11,8 +11,8 @@ namespace RockLib.Messaging.Http
     /// </summary>
     public class RequiredHttpRequestHeaders
     {
-        private IReadOnlyCollection<string> _contentTypeMediaTypes;
-        private IReadOnlyCollection<string> _acceptMediaTypes;
+        private readonly IReadOnlyCollection<string> _contentTypeMediaTypes;
+        private readonly IReadOnlyCollection<string> _acceptMediaTypes;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RequiredHttpRequestHeaders"/> class.

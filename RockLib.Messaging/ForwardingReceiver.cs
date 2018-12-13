@@ -176,8 +176,8 @@ namespace RockLib.Messaging
         /// </summary>
         public event EventHandler Connected
         {
-            add { Receiver.Connected += value; }
-            remove { Receiver.Connected -= value; }
+            add => Receiver.Connected += value;
+            remove => Receiver.Connected -= value;
         }
 
         /// <summary>
@@ -189,8 +189,8 @@ namespace RockLib.Messaging
         /// </summary>
         public event EventHandler<DisconnectedEventArgs> Disconnected
         {
-            add { Receiver.Disconnected += value; }
-            remove { Receiver.Disconnected -= value; }
+            add => Receiver.Disconnected += value;
+            remove => Receiver.Disconnected -= value;
         }
 
         /// <summary>

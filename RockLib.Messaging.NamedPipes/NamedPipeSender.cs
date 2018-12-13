@@ -15,7 +15,6 @@ namespace RockLib.Messaging.NamedPipes
     public class NamedPipeSender : ISender
     {
         private readonly NamedPipeMessageSerializer _serializer = NamedPipeMessageSerializer.Instance;
-        private static readonly Task _completedTask = Task.FromResult(0);
         private readonly BlockingCollection<WorkItem> _workItems;
         private readonly Thread _runThread;
 
@@ -122,7 +121,6 @@ namespace RockLib.Messaging.NamedPipes
                 catch (Exception ex)
                 {
                     workItem.Completion.SetException(ex);
-                    continue;
                 }
             }
         }

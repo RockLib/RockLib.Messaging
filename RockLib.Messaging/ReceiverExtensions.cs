@@ -38,12 +38,10 @@ namespace RockLib.Messaging
         {
             if (receiver == null)
                 throw new ArgumentNullException(nameof(receiver));
-            if (messageHandler == null)
-                throw new ArgumentNullException(nameof(messageHandler));
             if (receiver.MessageHandler != null)
                 throw new InvalidOperationException("The receiver is already started.");
 
-            receiver.MessageHandler = messageHandler;
+            receiver.MessageHandler = messageHandler ?? throw new ArgumentNullException(nameof(messageHandler));
         }
 
         private class DelegateMessageHandler : IMessageHandler

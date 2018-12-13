@@ -204,14 +204,12 @@ namespace RockLib.Messaging.SQS
 
         private void Delete(string receiptHandle)
         {
-            Exception deleteException = null;
             DeleteMessageResponse deleteResponse = null;
 
             for (int i = 0; i < _maxAcknowledgeAttempts; i++)
             {
                 try
                 {
-                    deleteException = null;
                     deleteResponse = null;
 
                     deleteResponse = Sync.OverAsync(() => _sqs.DeleteMessageAsync(new DeleteMessageRequest
@@ -225,9 +223,8 @@ namespace RockLib.Messaging.SQS
                         return;
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
-                    deleteException = ex;
                 }
             }
 
@@ -254,15 +251,15 @@ namespace RockLib.Messaging.SQS
 
             if (response == null)
             {
-                return string.Format(@"{{
-   ""receiptHandle"": ""{0}""
-}}", receiptHandle);
+                return $@"{{
+   ""receiptHandle"": ""{receiptHandle}""
+}}";
             }
 
             if (receiptHandle != null)
             {
-                receiptHandle = string.Format(@",
-   ""receiptHandle"": ""{0}""", receiptHandle);
+                receiptHandle = $@",
+   ""receiptHandle"": ""{receiptHandle}""";
             }
 
             var responseMetadata = "null";
@@ -279,10 +276,10 @@ namespace RockLib.Messaging.SQS
                     }
                     else
                     {
-                        metadata = string.Format(@"{{
-            {0}
-         }}", string.Join(",\r\n            ",
-                            response.ResponseMetadata.Metadata.Select(x => string.Format(@"""{0}"": ""{1}""", x.Key, x.Value))));
+                        metadata = $@"{{
+            {string.Join(",\r\n            ",
+                            response.ResponseMetadata.Metadata.Select(x => $@"""{x.Key}"": ""{x.Value}"""))}
+         }}";
                     }
                 }
 
@@ -290,22 +287,22 @@ namespace RockLib.Messaging.SQS
 
                 if (response.ResponseMetadata.RequestId != null)
                 {
-                    requestId = string.Format(@"""{0}""", response.ResponseMetadata.RequestId);
+                    requestId = $@"""{response.ResponseMetadata.RequestId}""";
                 }
 
-                responseMetadata = string.Format(@"{{
-         ""RequestId"": {0},
-         ""Metadata"": {1}
-      }}", requestId, metadata);
+                responseMetadata = $@"{{
+         ""RequestId"": {requestId},
+         ""Metadata"": {metadata}
+      }}";
             }
 
-            return string.Format(@"{{
+            return $@"{{
    ""response"": {{
-      ""HttpStatusCode"": ""{0}"",
-      ""ContentLength"": {1},
-      ""ResponseMetadata"": {2}
-   }}{3}
-}}", response.HttpStatusCode, response.ContentLength, responseMetadata, receiptHandle);
+      ""HttpStatusCode"": ""{response.HttpStatusCode}"",
+      ""ContentLength"": {response.ContentLength},
+      ""ResponseMetadata"": {responseMetadata}
+   }}{receiptHandle}
+}}";
         }
     }
 }
