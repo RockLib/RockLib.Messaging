@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.NamedPipes", "RockLib.Messaging.NamedPipes\RockLib.Messaging.NamedPipes.csproj", "{C1B97CC2-45AC-4B73-8172-C484FD6871A9}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.NamedPipes.Tests", "RockLib.Messaging.NamedPipes.Tests\RockLib.Messaging.NamedPipes.Tests.csproj", "{968246FA-5614-4969-97CF-C3E312DE4D28}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{C1B97CC2-45AC-4B73-8172-C484FD6871A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1B97CC2-45AC-4B73-8172-C484FD6871A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C1B97CC2-45AC-4B73-8172-C484FD6871A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{968246FA-5614-4969-97CF-C3E312DE4D28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{968246FA-5614-4969-97CF-C3E312DE4D28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{968246FA-5614-4969-97CF-C3E312DE4D28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{968246FA-5614-4969-97CF-C3E312DE4D28}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
