@@ -142,6 +142,60 @@ namespace RockLib.Messaging.SQS.Tests
                 It.IsAny<CancellationToken>()));
         }
 
+        [Fact]
+        public void WhenAutoAcknowledgeIsTrueMessagesAreAutomaticallyDeleted()
+        {
+            var mockSqs = new Mock<IAmazonSQS>();
+
+            SetupReceiveMessageAsync(mockSqs);
+            SetupDeleteMessageAsync(mockSqs);
+
+            var waitHandle = new AutoResetEvent(false);
+
+            using (var receiver = new SQSQueueReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: true))
+            {
+                receiver.Start(m =>
+                {
+                    waitHandle.Set();
+                });
+
+                waitHandle.WaitOne();
+            }
+
+            mockSqs.Verify(m => m.DeleteMessageAsync(
+                It.Is<DeleteMessageRequest>(r => r.QueueUrl == "http://url.com/foo"
+                    && r.ReceiptHandle == "bar"),
+                It.IsAny<CancellationToken>()));
+        }
+
+        [Fact]
+        public void WhenAutoAcknowledgeIsTrueMessagesAreNotDeletedIfExplicitlyHandled()
+        {
+            var mockSqs = new Mock<IAmazonSQS>();
+
+            SetupReceiveMessageAsync(mockSqs);
+            SetupDeleteMessageAsync(mockSqs);
+
+            var waitHandle = new AutoResetEvent(false);
+
+            using (var receiver = new SQSQueueReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: true))
+            {
+                receiver.Start(m =>
+                {
+                    m.Rollback();
+                    waitHandle.Set();
+                });
+
+                waitHandle.WaitOne();
+            }
+
+            mockSqs.Verify(m => m.DeleteMessageAsync(
+                It.Is<DeleteMessageRequest>(r => r.QueueUrl == "http://url.com/foo"
+                    && r.ReceiptHandle == "bar"),
+                It.IsAny<CancellationToken>()),
+                Times.Never);
+        }
+
         private static void SetupDeleteMessageAsync(Mock<IAmazonSQS> mockSqs, HttpStatusCode httpStatusCode = HttpStatusCode.OK)
         {
             mockSqs.Setup(m => m.DeleteMessageAsync(It.IsAny<DeleteMessageRequest>(), It.IsAny<CancellationToken>()))

@@ -219,7 +219,7 @@ namespace RockLib.Messaging.SQS
             }
             finally
             {
-                if (AutoAcknwoledge)
+                if (AutoAcknwoledge && !receiverMessage.Handled)
                     DeleteMessage();
             }
         }
