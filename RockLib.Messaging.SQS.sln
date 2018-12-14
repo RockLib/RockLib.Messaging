@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SQS", "RockLib.Messaging.SQS\RockLib.Messaging.SQS.csproj", "{C4385BD1-2B62-4232-ADC2-896BDBE34142}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging", "RockLib.Messaging\RockLib.Messaging.csproj", "{D6A7D2B6-7FFF-4D90-9578-10D472679E11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SQS.Tests", "RockLib.Messaging.SQS.Tests\RockLib.Messaging.SQS.Tests.csproj", "{202FD7C2-2E35-4AA2-81A6-FCA895852CF9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{C4385BD1-2B62-4232-ADC2-896BDBE34142}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4385BD1-2B62-4232-ADC2-896BDBE34142}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4385BD1-2B62-4232-ADC2-896BDBE34142}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D6A7D2B6-7FFF-4D90-9578-10D472679E11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D6A7D2B6-7FFF-4D90-9578-10D472679E11}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D6A7D2B6-7FFF-4D90-9578-10D472679E11}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D6A7D2B6-7FFF-4D90-9578-10D472679E11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{202FD7C2-2E35-4AA2-81A6-FCA895852CF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{202FD7C2-2E35-4AA2-81A6-FCA895852CF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{202FD7C2-2E35-4AA2-81A6-FCA895852CF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{202FD7C2-2E35-4AA2-81A6-FCA895852CF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

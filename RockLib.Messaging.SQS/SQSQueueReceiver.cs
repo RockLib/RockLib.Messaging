@@ -16,10 +16,6 @@ namespace RockLib.Messaging.SQS
     /// </summary>
     public class SQSQueueReceiver : Receiver
     {
-        private readonly string _queueUrl;
-        private readonly int _maxMessages;
-        private readonly bool _autoAcknwoledge;
-        private readonly bool _parallelHandling;
         private readonly IAmazonSQS _sqs;
         private readonly Thread _worker;
 
@@ -87,13 +83,37 @@ namespace RockLib.Messaging.SQS
                 throw new ArgumentOutOfRangeException(nameof(maxMessages), "Value must be from 1 to 10, inclusive.");
 
             _sqs = sqs ?? throw new ArgumentNullException(nameof(sqs));
-            _queueUrl = queueUrl ?? throw new ArgumentNullException(nameof(queueUrl));
-            _maxMessages = maxMessages;
-            _autoAcknwoledge = autoAcknowledge;
-            _parallelHandling = parallelHandling;
+            QueueUrl = queueUrl ?? throw new ArgumentNullException(nameof(queueUrl));
+            MaxMessages = maxMessages;
+            AutoAcknwoledge = autoAcknowledge;
+            ParallelHandling = parallelHandling;
 
             _worker = new Thread(DoStuff);
         }
+
+        /// <summary>
+        /// Gets the url of the SQS queue.
+        /// </summary>
+        public string QueueUrl { get; private set; }
+
+        /// <summary>
+        /// Gets the maximum number of messages to return with each call to the SQS endpoint.
+        /// Amazon SQS never returns more messages than this value (however, fewer messages
+        /// might be returned). Valid values are 1 to 10.
+        /// </summary>
+        public int MaxMessages { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether messages will be automatically acknowledged after
+        /// any event handlers execute.
+        /// </summary>
+        public bool AutoAcknwoledge { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether, in the case of when multiple messages are received
+        /// from an SQS request, messages are handled in parallel or sequentially.
+        /// </summary>
+        public bool ParallelHandling { get; private set; }
 
         /// <summary>
         /// Starts the polling background thread that listens for messages.
@@ -114,8 +134,8 @@ namespace RockLib.Messaging.SQS
             {
                 var receiveMessageRequest = new ReceiveMessageRequest
                 {
-                    MaxNumberOfMessages = _maxMessages,
-                    QueueUrl = _queueUrl,
+                    MaxNumberOfMessages = MaxMessages,
+                    QueueUrl = QueueUrl,
                     MessageAttributeNames = new List<string> { "*" }
                 };
 
@@ -167,7 +187,7 @@ namespace RockLib.Messaging.SQS
                     continue;
                 }
 
-                if (_parallelHandling)
+                if (ParallelHandling)
                 {
                     Parallel.ForEach(response.Messages, Handle);
                 }
@@ -191,13 +211,15 @@ namespace RockLib.Messaging.SQS
             var receiptHandle = message.ReceiptHandle;
             void DeleteMessage() => Delete(receiptHandle);
 
+            var receiverMessage = new SQSReceiverMessage(message, DeleteMessage);
+
             try
-            {
-                MessageHandler.OnMessageReceived(this, new SQSReceiverMessage(message, DeleteMessage));
+            {                
+                MessageHandler.OnMessageReceived(this, receiverMessage);
             }
             finally
             {
-                if (_autoAcknwoledge)
+                if (AutoAcknwoledge)
                     DeleteMessage();
             }
         }
@@ -214,7 +236,7 @@ namespace RockLib.Messaging.SQS
 
                     deleteResponse = Sync.OverAsync(() => _sqs.DeleteMessageAsync(new DeleteMessageRequest
                     {
-                        QueueUrl = _queueUrl,
+                        QueueUrl = QueueUrl,
                         ReceiptHandle = receiptHandle
                     }));
 
