@@ -6,17 +6,17 @@
     public enum ForwardingOutcome
     {
         /// <summary>
-        /// A forwarded message should have its <see cref="IReceiverMessage.Acknowledge"/> method called.
+        /// A forwarded message should have its <see cref="IReceiverMessage.AcknowledgeAsync"/> method called.
         /// </summary>
         Acknowledge,
 
         /// <summary>
-        /// A forwarded message should have its <see cref="IReceiverMessage.Rollback"/> method called.
+        /// A forwarded message should have its <see cref="IReceiverMessage.RollbackAsync"/> method called.
         /// </summary>
         Rollback,
 
         /// <summary>
-        /// A forwarded message should have its <see cref="IReceiverMessage.Reject"/> method called.
+        /// A forwarded message should have its <see cref="IReceiverMessage.RejectAsync"/> method called.
         /// </summary>
         Reject
     }

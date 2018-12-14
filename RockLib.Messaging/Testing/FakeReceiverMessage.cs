@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Testing
 {
@@ -12,6 +14,8 @@ namespace RockLib.Messaging.Testing
     /// </summary>
     public class FakeReceiverMessage : IReceiverMessage
     {
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+
         private readonly HeaderDictionary _headerDictionary;
 
         /// <summary>
@@ -66,32 +70,50 @@ namespace RockLib.Messaging.Testing
         public string HandledBy { get; private set; }
 
         /// <inheritdoc />
-        public void Acknowledge()
+        public async Task AcknowledgeAsync(CancellationToken cancellationToken)
         {
-            lock (this)
+            await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
             {
                 ThrowIfHandled();
                 SetHandled();
             }
-        }
-
-        /// <inheritdoc />
-        public void Rollback()
-        {
-            lock (this)
+            finally
             {
-                ThrowIfHandled();
-                SetHandled();
+                _semaphore.Release();
             }
         }
 
         /// <inheritdoc />
-        public void Reject()
+        public async Task RollbackAsync(CancellationToken cancellationToken)
         {
-            lock (this)
+            await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
             {
                 ThrowIfHandled();
                 SetHandled();
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task RejectAsync(CancellationToken cancellationToken)
+        {
+            await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                ThrowIfHandled();
+                SetHandled();
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 

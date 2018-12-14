@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging
 {
@@ -14,6 +16,8 @@ namespace RockLib.Messaging
     public abstract class ReceiverMessage : IReceiverMessage
     {
         private static readonly GZipDecompressor _gzip = new GZipDecompressor();
+
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
         private readonly Lazy<string> _stringPayload;
         private readonly Lazy<byte[]> _binaryPayload;
@@ -105,7 +109,7 @@ namespace RockLib.Messaging
 
         /// <summary>
         /// Gets a value indicating whether this message has been handled by one of the
-        /// <see cref="Acknowledge"/>, <see cref="Rollback"/> or <see cref="Reject"/>
+        /// <see cref="AcknowledgeAsync"/>, <see cref="RollbackAsync"/> or <see cref="RejectAsync"/>
         /// methods.
         /// </summary>
         public bool Handled => _handledBy != null;
@@ -114,13 +118,19 @@ namespace RockLib.Messaging
         /// Indicates that the message was successfully processed and should not
         /// be redelivered.
         /// </summary>
-        public void Acknowledge()
+        public async Task AcknowledgeAsync(CancellationToken cancellationToken)
         {
-            lock (this)
+            await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
             {
                 ThrowIfHandled();
-                AcknowledgeMessage();
+                await AcknowledgeMessageAsync().ConfigureAwait(false);
                 SetHandled();
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 
@@ -128,13 +138,19 @@ namespace RockLib.Messaging
         /// Indicates that the message was not successfully processed but should be
         /// (or should be allowed to be) redelivered.
         /// </summary>
-        public void Rollback()
+        public async Task RollbackAsync(CancellationToken cancellationToken)
         {
-            lock (this)
+            await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
             {
                 ThrowIfHandled();
-                RollbackMessage();
+                await RollbackMessageAsync().ConfigureAwait(false);
                 SetHandled();
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 
@@ -142,13 +158,19 @@ namespace RockLib.Messaging
         /// Indicates that the message could not be successfully processed and should
         /// not be redelivered.
         /// </summary>
-        public void Reject()
+        public async Task RejectAsync(CancellationToken cancellationToken)
         {
-            lock (this)
+            await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
             {
                 ThrowIfHandled();
-                RejectMessage();
+                await RejectMessageAsync().ConfigureAwait(false);
                 SetHandled();
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 
@@ -181,7 +203,7 @@ namespace RockLib.Messaging
         /// class, then the overriden method should do nothing instead of throwing a
         /// <see cref="NotImplementedException"/> or similar exception.
         /// </remarks>
-        protected abstract void AcknowledgeMessage();
+        protected abstract Task AcknowledgeMessageAsync();
 
         /// <summary>
         /// When overridden in a derived class, indicates that the message was not
@@ -192,7 +214,7 @@ namespace RockLib.Messaging
         /// class, then the overriden method should do nothing instead of throwing a
         /// <see cref="NotImplementedException"/> or similar exception.
         /// </remarks>
-        protected abstract void RollbackMessage();
+        protected abstract Task RollbackMessageAsync();
 
         /// <summary>
         /// When overridden in a derived class, indicates that the message could not be
@@ -203,7 +225,7 @@ namespace RockLib.Messaging
         /// class, then the overriden method should do nothing instead of throwing a
         /// <see cref="NotImplementedException"/> or similar exception.
         /// </remarks>
-        protected abstract void RejectMessage();
+        protected abstract Task RejectMessageAsync();
 
         /// <summary>
         /// A struct that contains a payload value. Implicitly convertable from the

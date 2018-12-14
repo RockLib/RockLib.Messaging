@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging
 {
@@ -10,6 +12,8 @@ namespace RockLib.Messaging
     /// </summary>
     public class ForwardingReceiverMessage : IReceiverMessage
     {
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+
         private string _handledBy;
 
         internal ForwardingReceiverMessage(ForwardingReceiver forwardingReceiver, IReceiverMessage message)
@@ -51,7 +55,7 @@ namespace RockLib.Messaging
 
         /// <summary>
         /// Gets a value indicating whether this message has been handled by one of the
-        /// <see cref="Acknowledge"/>, <see cref="Rollback"/> or <see cref="Reject"/>
+        /// <see cref="AcknowledgeAsync"/>, <see cref="RollbackAsync"/> or <see cref="RejectAsync"/>
         /// methods.
         /// </summary>
         public bool Handled => _handledBy != null;
@@ -66,21 +70,27 @@ namespace RockLib.Messaging
         /// value. Otherwise, <see cref="Message"/> is acknowledged.
         /// </para>
         /// </summary>
-        public void Acknowledge()
+        public async Task AcknowledgeAsync(CancellationToken cancellationToken)
         {
-            lock (this)
+            await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
             {
                 ThrowIfHandled();
                 if (ForwardingReceiver.AcknowledgeForwarder != null)
                 {
-                    ForwardingReceiver.AcknowledgeForwarder.Send(Message.ToSenderMessage());
-                    HandleForwardedMessage(ForwardingReceiver.AcknowledgeOutcome);
+                    await ForwardingReceiver.AcknowledgeForwarder.SendAsync(Message.ToSenderMessage(), cancellationToken).ConfigureAwait(false);
+                    await HandleForwardedMessageAsync(ForwardingReceiver.AcknowledgeOutcome, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    Message.Acknowledge();
+                    await Message.AcknowledgeAsync(cancellationToken).ConfigureAwait(false);
                 }
                 SetHandled();
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 
@@ -94,21 +104,27 @@ namespace RockLib.Messaging
         /// value. Otherwise, <see cref="Message"/> is rolled back.
         /// </para>
         /// </summary>
-        public void Rollback()
+        public async Task RollbackAsync(CancellationToken cancellationToken)
         {
-            lock (this)
+            await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
             {
                 ThrowIfHandled();
                 if (ForwardingReceiver.RollbackForwarder != null)
                 {
-                    ForwardingReceiver.RollbackForwarder.Send(Message.ToSenderMessage());
-                    HandleForwardedMessage(ForwardingReceiver.RollbackOutcome);
+                    await ForwardingReceiver.RollbackForwarder.SendAsync(Message.ToSenderMessage(), cancellationToken).ConfigureAwait(false);
+                    await HandleForwardedMessageAsync(ForwardingReceiver.RollbackOutcome, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    Message.Rollback();
+                    await Message.RollbackAsync(cancellationToken).ConfigureAwait(false);
                 }
                 SetHandled();
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 
@@ -122,37 +138,42 @@ namespace RockLib.Messaging
         /// value. Otherwise, <see cref="Message"/> is rejected.
         /// </para>
         /// </summary>
-        public void Reject()
+        public async Task RejectAsync(CancellationToken cancellationToken)
         {
-            lock (this)
+            await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
             {
                 ThrowIfHandled();
                 if (ForwardingReceiver.RejectForwarder != null)
                 {
-                    ForwardingReceiver.RejectForwarder.Send(Message.ToSenderMessage());
-                    HandleForwardedMessage(ForwardingReceiver.RejectOutcome);
+                    await ForwardingReceiver.RejectForwarder.SendAsync(Message.ToSenderMessage(), cancellationToken).ConfigureAwait(false);
+                    await HandleForwardedMessageAsync(ForwardingReceiver.RejectOutcome, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
-                    Message.Reject();
+                    await Message.RejectAsync(cancellationToken).ConfigureAwait(false);
                 }
                 SetHandled();
             }
+            finally
+            {
+                _semaphore.Release();
+            }
         }
 
-        private void HandleForwardedMessage(ForwardingOutcome outcome)
+        private Task HandleForwardedMessageAsync(ForwardingOutcome outcome, CancellationToken cancellationToken)
         {
             switch (outcome)
             {
                 case ForwardingOutcome.Acknowledge:
-                    Message.Acknowledge();
-                    break;
+                    return Message.AcknowledgeAsync(cancellationToken);
                 case ForwardingOutcome.Rollback:
-                    Message.Rollback();
-                    break;
+                    return Message.RollbackAsync(cancellationToken);
                 case ForwardingOutcome.Reject:
-                    Message.Reject();
-                    break;
+                    return Message.RejectAsync(cancellationToken);
+                default:
+                    throw new InvalidOperationException("Invalid ForwardingOutcome value.");
             }
         }
 

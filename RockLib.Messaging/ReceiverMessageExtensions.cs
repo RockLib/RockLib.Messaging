@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging
 {
@@ -8,6 +10,68 @@ namespace RockLib.Messaging
     /// </summary>
     public static class ReceiverMessageExtensions
     {
+        /// <summary>
+        /// Indicates that the message was successfully processed and should not
+        /// be redelivered.
+        /// </summary>
+        /// <param name="receiverMessage">The message to acknowledge.</param>
+        public static void Acknowledge(this IReceiverMessage receiverMessage) =>
+            Sync(() => receiverMessage.AcknowledgeAsync());
+
+        /// <summary>
+        /// Indicates that the message was not successfully processed but should be
+        /// (or should be allowed to be) redelivered.
+        /// </summary>
+        /// <param name="receiverMessage">The message to roll back.</param>
+        public static void Rollback(this IReceiverMessage receiverMessage) =>
+            Sync(() => receiverMessage.RollbackAsync());
+
+        /// <summary>
+        /// Indicates that the message could not be successfully processed and should
+        /// not be redelivered.
+        /// </summary>
+        /// <param name="receiverMessage">The message to reject.</param>
+        public static void Reject(this IReceiverMessage receiverMessage) =>
+            Sync(() => receiverMessage.RejectAsync());
+
+        /// <summary>
+        /// Indicates that the message was successfully processed and should not
+        /// be redelivered.
+        /// </summary>
+        /// <param name="receiverMessage">The message to acknowledge.</param>
+        public static Task AcknowledgeAsync(this IReceiverMessage receiverMessage) =>
+            receiverMessage.AcknowledgeAsync(CancellationToken.None);
+
+        /// <summary>
+        /// Indicates that the message was not successfully processed but should be
+        /// (or should be allowed to be) redelivered.
+        /// </summary>
+        /// <param name="receiverMessage">The message to roll back.</param>
+        public static Task RollbackAsync(this IReceiverMessage receiverMessage) =>
+            receiverMessage.RollbackAsync(CancellationToken.None);
+
+        /// <summary>
+        /// Indicates that the message could not be successfully processed and should
+        /// not be redelivered.
+        /// </summary>
+        /// <param name="receiverMessage">The message to reject.</param>
+        public static Task RejectAsync(this IReceiverMessage receiverMessage) =>
+            receiverMessage.RejectAsync(CancellationToken.None);
+
+        private static void Sync(Func<Task> getTaskOfTResult)
+        {
+            SynchronizationContext old = SynchronizationContext.Current;
+            try
+            {
+                SynchronizationContext.SetSynchronizationContext(null);
+                getTaskOfTResult().GetAwaiter().GetResult();
+            }
+            finally
+            {
+                SynchronizationContext.SetSynchronizationContext(old);
+            }
+        }
+
         /// <summary>
         /// Gets the ID of the message, or null if not found in the message's headers.
         /// </summary>

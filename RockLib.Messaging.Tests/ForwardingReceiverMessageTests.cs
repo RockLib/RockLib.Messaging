@@ -18,7 +18,7 @@ namespace RockLib.Messaging.Tests
 
             forwardingMessage.Acknowledge();
 
-            message.HandledBy.Should().Be(nameof(IReceiverMessage.Acknowledge));
+            message.HandledBy.Should().Be(nameof(IReceiverMessage.AcknowledgeAsync));
         }
 
         [Test]
@@ -53,7 +53,7 @@ namespace RockLib.Messaging.Tests
 
             forwardingMessage.Acknowledge();
 
-            message.HandledBy.Should().Be(outcome.ToString());
+            message.HandledBy.Should().Be($"{outcome}Async");
         }
 
         [Test]
@@ -67,7 +67,7 @@ namespace RockLib.Messaging.Tests
 
             forwardingMessage.Rollback();
 
-            message.HandledBy.Should().Be(nameof(IReceiverMessage.Rollback));
+            message.HandledBy.Should().Be(nameof(IReceiverMessage.RollbackAsync));
         }
 
         [Test]
@@ -102,7 +102,7 @@ namespace RockLib.Messaging.Tests
 
             forwardingMessage.Rollback();
 
-            message.HandledBy.Should().Be(outcome.ToString());
+            message.HandledBy.Should().Be($"{outcome}Async");
         }
 
         [Test]
@@ -116,7 +116,7 @@ namespace RockLib.Messaging.Tests
 
             forwardingMessage.Reject();
 
-            message.HandledBy.Should().Be(nameof(IReceiverMessage.Reject));
+            message.HandledBy.Should().Be(nameof(IReceiverMessage.RejectAsync));
         }
 
         [Test]
@@ -151,7 +151,7 @@ namespace RockLib.Messaging.Tests
 
             forwardingMessage.Reject();
 
-            message.HandledBy.Should().Be(outcome.ToString());
+            message.HandledBy.Should().Be($"{outcome}Async");
         }
     }
 }

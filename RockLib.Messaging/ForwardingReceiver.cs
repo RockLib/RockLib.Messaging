@@ -19,7 +19,7 @@ namespace RockLib.Messaging
         /// </param>
         /// <param name="acknowledgeForwarderName">
         /// The name of the <see cref="ISender"/> that received messages are forwarded to when
-        /// their <see cref="IReceiverMessage.Acknowledge"/> method is called.
+        /// their <see cref="IReceiverMessage.AcknowledgeAsync"/> method is called.
         /// </param>
         /// <param name="acknowledgeOutcome">
         /// The outcome for received messages that have been forwarded to
@@ -27,7 +27,7 @@ namespace RockLib.Messaging
         /// </param>
         /// <param name="rollbackForwarderName">
         /// The name of the <see cref="ISender"/> that received messages are forwarded to when
-        /// their <see cref="IReceiverMessage.Rollback"/> method is called.
+        /// their <see cref="IReceiverMessage.RollbackAsync"/> method is called.
         /// </param>
         /// <param name="rollbackOutcome">
         /// The outcome for received messages that have been forwarded to
@@ -35,7 +35,7 @@ namespace RockLib.Messaging
         /// </param>
         /// <param name="rejectForwarderName">
         /// The name of the <see cref="ISender"/> that received messages are forwarded to when
-        /// their <see cref="IReceiverMessage.Reject"/> method is called.
+        /// their <see cref="IReceiverMessage.RejectAsync"/> method is called.
         /// </param>
         /// <param name="rejectOutcome">
         /// The outcome for received messages that have been forwarded to
@@ -62,7 +62,7 @@ namespace RockLib.Messaging
         /// </param>
         /// <param name="acknowledgeForwarder">
         /// The <see cref="ISender"/> that received messages are forwarded to when
-        /// their <see cref="IReceiverMessage.Acknowledge"/> method is called.
+        /// their <see cref="IReceiverMessage.AcknowledgeAsync"/> method is called.
         /// </param>
         /// <param name="acknowledgeOutcome">
         /// The outcome for received messages that have been forwarded to
@@ -70,7 +70,7 @@ namespace RockLib.Messaging
         /// </param>
         /// <param name="rollbackForwarder">
         /// The <see cref="ISender"/> that received messages are forwarded to when
-        /// their <see cref="IReceiverMessage.Rollback"/> method is called.
+        /// their <see cref="IReceiverMessage.RollbackAsync"/> method is called.
         /// </param>
         /// <param name="rollbackOutcome">
         /// The outcome for received messages that have been forwarded to
@@ -78,7 +78,7 @@ namespace RockLib.Messaging
         /// </param>
         /// <param name="rejectForwarder">
         /// The <see cref="ISender"/> that received messages are forwarded to when
-        /// their <see cref="IReceiverMessage.Reject"/> method is called.
+        /// their <see cref="IReceiverMessage.RejectAsync"/> method is called.
         /// </param>
         /// <param name="rejectOutcome">
         /// The outcome for received messages that have been forwarded to
@@ -116,7 +116,7 @@ namespace RockLib.Messaging
 
         /// <summary>
         /// Gets the <see cref="ISender"/> that received messages are forwarded to when
-        /// their <see cref="IReceiverMessage.Acknowledge"/> method is called.
+        /// their <see cref="IReceiverMessage.AcknowledgeAsync"/> method is called.
         /// </summary>
         public ISender AcknowledgeForwarder { get; }
 
@@ -128,7 +128,7 @@ namespace RockLib.Messaging
 
         /// <summary>
         /// Gets the <see cref="ISender"/> that received messages are forwarded to when
-        /// their <see cref="IReceiverMessage.Rollback"/> method is called.
+        /// their <see cref="IReceiverMessage.RollbackAsync"/> method is called.
         /// </summary>
         public ISender RollbackForwarder { get; }
 
@@ -140,7 +140,7 @@ namespace RockLib.Messaging
 
         /// <summary>
         /// Gets the <see cref="ISender"/> that received messages are forwarded to when
-        /// their <see cref="IReceiverMessage.Reject"/> method is called.
+        /// their <see cref="IReceiverMessage.RejectAsync"/> method is called.
         /// </summary>
         public ISender RejectForwarder { get; }
 

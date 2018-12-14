@@ -4,6 +4,8 @@ using RockLib.Compression;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Tests
 {
@@ -215,9 +217,9 @@ namespace RockLib.Messaging.Tests
             public byte[] BinaryPayload => _binaryPayload.Value;
             public HeaderDictionary Headers { get; }
             public bool Handled => false;
-            public void Acknowledge() {}
-            public void Rollback() {}
-            public void Reject() {}
+            public Task AcknowledgeAsync(CancellationToken cancellationToken) => Task.FromResult(0);
+            public Task RollbackAsync(CancellationToken cancellationToken) => Task.FromResult(0);
+            public Task RejectAsync(CancellationToken cancellationToken) => Task.FromResult(0);
 
             private static IReadOnlyDictionary<string, object> GetBackingHeaderDictionary(bool binary, bool compressed)
             {
