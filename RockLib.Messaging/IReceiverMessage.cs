@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging
 {
@@ -24,7 +26,7 @@ namespace RockLib.Messaging
 
         /// <summary>
         /// Gets a value indicating whether this message has been handled by one of the
-        /// <see cref="Acknowledge"/>, <see cref="Rollback"/> or <see cref="Reject"/>
+        /// <see cref="AcknowledgeAsync"/>, <see cref="RollbackAsync"/> or <see cref="RejectAsync"/>
         /// methods.
         /// </summary>
         bool Handled { get; }
@@ -42,7 +44,7 @@ namespace RockLib.Messaging
         /// <para>If the concept of acknowledging a message doesn't make sense for an implementation,
         /// it should not throw a <see cref="NotImplementedException"/> or similar exception.</para>
         /// </remarks>
-        void Acknowledge();
+        Task AcknowledgeAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Indicates that the message was not successfully processed but should be
@@ -57,7 +59,7 @@ namespace RockLib.Messaging
         /// <para>If the concept of rolling back a message doesn't make sense for an implementation,
         /// it should not throw a <see cref="NotImplementedException"/> or similar exception.</para>
         /// </remarks>
-        void Rollback();
+        Task RollbackAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Indicates that the message could not be successfully processed and should
@@ -72,6 +74,6 @@ namespace RockLib.Messaging
         /// <para>If the concept of rejecting a message doesn't make sense for an implementation,
         /// it should not throw a <see cref="NotImplementedException"/> or similar exception.</para>
         /// </remarks>
-        void Reject();
+        Task RejectAsync(CancellationToken cancellationToken);
     }
 }

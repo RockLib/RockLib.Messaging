@@ -3,6 +3,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Tests
 {
@@ -229,11 +230,11 @@ namespace RockLib.Messaging.Tests
                 _headers = headers;
             }
 
-            protected override void AcknowledgeMessage() => throw new NotImplementedException();
+            protected override Task AcknowledgeMessageAsync() => throw new NotImplementedException();
 
-            protected override void RollbackMessage() => throw new NotImplementedException();
+            protected override Task RollbackMessageAsync() => throw new NotImplementedException();
 
-            protected override void RejectMessage() => throw new NotImplementedException();
+            protected override Task RejectMessageAsync() => throw new NotImplementedException();
 
             protected override void InitializeHeaders(IDictionary<string, object> headers)
             {

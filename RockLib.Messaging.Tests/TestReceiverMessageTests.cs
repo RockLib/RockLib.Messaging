@@ -103,7 +103,7 @@ namespace RockLib.Messaging.Tests
 
             message.Acknowledge();
 
-            message.HandledBy.Should().Be(nameof(message.Acknowledge));
+            message.HandledBy.Should().Be(nameof(message.AcknowledgeAsync));
         }
 
         [Test]
@@ -123,7 +123,7 @@ namespace RockLib.Messaging.Tests
 
             message.Rollback();
 
-            message.HandledBy.Should().Be(nameof(message.Rollback));
+            message.HandledBy.Should().Be(nameof(message.RollbackAsync));
         }
 
         [Test]
@@ -143,7 +143,7 @@ namespace RockLib.Messaging.Tests
 
             message.Reject();
 
-            message.HandledBy.Should().Be(nameof(message.Reject));
+            message.HandledBy.Should().Be(nameof(message.RejectAsync));
         }
 
         [Test]
@@ -156,7 +156,7 @@ namespace RockLib.Messaging.Tests
             Action act = () => message.Acknowledge();
 
             act.Should().Throw<InvalidOperationException>()
-                .WithMessage($"Cannot {nameof(message.Acknowledge)} message: the message has already been handled by {nameof(message.Acknowledge)}.");
+                .WithMessage($"Cannot {nameof(message.AcknowledgeAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.");
         }
 
         [Test]
@@ -169,7 +169,7 @@ namespace RockLib.Messaging.Tests
             Action act = () => message.Rollback();
 
             act.Should().Throw<InvalidOperationException>()
-                .WithMessage($"Cannot {nameof(message.Rollback)} message: the message has already been handled by {nameof(message.Acknowledge)}.");
+                .WithMessage($"Cannot {nameof(message.RollbackAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.");
         }
 
         [Test]
@@ -182,7 +182,7 @@ namespace RockLib.Messaging.Tests
             Action act = () => message.Reject();
 
             act.Should().Throw<InvalidOperationException>()
-                .WithMessage($"Cannot {nameof(message.Reject)} message: the message has already been handled by {nameof(message.Acknowledge)}.");
+                .WithMessage($"Cannot {nameof(message.RejectAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.");
         }
     }
 }
