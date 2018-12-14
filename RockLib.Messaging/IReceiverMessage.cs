@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using System;
 
 namespace RockLib.Messaging
 {
@@ -8,62 +8,70 @@ namespace RockLib.Messaging
     public interface IReceiverMessage
     {
         /// <summary>
-        /// Gets the priority of the received message.
+        /// Gets the payload of the message as a string.
         /// </summary>
-        byte? Priority { get; }
+        string StringPayload { get; }
 
         /// <summary>
-        /// Gets the string value of the message. If the implemenation "speaks" binary,
-        /// <paramref name="encoding"/> is used to convert the binary message to a string.
-        /// If <paramref name="encoding"/> is null, the binary data will be converted using
-        /// base 64 encoding.
+        /// Gets the payload of the message as a byte array.
         /// </summary>
-        /// <param name="encoding">
-        /// The encoding to use. A null value indicates that base 64 encoding should be used.
-        /// </param>
-        /// <returns>The string value of the message.</returns>
-        string GetStringValue(Encoding encoding);
+        byte[] BinaryPayload { get; }
 
         /// <summary>
-        /// Gets the binary value of the message. If the implemenation "speaks" string,
-        /// <paramref name="encoding"/> is used to convert the string message to a byte array.
-        /// If <paramref name="encoding"/> is null, the string data will be converted using
-        /// base 64 encoding.
+        /// Gets the headers of the message.
         /// </summary>
-        /// <param name="encoding">
-        /// The encoding to use. A null value indicates that base 64 encoding should be used.
-        /// </param>
-        /// <returns>The binary value of the message.</returns>
-        byte[] GetBinaryValue(Encoding encoding);
+        HeaderDictionary Headers { get; }
 
         /// <summary>
-        /// Gets a header value by key. If the implementation "speaks" binary,
-        /// <paramref name="encoding"/> is used to convert the binary header to a string.
-        /// If <paramref name="encoding"/> is null, the binary header will be converted
-        /// using base 64 encoding.
+        /// Gets a value indicating whether this message has been handled by one of the
+        /// <see cref="Acknowledge"/>, <see cref="Rollback"/> or <see cref="Reject"/>
+        /// methods.
         /// </summary>
-        /// <param name="key">The key of the header to retrieve.</param>
-        /// <param name="encoding">
-        /// The encoding to use. A null value indicates that base 64 encoding should be used.
-        /// </param>
-        /// <returns>The string value of the header.</returns>
-        string GetHeaderValue(string key, Encoding encoding);
+        bool Handled { get; }
 
         /// <summary>
-        /// Gets the names of the headers that are available for this message.
+        /// Indicates that the message was successfully processed and should not
+        /// be redelivered.
         /// </summary>
-        /// <returns>An array containing the names of the headers for this message.</returns>
-        string[] GetHeaderNames();
-
-        /// <summary>
-        /// Acknowledges the message.
-        /// </summary>
+        /// <remarks>
+        /// Notes for implementators of this method:
+        /// <para>When called, this method should immediately throw if the <see cref="Handled"/>
+        /// property is true.</para>
+        /// <para>After successfully calling this method, the <see cref="Handled"/> property
+        /// should return true, preventing the message from being handled multiple times.</para>
+        /// <para>If the concept of acknowledging a message doesn't make sense for an implementation,
+        /// it should not throw a <see cref="NotImplementedException"/> or similar exception.</para>
+        /// </remarks>
         void Acknowledge();
 
         /// <summary>
-        /// Returns an instance of <see cref="ISenderMessage"/> that is equivalent to this
-        /// instance of <see cref="IReceiverMessage"/>.
+        /// Indicates that the message was not successfully processed but should be
+        /// (or should be allowed to be) redelivered.
         /// </summary>
-        ISenderMessage ToSenderMessage();
+        /// <remarks>
+        /// Notes for implementators of this method:
+        /// <para>When called, this method should immediately throw if the <see cref="Handled"/>
+        /// property is true.</para>
+        /// <para>After successfully calling this method, the <see cref="Handled"/> property
+        /// should return true, preventing the message from being handled multiple times.</para>
+        /// <para>If the concept of rolling back a message doesn't make sense for an implementation,
+        /// it should not throw a <see cref="NotImplementedException"/> or similar exception.</para>
+        /// </remarks>
+        void Rollback();
+
+        /// <summary>
+        /// Indicates that the message could not be successfully processed and should
+        /// not be redelivered.
+        /// </summary>
+        /// <remarks>
+        /// Notes for implementators of this method:
+        /// <para>When called, this method should immediately throw if the <see cref="Handled"/>
+        /// property is true.</para>
+        /// <para>After successfully calling this method, the <see cref="Handled"/> property
+        /// should return true, preventing the message from being handled multiple times.</para>
+        /// <para>If the concept of rejecting a message doesn't make sense for an implementation,
+        /// it should not throw a <see cref="NotImplementedException"/> or similar exception.</para>
+        /// </remarks>
+        void Reject();
     }
 }

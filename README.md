@@ -1,26 +1,46 @@
-# Rock.Messaging
+# RockLib.Messaging
 
-## Table of Contents
-* [Nuget](#nuget)
-  * Install via [Nuget UI](#install-nuget-via-ui)
-  * Install via [Command Line](#install-nuget-via-command-limne)
-* [Api Documentation](#api-documentation)
+*A simple API for sending and receiving messages.*
 
-## Nuget
-Rock.Messaging is available via [NuGet](https://www.nuget.org/packages/Rock.Messaging/), please reference this link for more information on the package.
+### RockLib.Messaging [![Build status](https://ci.appveyor.com/api/projects/status/wuoo2f6bdct92ekf?svg=true)](https://ci.appveyor.com/project/bfriesen/rocklib-messaging) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.svg)](https://www.nuget.org/packages/RockLib.Messaging)
 
-### Install Nuget via UI
-If you want to install this package via the NuGet UI, this ca be done as well.  Make sure to switch to the QuGet package source.
-
-If you are unsure how to use the UI to reference the package source checkout out these [docs](https://docs.microsoft.com/en-us/nuget/tools/package-manager-ui#package-sources).
-
-### Install Nuget via Command Line
-
-How to install from the package manager console:
-
-```
-PM> Install-Package Rock.Messaging
+```powershell
+PM> Install-Package RockLib.Messaging
 ```
 
-## Api Documentation
-See [Rock.Messaging Documentation](http://rockframework.org/documentation/Rock.Messaging/html/R_Project_Documentation.htm)
+### RockLib.Messaging.NamedPipes [![Build status](https://ci.appveyor.com/api/projects/status/fh73e3rjx76hnoqg?svg=true)](https://ci.appveyor.com/project/RockLib/rocklib-messaging-bvk30) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.NamedPipes.svg)](https://www.nuget.org/packages/RockLib.Messaging.NamedPipes)
+
+```powershell
+PM> Install-Package RockLib.Messaging.NamedPipes
+```
+
+### RockLib.Messaging.SQS [![Build status](https://ci.appveyor.com/api/projects/status/lamk2f940oy95077?svg=true)](https://ci.appveyor.com/project/bfriesen/rocklib-messaging-60vs9) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.SQS.svg)](https://www.nuget.org/packages/RockLib.Messaging.SQS)
+
+```powershell
+PM> Install-Package RockLib.Messaging.SQS
+```
+
+### RockLib.Messaging.Http [![Build status](https://ci.appveyor.com/api/projects/status/ses76e2jw7kha6aa?svg=true)](https://ci.appveyor.com/project/RockLib/rocklib-messaging) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.Http.svg)](https://www.nuget.org/packages/RockLib.Messaging.Http)
+
+```powershell
+PM> Install-Package RockLib.Messaging.Http
+```
+
+- [Getting started](docs/GettingStarted.md)
+- How to:
+  - [Send messages](docs/SendingMessages.md)
+  - [Receive messages](docs/ReceivingMessages.md)
+  - [Configure and use RockLib.Messaging.NamedPipes](docs/NamedPipes.md)
+  - [Configure and use RockLib.Messaging.SQS](docs/SQS.md)
+  - [Configure and use RockLib.Messaging.Http](docs/Http.md)
+  - [Configure a .NET Framework application with app.config/web.config](docs/NetFramework.md)
+  - [Use RockLib.Messaging with a DI/IOC container](docs/DIContainer.md)
+  - [Send and receive compressed messages](docs/Compressed.md)
+  - [Send messages transactionally](docs/TransactionalSend.md)
+- [Life cycle of messaging scenarios](docs/LifeCycle.md)
+- [Understanding MessagingScenarioFactory](docs/MessagingScenarioFactory.md)
+- API Reference:
+  - [RockLib.Messaging](https://www.fuget.org/packages/RockLib.Messaging)
+  - [RockLib.Messaging.NamedPipes](https://www.fuget.org/packages/RockLib.Messaging.NamedPipes)
+  - [RockLib.Messaging.SQS](https://www.fuget.org/packages/RockLib.Messaging.SQS)
+  - [RockLib.Messaging.Http](https://www.fuget.org/packages/RockLib.Messaging.Http)

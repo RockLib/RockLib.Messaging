@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RockLib.Messaging
@@ -17,6 +18,7 @@ namespace RockLib.Messaging
         /// Asynchronously sends the specified message.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        Task SendAsync(ISenderMessage message);
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        Task SendAsync(SenderMessage message, CancellationToken cancellationToken);
     }
 }

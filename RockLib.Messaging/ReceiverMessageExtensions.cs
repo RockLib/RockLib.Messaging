@@ -1,45 +1,78 @@
-﻿using System.Text;
+﻿using System;
 
 namespace RockLib.Messaging
 {
     /// <summary>
-    /// Provides a set of methods for obtaining values from objects that implement
-    /// <see cref="IReceiverMessage"/>.
+    /// Defines extension methods for implementations of the <see cref="IReceiverMessage"/>
+    /// interface.
     /// </summary>
     public static class ReceiverMessageExtensions
     {
         /// <summary>
-        /// Gets the string value of the message. If the implemenation "speaks" binary,
-        /// <see cref="Encoding.UTF8"/> is used to convert the binary message to a string.
+        /// Gets the ID of the message, or null if not found in the message's headers.
         /// </summary>
-        /// <param name="source">The message from which to obtain a string value.</param>
-        /// <returns>The string value of the message.</returns>
-        public static string GetStringValue(this IReceiverMessage source)
-        {
-            return source.GetStringValue(Encoding.UTF8);
-        }
+        /// <param name="receiverMessage">The source <see cref="IReceiverMessage"/> object.</param>
+        /// <returns>The ID of the message.</returns>
+        public static string GetMessageId(this IReceiverMessage receiverMessage) =>
+            receiverMessage.GetHeaders()
+                .TryGetValue(HeaderNames.MessageId, out string messageId)
+                    ? messageId
+                    : null;
 
         /// <summary>
-        /// Gets the binary value of the message. If the implemenation "speaks" string,
-        /// <see cref="Encoding.UTF8"/> is used to convert the string message to a byte array.
+        /// Gets a value indicating whether the message's payload was sent compressed,
+        /// as indicated in the message's headers.
         /// </summary>
-        /// <param name="source">The message from which to obtain a binary value.</param>
-        /// <returns>The binary value of the message.</returns>
-        public static byte[] GetBinaryValue(this IReceiverMessage source)
-        {
-            return source.GetBinaryValue(Encoding.UTF8);
-        }
+        /// <param name="receiverMessage">The source <see cref="IReceiverMessage"/> object.</param>
+        /// <returns>Whether the message's payload was sent compressed.</returns>
+        public static bool IsCompressed(this IReceiverMessage receiverMessage) =>
+            receiverMessage.GetHeaders()
+                .TryGetValue(HeaderNames.IsCompressedPayload, out bool isCompressed)
+                && isCompressed;
 
         /// <summary>
-        /// Gets a header value by key. If the implementation "speaks" binary,
-        /// <see cref="Encoding.UTF8"/> is used to convert the binary header to a string.
+        /// Gets a value indicating whether the original message was constructed with
+        /// a byte array, as indicated in the message's headers. A value of false
+        /// means that the original message was constructed with a string.
         /// </summary>
-        /// <param name="source">The message from which to obtain a binary value.</param>
-        /// <param name="key">The key of the header to retrieve.</param>
-        /// <returns>The string value of the header.</returns>
-        public static string GetHeaderValue(this IReceiverMessage source, string key)
-        {
-            return source.GetHeaderValue(key, Encoding.UTF8);
-        }
+        /// <param name="receiverMessage">The source <see cref="IReceiverMessage"/> object.</param>
+        /// <returns>Whether the original message was constructed with a byte array.</returns>
+        public static bool IsBinary(this IReceiverMessage receiverMessage) =>
+            receiverMessage.GetHeaders()
+                .TryGetValue(HeaderNames.IsBinaryPayload, out bool isBinary)
+                && isBinary;
+
+        /// <summary>
+        /// Gets the originating system of the message, or null if not found in the
+        /// message's headers.
+        /// </summary>
+        /// <param name="receiverMessage">The source <see cref="IReceiverMessage"/> object.</param>
+        /// <returns>The originating system of the message.</returns>
+        public static string GetOriginatingSystem(this IReceiverMessage receiverMessage) =>
+            receiverMessage.GetHeaders()
+                .TryGetValue(HeaderNames.OriginatingSystem, out string originatingSystem)
+                    ? originatingSystem
+                    : null;
+
+        private static HeaderDictionary GetHeaders(this IReceiverMessage receiverMessage) =>
+            (receiverMessage ?? throw new ArgumentNullException(nameof(receiverMessage))).Headers;
+
+        /// <summary>
+        /// Creates an instance of <see cref="SenderMessage"/> that is equivalent to the
+        /// specified <see cref="IReceiverMessage"/>.
+        /// </summary>
+        /// <param name="receiverMessage">The source <see cref="IReceiverMessage"/> object.</param>
+        /// <param name="validateHeaderValue">
+        /// A function that validates header values, returning either the value passed to it
+        /// or an equivalent value. If a value is invalid, the function should attempt to
+        /// convert it to another type that is valid. If a value cannot be converted, the
+        /// function should throw an exception.
+        /// </param>
+        /// <returns>
+        /// A new <see cref="SenderMessage"/> instance that is equivalent to the specified
+        /// <paramref name="receiverMessage"/> parameter.
+        /// </returns>
+        public static SenderMessage ToSenderMessage(this IReceiverMessage receiverMessage, Func<object, object> validateHeaderValue = null) =>
+            new SenderMessage(receiverMessage, validateHeaderValue);
     }
 }

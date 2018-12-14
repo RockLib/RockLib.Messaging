@@ -3,7 +3,8 @@
 namespace RockLib.Messaging
 {
     /// <summary>
-    /// Defines an interface for receiving messages.
+    /// Defines an interface for receiving messages. To start receiving messages,
+    /// set the value of the <see cref="MessageHandler"/> property.
     /// </summary>
     public interface IReceiver : IDisposable
     {
@@ -13,14 +14,24 @@ namespace RockLib.Messaging
         string Name { get; }
 
         /// <summary>
-        /// Starts listening for messages.
+        /// Gets or sets the message handler for this receiver. When set, the receiver is started
+        /// and will invoke the value's <see cref="IMessageHandler.OnMessageReceived"/> method
+        /// when messages are received.
         /// </summary>
-        /// <param name="selector">Also known as a 'routing key', this value enables only certain messages to be received.</param>
-        void Start(string selector);
+        /// <remarks>
+        /// Implementions of this interface should not allow this property to be set to null or
+        /// to be set more than once.
+        /// </remarks>
+        IMessageHandler MessageHandler { get; set; }
 
         /// <summary>
-        /// Occurs when a message is received.
+        /// Occurs when a connection is established.
         /// </summary>
-        event EventHandler<MessageReceivedEventArgs> MessageReceived;
+        event EventHandler Connected;
+
+        /// <summary>
+        /// Occurs when a connection is lost.
+        /// </summary>
+        event EventHandler<DisconnectedEventArgs> Disconnected;
     }
 }

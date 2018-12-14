@@ -1,270 +1,115 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Configuration;
-using Moq;
 using NUnit.Framework;
-using RockLib.Configuration;
-using RockLib.Immutable;
-using RockLib.Messaging.NamedPipes;
+using RockLib.Configuration.ObjectFactory;
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Tests
 {
     [TestFixture]
     public class MessagingScenarioFactoryTests
     {
-        private static readonly FieldInfo _compressedField;
-        private static readonly FieldInfo _pipeNameField;
-
-        static MessagingScenarioFactoryTests()
-        {
-            var queueProducerType = typeof(NamedPipeQueueProducer);
-            _compressedField = queueProducerType.GetField("_compressed", BindingFlags.NonPublic | BindingFlags.Instance);
-            _pipeNameField = queueProducerType.GetField("_pipeName", BindingFlags.NonPublic | BindingFlags.Instance);
-        }
-
         [Test]
-        public void BuildFactoryCreatesSingleFactoryWithEmptyConfig()
+        public void CreateSenderCreatesSenderWithSingleSenderConfig()
         {
-            ResetFactory();
-            ResetConfig();
-
-            var builder = new ConfigurationBuilder()
+            var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile(@"CustomConfigFiles\Empty_appsettings.json", false, true);
+                .AddJsonFile(@"CustomConfigFiles\SingleSender_appsettings.json", false)
+                .Build()
+                .GetSection("RockLib.Messaging");
 
-            var config = builder.Build();
+            var sender = (FakeSender)((ConfigReloadingProxy<ISender>)config.CreateSender("Pipe1")).Object;
 
-            Config.SetRoot(config);
-
-            var factory = MessagingScenarioFactory.BuildFactory();
-
-            factory.Should().NotBeNull();
-            factory.Should().BeOfType<NamedPipeMessagingScenarioFactory>();
-            factory.HasScenario("Pipe1").Should().BeTrue();
-            factory.HasScenario("Pipe2").Should().BeTrue();
-            factory.HasScenario("Pipe3").Should().BeTrue();
-            factory.HasScenario("NotReallyAPipeName").Should().BeTrue();
-
-            var pipe1Sender = factory.CreateQueueProducer("Pipe1");
-            _compressedField.GetValue(pipe1Sender).Should().Be(false);
-            _pipeNameField.GetValue(pipe1Sender).Should().Be("Pipe1");
-
-            var pipe2Sender = factory.CreateQueueProducer("Pipe2");
-            _compressedField.GetValue(pipe2Sender).Should().Be(false);
-            _pipeNameField.GetValue(pipe2Sender).Should().Be("Pipe2");
+            sender.Name.Should().Be("Pipe1");
+            sender.PipeName.Should().Be("PipeName1");
         }
 
         [Test]
-        public void BuildFactoryCreatesSingleFactoryWithSingleFactoryConfig()
+        public void CreateSenderCreatesSendersWithMultipleSendersConfig()
         {
-            ResetFactory();
-            ResetConfig();
-
-            var builder = new ConfigurationBuilder()
+            var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile(@"CustomConfigFiles\SingleFactory_appsettings.json", false, true);
+                .AddJsonFile(@"CustomConfigFiles\MultipleSenders_appsettings.json", false)
+                .Build()
+                .GetSection("RockLib.Messaging");
 
-            var config = builder.Build();
+            var sender1 = (FakeSender)((ConfigReloadingProxy<ISender>)config.CreateSender("Pipe1")).Object;
 
-            Config.SetRoot(config);
+            sender1.Name.Should().Be("Pipe1");
+            sender1.PipeName.Should().Be("PipeName1");
 
-            var factory = MessagingScenarioFactory.BuildFactory();
+            var sender2 = (FakeSender)((ConfigReloadingProxy<ISender>)config.CreateSender("Pipe2")).Object;
 
-            factory.Should().NotBeNull();
-            factory.Should().BeOfType<NamedPipeMessagingScenarioFactory>();
-            factory.HasScenario("Pipe1").Should().BeTrue();
-            factory.HasScenario("Pipe2").Should().BeFalse();
-            factory.HasScenario("Pipe3").Should().BeFalse();
-
-            var pipe1Sender = factory.CreateQueueProducer("Pipe1");
-            _compressedField.GetValue(pipe1Sender).Should().Be(true);
-            _pipeNameField.GetValue(pipe1Sender).Should().Be("PipeName1");
+            sender2.Name.Should().Be("Pipe2");
+            sender2.PipeName.Should().Be("PipeName2");
         }
 
         [Test]
-        public void BuildFactoryCreatesSingleFactoryWithSingleFactoryMultiConfigsConfig()
+        public void CreateReceiverCreatesReceiverWithSingleReceiverConfig()
         {
-            ResetFactory();
-            ResetConfig();
-
-            var builder = new ConfigurationBuilder()
+            var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile(@"CustomConfigFiles\SingleFactory_MultiConfigs_appsettings.json", false, true);
+                .AddJsonFile(@"CustomConfigFiles\SingleReceiver_appsettings.json", false)
+                .Build()
+                .GetSection("RockLib.Messaging");
 
-            var config = builder.Build();
+            var receiver = (FakeReceiver)((ConfigReloadingProxy<IReceiver>)config.CreateReceiver("Pipe1")).Object;
 
-            Config.SetRoot(config);
-
-            var factory = MessagingScenarioFactory.BuildFactory();
-
-            factory.Should().NotBeNull();
-            factory.Should().BeOfType<NamedPipeMessagingScenarioFactory>();
-            factory.HasScenario("Pipe1").Should().BeTrue();
-            factory.HasScenario("Pipe2").Should().BeTrue();
-            factory.HasScenario("Pipe3").Should().BeFalse();
-
-            var pipe1Sender = factory.CreateQueueProducer("Pipe1");
-            _compressedField.GetValue(pipe1Sender).Should().Be(true);
-            _pipeNameField.GetValue(pipe1Sender).Should().Be("PipeName1");
-
-            var pipe2Sender = factory.CreateQueueProducer("Pipe2");
-            _compressedField.GetValue(pipe2Sender).Should().Be(false);
-            _pipeNameField.GetValue(pipe2Sender).Should().Be("PipeName2");
+            receiver.Name.Should().Be("Pipe1");
+            receiver.PipeName.Should().Be("PipeName1");
         }
 
         [Test]
-        public void BuildFactoryCreatesCompositeFactoryWithMultiFactoryConfig()
+        public void CreateReceiverCreatesReceiversWithMultipleReceiversConfig()
         {
-            ResetFactory();
-            ResetConfig();
-
-            var builder = new ConfigurationBuilder()
+            var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile(@"CustomConfigFiles\MultipleFactory_appsettings.json", false, true);
+                .AddJsonFile(@"CustomConfigFiles\MultipleReceivers_appsettings.json", false)
+                .Build()
+                .GetSection("RockLib.Messaging");
 
-            var config = builder.Build();
+            var receiver1 = (FakeReceiver)((ConfigReloadingProxy<IReceiver>)config.CreateReceiver("Pipe1")).Object;
 
-            Config.SetRoot(config);
+            receiver1.Name.Should().Be("Pipe1");
+            receiver1.PipeName.Should().Be("PipeName1");
 
-            var factory = MessagingScenarioFactory.BuildFactory();
+            var receiver2 = (FakeReceiver)((ConfigReloadingProxy<IReceiver>)config.CreateReceiver("Pipe2")).Object;
 
-            factory.Should().NotBeNull();
-            factory.Should().BeOfType<CompositeMessagingScenarioFactory>();
-            factory.HasScenario("Pipe1").Should().BeTrue();
-            factory.HasScenario("Pipe2").Should().BeTrue();
-            factory.HasScenario("Pipe3").Should().BeFalse();
-
-            var pipe1Sender = factory.CreateQueueProducer("Pipe1");
-            _compressedField.GetValue(pipe1Sender).Should().Be(true);
-            _pipeNameField.GetValue(pipe1Sender).Should().Be("PipeName1");
-
-            var pipe2Sender = factory.CreateQueueProducer("Pipe2");
-            _compressedField.GetValue(pipe2Sender).Should().Be(false);
-            _pipeNameField.GetValue(pipe2Sender).Should().Be("PipeName2");
+            receiver2.Name.Should().Be("Pipe2");
+            receiver2.PipeName.Should().Be("PipeName2");
         }
 
         [Test]
-        public void SetCurrentSetsCurrentField()
+        public void CreateSenderCreatesSenderUsingDefaultSenderType()
         {
-            ResetFactory();
-            ResetConfig();
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile(@"CustomConfigFiles\DefaultSender_appsettings.json", false)
+                .Build()
+                .GetSection("RockLib.Messaging");
 
-            var mockFactory = new Mock<IMessagingScenarioFactory>();
+            var sender = (FakeSender)((ConfigReloadingProxy<ISender>)config.CreateSender("Pipe1")).Object;
 
-            MessagingScenarioFactory.SetCurrent(mockFactory.Object);
-
-            MessagingScenarioFactory.Current.Should().BeSameAs(mockFactory.Object);
+            sender.Name.Should().Be("Pipe1");
+            sender.PipeName.Should().Be("PipeName1");
         }
 
         [Test]
-        public void CreateDefaultMessagingScenarioFactoryUsesFallbackWhenNoConfig()
+        public void CreateReceiverCreatesReceiverUsingDefaultReceiverType()
         {
-            ResetFactory();
-            ResetConfig();
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile(@"CustomConfigFiles\DefaultReceiver_appsettings.json", false)
+                .Build()
+                .GetSection("RockLib.Messaging");
 
-            var mockFactory = new Mock<IMessagingScenarioFactory>();
+            var receiver = (FakeReceiver)((ConfigReloadingProxy<IReceiver>)config.CreateReceiver("Pipe1")).Object;
 
-            MessagingScenarioFactory.SetFallback(mockFactory.Object);
-
-            var factory = CallPrivateCreateDefault();
-
-            factory.Should().BeSameAs(mockFactory.Object);
-        }
-
-        [Test]
-        public void CreateDefaultMessagingScenarioFactoryThrowsWhenNoConfigAndNoFallback()
-        {
-            ResetFactory();
-            ResetConfig();
-
-            MessagingScenarioFactory.SetFallback(null);
-
-            try
-            {
-                CallPrivateCreateDefault();
-            }
-            catch (TargetInvocationException ex)
-            {
-                ex.InnerException.Should().BeOfType<InvalidOperationException>();
-                ex.InnerException.Message.Should()
-                    .Be("MessagingScenarioFactory.Current has no value. The value can be set via config or by calling the SetCurrent method.");
-            }
-        }
-
-        [Test]
-        public void MessagingScenarioFactoryPassThroughOnCreateQueueConsumer()
-        {
-            var mockReceiver = new Mock<IReceiver>();
-            var mockFactory = new Mock<IMessagingScenarioFactory>();
-            mockFactory.Setup(mf => mf.CreateQueueConsumer(It.IsAny<string>())).Returns(mockReceiver.Object);
-
-            ResetFactory();
-            MessagingScenarioFactory.SetCurrent(mockFactory.Object);
-
-            MessagingScenarioFactory.CreateQueueConsumer("test").Should().BeSameAs(mockReceiver.Object);
-        }
-
-        [Test]
-        public void MessagingScenarioFactoryPassThroughOnCreateQueueProducer()
-        {
-            var mockReceiver = new Mock<ISender>();
-            var mockFactory = new Mock<IMessagingScenarioFactory>();
-            mockFactory.Setup(mf => mf.CreateQueueProducer(It.IsAny<string>())).Returns(mockReceiver.Object);
-
-            ResetFactory();
-            MessagingScenarioFactory.SetCurrent(mockFactory.Object);
-
-            MessagingScenarioFactory.CreateQueueProducer("test").Should().BeSameAs(mockReceiver.Object);
-        }
-
-        [Test]
-        public void MessagingScenarioFactoryPassThroughOnCreateTopicSubscriber()
-        {
-            var mockReceiver = new Mock<IReceiver>();
-            var mockFactory = new Mock<IMessagingScenarioFactory>();
-            mockFactory.Setup(mf => mf.CreateTopicSubscriber(It.IsAny<string>())).Returns(mockReceiver.Object);
-
-            ResetFactory();
-            MessagingScenarioFactory.SetCurrent(mockFactory.Object);
-
-            MessagingScenarioFactory.CreateTopicSubscriber("test").Should().BeSameAs(mockReceiver.Object);
-        }
-
-        [Test]
-        public void MessagingScenarioFactoryPassThroughOnCreateTopicPublisher()
-        {
-            var mockReceiver = new Mock<ISender>();
-            var mockFactory = new Mock<IMessagingScenarioFactory>();
-            mockFactory.Setup(mf => mf.CreateTopicPublisher(It.IsAny<string>())).Returns(mockReceiver.Object);
-
-            ResetFactory();
-            MessagingScenarioFactory.SetCurrent(mockFactory.Object);
-
-            MessagingScenarioFactory.CreateTopicPublisher("test").Should().BeSameAs(mockReceiver.Object);
-        }
-
-        private static void ResetConfig()
-        {
-            var rootField = typeof(Config).GetField("_root", BindingFlags.NonPublic | BindingFlags.Static);
-            var root = (Semimutable<IConfiguration>)rootField.GetValue(null);
-            root.GetUnlockValueMethod().Invoke(root, null);
-            Config.SetRoot(new Mock<IConfiguration>().Object);
-        }
-
-        private static void ResetFactory()
-        {
-            var factoryField = typeof(MessagingScenarioFactory).GetField("_messagingScenarioFactory", BindingFlags.NonPublic | BindingFlags.Static);
-            var factory = (Semimutable<IMessagingScenarioFactory>)factoryField.GetValue(null);
-            factory.GetUnlockValueMethod().Invoke(factory, null);
-            MessagingScenarioFactory.SetCurrent(null);
-        }
-
-        private static IMessagingScenarioFactory CallPrivateCreateDefault()
-        {
-            var createMethod = typeof(MessagingScenarioFactory).GetMethod("CreateDefaultMessagingScenarioFactory", BindingFlags.NonPublic | BindingFlags.Static);
-            return (IMessagingScenarioFactory)createMethod.Invoke(null, null);
+            receiver.Name.Should().Be("Pipe1");
+            receiver.PipeName.Should().Be("PipeName1");
         }
     }
 }

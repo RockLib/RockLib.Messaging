@@ -4,139 +4,146 @@ using System.Linq;
 using RockLib.Configuration;
 using RockLib.Immutable;
 using RockLib.Configuration.ObjectFactory;
+using Microsoft.Extensions.Configuration;
+using System.Reflection;
 
 namespace RockLib.Messaging
 {
     /// <summary>
-    /// Provides methods for creating instances of various messaging scenarios.
+    /// Provides methods for creating instances of various messaging scenarios from
+    /// an <see cref="IConfiguration"/> object.
     /// </summary>
     public static class MessagingScenarioFactory
     {
-        private static readonly Semimutable<IMessagingScenarioFactory> _messagingScenarioFactory =
-            new Semimutable<IMessagingScenarioFactory>(CreateDefaultMessagingScenarioFactory);
-
-        private static IMessagingScenarioFactory _fallbackMessagingScenarioFactory;
+        private static readonly Semimutable<IConfiguration> _configuration =
+            new Semimutable<IConfiguration>(() => Config.Root.GetSection("RockLib.Messaging"));
 
         /// <summary>
-        /// Gets the current instance of <see cref="IMessagingScenarioFactory"/> used for operations
-        /// of the <see cref="MessagingScenarioFactory"/> class.
+        /// Sets the value of the <see cref="Configuration"/> property. Note that this
+        /// method must be called at the beginning of the application. Once the
+        /// <see cref="Configuration"/> property has been read from, it cannot be changed.
         /// </summary>
-        public static IMessagingScenarioFactory Current => _messagingScenarioFactory.Value;
+        /// <param name="configuration"></param>
+        public static void SetConfiguration(IConfiguration configuration) => _configuration.Value = configuration;
 
         /// <summary>
-        /// Sets the current instance of <see cref="IMessagingScenarioFactory"/> used for operations
-        /// of the <see cref="MessagingScenarioFactory"/> class.
+        /// Gets the instance of <see cref="IConfiguration"/> used by
+        /// <see cref="MessagingScenarioFactory"/> to construct messaging scenarios.
         /// </summary>
-        /// <param name="messagingScenarioFactory">
-        /// The instance of <see cref="IMessagingScenarioFactory"/> to be used for operations of the
-        /// <see cref="MessagingScenarioFactory"/> class.
+        public static IConfiguration Configuration => _configuration.Value;
+
+        /// <summary>
+        /// Creates an instance of the <see cref="ISender"/> interface identified by
+        /// its name from the 'senders' section of the <see cref="Configuration"/> property.
+        /// </summary>
+        /// <param name="name">The name that identifies which sender from configuration to create.</param>
+        /// <returns>A new instance of the <see cref="ISender"/> interface.</returns>
+        public static ISender CreateSender(string name) => Configuration.CreateSender(name);
+
+        /// <summary>
+        /// Creates an instance of the <see cref="ISender"/> interface identified by
+        /// its name from the 'senders' section of the <paramref name="configuration"/> parameter.
+        /// </summary>
+        /// <param name="configuration">
+        /// A configuration object that contains the specified sender in its 'senders' section.
         /// </param>
-        public static void SetCurrent(IMessagingScenarioFactory messagingScenarioFactory)
+        /// <param name="name">The name that identifies which sender from configuration to create.</param>
+        /// <returns>A new instance of the <see cref="ISender"/> interface.</returns>
+        public static ISender CreateSender(this IConfiguration configuration, string name)
         {
-            _messagingScenarioFactory.SetValue(() =>
-            {
-                _fallbackMessagingScenarioFactory = null;
-                return messagingScenarioFactory;
-            });
-        }
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
 
-        internal static void SetFallback(IMessagingScenarioFactory messagingScenarioFactory)
-        {
-            _fallbackMessagingScenarioFactory = messagingScenarioFactory;
-        }
-
-        private static IMessagingScenarioFactory CreateDefaultMessagingScenarioFactory()
-        {
-            try
-            {
-                IMessagingScenarioFactory value;
-
-                return TryGetFactoryFromConfig(out value) ? value : _fallbackMessagingScenarioFactory ?? ThrowNoMessagingScenarioFactoryFoundException();
-            }
-            finally
-            {
-                _fallbackMessagingScenarioFactory = null;
-            }
-        }
-
-        private static IMessagingScenarioFactory ThrowNoMessagingScenarioFactoryFoundException()
-        {
-            throw new InvalidOperationException("MessagingScenarioFactory.Current has no value. The value can be set via config or by calling the SetCurrent method.");
-        }
-
-        private static bool TryGetFactoryFromConfig(out IMessagingScenarioFactory factory)
-        {
-            try
-            {
-
-                factory = BuildFactory();
-
-                return true;
-            }
-            catch (Exception)
-            {
-                factory = null;
-                return false;
-            }
-        }
-
-        internal static IMessagingScenarioFactory BuildFactory()
-        {
-            var messagingSection = Config.Root.GetSection("RockLib.Messaging");
-            var scenarioFactories = messagingSection.Create<List<IMessagingScenarioFactory>>();
-
-            if( !scenarioFactories.Any()) { throw new InvalidOperationException("There must be at least one scenario factory, please make sure your configuration is correct."); }
-
-            return scenarioFactories.Count == 1 ? scenarioFactories[0] : new CompositeMessagingScenarioFactory(scenarioFactories);
-        }
-        
-
-        /// <summary>
-        /// Creates an instance of <see cref="ISender"/> that uses the queue producer scenario
-        /// by calling the <see cref="IMessagingScenarioFactory.CreateQueueProducer"/> method
-        /// on <see cref="Current"/>.
-        /// </summary>
-        /// <param name="name">The name of the queue.</param>
-        /// <returns>An instance of <see cref="ISender"/> that uses the queue producer scenario.</returns>
-        public static ISender CreateQueueProducer(string name)
-        {
-            return Current.CreateQueueProducer(name);
+            return configuration.CreateScenario<ISender>("senders", name);
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="IReceiver"/> that uses the queue consumer scenario
-        /// by calling the <see cref="IMessagingScenarioFactory.CreateQueueConsumer"/> method
-        /// on <see cref="Current"/>.
+        /// Creates an instance of the <see cref="IReceiver"/> interface identified by
+        /// its name from the 'receivers' section of the <see cref="Configuration"/> property.
         /// </summary>
-        /// <param name="name">The name of the queue.</param>
-        /// <returns>An instance of <see cref="IReceiver"/> that uses the queue consumer scenario.</returns>
-        public static IReceiver CreateQueueConsumer(string name)
-        {
-            return Current.CreateQueueConsumer(name);
-        }
+        /// <param name="name">The name that identifies which receiver from configuration to create.</param>
+        /// <returns>A new instance of the <see cref="IReceiver"/> interface.</returns>
+        public static IReceiver CreateReceiver(string name) => Configuration.CreateReceiver(name);
 
         /// <summary>
-        /// Creates an instance of <see cref="ISender"/> that uses the topic publisher scenario
-        /// by calling the <see cref="IMessagingScenarioFactory.CreateTopicPublisher"/> method
-        /// on <see cref="Current"/>.
+        /// Creates an instance of the <see cref="IReceiver"/> interface identified by
+        /// its name from the 'receivers' section of the <paramref name="configuration"/> parameter.
         /// </summary>
-        /// <param name="name">The name of the topic.</param>
-        /// <returns>An instance of <see cref="ISender"/> that uses the topic publisher scenario.</returns>
-        public static ISender CreateTopicPublisher(string name)
+        /// <param name="configuration">
+        /// A configuration object that contains the specified receiver in its 'receivers' section.
+        /// </param>
+        /// <param name="name">The name that identifies which receiver from configuration to create.</param>
+        /// <returns>A new instance of the <see cref="IReceiver"/> interface.</returns>
+        public static IReceiver CreateReceiver(this IConfiguration configuration, string name)
         {
-            return Current.CreateTopicPublisher(name);
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            return configuration.CreateScenario<IReceiver>("receivers", name);
         }
 
-        /// <summary>
-        /// Creates an instance of <see cref="IReceiver"/> that uses the topic subscriber scenario
-        /// by calling the <see cref="IMessagingScenarioFactory.CreateTopicSubscriber"/> method
-        /// on <see cref="Current"/>.
-        /// </summary>
-        /// <param name="name">The name of the topic.</param>
-        /// <returns>An instance of <see cref="IReceiver"/> that uses the topic subscriber scenario.</returns>
-        public static IReceiver CreateTopicSubscriber(string name)
+        private static T CreateScenario<T>(this IConfiguration configuration, string sectionName, string scenarioName)
         {
-            return Current.CreateTopicSubscriber(name);
+            var section = configuration.GetSection(sectionName);
+
+            if (section.IsEmpty())
+                throw new KeyNotFoundException($"The '{sectionName}' section is empty.");
+
+            var defaultTypes = configuration.GetDefaultTypes();
+
+            if (section.IsList())
+            {
+                foreach (var child in section.GetChildren())
+                    if (scenarioName.Equals(child.GetSectionName(), StringComparison.OrdinalIgnoreCase))
+                        return child.CreateReloadingProxy<T>(defaultTypes);
+            }
+            else if (scenarioName.Equals(section.GetSectionName(), StringComparison.OrdinalIgnoreCase))
+                return section.CreateReloadingProxy<T>(defaultTypes);
+
+            throw new KeyNotFoundException($"No {sectionName} were found matching the name '{scenarioName}'.");
+        }
+
+        private static bool IsEmpty(this IConfigurationSection section) =>
+            section.Value == null && !section.GetChildren().Any();
+
+        private static bool IsList(this IConfigurationSection section)
+        {
+            int i = 0;
+            foreach (var child in section.GetChildren())
+                if (child.Key != i++.ToString())
+                    return false;
+            return true;
+        }
+
+        private static string GetSectionName(this IConfigurationSection section)
+        {
+            var valueSection = section;
+
+            if (section["type"] != null && !section.GetSection("value").IsEmpty())
+                valueSection = section.GetSection("value");
+
+            return valueSection["name"];
+        }
+
+        private static DefaultTypes GetDefaultTypes(this IConfiguration configuration)
+        {
+            var defaultTypes = new DefaultTypes();
+
+            if (configuration["defaultSenderType"] != null)
+            {
+                var defaultSenderType = Type.GetType(configuration["defaultSenderType"]);
+                if (defaultSenderType != null && typeof(ISender).GetTypeInfo().IsAssignableFrom(defaultSenderType))
+                    defaultTypes.Add(typeof(ISender), defaultSenderType);
+            }
+
+            if (configuration["defaultReceiverType"] != null)
+            {
+                var defaultReceiverType = Type.GetType(configuration["defaultReceiverType"]);
+                if (defaultReceiverType != null && typeof(IReceiver).GetTypeInfo().IsAssignableFrom(defaultReceiverType))
+                    defaultTypes.Add(typeof(IReceiver), defaultReceiverType);
+            }
+
+            return defaultTypes;
         }
     }
 }

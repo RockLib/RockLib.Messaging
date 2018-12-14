@@ -1,0 +1,11 @@
+﻿{
+  "RockLib.Messaging": {
+    "Receivers": {
+      "Type": "RockLib.Messaging.Tests.FakeReceiver, RockLib.Messaging.Tests",
+      "Value": {
+        "Name": "Pipe1",
+        "PipeName": "PipeName1"
+      }
+    }
+  }
+}

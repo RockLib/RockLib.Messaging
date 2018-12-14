@@ -1,0 +1,10 @@
+﻿{
+  "RockLib.Messaging": {
+    "DefaultSenderType": "RockLib.Messaging.Tests.FakeSender, RockLib.Messaging.Tests",
+    "Senders": {
+      "Name": "Pipe1",
+      "PipeName": "PipeName1",
+      "Compressed": true
+    }
+  }
+}
