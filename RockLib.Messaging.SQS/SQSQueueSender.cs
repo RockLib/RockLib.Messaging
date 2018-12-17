@@ -1,8 +1,9 @@
-﻿using Amazon.SQS;
-using Amazon.SQS.Model;
-using System.Threading.Tasks;
-using System;
+﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
+using Amazon;
+using Amazon.SQS;
+using Amazon.SQS.Model;
 
 namespace RockLib.Messaging.SQS
 {
@@ -21,8 +22,9 @@ namespace RockLib.Messaging.SQS
         /// </summary>
         /// <param name="name">The name of the sender.</param>
         /// <param name="queueUrl">The url of the SQS queue.</param>
-        public SQSQueueSender(string name, string queueUrl)
-            : this(new AmazonSQSClient(), name, queueUrl)
+        /// <param name="region">The region of the SQS queue.</param>
+        public SQSQueueSender(string name, string queueUrl, string region = null)
+            : this(region == null ? new AmazonSQSClient() : new AmazonSQSClient(RegionEndpoint.GetBySystemName(region)), name, queueUrl)
         {
         }
 

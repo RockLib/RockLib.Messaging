@@ -1,13 +1,14 @@
-﻿using System.Linq;
-using Amazon.Runtime;
-using Amazon.SQS;
-using Amazon.SQS.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics;
+using Amazon;
+using Amazon.Runtime;
+using Amazon.SQS;
+using Amazon.SQS.Model;
 
 namespace RockLib.Messaging.SQS
 {
@@ -32,6 +33,7 @@ namespace RockLib.Messaging.SQS
         /// </summary>
         /// <param name="name">The name of the receiver.</param>
         /// <param name="queueUrl">The url of the SQS queue.</param>
+        /// <param name="region">The region of the SQS queue.</param>
         /// <param name="maxMessages">
         /// The maximum number of messages to return with each call to the SQS endpoint.
         /// Amazon SQS never returns more messages than this value (however, fewer messages
@@ -46,10 +48,11 @@ namespace RockLib.Messaging.SQS
         /// </param>
         public SQSQueueReceiver(string name,
             string queueUrl,
+            string region = null,
             int maxMessages = _defaultMaxMessages,
             bool autoAcknowledge = true,
             bool parallelHandling = false)
-            : this(new AmazonSQSClient(), name, queueUrl, maxMessages, autoAcknowledge, parallelHandling)
+            : this(region == null ? new AmazonSQSClient() : new AmazonSQSClient(RegionEndpoint.GetBySystemName(region)), name, queueUrl, maxMessages, autoAcknowledge, parallelHandling)
         {
         }
 
@@ -94,26 +97,26 @@ namespace RockLib.Messaging.SQS
         /// <summary>
         /// Gets the url of the SQS queue.
         /// </summary>
-        public string QueueUrl { get; private set; }
+        public string QueueUrl { get; }
 
         /// <summary>
         /// Gets the maximum number of messages to return with each call to the SQS endpoint.
         /// Amazon SQS never returns more messages than this value (however, fewer messages
         /// might be returned). Valid values are 1 to 10.
         /// </summary>
-        public int MaxMessages { get; private set; }
+        public int MaxMessages { get; }
 
         /// <summary>
         /// Gets a value indicating whether messages will be automatically acknowledged after
         /// any event handlers execute.
         /// </summary>
-        public bool AutoAcknwoledge { get; private set; }
+        public bool AutoAcknwoledge { get; }
 
         /// <summary>
         /// Gets a value indicating whether, in the case of when multiple messages are received
         /// from an SQS request, messages are handled in parallel or sequentially.
         /// </summary>
-        public bool ParallelHandling { get; private set; }
+        public bool ParallelHandling { get; }
 
         /// <summary>
         /// Starts the polling background thread that listens for messages.
@@ -214,7 +217,7 @@ namespace RockLib.Messaging.SQS
             var receiverMessage = new SQSReceiverMessage(message, DeleteMessage);
 
             try
-            {                
+            {
                 MessageHandler.OnMessageReceived(this, receiverMessage);
             }
             finally
