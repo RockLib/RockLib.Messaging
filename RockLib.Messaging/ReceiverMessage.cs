@@ -125,7 +125,7 @@ namespace RockLib.Messaging
             try
             {
                 ThrowIfHandled();
-                await AcknowledgeMessageAsync().ConfigureAwait(false);
+                await AcknowledgeMessageAsync(cancellationToken).ConfigureAwait(false);
                 SetHandled();
             }
             finally
@@ -145,7 +145,7 @@ namespace RockLib.Messaging
             try
             {
                 ThrowIfHandled();
-                await RollbackMessageAsync().ConfigureAwait(false);
+                await RollbackMessageAsync(cancellationToken).ConfigureAwait(false);
                 SetHandled();
             }
             finally
@@ -165,7 +165,7 @@ namespace RockLib.Messaging
             try
             {
                 ThrowIfHandled();
-                await RejectMessageAsync().ConfigureAwait(false);
+                await RejectMessageAsync(cancellationToken).ConfigureAwait(false);
                 SetHandled();
             }
             finally
@@ -203,7 +203,7 @@ namespace RockLib.Messaging
         /// class, then the overriden method should do nothing instead of throwing a
         /// <see cref="NotImplementedException"/> or similar exception.
         /// </remarks>
-        protected abstract Task AcknowledgeMessageAsync();
+        protected abstract Task AcknowledgeMessageAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// When overridden in a derived class, indicates that the message was not
@@ -214,7 +214,7 @@ namespace RockLib.Messaging
         /// class, then the overriden method should do nothing instead of throwing a
         /// <see cref="NotImplementedException"/> or similar exception.
         /// </remarks>
-        protected abstract Task RollbackMessageAsync();
+        protected abstract Task RollbackMessageAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// When overridden in a derived class, indicates that the message could not be
@@ -225,7 +225,7 @@ namespace RockLib.Messaging
         /// class, then the overriden method should do nothing instead of throwing a
         /// <see cref="NotImplementedException"/> or similar exception.
         /// </remarks>
-        protected abstract Task RejectMessageAsync();
+        protected abstract Task RejectMessageAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// A struct that contains a payload value. Implicitly convertable from the
