@@ -11,6 +11,7 @@ namespace RockLib.Messaging.Tests
 
         public event EventHandler Connected;
         public event EventHandler<DisconnectedEventArgs> Disconnected;
+        public event EventHandler<ErrorEventArgs> Error;
 
         public void Dispose()
         {
