@@ -53,6 +53,11 @@ namespace RockLib.Messaging
         public event EventHandler<DisconnectedEventArgs> Disconnected;
 
         /// <summary>
+        /// Occurs when an error happens.
+        /// </summary>
+        public event EventHandler<ErrorEventArgs> Error;
+
+        /// <summary>
         /// Frees resources and stops receiving messages.
         /// </summary>
         public void Dispose()
@@ -76,6 +81,13 @@ namespace RockLib.Messaging
         /// </summary>
         /// <param name="errorMessage">The error message that describes the reason for the disconnection.</param>
         protected void OnDisconnected(string errorMessage) => Disconnected?.Invoke(this, new DisconnectedEventArgs(errorMessage));
+
+        /// <summary>
+        /// Invokes the <see cref="Error"/> event.
+        /// </summary>
+        /// <param name="message">A message the describes the error.</param>
+        /// <param name="exception">The exception responsible for the error.</param>
+        protected void OnError(string message, Exception exception) => Error?.Invoke(this, new ErrorEventArgs(message, exception));
 
         /// <summary>
         /// Unregisters all event handlers from the <see cref="Connected"/> and

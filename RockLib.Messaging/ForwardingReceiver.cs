@@ -194,6 +194,19 @@ namespace RockLib.Messaging
         }
 
         /// <summary>
+        /// Occurs when an error happens.
+        /// <para>
+        /// This event passes through to the <see cref="IReceiver.Error"/> event of
+        /// the <see cref="Receiver"/> property.
+        /// </para>
+        /// </summary>
+        public event EventHandler<ErrorEventArgs> Error
+        {
+            add => Receiver.Error += value;
+            remove => Receiver.Error -= value;
+        }
+
+        /// <summary>
         /// Disposes the <see cref="Receiver"/> property and, if they are not null,
         /// the <see cref="AcknowledgeForwarder"/>, <see cref="RollbackForwarder"/>,
         /// and <see cref="RejectForwarder"/> properties.

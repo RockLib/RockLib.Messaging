@@ -33,5 +33,10 @@ namespace RockLib.Messaging
         /// Occurs when a connection is lost.
         /// </summary>
         event EventHandler<DisconnectedEventArgs> Disconnected;
+
+        /// <summary>
+        /// Occurs when an error happens.
+        /// </summary>
+        event EventHandler<ErrorEventArgs> Error;
     }
 }
