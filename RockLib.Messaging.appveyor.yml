@@ -85,20 +85,20 @@ build:
   project: RockLib.Messaging.sln
   verbosity: minimal
 artifacts:
-- path: '**/RockLib.Messaging.*.nupkg'
+- path: '**/$(csproj_build_version).nupkg'
 deploy:
 - provider: GitHub
   tag: $(appveyor_repo_tag_name)
   release: $(appveyor_repo_commit_message)
   description: $(appveyor_repo_commit_message_extended)
   auth_token:
-    secure: yjDw1QLeuxM3Wvq9ZEJIB8JaEK/L2e7MhwrKicm3/SBh0FwbAEb3Fpg82h0fFALU
+    secure: Q0CeN+jtFR19qjt5S2E9/UXgGJvWCISZnuShN4FM37yzDR4CLcM3MNBTJd1ZXqEw
   on:
     appveyor_repo_tag: true
     appveyor_repo_tag_name: $(csproj_build_version)
 - provider: NuGet
   api_key:
-    secure: n0btQo8iZJZTJ3S5vLWokuOxzv4dtYBi3cx6EbW41jTF5OfcshJs+dTMAGCTquLY
+    secure: pcCgLFHRqhhCdy1SlRcWXAqEMCfI6c5ZbHj0dqho2JNpT7I+h6dpoN6wTTqfrMnV
   on:
     appveyor_repo_tag: true
     appveyor_repo_tag_name: $(csproj_build_version)

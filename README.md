@@ -2,7 +2,7 @@
 
 *A simple API for sending and receiving messages.*
 
-### RockLib.Messaging [![Build status](https://ci.appveyor.com/api/projects/status/wuoo2f6bdct92ekf?svg=true)](https://ci.appveyor.com/project/bfriesen/rocklib-messaging) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.svg)](https://www.nuget.org/packages/RockLib.Messaging)
+### RockLib.Messaging [![Build status](https://ci.appveyor.com/api/projects/status/xv0otrelwm9cau2f?svg=true)](https://ci.appveyor.com/project/RockLib/rocklib-messaging-kxqyj) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.svg)](https://www.nuget.org/packages/RockLib.Messaging)
 
 ```powershell
 PM> Install-Package RockLib.Messaging
