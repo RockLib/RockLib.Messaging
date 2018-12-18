@@ -14,7 +14,7 @@ PM> Install-Package RockLib.Messaging
 PM> Install-Package RockLib.Messaging.NamedPipes
 ```
 
-### RockLib.Messaging.SQS [![Build status](https://ci.appveyor.com/api/projects/status/lamk2f940oy95077?svg=true)](https://ci.appveyor.com/project/bfriesen/rocklib-messaging-60vs9) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.SQS.svg)](https://www.nuget.org/packages/RockLib.Messaging.SQS)
+### RockLib.Messaging.SQS [![Build status](https://ci.appveyor.com/api/projects/status/fv8x1jmh3x76s2mj?svg=true)](https://ci.appveyor.com/project/RockLib/rocklib-messaging-s0kwd) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.SQS.svg)](https://www.nuget.org/packages/RockLib.Messaging.SQS)
 
 ```powershell
 PM> Install-Package RockLib.Messaging.SQS
