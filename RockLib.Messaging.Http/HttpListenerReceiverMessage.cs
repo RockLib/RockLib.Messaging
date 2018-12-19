@@ -2,6 +2,8 @@
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Http
 {
@@ -35,27 +37,27 @@ namespace RockLib.Messaging.Http
         public IHttpResponseGenerator HttpResponseGenerator { get; }
 
         /// <inheritdoc />
-        protected override void AcknowledgeMessage()
+        protected override Task AcknowledgeMessageAsync(CancellationToken cancellationToken)
         {
             var response = HttpResponseGenerator.GetAcknowledgeResponse(this);
-            WriteResponse(response);
+            return WriteResponseAsync(response, cancellationToken);
         }
 
         /// <inheritdoc />
-        protected override void RollbackMessage()
+        protected override Task RollbackMessageAsync(CancellationToken cancellationToken)
         {
             var response = HttpResponseGenerator.GetRollbackResponse(this);
-            WriteResponse(response);
+            return WriteResponseAsync(response, cancellationToken);
         }
 
         /// <inheritdoc />
-        protected override void RejectMessage()
+        protected override Task RejectMessageAsync(CancellationToken cancellationToken)
         {
             var response = HttpResponseGenerator.GetRejectResponse(this);
-            WriteResponse(response);
+            return WriteResponseAsync(response, cancellationToken);
         }
 
-        private void WriteResponse(HttpResponse response)
+        private async Task WriteResponseAsync(HttpResponse response, CancellationToken cancellationToken)
         {
             Context.Response.StatusCode = response.StatusCode;
 
@@ -67,10 +69,10 @@ namespace RockLib.Messaging.Http
                 case string stringContent:
                     Context.Response.ContentEncoding = Encoding.UTF8;
                     var buffer = Encoding.UTF8.GetBytes(stringContent);
-                    Context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+                    await Context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
                     break;
                 case byte[] binaryContent:
-                    Context.Response.OutputStream.Write(binaryContent, 0, binaryContent.Length);
+                    await Context.Response.OutputStream.WriteAsync(binaryContent, 0, binaryContent.Length, cancellationToken).ConfigureAwait(false);
                     break;
             }
 
