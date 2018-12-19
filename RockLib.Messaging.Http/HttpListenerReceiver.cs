@@ -266,7 +266,15 @@ namespace RockLib.Messaging.Http
                 }
             }
 
-            MessageHandler.OnMessageReceived(this, new HttpListenerReceiverMessage(context, HttpResponseGenerator, _pathRegex, _pathTokens));
+            try
+            {
+                var receiverMessage = new HttpListenerReceiverMessage(context, HttpResponseGenerator, _pathRegex, _pathTokens);
+                MessageHandler.OnMessageReceivedAsync(this, receiverMessage).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                OnError("Error in MessageHandler.OnMessageReceivedAsync.", ex);
+            }
         }
         
         /// <inheritdoc />
