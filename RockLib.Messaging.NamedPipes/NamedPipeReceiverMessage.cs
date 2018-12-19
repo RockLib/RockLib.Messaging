@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging.NamedPipes
 {
@@ -21,14 +23,14 @@ namespace RockLib.Messaging.NamedPipes
         }
 
         /// <inheritdoc />
-        protected override void AcknowledgeMessage() {}
+        protected override Task AcknowledgeMessageAsync(CancellationToken cancellationToken) => Task.FromResult(0);
 
         /// <inheritdoc />
-        protected override void RollbackMessage() {}
+        protected override Task RollbackMessageAsync(CancellationToken cancellationToken) => Task.FromResult(0);
 
         /// <inheritdoc />
-        protected override void RejectMessage() {}
-        
+        protected override Task RejectMessageAsync(CancellationToken cancellationToken) => Task.FromResult(0);
+
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
