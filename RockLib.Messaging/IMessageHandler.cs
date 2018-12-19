@@ -1,4 +1,6 @@
-﻿namespace RockLib.Messaging
+﻿using System.Threading.Tasks;
+
+namespace RockLib.Messaging
 {
     /// <summary>
     /// Defines an object that handles the messages received by an instance
@@ -11,6 +13,6 @@
         /// </summary>
         /// <param name="receiver">The instance of <see cref="IReceiver"/> that received the message.</param>
         /// <param name="message">The message that was received.</param>
-        void OnMessageReceived(IReceiver receiver, IReceiverMessage message);
+        Task OnMessageReceivedAsync(IReceiver receiver, IReceiverMessage message);
     }
 }

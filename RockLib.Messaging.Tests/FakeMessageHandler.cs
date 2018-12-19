@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Tests
 {
@@ -6,9 +7,10 @@ namespace RockLib.Messaging.Tests
     {
         public List<(IReceiver Receiver, IReceiverMessage Message)> ReceivedMessages { get; } = new List<(IReceiver, IReceiverMessage)>();
 
-        public void OnMessageReceived(IReceiver receiver, IReceiverMessage message)
+        public Task OnMessageReceivedAsync(IReceiver receiver, IReceiverMessage message)
         {
             ReceivedMessages.Add((receiver, message));
+            return Task.FromResult(0);
         }
     }
 }

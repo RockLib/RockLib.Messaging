@@ -152,7 +152,7 @@ namespace RockLib.Messaging
 
         /// <summary>
         /// Gets or sets the message handler for this receiver. When set, the receiver is started
-        /// and will invoke the value's <see cref="IMessageHandler.OnMessageReceived"/> method
+        /// and will invoke the value's <see cref="IMessageHandler.OnMessageReceivedAsync"/> method
         /// when messages are received.
         /// <para>
         /// When set, this property sets the <see cref="IReceiver.MessageHandler"/> of the
