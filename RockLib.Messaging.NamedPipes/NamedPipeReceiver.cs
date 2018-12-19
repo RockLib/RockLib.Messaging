@@ -87,7 +87,16 @@ namespace RockLib.Messaging.NamedPipes
         private void Consume()
         {
             foreach (var sentMessage in _messages.GetConsumingEnumerable())
-                MessageHandler.OnMessageReceivedAsync(this, new NamedPipeReceiverMessage(sentMessage)).Wait();
+            {
+                try
+                {
+                    MessageHandler.OnMessageReceivedAsync(this, new NamedPipeReceiverMessage(sentMessage)).GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    OnError("Error in MessageHandler.OnMessageReceivedAsync.", ex);
+                }
+            }
         }
 
         /// <summary>
