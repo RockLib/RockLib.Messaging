@@ -1,4 +1,6 @@
-﻿namespace RockLib.Messaging
+﻿using System.Threading.Tasks;
+
+namespace RockLib.Messaging
 {
     /// <summary>
     /// A decorator for the <see cref="IMessageHandler"/> interface that forwards
@@ -30,7 +32,7 @@
         /// <summary>
         /// Handles a received message.
         /// <para>
-        /// When invoked, this method invokes the <see cref="IMessageHandler.OnMessageReceived"/>
+        /// When invoked, this method invokes the <see cref="IMessageHandler.OnMessageReceivedAsync"/>
         /// method of the <see cref="MessageHandler"/> property. It passes the
         /// <see cref="ForwardingReceiver"/> property as the <c>receiver</c> argument and
         /// a new <see cref="ForwardingReceiverMessage"/> decorator as the <c>message</c>
@@ -39,7 +41,7 @@
         /// </summary>
         /// <param name="receiver">The instance of <see cref="IReceiver"/> that received the message.</param>
         /// <param name="message">The message that was received.</param>
-        public void OnMessageReceived(IReceiver receiver, IReceiverMessage message) =>
-            MessageHandler.OnMessageReceived(ForwardingReceiver, new ForwardingReceiverMessage(ForwardingReceiver, message));
+        public Task OnMessageReceivedAsync(IReceiver receiver, IReceiverMessage message) =>
+            MessageHandler.OnMessageReceivedAsync(ForwardingReceiver, new ForwardingReceiverMessage(ForwardingReceiver, message));
     }
 }

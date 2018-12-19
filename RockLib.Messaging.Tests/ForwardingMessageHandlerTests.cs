@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using NUnit.Framework;
 using RockLib.Messaging.Testing;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Tests
 {
@@ -8,7 +9,7 @@ namespace RockLib.Messaging.Tests
     public class ForwardingMessageHandlerTests
     {
         [Test]
-        public void OnMessageReceivedCallsInnerHandlerOnMessageReceivedWithForwardingReceiverMessage()
+        public async Task OnMessageReceivedCallsInnerHandlerOnMessageReceivedWithForwardingReceiverMessage()
         {
             var receiver = new FakeReceiver();
             var forwardingReceiver = new ForwardingReceiver("foo", receiver);
@@ -18,7 +19,7 @@ namespace RockLib.Messaging.Tests
 
             var message = new FakeReceiverMessage("Hello, world!");
 
-            handler.OnMessageReceived(receiver, message);
+            await handler.OnMessageReceivedAsync(receiver, message);
 
             messageHandler.ReceivedMessages.Should().ContainSingle();
             messageHandler.ReceivedMessages[0].Receiver.Should().BeSameAs(forwardingReceiver);

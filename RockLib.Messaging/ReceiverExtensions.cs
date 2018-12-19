@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging
 {
@@ -26,7 +27,29 @@ namespace RockLib.Messaging
         public static void Start(this IReceiver receiver, OnMessageReceivedDelegate onMessageReceived)
         {
             if (onMessageReceived == null) throw new ArgumentNullException(nameof(onMessageReceived));
-            receiver.Start(new DelegateMessageHandler(onMessageReceived));
+            receiver.Start(new SyncDelegateMessageHandler(onMessageReceived));
+        }
+
+        /// <summary>
+        /// Start listening for messages and handle them using the specified callback function.
+        /// </summary>
+        /// <param name="receiver">The receiver to start.</param>
+        /// <param name="onMessageReceivedAsync">A function that is invoked when a message is received.</param>
+        public static void Start(this IReceiver receiver, Func<IReceiverMessage, Task> onMessageReceivedAsync)
+        {
+            if (onMessageReceivedAsync == null) throw new ArgumentNullException(nameof(onMessageReceivedAsync));
+            receiver.Start((_, message) => onMessageReceivedAsync(message));
+        }
+
+        /// <summary>
+        /// Start listening for messages and handle them using the specified callback function.
+        /// </summary>
+        /// <param name="receiver">The receiver to start.</param>
+        /// <param name="onMessageReceivedAsync">A function that is invoked when a message is received.</param>
+        public static void Start(this IReceiver receiver, OnMessageReceivedAsyncDelegate onMessageReceivedAsync)
+        {
+            if (onMessageReceivedAsync == null) throw new ArgumentNullException(nameof(onMessageReceivedAsync));
+            receiver.Start(new AsyncDelegateMessageHandler(onMessageReceivedAsync));
         }
 
         /// <summary>
@@ -44,15 +67,40 @@ namespace RockLib.Messaging
             receiver.MessageHandler = messageHandler ?? throw new ArgumentNullException(nameof(messageHandler));
         }
 
-        private class DelegateMessageHandler : IMessageHandler
+        private class SyncDelegateMessageHandler : IMessageHandler
         {
             private readonly OnMessageReceivedDelegate _onMessageReceived;
 
-            public DelegateMessageHandler(OnMessageReceivedDelegate onMessageReceived) =>
+            public SyncDelegateMessageHandler(OnMessageReceivedDelegate onMessageReceived) =>
                 _onMessageReceived = onMessageReceived;
 
-            public void OnMessageReceived(IReceiver receiver, IReceiverMessage message) =>
-                _onMessageReceived(receiver, message);
+            public Task OnMessageReceivedAsync(IReceiver receiver, IReceiverMessage message)
+            {
+                var source = new TaskCompletionSource<int>();
+
+                try
+                {
+                    _onMessageReceived(receiver, message);
+                    source.SetResult(0);
+                }
+                catch (Exception ex)
+                {
+                    source.SetException(ex);
+                }
+
+                return source.Task;
+            }
+        }
+
+        private class AsyncDelegateMessageHandler : IMessageHandler
+        {
+            private readonly OnMessageReceivedAsyncDelegate _onMessageReceivedAsync;
+
+            public AsyncDelegateMessageHandler(OnMessageReceivedAsyncDelegate onMessageReceivedAsync) =>
+                _onMessageReceivedAsync = onMessageReceivedAsync;
+
+            public Task OnMessageReceivedAsync(IReceiver receiver, IReceiverMessage message) =>
+                _onMessageReceivedAsync(receiver, message);
         }
     }
 }
