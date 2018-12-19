@@ -18,7 +18,7 @@ namespace RockLib.Messaging.SQS
     public class SQSQueueReceiver : Receiver
     {
         private readonly IAmazonSQS _sqs;
-        private readonly Thread _worker;
+        private readonly Lazy<Task> _receiveMessagesTask;
 
         private bool _stopped;
 
@@ -42,17 +42,12 @@ namespace RockLib.Messaging.SQS
         /// <param name="autoAcknowledge">
         /// Whether messages will be automatically acknowledged after any event handlers execute.
         /// </param>
-        /// <param name="parallelHandling">
-        /// Whether, in the case of when multiple messages are received from an SQS request,
-        /// messages are handled in parallel or sequentially.
-        /// </param>
         public SQSQueueReceiver(string name,
             string queueUrl,
             string region = null,
             int maxMessages = _defaultMaxMessages,
-            bool autoAcknowledge = true,
-            bool parallelHandling = false)
-            : this(region == null ? new AmazonSQSClient() : new AmazonSQSClient(RegionEndpoint.GetBySystemName(region)), name, queueUrl, maxMessages, autoAcknowledge, parallelHandling)
+            bool autoAcknowledge = true)
+            : this(region == null ? new AmazonSQSClient() : new AmazonSQSClient(RegionEndpoint.GetBySystemName(region)), name, queueUrl, maxMessages, autoAcknowledge)
         {
         }
 
@@ -70,16 +65,11 @@ namespace RockLib.Messaging.SQS
         /// <param name="autoAcknowledge">
         /// Whether messages will be automatically acknowledged after any event handlers execute.
         /// </param>
-        /// <param name="parallelHandling">
-        /// Whether, in the case of when multiple messages are received from an SQS request,
-        /// messages are handled in parallel or sequentially.
-        /// </param>
         public SQSQueueReceiver(IAmazonSQS sqs,
             string name,
             string queueUrl,
             int maxMessages = _defaultMaxMessages,
-            bool autoAcknowledge = true,
-            bool parallelHandling = false)
+            bool autoAcknowledge = true)
             : base(name)
         {
             if (maxMessages < 1 || maxMessages > 10)
@@ -89,9 +79,8 @@ namespace RockLib.Messaging.SQS
             QueueUrl = queueUrl ?? throw new ArgumentNullException(nameof(queueUrl));
             MaxMessages = maxMessages;
             AutoAcknwoledge = autoAcknowledge;
-            ParallelHandling = parallelHandling;
 
-            _worker = new Thread(DoStuff);
+            _receiveMessagesTask = new Lazy<Task>(ReceiveMessages);
         }
 
         /// <summary>
@@ -113,24 +102,20 @@ namespace RockLib.Messaging.SQS
         public bool AutoAcknwoledge { get; }
 
         /// <summary>
-        /// Gets a value indicating whether, in the case of when multiple messages are received
-        /// from an SQS request, messages are handled in parallel or sequentially.
-        /// </summary>
-        public bool ParallelHandling { get; }
-
-        /// <summary>
         /// Starts the polling background thread that listens for messages.
         /// </summary>
         protected override void Start()
         {
-            if (!_worker.IsAlive && !_stopped)
+            if (!_receiveMessagesTask.IsValueCreated && !_stopped)
             {
-                _worker.Start();
+                var dummy = _receiveMessagesTask.Value;
             }
         }
 
-        private void DoStuff()
+        private async Task ReceiveMessages()
         {
+            await Task.Yield();
+
             bool? connected = null;
 
             while (!_stopped)
@@ -149,7 +134,7 @@ namespace RockLib.Messaging.SQS
                 {
                     try
                     {
-                        response = Sync.OverAsync(() => _sqs.ReceiveMessageAsync(receiveMessageRequest));
+                        response = await _sqs.ReceiveMessageAsync(receiveMessageRequest).ConfigureAwait(false);
 
                         if (response.HttpStatusCode == HttpStatusCode.OK)
                         {
@@ -190,70 +175,70 @@ namespace RockLib.Messaging.SQS
                     continue;
                 }
 
-                if (ParallelHandling)
-                {
-                    Parallel.ForEach(response.Messages, Handle);
-                }
-                else
-                {
-                    foreach (var message in response.Messages)
-                    {
-                        Handle(message);
-                    }
-                }
+                var tasks = response.Messages.Select(m => HandleAsync(m));
+                await Task.WhenAll(tasks).ConfigureAwait(false);
             }
         }
 
-        private void Handle(Message message)
+        private async Task HandleAsync(Message message)
         {
             if (_stopped)
-            {
                 return;
-            }
 
             var receiptHandle = message.ReceiptHandle;
-            void DeleteMessage() => Delete(receiptHandle);
 
-            var receiverMessage = new SQSReceiverMessage(message, DeleteMessage);
+            Task DeleteMessageAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
+                DeleteAsync(receiptHandle, cancellationToken);
+
+            var receiverMessage = new SQSReceiverMessage(message, DeleteMessageAsync);
 
             try
             {
-                MessageHandler.OnMessageReceived(this, receiverMessage);
+                await MessageHandler.OnMessageReceivedAsync(this, receiverMessage).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                OnError("Error in MessageHandler.OnMessageReceivedAsync.", ex);
             }
             finally
             {
                 if (AutoAcknwoledge && !receiverMessage.Handled)
-                    DeleteMessage();
+                {
+                    try
+                    {
+                        await DeleteMessageAsync().ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        OnError("Error in AutoAcknowledge.", ex);
+                    }
+                }
             }
         }
 
-        private void Delete(string receiptHandle)
+        private async Task DeleteAsync(string receiptHandle, CancellationToken cancellationToken)
         {
-            DeleteMessageResponse deleteResponse = null;
+            int i = 0;
 
-            for (int i = 0; i < _maxAcknowledgeAttempts; i++)
+            while (true)
             {
                 try
                 {
-                    deleteResponse = null;
-
-                    deleteResponse = Sync.OverAsync(() => _sqs.DeleteMessageAsync(new DeleteMessageRequest
+                    var deleteResponse = await _sqs.DeleteMessageAsync(new DeleteMessageRequest
                     {
                         QueueUrl = QueueUrl,
                         ReceiptHandle = receiptHandle
-                    }));
+                    }, cancellationToken).ConfigureAwait(false);
 
                     if (deleteResponse.HttpStatusCode == HttpStatusCode.OK)
-                    {
                         return;
-                    }
                 }
                 catch
                 {
+                    if (i++ >= _maxAcknowledgeAttempts)
+                        throw;
                 }
             }
-
-            Trace.TraceError($"Unable to delete SQS message. Additional Information - {GetAdditionalInformation(deleteResponse, receiptHandle)}");
         }
 
         /// <summary>
@@ -262,7 +247,8 @@ namespace RockLib.Messaging.SQS
         protected override void Dispose(bool disposing)
         {
             _stopped = true;
-            _worker.Join();
+            if (_receiveMessagesTask.IsValueCreated)
+                _receiveMessagesTask.Value.Wait();
             _sqs.Dispose();
             base.Dispose(disposing);
         }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Amazon.SQS.Model;
 
 namespace RockLib.Messaging.SQS
@@ -11,30 +13,30 @@ namespace RockLib.Messaging.SQS
     public sealed class SQSReceiverMessage : ReceiverMessage
     {
         private readonly Message _message;
-        private readonly Action _deleteMessage;
+        private readonly Func<CancellationToken, Task> _deleteMessageAsync;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SQSReceiverMessage"/> class.
         /// </summary>
         /// <param name="message">The SQS message that was received.</param>
-        /// <param name="deleteMessage">
+        /// <param name="deleteMessageAsync">
         /// A delegate that deletes the message when invoked.
         /// </param>
-        internal SQSReceiverMessage(Message message, Action deleteMessage)
+        internal SQSReceiverMessage(Message message, Func<CancellationToken, Task> deleteMessageAsync)
             : base(() => message.Body)
         {
             _message = message ?? throw new ArgumentNullException(nameof(message));
-            _deleteMessage = deleteMessage ?? throw new ArgumentNullException(nameof(deleteMessage));
+            _deleteMessageAsync = deleteMessageAsync ?? throw new ArgumentNullException(nameof(deleteMessageAsync));
         }
 
         /// <inheritdoc />
-        protected override void AcknowledgeMessage() => _deleteMessage();
+        protected override Task AcknowledgeMessageAsync(CancellationToken cancellationToken) => _deleteMessageAsync(cancellationToken);
 
         /// <inheritdoc />
-        protected override void RollbackMessage() { } // Do nothing - the message will automatically be redelivered by SQS when left unacknowledged.
+        protected override Task RollbackMessageAsync(CancellationToken cancellationToken) => Task.FromResult(0); // Do nothing - the message will automatically be redelivered by SQS when left unacknowledged.
 
         /// <inheritdoc />
-        protected override void RejectMessage() => _deleteMessage();
+        protected override Task RejectMessageAsync(CancellationToken cancellationToken) => _deleteMessageAsync(cancellationToken);
 
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
