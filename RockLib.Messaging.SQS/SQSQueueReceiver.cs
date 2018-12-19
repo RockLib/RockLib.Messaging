@@ -40,14 +40,21 @@ namespace RockLib.Messaging.SQS
         /// might be returned). Valid values are 1 to 10.
         /// </param>
         /// <param name="autoAcknowledge">
-        /// Whether messages will be automatically acknowledged after any event handlers execute.
+        /// Whether messages will be automatically acknowledged after the message handler executes.
+        /// </param>
+        /// <param name="waitTimeSeconds">
+        /// The duration (in seconds) for which calls to ReceiveMessage wait for a message
+        /// to arrive in the queue before returning. If a message is available, the call returns
+        /// sooner than WaitTimeSeconds. If no messages are available and the wait time expires,
+        /// the call returns successfully with an empty list of messages.
         /// </param>
         public SQSQueueReceiver(string name,
             string queueUrl,
             string region = null,
             int maxMessages = _defaultMaxMessages,
-            bool autoAcknowledge = true)
-            : this(region == null ? new AmazonSQSClient() : new AmazonSQSClient(RegionEndpoint.GetBySystemName(region)), name, queueUrl, maxMessages, autoAcknowledge)
+            bool autoAcknowledge = true,
+            int waitTimeSeconds = 0)
+            : this(region == null ? new AmazonSQSClient() : new AmazonSQSClient(RegionEndpoint.GetBySystemName(region)), name, queueUrl, maxMessages, autoAcknowledge, waitTimeSeconds)
         {
         }
 
@@ -63,22 +70,32 @@ namespace RockLib.Messaging.SQS
         /// might be returned). Valid values are 1 to 10.
         /// </param>
         /// <param name="autoAcknowledge">
-        /// Whether messages will be automatically acknowledged after any event handlers execute.
+        /// Whether messages will be automatically acknowledged after the message handler executes.
+        /// </param>
+        /// <param name="waitTimeSeconds">
+        /// The duration (in seconds) for which calls to ReceiveMessage wait for a message
+        /// to arrive in the queue before returning. If a message is available, the call returns
+        /// sooner than WaitTimeSeconds. If no messages are available and the wait time expires,
+        /// the call returns successfully with an empty list of messages.
         /// </param>
         public SQSQueueReceiver(IAmazonSQS sqs,
             string name,
             string queueUrl,
             int maxMessages = _defaultMaxMessages,
-            bool autoAcknowledge = true)
+            bool autoAcknowledge = true,
+            int waitTimeSeconds = 0)
             : base(name)
         {
             if (maxMessages < 1 || maxMessages > 10)
                 throw new ArgumentOutOfRangeException(nameof(maxMessages), "Value must be from 1 to 10, inclusive.");
+            if (waitTimeSeconds < 0)
+                throw new ArgumentOutOfRangeException(nameof(waitTimeSeconds), "Value cannot be negative.");
 
             _sqs = sqs ?? throw new ArgumentNullException(nameof(sqs));
             QueueUrl = queueUrl ?? throw new ArgumentNullException(nameof(queueUrl));
             MaxMessages = maxMessages;
             AutoAcknwoledge = autoAcknowledge;
+            WaitTimeSeconds = waitTimeSeconds;
 
             _receiveMessagesTask = new Lazy<Task>(ReceiveMessages);
         }
@@ -97,9 +114,17 @@ namespace RockLib.Messaging.SQS
 
         /// <summary>
         /// Gets a value indicating whether messages will be automatically acknowledged after
-        /// any event handlers execute.
+        /// the message handler executes.
         /// </summary>
         public bool AutoAcknwoledge { get; }
+
+        /// <summary>
+        /// Gets the duration (in seconds) for which calls to ReceiveMessage wait for a message
+        /// to arrive in the queue before returning. If a message is available, the call returns
+        /// sooner than WaitTimeSeconds. If no messages are available and the wait time expires,
+        /// the call returns successfully with an empty list of messages.
+        /// </summary>
+        public int WaitTimeSeconds { get; }
 
         /// <summary>
         /// Starts the polling background thread that listens for messages.
@@ -124,7 +149,8 @@ namespace RockLib.Messaging.SQS
                 {
                     MaxNumberOfMessages = MaxMessages,
                     QueueUrl = QueueUrl,
-                    MessageAttributeNames = new List<string> { "*" }
+                    MessageAttributeNames = new List<string> { "*" },
+                    WaitTimeSeconds = WaitTimeSeconds
                 };
 
                 ReceiveMessageResponse response = null;
