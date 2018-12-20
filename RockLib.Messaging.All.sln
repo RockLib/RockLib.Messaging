@@ -33,6 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SQS.Tests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SNS", "RockLib.Messaging.SNS\RockLib.Messaging.SNS.csproj", "{F5558582-F71D-40E3-B47F-66E1F025527E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Messaging.SNS.DotNetCore20", "Example.Messaging.SNS.DotNetCore20\Example.Messaging.SNS.DotNetCore20.csproj", "{CA2C01B1-C688-4C3F-9097-06D5A6C229CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +101,10 @@ Global
 		{F5558582-F71D-40E3-B47F-66E1F025527E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5558582-F71D-40E3-B47F-66E1F025527E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F5558582-F71D-40E3-B47F-66E1F025527E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA2C01B1-C688-4C3F-9097-06D5A6C229CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA2C01B1-C688-4C3F-9097-06D5A6C229CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA2C01B1-C688-4C3F-9097-06D5A6C229CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA2C01B1-C688-4C3F-9097-06D5A6C229CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
