@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -48,13 +47,15 @@ namespace RockLib.Messaging.SQS
         /// sooner than WaitTimeSeconds. If no messages are available and the wait time expires,
         /// the call returns successfully with an empty list of messages.
         /// </param>
+        /// <param name="unpackSNS">Whether to attempt to unpack the message body as an SNS message.</param>
         public SQSQueueReceiver(string name,
             string queueUrl,
             string region = null,
             int maxMessages = _defaultMaxMessages,
             bool autoAcknowledge = true,
-            int waitTimeSeconds = 0)
-            : this(region == null ? new AmazonSQSClient() : new AmazonSQSClient(RegionEndpoint.GetBySystemName(region)), name, queueUrl, maxMessages, autoAcknowledge, waitTimeSeconds)
+            int waitTimeSeconds = 0,
+            bool unpackSNS = false)
+            : this(region == null ? new AmazonSQSClient() : new AmazonSQSClient(RegionEndpoint.GetBySystemName(region)), name, queueUrl, maxMessages, autoAcknowledge, waitTimeSeconds, unpackSNS)
         {
         }
 
@@ -78,12 +79,14 @@ namespace RockLib.Messaging.SQS
         /// sooner than WaitTimeSeconds. If no messages are available and the wait time expires,
         /// the call returns successfully with an empty list of messages.
         /// </param>
+        /// <param name="unpackSNS">Whether to attempt to unpack the message body as an SNS message.</param>
         public SQSQueueReceiver(IAmazonSQS sqs,
             string name,
             string queueUrl,
             int maxMessages = _defaultMaxMessages,
             bool autoAcknowledge = true,
-            int waitTimeSeconds = 0)
+            int waitTimeSeconds = 0,
+            bool unpackSNS = false)
             : base(name)
         {
             if (maxMessages < 1 || maxMessages > 10)
@@ -96,6 +99,7 @@ namespace RockLib.Messaging.SQS
             MaxMessages = maxMessages;
             AutoAcknwoledge = autoAcknowledge;
             WaitTimeSeconds = waitTimeSeconds;
+            UnpackSNS = unpackSNS;
 
             _receiveMessagesTask = new Lazy<Task>(ReceiveMessages);
         }
@@ -125,6 +129,11 @@ namespace RockLib.Messaging.SQS
         /// the call returns successfully with an empty list of messages.
         /// </summary>
         public int WaitTimeSeconds { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether to attempt to unpack the message body as an SNS message.
+        /// </summary>
+        public bool UnpackSNS { get; }
 
         /// <summary>
         /// Starts the polling background thread that listens for messages.
@@ -197,11 +206,11 @@ namespace RockLib.Messaging.SQS
                         OnDisconnected(GetErrorMessage());
                     }
 
-                    Trace.TraceError($"Unable to receive SQS messages from AWS. Additional Information - {GetAdditionalInformation(response, null)}");
+                    OnError($"Unable to receive SQS messages from AWS. Additional Information - {GetAdditionalInformation(response, null)}", exception);
                     continue;
                 }
 
-                var tasks = response.Messages.Select(m => HandleAsync(m));
+                var tasks = response.Messages.Select(HandleAsync);
                 await Task.WhenAll(tasks).ConfigureAwait(false);
             }
         }
@@ -216,7 +225,7 @@ namespace RockLib.Messaging.SQS
             Task DeleteMessageAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
                 DeleteAsync(receiptHandle, cancellationToken);
 
-            var receiverMessage = new SQSReceiverMessage(message, DeleteMessageAsync);
+            var receiverMessage = new SQSReceiverMessage(message, DeleteMessageAsync, UnpackSNS);
 
             try
             {
