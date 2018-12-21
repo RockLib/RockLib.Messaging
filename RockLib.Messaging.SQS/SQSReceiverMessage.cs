@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.SQS.Model;
+using Newtonsoft.Json;
 
 namespace RockLib.Messaging.SQS
 {
@@ -14,19 +15,14 @@ namespace RockLib.Messaging.SQS
     {
         private readonly Message _message;
         private readonly Func<CancellationToken, Task> _deleteMessageAsync;
+        private readonly bool _unpackSns;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SQSReceiverMessage"/> class.
-        /// </summary>
-        /// <param name="message">The SQS message that was received.</param>
-        /// <param name="deleteMessageAsync">
-        /// A delegate that deletes the message when invoked.
-        /// </param>
-        internal SQSReceiverMessage(Message message, Func<CancellationToken, Task> deleteMessageAsync)
-            : base(() => message.Body)
+        internal SQSReceiverMessage(Message message, Func<CancellationToken, Task> deleteMessageAsync, bool unpackSNS)
+            : base(() => ParseSNSBody(message, unpackSNS))
         {
-            _message = message ?? throw new ArgumentNullException(nameof(message));
-            _deleteMessageAsync = deleteMessageAsync ?? throw new ArgumentNullException(nameof(deleteMessageAsync));
+            _message = message;
+            _deleteMessageAsync = deleteMessageAsync;
+            _unpackSns = unpackSNS;
         }
 
         /// <inheritdoc />
@@ -41,8 +37,61 @@ namespace RockLib.Messaging.SQS
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
+            if (_unpackSns)
+            {
+                try
+                {
+                    var parsedMessage = JsonConvert.DeserializeObject<SNSMessage>(_message.Body);
+
+                    if (parsedMessage.TopicARN != null && parsedMessage.TopicARN.StartsWith("arn:"))
+                    {
+                        headers["TopicARN"] = parsedMessage.TopicARN;
+                        foreach (var attribute in parsedMessage.MessageAttributes)
+                            headers[attribute.Key] = attribute.Value.Value;
+                        return;
+                    }
+                }
+                catch
+                {
+                }
+            }
+
             foreach (var attribute in _message.MessageAttributes)
                 headers.Add(attribute.Key, attribute.Value.StringValue);
+        }
+
+        private static string ParseSNSBody(Message message, bool unpackSNS)
+        {
+            if (unpackSNS)
+            {
+                try
+                {
+                    var parsedMessage = JsonConvert.DeserializeObject<SNSMessage>(message.Body);
+
+                    if (parsedMessage.TopicARN != null && parsedMessage.TopicARN.StartsWith("arn:"))
+                    {
+                        return parsedMessage.Message;
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            return message.Body;
+        }
+
+        private class SNSMessage
+        {
+            public string TopicARN { get; set; }
+            public string Message { get; set; }
+            public Dictionary<string, MessageAttribute> MessageAttributes { get; set; }
+        }
+
+        private class MessageAttribute
+        {
+            public string Type { get; set; }
+            public string Value { get; set; }
         }
     }
 }

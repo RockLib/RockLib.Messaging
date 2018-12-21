@@ -5,6 +5,7 @@ using RockLib.Messaging;
 using System.Threading;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
@@ -70,7 +71,7 @@ namespace Example.Messaging.SNS.DotNetCore20
                     else
                         await sender.SendAsync(message);
 
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
                 }
 
                 foreach (var receiver in receivers)
@@ -98,11 +99,13 @@ namespace Example.Messaging.SNS.DotNetCore20
 
         private static void HandleMessage(IReceiverMessage m, string name)
         {
+            var builder = new StringBuilder();
             foreach (var header in m.Headers)
-                Console.WriteLine($"{name} - {header.Key}: {header.Value}");
+                builder.AppendLine($"{name} - {header.Key}: {header.Value}");
 
-            Console.WriteLine($"{name} - {m.StringPayload}");
-            Console.WriteLine();
+            builder.AppendLine($"{name} - {m.StringPayload}");
+            builder.AppendLine();
+            Console.WriteLine(builder);
         }
 
         private static void EnsureAwsCredentials()
