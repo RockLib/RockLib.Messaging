@@ -14,7 +14,7 @@ namespace RockLib.Messaging.SQS
     /// <summary>
     /// An implementation of <see cref="IReceiver"/> that receives messages from SQS.
     /// </summary>
-    public class SQSQueueReceiver : Receiver
+    public class SQSReceiver : Receiver
     {
         private readonly IAmazonSQS _sqs;
         private readonly Lazy<Task> _receiveMessagesTask;
@@ -26,7 +26,7 @@ namespace RockLib.Messaging.SQS
         private const int _maxReceiveAttempts = 3;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SQSQueueReceiver"/> class.
+        /// Initializes a new instance of the <see cref="SQSReceiver"/> class.
         /// Uses a default implementation of the <see cref="AmazonSQSClient"/> to
         /// communicate with SQS.
         /// </summary>
@@ -48,7 +48,7 @@ namespace RockLib.Messaging.SQS
         /// the call returns successfully with an empty list of messages.
         /// </param>
         /// <param name="unpackSNS">Whether to attempt to unpack the message body as an SNS message.</param>
-        public SQSQueueReceiver(string name,
+        public SQSReceiver(string name,
             string queueUrl,
             string region = null,
             int maxMessages = _defaultMaxMessages,
@@ -60,7 +60,7 @@ namespace RockLib.Messaging.SQS
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SQSQueueReceiver"/> class.
+        /// Initializes a new instance of the <see cref="SQSReceiver"/> class.
         /// </summary>
         /// <param name="sqs">An object that communicates with SQS.</param>
         /// <param name="name">The name of the receiver.</param>
@@ -80,7 +80,7 @@ namespace RockLib.Messaging.SQS
         /// the call returns successfully with an empty list of messages.
         /// </param>
         /// <param name="unpackSNS">Whether to attempt to unpack the message body as an SNS message.</param>
-        public SQSQueueReceiver(IAmazonSQS sqs,
+        public SQSReceiver(IAmazonSQS sqs,
             string name,
             string queueUrl,
             int maxMessages = _defaultMaxMessages,

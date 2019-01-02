@@ -13,11 +13,11 @@ namespace RockLib.Messaging.SQS.Tests
     public class SQSTests
     {
         [Fact]
-        public void SQSQueueSenderSendsMessagesToItsIAmazonSQS()
+        public void SQSSenderSendsMessagesToItsIAmazonSQS()
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
-            using (var sender = new SQSQueueSender(mockSqs.Object, "foo", "http://url.com/foo"))
+            using (var sender = new SQSSender(mockSqs.Object, "foo", "http://url.com/foo"))
                 sender.Send(new SenderMessage("Hello, world!") { Headers = { { "bar", "abc" } } });
 
             mockSqs.Verify(m => m.SendMessageAsync(
@@ -28,7 +28,7 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void SQSQueueReceiverReceivesMessagesFromItsIAmazonSQS()
+        public void SQSReceiverReceivesMessagesFromItsIAmazonSQS()
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
@@ -39,7 +39,7 @@ namespace RockLib.Messaging.SQS.Tests
             string receivedMessage = null;
             string quxHeader = null;
 
-            using (var receiver = new SQSQueueReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false))
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false))
             {
                 receiver.Start(m =>
                 {
@@ -72,7 +72,7 @@ namespace RockLib.Messaging.SQS.Tests
 
             var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSQueueReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false))
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false))
             {
                 receiver.Start(m =>
                 {
@@ -99,7 +99,7 @@ namespace RockLib.Messaging.SQS.Tests
 
             var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSQueueReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false))
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false))
             {
                 receiver.Start(m =>
                 {
@@ -126,7 +126,7 @@ namespace RockLib.Messaging.SQS.Tests
 
             var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSQueueReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false))
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false))
             {
                 receiver.Start(m =>
                 {
@@ -153,7 +153,7 @@ namespace RockLib.Messaging.SQS.Tests
 
             var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSQueueReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: true))
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: true))
             {
                 receiver.Start(m =>
                 {
@@ -179,7 +179,7 @@ namespace RockLib.Messaging.SQS.Tests
 
             var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSQueueReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: true))
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: true))
             {
                 receiver.Start(m =>
                 {
@@ -198,7 +198,7 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void SNSToSQSReceiverMessageCorrectlyUnpacksSNSMessage()
+        public void SQSReceiverMessageWithUnpackSNSTrueCorrectlyUnpacksSNSMessage()
         {
             var snsMessage = @"{
   ""Type"" : ""Notification"",
@@ -221,7 +221,7 @@ namespace RockLib.Messaging.SQS.Tests
                 Body = snsMessage
             };
 
-            var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), true);
+            var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), unpackSNS: true);
 
             sqsReceiverMessage.StringPayload.Should().Be("This is a better test message");
             sqsReceiverMessage.Headers["TopicARN"].Should().Be("arn:PutARealARNHere");

@@ -10,31 +10,31 @@ namespace RockLib.Messaging.SQS
     /// <summary>
     /// An implementation of <see cref="ISender"/> that sends messages to SQS.
     /// </summary>
-    public class SQSQueueSender : ISender
+    public class SQSSender : ISender
     {
         private readonly string _queueUrl;
         private readonly IAmazonSQS _sqs;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SQSQueueReceiver"/> class.
+        /// Initializes a new instance of the <see cref="SQSReceiver"/> class.
         /// Uses a default implementation of the <see cref="AmazonSQSClient"/> to
         /// communicate with SQS.
         /// </summary>
         /// <param name="name">The name of the sender.</param>
         /// <param name="queueUrl">The url of the SQS queue.</param>
         /// <param name="region">The region of the SQS queue.</param>
-        public SQSQueueSender(string name, string queueUrl, string region = null)
+        public SQSSender(string name, string queueUrl, string region = null)
             : this(region == null ? new AmazonSQSClient() : new AmazonSQSClient(RegionEndpoint.GetBySystemName(region)), name, queueUrl)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SQSQueueReceiver"/> class.
+        /// Initializes a new instance of the <see cref="SQSReceiver"/> class.
         /// </summary>
         /// <param name="sqs">An object that communicates with SQS.</param>
         /// <param name="name">The name of the sender.</param>
         /// <param name="queueUrl">The url of the SQS queue.</param>
-        public SQSQueueSender(IAmazonSQS sqs, string name, string queueUrl)
+        public SQSSender(IAmazonSQS sqs, string name, string queueUrl)
         {
             _sqs = sqs ?? throw new ArgumentNullException(nameof(sqs));
             Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -42,7 +42,7 @@ namespace RockLib.Messaging.SQS
         }
 
         /// <summary>
-        /// Gets the name of this instance of <see cref="SQSQueueSender"/>.
+        /// Gets the name of this instance of <see cref="SQSSender"/>.
         /// </summary>
         public string Name { get; }
 
