@@ -41,48 +41,40 @@ namespace RockLib.Messaging.SQS
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
-            if (_unpackSns)
+            if (TryGetSNSMessage(Message.Body, _unpackSns, out var snsMessage))
             {
-                try
-                {
-                    var parsedMessage = JsonConvert.DeserializeObject<SNSMessage>(Message.Body);
-
-                    if (parsedMessage.TopicARN != null && parsedMessage.TopicARN.StartsWith("arn:"))
-                    {
-                        headers["TopicARN"] = parsedMessage.TopicARN;
-                        foreach (var attribute in parsedMessage.MessageAttributes)
-                            headers[attribute.Key] = attribute.Value.Value;
-                        return;
-                    }
-                }
-                catch
-                {
-                }
+                headers["TopicARN"] = snsMessage.TopicARN;
+                foreach (var attribute in snsMessage.MessageAttributes)
+                    headers[attribute.Key] = attribute.Value.Value;
             }
-
-            foreach (var attribute in Message.MessageAttributes)
-                headers.Add(attribute.Key, attribute.Value.StringValue);
+            else
+                foreach (var attribute in Message.MessageAttributes)
+                    headers.Add(attribute.Key, attribute.Value.StringValue);
         }
 
         private static string GetRawPayload(string messageBody, bool unpackSNS)
+        {
+            if (TryGetSNSMessage(messageBody, unpackSNS, out var snsMessage))
+                return snsMessage.Message;
+
+            return messageBody;
+        }
+
+        private static bool TryGetSNSMessage(string messageBody, bool unpackSNS, out SNSMessage snsMessage)
         {
             if (unpackSNS)
             {
                 try
                 {
-                    var parsedMessage = JsonConvert.DeserializeObject<SNSMessage>(messageBody);
-
-                    if (parsedMessage.TopicARN != null && parsedMessage.TopicARN.StartsWith("arn:"))
-                    {
-                        return parsedMessage.Message;
-                    }
+                    snsMessage = JsonConvert.DeserializeObject<SNSMessage>(messageBody);
+                    if (snsMessage.TopicARN != null && snsMessage.TopicARN.StartsWith("arn:"))
+                        return true;
                 }
-                catch
-                {
-                }
+                catch { }
             }
 
-            return messageBody;
+            snsMessage = null;
+            return false;
         }
 
         private class SNSMessage
