@@ -17,7 +17,7 @@ namespace RockLib.Messaging.SQS
         private readonly bool _unpackSns;
 
         internal SQSReceiverMessage(Message message, Func<CancellationToken, Task> deleteMessageAsync, bool unpackSNS)
-            : base(() => ParseSNSBody(message, unpackSNS))
+            : base(() => GetRawPayload(message.Body, unpackSNS))
         {
             Message = message;
             _deleteMessageAsync = deleteMessageAsync;
@@ -41,60 +41,51 @@ namespace RockLib.Messaging.SQS
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
-            if (_unpackSns)
+            if (TryGetSNSMessage(Message.Body, _unpackSns, out var snsMessage))
             {
-                try
-                {
-                    var parsedMessage = JsonConvert.DeserializeObject<SNSMessage>(Message.Body);
-
-                    if (parsedMessage.TopicARN != null && parsedMessage.TopicARN.StartsWith("arn:"))
-                    {
-                        headers["TopicARN"] = parsedMessage.TopicARN;
-                        foreach (var attribute in parsedMessage.MessageAttributes)
-                            headers[attribute.Key] = attribute.Value.Value;
-                        return;
-                    }
-                }
-                catch
-                {
-                }
+                headers["TopicARN"] = snsMessage.TopicARN;
+                foreach (var attribute in snsMessage.MessageAttributes)
+                    headers[attribute.Key] = attribute.Value.Value;
             }
-
-            foreach (var attribute in Message.MessageAttributes)
-                headers.Add(attribute.Key, attribute.Value.StringValue);
+            else
+                foreach (var attribute in Message.MessageAttributes)
+                    headers.Add(attribute.Key, attribute.Value.StringValue);
         }
 
-        private static string ParseSNSBody(Message message, bool unpackSNS)
+        private static string GetRawPayload(string messageBody, bool unpackSNS)
+        {
+            if (TryGetSNSMessage(messageBody, unpackSNS, out var snsMessage))
+                return snsMessage.Message;
+
+            return messageBody;
+        }
+
+        private static bool TryGetSNSMessage(string messageBody, bool unpackSNS, out SNSMessage snsMessage)
         {
             if (unpackSNS)
             {
                 try
                 {
-                    var parsedMessage = JsonConvert.DeserializeObject<SNSMessage>(message.Body);
-
-                    if (parsedMessage.TopicARN != null && parsedMessage.TopicARN.StartsWith("arn:"))
-                    {
-                        return parsedMessage.Message;
-                    }
+                    snsMessage = JsonConvert.DeserializeObject<SNSMessage>(messageBody);
+                    if (snsMessage.TopicARN != null && snsMessage.TopicARN.StartsWith("arn:"))
+                        return true;
                 }
-                catch
-                {
-                }
+                catch { }
             }
 
-            return message.Body;
+            snsMessage = null;
+            return false;
         }
 
         private class SNSMessage
         {
             public string TopicARN { get; set; }
             public string Message { get; set; }
-            public Dictionary<string, MessageAttribute> MessageAttributes { get; set; }
+            public Dictionary<string, MessageAttribute> MessageAttributes { get; } = new Dictionary<string, MessageAttribute>();
         }
 
         private class MessageAttribute
         {
-            public string Type { get; set; }
             public string Value { get; set; }
         }
     }
