@@ -13,17 +13,21 @@ namespace RockLib.Messaging.SQS
     /// </summary>
     public sealed class SQSReceiverMessage : ReceiverMessage
     {
-        private readonly Message _message;
         private readonly Func<CancellationToken, Task> _deleteMessageAsync;
         private readonly bool _unpackSns;
 
         internal SQSReceiverMessage(Message message, Func<CancellationToken, Task> deleteMessageAsync, bool unpackSNS)
             : base(() => ParseSNSBody(message, unpackSNS))
         {
-            _message = message;
+            Message = message;
             _deleteMessageAsync = deleteMessageAsync;
             _unpackSns = unpackSNS;
         }
+
+        /// <summary>
+        /// Gets the actual SQS message that was received.
+        /// </summary>
+        public Message Message { get; }
 
         /// <inheritdoc />
         protected override Task AcknowledgeMessageAsync(CancellationToken cancellationToken) => _deleteMessageAsync(cancellationToken);
@@ -41,7 +45,7 @@ namespace RockLib.Messaging.SQS
             {
                 try
                 {
-                    var parsedMessage = JsonConvert.DeserializeObject<SNSMessage>(_message.Body);
+                    var parsedMessage = JsonConvert.DeserializeObject<SNSMessage>(Message.Body);
 
                     if (parsedMessage.TopicARN != null && parsedMessage.TopicARN.StartsWith("arn:"))
                     {
@@ -56,7 +60,7 @@ namespace RockLib.Messaging.SQS
                 }
             }
 
-            foreach (var attribute in _message.MessageAttributes)
+            foreach (var attribute in Message.MessageAttributes)
                 headers.Add(attribute.Key, attribute.Value.StringValue);
         }
 
