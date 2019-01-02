@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace RockLib.Messaging.SQS
 {
     /// <summary>
-    /// An implementation of IReceiverMessage for use by the <see cref="SQSQueueReceiver"/>
+    /// An implementation of IReceiverMessage for use by the <see cref="SQSReceiver"/>
     /// class.
     /// </summary>
     public sealed class SQSReceiverMessage : ReceiverMessage
