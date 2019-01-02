@@ -81,7 +81,7 @@ namespace RockLib.Messaging.SQS
         {
             public string TopicARN { get; set; }
             public string Message { get; set; }
-            public Dictionary<string, MessageAttribute> MessageAttributes { get; set; }
+            public Dictionary<string, MessageAttribute> MessageAttributes { get; } = new Dictionary<string, MessageAttribute>();
         }
 
         private class MessageAttribute

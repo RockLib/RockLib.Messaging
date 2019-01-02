@@ -229,6 +229,32 @@ namespace RockLib.Messaging.SQS.Tests
             sqsReceiverMessage.Headers["core_originating_system"].Should().Be("SNS");
         }
 
+        [Fact]
+        public void SQSReceiverMessageWithUnpackSNSTrueCorrectlyUnpacksSNSMessageWithNoMessageAttributes()
+        {
+            var snsMessage = @"{
+  ""Type"" : ""Notification"",
+  ""MessageId"" : ""f5129dcc-0bb0-5e18-9431-c95b6a9b32d9"",
+  ""TopicArn"" : ""arn:PutARealARNHere"",
+  ""Message"" : ""This is a better test message"",
+  ""Timestamp"" : ""2018-12-21T21:45:15.114Z"",
+  ""SignatureVersion"" : ""1"",
+  ""Signature"" : ""SomeSignatureValue"",
+  ""SigningCertURL"" : ""SomeUrl"",
+  ""UnsubscribeURL"" : ""SomeOtherUrl""
+}";
+
+            var message = new Message
+            {
+                Body = snsMessage
+            };
+
+            var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), unpackSNS: true);
+
+            sqsReceiverMessage.StringPayload.Should().Be("This is a better test message");
+            sqsReceiverMessage.Headers["TopicARN"].Should().Be("arn:PutARealARNHere");
+        }
+
         private static void SetupDeleteMessageAsync(Mock<IAmazonSQS> mockSqs, HttpStatusCode httpStatusCode = HttpStatusCode.OK)
         {
             mockSqs.Setup(m => m.DeleteMessageAsync(It.IsAny<DeleteMessageRequest>(), It.IsAny<CancellationToken>()))
