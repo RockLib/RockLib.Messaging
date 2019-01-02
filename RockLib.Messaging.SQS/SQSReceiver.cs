@@ -283,7 +283,8 @@ namespace RockLib.Messaging.SQS
         {
             _stopped = true;
             if (_receiveMessagesTask.IsValueCreated)
-                _receiveMessagesTask.Value.Wait();
+                try { _receiveMessagesTask.Value.Wait(); }
+                catch { }
             _sqs.Dispose();
             base.Dispose(disposing);
         }
