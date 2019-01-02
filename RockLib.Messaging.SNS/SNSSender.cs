@@ -10,29 +10,29 @@ namespace RockLib.Messaging.SNS
     /// <summary>
     /// An implementation of <see cref="ISender"/> that sends messages to Amazon SNS.
     /// </summary>
-    public class SNSTopicSender : ISender
+    public class SNSSender : ISender
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SNSTopicSender"/> class.
+        /// Initializes a new instance of the <see cref="SNSSender"/> class.
         /// Uses a default implementation of the <see cref="IAmazonSimpleNotificationService"/> to
         /// communicate with SNS.
         /// </summary>
         /// <param name="name">The name of the sender.</param>
         /// <param name="topicArn">The arn of the SNS topic.</param>
         /// <param name="region">The region of the SNS topic.</param>
-        public SNSTopicSender(string name, string topicArn, string region = null)
+        public SNSSender(string name, string topicArn, string region = null)
             : this(region == null ? new AmazonSimpleNotificationServiceClient() : new AmazonSimpleNotificationServiceClient(RegionEndpoint.GetBySystemName(region)), name, topicArn)
         {
         }
 
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SNSTopicSender"/> class.
+        /// Initializes a new instance of the <see cref="SNSSender"/> class.
         /// </summary>
         /// <param name="client">An object that communicates with SNS.</param>
         /// <param name="name">The name of the sender.</param>
         /// <param name="topicArn">The arn of the SNS topic.</param>
-        public SNSTopicSender(IAmazonSimpleNotificationService client, string name, string topicArn)
+        public SNSSender(IAmazonSimpleNotificationService client, string name, string topicArn)
         {
             SnsClient = client ?? throw new ArgumentNullException(nameof(client));
             Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -45,7 +45,7 @@ namespace RockLib.Messaging.SNS
         public IAmazonSimpleNotificationService SnsClient { get; }
 
         /// <summary>
-        /// Gets the name of this instance of <see cref="SNSTopicSender"/>.
+        /// Gets the name of this instance of <see cref="SNSSender"/>.
         /// </summary>
         public string Name { get; }
 

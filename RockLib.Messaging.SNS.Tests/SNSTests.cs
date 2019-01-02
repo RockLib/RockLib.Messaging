@@ -9,11 +9,11 @@ namespace RockLib.Messaging.SNS.Tests
     public class SNSTests
     {
         [Fact]
-        public void SQSQueueSenderSendsMessagesToItsIAmazonSQS()
+        public void SNSSenderSendsMessagesToItsIAmazonSQS()
         {
             var mockSns = new Mock<IAmazonSimpleNotificationService>();
 
-            using (var sender = new SNSTopicSender(mockSns.Object, "foo", "http://url.com/foo"))
+            using (var sender = new SNSSender(mockSns.Object, "foo", "http://url.com/foo"))
                 sender.Send(new SenderMessage("Hello, world!") { Headers = { { "bar", "abc" } } });
 
             mockSns.Verify(m => m.PublishAsync(
