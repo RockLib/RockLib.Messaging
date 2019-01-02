@@ -86,7 +86,6 @@ namespace RockLib.Messaging.SQS
 
         private class MessageAttribute
         {
-            public string Type { get; set; }
             public string Value { get; set; }
         }
     }
