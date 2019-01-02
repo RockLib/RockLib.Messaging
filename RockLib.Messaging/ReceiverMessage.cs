@@ -26,8 +26,7 @@ namespace RockLib.Messaging
         private string _handledBy;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ReceiverMessage"/> class using
-        /// a raw string payload.
+        /// Initializes a new instance of the <see cref="ReceiverMessage"/> class.
         /// </summary>
         /// <param name="getRawPayload">
         /// A function that returns the raw payload. Note that the <see cref="Payload"/> struct
