@@ -7,8 +7,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Amazon.SimpleNotificationService;
-using Amazon.SimpleNotificationService.Model;
 using Newtonsoft.Json.Linq;
 
 namespace Example.Messaging.SNS.DotNetCore20
