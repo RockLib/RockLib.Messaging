@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging</PackageId>
-    <PackageVersion>2.0.0-alpha14</PackageVersion>
+    <PackageVersion>2.0.0-alpha15</PackageVersion>
     <Authors>Quicken Loans</Authors>
     <Description>A simple API for sending and receiving messages.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
