@@ -19,12 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="CustomConfigFiles\DefaultSender_appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="CustomConfigFiles\DefaultReceiver_appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="CustomConfigFiles\SingleSender_appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

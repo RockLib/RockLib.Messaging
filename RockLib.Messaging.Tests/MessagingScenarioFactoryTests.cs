@@ -2,10 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using RockLib.Configuration.ObjectFactory;
-using System;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Tests
 {
@@ -80,36 +77,6 @@ namespace RockLib.Messaging.Tests
 
             receiver2.Name.Should().Be("Pipe2");
             receiver2.PipeName.Should().Be("PipeName2");
-        }
-
-        [Test]
-        public void CreateSenderCreatesSenderUsingDefaultSenderType()
-        {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile(@"CustomConfigFiles\DefaultSender_appsettings.json", false)
-                .Build()
-                .GetSection("RockLib.Messaging");
-
-            var sender = (FakeSender)((ConfigReloadingProxy<ISender>)config.CreateSender("Pipe1")).Object;
-
-            sender.Name.Should().Be("Pipe1");
-            sender.PipeName.Should().Be("PipeName1");
-        }
-
-        [Test]
-        public void CreateReceiverCreatesReceiverUsingDefaultReceiverType()
-        {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile(@"CustomConfigFiles\DefaultReceiver_appsettings.json", false)
-                .Build()
-                .GetSection("RockLib.Messaging");
-
-            var receiver = (FakeReceiver)((ConfigReloadingProxy<IReceiver>)config.CreateReceiver("Pipe1")).Object;
-
-            receiver.Name.Should().Be("Pipe1");
-            receiver.PipeName.Should().Be("PipeName1");
         }
     }
 }

@@ -167,15 +167,10 @@ namespace RockLib.Messaging
 
         private static T CreateScenario<T>(this IConfiguration configuration, string sectionName, string scenarioName, DefaultTypes defaultTypes, ValueConverters valueConverters, IResolver resolver, bool reloadOnConfigChange)
         {
-            if (defaultTypes == null)
-                defaultTypes = new DefaultTypes();
-
             var section = configuration.GetSection(sectionName);
 
             if (section.IsEmpty())
                 throw new KeyNotFoundException($"The '{sectionName}' section is empty.");
-
-            configuration.AddToDefaultTypes(defaultTypes);
 
             if (section.IsList())
             {
@@ -213,23 +208,6 @@ namespace RockLib.Messaging
                 valueSection = section.GetSection("value");
 
             return valueSection["name"];
-        }
-
-        private static void AddToDefaultTypes(this IConfiguration configuration, DefaultTypes defaultTypes)
-        {
-            if (configuration["defaultSenderType"] != null && !defaultTypes.TryGet(typeof(ISender), out var dummy))
-            {
-                var defaultSenderType = Type.GetType(configuration["defaultSenderType"]);
-                if (defaultSenderType != null && typeof(ISender).GetTypeInfo().IsAssignableFrom(defaultSenderType))
-                    defaultTypes.Add(typeof(ISender), defaultSenderType);
-            }
-
-            if (configuration["defaultReceiverType"] != null && !defaultTypes.TryGet(typeof(IReceiver), out dummy))
-            {
-                var defaultReceiverType = Type.GetType(configuration["defaultReceiverType"]);
-                if (defaultReceiverType != null && typeof(IReceiver).GetTypeInfo().IsAssignableFrom(defaultReceiverType))
-                    defaultTypes.Add(typeof(IReceiver), defaultReceiverType);
-            }
         }
     }
 }
