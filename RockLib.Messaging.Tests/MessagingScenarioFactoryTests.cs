@@ -168,6 +168,7 @@ namespace RockLib.Messaging.Tests
             receiver.Dependency.Should().BeSameAs(dependency);
         }
 
+        [Test]
         public void ReloadOnConfigChangeTrueFunctionsProperly()
         {
             var config = new ConfigurationBuilder()
@@ -184,10 +185,11 @@ namespace RockLib.Messaging.Tests
             var sender = messagingSection.CreateSender("foo", reloadOnConfigChange: true);
             var receiver = messagingSection.CreateReceiver("foo", reloadOnConfigChange: true);
 
-            sender.Should().BeOfType<ConfigReloadingProxy<ISender>>();
-            receiver.Should().BeOfType<ConfigReloadingProxy<IReceiver>>();
+            sender.Should().BeAssignableTo<ConfigReloadingProxy<ISender>>();
+            receiver.Should().BeAssignableTo<ConfigReloadingProxy<IReceiver>>();
         }
 
+        [Test]
         public void ReloadOnConfigChangeFalseFunctionsProperly()
         {
             var config = new ConfigurationBuilder()
