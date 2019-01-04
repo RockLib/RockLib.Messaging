@@ -90,9 +90,9 @@ namespace RockLib.Messaging
         protected void OnError(string message, Exception exception) => Error?.Invoke(this, new ErrorEventArgs(message, exception));
 
         /// <summary>
-        /// Unregisters all event handlers from the <see cref="Connected"/> and
-        /// <see cref="Disconnected"/> events and sets <see cref="MessageHandler"/>
-        /// to null.
+        /// Unregisters all event handlers from the <see cref="Connected"/>,
+        /// <see cref="Disconnected"/>, and <see cref="Error"/> events and sets
+        /// <see cref="MessageHandler"/> to null.
         /// </summary>
         /// <param name="disposing">
         /// True if called from the <see cref="Dispose()"/> method, false if called
@@ -107,6 +107,7 @@ namespace RockLib.Messaging
             {
                 Connected = null;
                 Disconnected = null;
+                Error = null;
                 _messageHandler = null;
             }
 
