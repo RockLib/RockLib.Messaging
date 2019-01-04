@@ -5,7 +5,6 @@ using RockLib.Configuration;
 using RockLib.Immutable;
 using RockLib.Configuration.ObjectFactory;
 using Microsoft.Extensions.Configuration;
-using System.Reflection;
 using Resolver=RockLib.Configuration.ObjectFactory.Resolver;
 
 namespace RockLib.Messaging
