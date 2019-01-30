@@ -50,7 +50,7 @@ sender.Dispose();
 The NamedPipeReceiver class can be directly instantiated and has the following parameters:
 
 - name
-  - The name of the instance of NamedPipeSender.
+  - The name of the instance of NamedPipeReceiver.
 - pipeName (optional)
   - Name of the named pipe. If not provided, the value of the `name` parameter is used.
 
