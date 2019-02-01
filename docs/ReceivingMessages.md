@@ -13,12 +13,12 @@ IReceiver receiver; // TODO: Initialize the receiver variable
 A receiver must be started to begin receiving messages. There are several ways of starting a receiver. One was is to call the `Start` extension method, passing it a callback function to be invoked when a message is received:
 
 ```c#
-void HandleMessage(IReceiverMessage message)
+async Task HandleMessageAsync(IReceiverMessage message)
 {
     // TODO: do something with the message
 }
 
-receiver.Start(HandleMessage);
+receiver.Start(HandleMessageAsync);
 ```
 
 ---
@@ -26,12 +26,12 @@ receiver.Start(HandleMessage);
 If you need to know which instance of `IReceiver` received the message, pass a callback function with this signature to the `Start` method:
 
 ```c#
-void HandleMessage(IReceiver receiver, IReceiverMessage message)
+async Task HandleMessageAsync(IReceiver receiver, IReceiverMessage message)
 {
     // TODO: do something with the receiver and message
 }
 
-receiver.Start(HandleMessage);
+receiver.Start(HandleMessageAsync);
 ```
 
 ---
@@ -41,7 +41,7 @@ If you need to encapsulate the message handler in a class, implement the `IMessa
 ```c#
 class MyMessageHandler : IMessageHandler
 {
-    public void OnMessageReceived(IReceiver receiver, IReceiverMessage message)
+    public async Task OnMessageReceivedAsync(IReceiver receiver, IReceiverMessage message)
     {
         // TODO: do something with the receiver and message
     }
@@ -58,7 +58,7 @@ An equivalent way of starting a receiver with an `IMessageHandler` implementatio
 ```c#
 class MyMessageHandler : IMessageHandler
 {
-    public void OnMessageReceived(IReceiver receiver, IReceiverMessage message)
+    public async Task OnMessageReceivedAsync(IReceiver receiver, IReceiverMessage message)
     {
         // TODO: do something with the receiver and message
     }
@@ -70,7 +70,7 @@ receiver.MessageHandler = messageHandler;
 
 ---
 
-## Handling a message
+## Handling messages
 
 Received messages implement the `IReceiverMessage` interface. The examples in this section assume there is an `IReceiverMessage` parameter named `message`. To access the message payload, use the `StringPayload` or `BinaryPayload` properties:
 
@@ -106,24 +106,24 @@ if (message.Headers.TryGetValue("ExampleDescription", out string exampleDescript
 
 ---
 
-The `IReceiverMessage` interface provides three methods to signal to the sender of the message what the outcome of processing the message was. If the message was processed successfully, it should be acknowledged:
+The `IReceiverMessage` interface provides three methods to signal to the sender of the message what the outcome of processing the message was. If the message *was* processed successfully, and the sender should *not* redeliver it, it should be acknowledged:
 
 ```c#
-message.Acknowledge();
+await message.AcknowledgeAsync();
 ```
 
 ---
 
-If the message was not processed successfully, and the sender should *not* redeliver it, the message should be rejected:
+If the message was *not* processed successfully, and the sender should *not* redeliver it, the message should be rejected:
 
 ```c#
-message.Reject();
+await message.RejectAsync();
 ```
 
 ---
 
-If the message was not processed successfully, and the sender *should* redeliver it, the message should be rolled back:
+If the message was *not* processed successfully, and the sender *should* redeliver it, the message should be rolled back:
 
 ```c#
-message.Rollback();
+await message.RollbackAsync();
 ```
