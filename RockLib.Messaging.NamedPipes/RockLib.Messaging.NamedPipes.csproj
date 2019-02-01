@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging.NamedPipes</PackageId>
-    <PackageVersion>2.0.0</PackageVersion>
+    <PackageVersion>2.0.1</PackageVersion>
     <Authors>Quicken Loans</Authors>
     <Description>Implementation of RockLib.Messaging API that sends and receives messages to a local named pipe.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -24,11 +24,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\LICENSE.md" Pack="true" PackagePath=""/>
+    <None Include="..\LICENSE.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RockLib.Messaging" Version="2.0.0" />
+    <PackageReference Include="RockLib.Messaging" Version="2.0.1" />
   </ItemGroup>
 
 </Project>
