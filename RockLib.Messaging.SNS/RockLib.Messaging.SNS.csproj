@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging.SNS</PackageId>
-    <PackageVersion>1.0.0</PackageVersion>
+    <PackageVersion>1.0.1</PackageVersion>
     <Authors>Quicken Loans</Authors>
     <Description>Implementation of RockLib.Messaging API that sends messages using Amazon SNS.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -24,12 +24,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\LICENSE.md" Pack="true" PackagePath=""/>
+    <None Include="..\LICENSE.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.3.3.12" />
-    <PackageReference Include="RockLib.Messaging" Version="2.0.0" />
+    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.3.3.17" />
+    <PackageReference Include="RockLib.Messaging" Version="2.0.1" />
   </ItemGroup>
 
 </Project>
