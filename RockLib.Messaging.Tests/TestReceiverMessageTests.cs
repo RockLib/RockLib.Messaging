@@ -3,6 +3,7 @@ using NUnit.Framework;
 using RockLib.Messaging.Testing;
 using System;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Tests
 {
@@ -87,99 +88,99 @@ namespace RockLib.Messaging.Tests
         }
 
         [Test]
-        public void HandledIsTrueAfterAcknowledgeIsCalled()
+        public async Task HandledIsTrueAfterAcknowledgeIsCalled()
         {
             var message = new FakeReceiverMessage("Hello, world!");
 
-            message.Acknowledge();
+            await message.AcknowledgeAsync();
 
             message.Handled.Should().BeTrue();
         }
 
         [Test]
-        public void HandledByIsAcknowledgeAfterAcknowledgeIsCalled()
+        public async Task HandledByIsAcknowledgeAfterAcknowledgeIsCalled()
         {
             var message = new FakeReceiverMessage("Hello, world!");
 
-            message.Acknowledge();
+            await message.AcknowledgeAsync();
 
             message.HandledBy.Should().Be(nameof(message.AcknowledgeAsync));
         }
 
         [Test]
-        public void HandledIsTrueAfterRollbackIsCalled()
+        public async Task HandledIsTrueAfterRollbackIsCalled()
         {
             var message = new FakeReceiverMessage("Hello, world!");
 
-            message.Rollback();
+            await message.RollbackAsync();
 
             message.Handled.Should().BeTrue();
         }
 
         [Test]
-        public void HandledByIsRollbackAfterRollbackIsCalled()
+        public async Task HandledByIsRollbackAfterRollbackIsCalled()
         {
             var message = new FakeReceiverMessage("Hello, world!");
 
-            message.Rollback();
+            await message.RollbackAsync();
 
             message.HandledBy.Should().Be(nameof(message.RollbackAsync));
         }
 
         [Test]
-        public void HandledIsTrueAfterRejectIsCalled()
+        public async Task HandledIsTrueAfterRejectIsCalled()
         {
             var message = new FakeReceiverMessage("Hello, world!");
 
-            message.Reject();
+            await message.RejectAsync();
 
             message.Handled.Should().BeTrue();
         }
 
         [Test]
-        public void HandledByIsRejectAfterRejectIsCalled()
+        public async Task HandledByIsRejectAfterRejectIsCalled()
         {
             var message = new FakeReceiverMessage("Hello, world!");
 
-            message.Reject();
+            await message.RejectAsync();
 
             message.HandledBy.Should().Be(nameof(message.RejectAsync));
         }
 
         [Test]
-        public void AcknowledgeThrowsIfHandledIsTrue()
+        public async Task AcknowledgeThrowsIfHandledIsTrue()
         {
             var message = new FakeReceiverMessage("Hello, world!");
 
-            message.Acknowledge();
+            await message.AcknowledgeAsync();
 
-            Action act = () => message.Acknowledge();
+            Func<Task> act = () => message.AcknowledgeAsync();
 
             act.Should().Throw<InvalidOperationException>()
                 .WithMessage($"Cannot {nameof(message.AcknowledgeAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.");
         }
 
         [Test]
-        public void RollbackThrowsIfHandledIsTrue()
+        public async Task RollbackThrowsIfHandledIsTrue()
         {
             var message = new FakeReceiverMessage("Hello, world!");
 
-            message.Acknowledge();
+            await message.AcknowledgeAsync();
 
-            Action act = () => message.Rollback();
+            Func<Task> act = () => message.RollbackAsync();
 
             act.Should().Throw<InvalidOperationException>()
                 .WithMessage($"Cannot {nameof(message.RollbackAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.");
         }
 
         [Test]
-        public void RejectThrowsIfHandledIsTrue()
+        public async Task RejectThrowsIfHandledIsTrue()
         {
             var message = new FakeReceiverMessage("Hello, world!");
 
-            message.Acknowledge();
+            await message.AcknowledgeAsync();
 
-            Action act = () => message.Reject();
+            Func<Task> act = () => message.RejectAsync();
 
             act.Should().Throw<InvalidOperationException>()
                 .WithMessage($"Cannot {nameof(message.RejectAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.");
