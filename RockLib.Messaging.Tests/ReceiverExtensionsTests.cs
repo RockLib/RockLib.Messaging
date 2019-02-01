@@ -32,11 +32,13 @@ namespace RockLib.Messaging.Tests
 
             var received = false;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             receiver.Start(m =>
             {
                 received = true;
                 m.Acknowledge();
             });
+#pragma warning restore CS0618 // Type or member is obsolete
 
             await receiver.MessageHandler.OnMessageReceivedAsync(receiver, new FakeReceiverMessage("Hello, world!"));
 
@@ -68,11 +70,13 @@ namespace RockLib.Messaging.Tests
 
             var received = false;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             receiver.Start((r, m) =>
             {
                 received = true;
                 m.Acknowledge();
             });
+#pragma warning restore CS0618 // Type or member is obsolete
 
             await receiver.MessageHandler.OnMessageReceivedAsync(receiver, new FakeReceiverMessage("Hello, world!"));
 

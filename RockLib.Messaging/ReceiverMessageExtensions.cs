@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,6 +16,8 @@ namespace RockLib.Messaging
         /// be redelivered.
         /// </summary>
         /// <param name="receiverMessage">The message to acknowledge.</param>
+        [Obsolete("Use AcknowledgeAsync method instead.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Acknowledge(this IReceiverMessage receiverMessage) =>
             Sync(() => receiverMessage.AcknowledgeAsync());
 
@@ -23,6 +26,8 @@ namespace RockLib.Messaging
         /// (or should be allowed to be) redelivered.
         /// </summary>
         /// <param name="receiverMessage">The message to roll back.</param>
+        [Obsolete("Use RollbackAsync method instead.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Rollback(this IReceiverMessage receiverMessage) =>
             Sync(() => receiverMessage.RollbackAsync());
 
@@ -31,6 +36,8 @@ namespace RockLib.Messaging
         /// not be redelivered.
         /// </summary>
         /// <param name="receiverMessage">The message to reject.</param>
+        [Obsolete("Use RejectAsync method instead.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Reject(this IReceiverMessage receiverMessage) =>
             Sync(() => receiverMessage.RejectAsync());
 

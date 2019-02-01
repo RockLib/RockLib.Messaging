@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace RockLib.Messaging
@@ -13,6 +14,8 @@ namespace RockLib.Messaging
         /// </summary>
         /// <param name="receiver">The receiver to start.</param>
         /// <param name="onMessageReceived">A function that is invoked when a message is received.</param>
+        [Obsolete("Use asynchronous Start extension method instead.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Start(this IReceiver receiver, Action<IReceiverMessage> onMessageReceived)
         {
             if (onMessageReceived == null) throw new ArgumentNullException(nameof(onMessageReceived));
@@ -24,6 +27,8 @@ namespace RockLib.Messaging
         /// </summary>
         /// <param name="receiver">The receiver to start.</param>
         /// <param name="onMessageReceived">A function that is invoked when a message is received.</param>
+        [Obsolete("Use asynchronous Start extension method instead.")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Start(this IReceiver receiver, OnMessageReceivedDelegate onMessageReceived)
         {
             if (onMessageReceived == null) throw new ArgumentNullException(nameof(onMessageReceived));
@@ -67,6 +72,7 @@ namespace RockLib.Messaging
             receiver.MessageHandler = messageHandler ?? throw new ArgumentNullException(nameof(messageHandler));
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private class SyncDelegateMessageHandler : IMessageHandler
         {
             private readonly OnMessageReceivedDelegate _onMessageReceived;
@@ -91,6 +97,7 @@ namespace RockLib.Messaging
                 return source.Task;
             }
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         private class AsyncDelegateMessageHandler : IMessageHandler
         {

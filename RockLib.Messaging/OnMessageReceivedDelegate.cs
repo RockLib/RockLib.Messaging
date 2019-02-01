@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging
 {
@@ -7,6 +9,8 @@ namespace RockLib.Messaging
     /// </summary>
     /// <param name="receiver">The instance of <see cref="IReceiver"/> that received the message.</param>
     /// <param name="message">The message that was received.</param>
+    [Obsolete("Use OnMessageReceivedAsyncDelegate instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public delegate void OnMessageReceivedDelegate(IReceiver receiver, IReceiverMessage message);
 
     /// <summary>
