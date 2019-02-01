@@ -12,7 +12,7 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReleaseNotes></PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/RockLib/RockLib.Messaging/blob/master/LICENSE.md</PackageLicenseUrl>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <Copyright>Copyright 2017-2019 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
     <PackageTags>rocklib messaging</PackageTags>
     <Version>2.0.0</Version>
@@ -22,6 +22,10 @@
   <PropertyGroup>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\RockLib.Messaging.xml</DocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE.md" Pack="true" PackagePath=""/>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="RockLib.Compression" Version="1.0.0" />
