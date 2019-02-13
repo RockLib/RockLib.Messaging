@@ -50,6 +50,18 @@ before_build:
         $package_release_notes_node.InnerText = $commit_message
     }
 
+    function Update-Package-Description ($csproj)
+    {
+        $commit_id = "$Env:appveyor_repo_commit"
+        $project_url = $csproj.SelectSingleNode("/Project/PropertyGroup/PackageProjectUrl").InnerText
+        $commit_url = "$project_url/tree/$commit_id"
+
+        $package_description_node = $csproj.SelectSingleNode("/Project/PropertyGroup/Description")
+        $original_description = $package_description_node.InnerText
+
+        $package_description_node.InnerText = "$original_description`n`nThis package was built from the source code at $commit_url"
+    }
+
     function Synchronize-AppVeyor-And-Csproj-Versions ($csproj)
     {
         $csproj_build_version = Get-Csproj-Build-Version $csproj
@@ -74,6 +86,7 @@ before_build:
     $csproj = [xml](Get-Content $csproj_path)
 
     Update-Package-Release-Notes $csproj
+    Update-Package-Description $csproj
     Synchronize-AppVeyor-And-Csproj-Versions $csproj
     Set-Csproj-Build-Version-Variable $csproj
 
