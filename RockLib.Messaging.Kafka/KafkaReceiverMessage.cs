@@ -7,19 +7,30 @@ using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Kafka
 {
+    /// <summary>
+    /// An implementation of IReceiverMessage for use by the <see cref="KafkaReceiver"/>
+    /// class.
+    /// </summary>
     public class KafkaReceiverMessage : ReceiverMessage
     {
-        private readonly Consumer<Ignore, string> _consumer;
-
         internal KafkaReceiverMessage(Consumer<Ignore, string> consumer, ConsumeResult<Ignore, string> result)
             : base(() => result.Value)
         {
-            _consumer = consumer;
+            Consumer = consumer;
             Result = result;
         }
 
+        /// <summary>
+        /// Gets the <see cref="Consumer{TKey, TValue}"/> that received the message.
+        /// </summary>
+        public Consumer<Ignore, string> Consumer { get; }
+
+        /// <summary>
+        /// Gets the actual Kafka message that was received.
+        /// </summary>
         public ConsumeResult<Ignore, string> Result { get; }
 
+        /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
             if (Result.Headers != null)
@@ -27,17 +38,20 @@ namespace RockLib.Messaging.Kafka
                     headers.Add(header.Key, Encoding.UTF8.GetString(header.Value));
         }
 
+        /// <inheritdoc />
         protected override Task RejectMessageAsync(CancellationToken cancellationToken) => CommitAsync(cancellationToken);
 
+        /// <inheritdoc />
         protected override Task AcknowledgeMessageAsync(CancellationToken cancellationToken) => CommitAsync(cancellationToken);
 
+        /// <inheritdoc />
         protected override Task RollbackMessageAsync(CancellationToken cancellationToken) => Tasks.CompletedTask;
 
         private Task CommitAsync(CancellationToken cancellationToken)
         {
             try
             {
-                _consumer.Commit(Result, cancellationToken);
+                Consumer.Commit(Result, cancellationToken);
                 return Tasks.CompletedTask;
             }
             catch (Exception ex)

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Kafka
 {
+    /// <summary>
+    /// An implementation of <see cref="IReceiver"/> that receives messages from Kafka.
+    /// </summary>
     public class KafkaReceiver : Receiver
     {
         private readonly Lazy<Thread> _pollingThread;
@@ -17,6 +20,28 @@ namespace RockLib.Messaging.Kafka
         private bool _stopped;
         private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KafkaReceiver"/> class.
+        /// </summary>
+        /// <param name="name">The name of the receiver.</param>
+        /// <param name="topic">
+        /// The topic to subscribe to. A regex can be specified to subscribe to the set of
+        /// all matching topics (which is updated as topics are added / removed from the
+        /// cluster). A regex must be front anchored to be recognized as a regex. e.g. ^myregex
+        /// </param>
+        /// <param name="groupId">
+        /// Client group id string. All clients sharing the same group.id belong to the same
+        /// group. default: ''
+        /// </param>
+        /// <param name="bootstrapServers">
+        /// Initial list of brokers as a CSV list of broker host or host:port. The application
+        /// may also use `rd_kafka_brokers_add()` to add brokers during runtime. default: ''
+        /// </param>
+        /// <param name="config">
+        /// A collection of librdkafka configuration parameters (refer to
+        /// https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) and parameters
+        /// specific to this client (refer to: Confluent.Kafka.ConfigPropertyNames).
+        /// </param>
         public KafkaReceiver(string name, string topic, string groupId, string bootstrapServers, ConsumerConfig config = null)
             : base(name)
         {
@@ -33,18 +58,29 @@ namespace RockLib.Messaging.Kafka
             _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
         }
 
+        /// <summary>
+        /// Gets the topic to subscribe to.
+        /// </summary>
         public string Topic { get; }
+
+        /// <summary>
+        /// Gets the configuration that is used to create the <see cref="Consumer{TKey, TValue}"/> for this receiver.
+        /// </summary>
         public ConsumerConfig Config { get; }
 
+        /// <summary>
+        /// Starts the background threads and subscribes to the topic.
+        /// </summary>
         protected override void Start()
         {
             _trackingThread.Value.Start();
-            _pollingThread.Value.Start();
             _consumer.Value.Subscribe(Topic);
+            _pollingThread.Value.Start();
         }
 
         /// <summary>
-        /// Signals the polling background thread to exit then waits for it to finish.
+        /// Stops polling for messages, waits for current messages to be handled, then
+        /// closes and disposes the consumer.
         /// </summary>
         protected override void Dispose(bool disposing)
         {
