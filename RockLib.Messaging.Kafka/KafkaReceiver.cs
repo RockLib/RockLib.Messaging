@@ -31,11 +31,11 @@ namespace RockLib.Messaging.Kafka
         /// </param>
         /// <param name="groupId">
         /// Client group id string. All clients sharing the same group.id belong to the same
-        /// group. default: ''
+        /// group.
         /// </param>
         /// <param name="bootstrapServers">
         /// Initial list of brokers as a CSV list of broker host or host:port. The application
-        /// may also use `rd_kafka_brokers_add()` to add brokers during runtime. default: ''
+        /// may also use `rd_kafka_brokers_add()` to add brokers during runtime.
         /// </param>
         /// <param name="config">
         /// A collection of librdkafka configuration parameters (refer to
