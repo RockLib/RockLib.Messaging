@@ -12,13 +12,14 @@ namespace RockLib.Messaging.Kafka
     public class KafkaReceiver : Receiver
     {
         private readonly Lazy<Thread> _pollingThread;
-        private readonly Lazy<Consumer<Ignore, string>> _consumer;
-        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly Lazy<IConsumer<Ignore, string>> _consumer;
+        private readonly CancellationTokenSource _disposeSource = new CancellationTokenSource();
         private readonly BlockingCollection<Task> _trackingCollection = new BlockingCollection<Task>();
         private readonly Lazy<Thread> _trackingThread;
 
         private bool _stopped;
         private bool _disposed;
+        private bool? _connected;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KafkaReceiver"/> class.
@@ -47,12 +48,15 @@ namespace RockLib.Messaging.Kafka
         {
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
             Config = config ?? new ConsumerConfig();
+
             Config.GroupId = groupId ?? throw new ArgumentNullException(nameof(groupId));
             Config.BootstrapServers = bootstrapServers ?? throw new ArgumentNullException(nameof(bootstrapServers));
             Config.EnableAutoCommit = Config.EnableAutoCommit ?? false;
 
             var consumerBuilder = new ConsumerBuilder<Ignore, string>(Config);
-            _consumer = new Lazy<Consumer<Ignore, string>>(() => consumerBuilder.Build());
+            consumerBuilder.SetErrorHandler(OnError);
+
+            _consumer = new Lazy<IConsumer<Ignore, string>>(() => consumerBuilder.Build());
 
             _pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
             _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
@@ -90,7 +94,7 @@ namespace RockLib.Messaging.Kafka
             _disposed = true;
 
             _stopped = true;
-            _cancellationTokenSource.Cancel();
+            _disposeSource.Cancel();
 
             if (_pollingThread.IsValueCreated)
                 _pollingThread.Value.Join();
@@ -113,10 +117,21 @@ namespace RockLib.Messaging.Kafka
             {
                 try
                 {
-                    var result = _consumer.Value.Consume(_cancellationTokenSource.Token);
+                    var result = _consumer.Value.Consume(_disposeSource.Token);
                     var message = new KafkaReceiverMessage(_consumer.Value, result);
+
+                    if (_connected != true)
+                    {
+                        _connected = true;
+                        OnConnected();
+                    }
+
                     var task = MessageHandler.OnMessageReceivedAsync(this, message);
                     _trackingCollection.Add(task);
+                }
+                catch (OperationCanceledException) when (_disposeSource.IsCancellationRequested)
+                {
+                    return;
                 }
                 catch (Exception ex)
                 {
@@ -137,6 +152,18 @@ namespace RockLib.Messaging.Kafka
                 {
                     OnError("Error while tracking message handler task.", ex);
                 }
+            }
+        }
+
+        private void OnError(Consumer<Ignore, string> producer, Error error)
+        {
+            try { throw new KafkaException(error); }
+            catch (Exception ex) { OnError(error.Reason, ex); }
+
+            if (_connected != false)
+            {
+                OnDisconnected(error.Reason);
+                _connected = false;
             }
         }
     }

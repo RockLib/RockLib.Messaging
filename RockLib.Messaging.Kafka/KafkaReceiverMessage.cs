@@ -13,7 +13,7 @@ namespace RockLib.Messaging.Kafka
     /// </summary>
     public class KafkaReceiverMessage : ReceiverMessage
     {
-        internal KafkaReceiverMessage(Consumer<Ignore, string> consumer, ConsumeResult<Ignore, string> result)
+        internal KafkaReceiverMessage(IConsumer<Ignore, string> consumer, ConsumeResult<Ignore, string> result)
             : base(() => result.Value)
         {
             Consumer = consumer;
@@ -23,7 +23,7 @@ namespace RockLib.Messaging.Kafka
         /// <summary>
         /// Gets the <see cref="Consumer{TKey, TValue}"/> that received the message.
         /// </summary>
-        public Consumer<Ignore, string> Consumer { get; }
+        public IConsumer<Ignore, string> Consumer { get; }
 
         /// <summary>
         /// Gets the actual Kafka message that was received.
@@ -39,19 +39,19 @@ namespace RockLib.Messaging.Kafka
         }
 
         /// <inheritdoc />
-        protected override Task RejectMessageAsync(CancellationToken cancellationToken) => CommitAsync(cancellationToken);
+        protected override Task RejectMessageAsync(CancellationToken cancellationToken) => CommitAsync();
 
         /// <inheritdoc />
-        protected override Task AcknowledgeMessageAsync(CancellationToken cancellationToken) => CommitAsync(cancellationToken);
+        protected override Task AcknowledgeMessageAsync(CancellationToken cancellationToken) => CommitAsync();
 
         /// <inheritdoc />
         protected override Task RollbackMessageAsync(CancellationToken cancellationToken) => Tasks.CompletedTask;
 
-        private Task CommitAsync(CancellationToken cancellationToken)
+        private Task CommitAsync()
         {
             try
             {
-                Consumer.Commit(Result, cancellationToken);
+                Consumer.Commit(Result);
                 return Tasks.CompletedTask;
             }
             catch (Exception ex)
