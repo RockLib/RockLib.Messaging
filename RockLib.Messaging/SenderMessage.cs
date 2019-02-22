@@ -219,6 +219,13 @@ namespace RockLib.Messaging
                     this[HeaderNames.IsBinaryPayload] = true;
             }
 
+            public void Clear()
+            {
+                var messageId = this[HeaderNames.MessageId];
+                _headers.Clear();
+                this[HeaderNames.MessageId] = messageId;
+            }
+
             public object this[string key]
             {
                 get => _headers[key];
@@ -237,7 +244,6 @@ namespace RockLib.Messaging
             public ICollection<object> Values => _headers.Values;
             public int Count => _headers.Count;
             public bool IsReadOnly => _headers.IsReadOnly;
-            public void Clear() => _headers.Clear();
             public bool Contains(KeyValuePair<string, object> item) => _headers.Contains(item);
             public bool ContainsKey(string key) => _headers.ContainsKey(key);
             public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex) => _headers.CopyTo(array, arrayIndex);
