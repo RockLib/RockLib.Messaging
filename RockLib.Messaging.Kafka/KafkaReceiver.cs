@@ -35,8 +35,7 @@ namespace RockLib.Messaging.Kafka
         /// group.
         /// </param>
         /// <param name="bootstrapServers">
-        /// Initial list of brokers as a CSV list of broker host or host:port. The application
-        /// may also use `rd_kafka_brokers_add()` to add brokers during runtime.
+        /// List of brokers as a CSV list of broker host or host:port.
         /// </param>
         /// <param name="config">
         /// A collection of librdkafka configuration parameters (refer to

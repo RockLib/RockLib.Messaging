@@ -18,13 +18,10 @@ namespace RockLib.Messaging.Kafka
         /// </summary>
         /// <param name="name">The name of the sender.</param>
         /// <param name="topic">
-        /// The topic to subscribe to. A regex can be specified to subscribe to the set of
-        /// all matching topics (which is updated as topics are added / removed from the
-        /// cluster). A regex must be front anchored to be recognized as a regex. e.g. ^myregex
+        /// The topic to produce messages to.
         /// </param>
         /// <param name="bootstrapServers">
-        /// Initial list of brokers as a CSV list of broker host or host:port. The application
-        /// may also use `rd_kafka_brokers_add()` to add brokers during runtime.
+        /// List of brokers as a CSV list of broker host or host:port.
         /// </param>
         /// <param name="messageTimeoutMs">
         /// Local message timeout. This value is only enforced locally and limits the time
