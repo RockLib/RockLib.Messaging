@@ -35,7 +35,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SNS", "Ro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.SNS.DotNetCore20", "Example.Messaging.SNS.DotNetCore20\Example.Messaging.SNS.DotNetCore20.csproj", "{CA2C01B1-C688-4C3F-9097-06D5A6C229CB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockLib.Messaging.SNS.Tests", "RockLib.Messaging.SNS.Tests\RockLib.Messaging.SNS.Tests.csproj", "{616A4D6D-44E7-46BB-A080-DECC15D53448}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SNS.Tests", "RockLib.Messaging.SNS.Tests\RockLib.Messaging.SNS.Tests.csproj", "{616A4D6D-44E7-46BB-A080-DECC15D53448}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.Kafka", "RockLib.Messaging.Kafka\RockLib.Messaging.Kafka.csproj", "{7456458C-5351-4AFC-8FD5-0414FAD0072D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Messaging.Kafka.DotNetCore20", "Example.Messaging.Kafka.DotNetCore20\Example.Messaging.Kafka.DotNetCore20.csproj", "{B3AEA210-61A5-484A-ACE5-14DC3D6B32EB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Messaging.Kafka.DotNetFramework451", "Example.Messaging.Kafka.DotNetFramework451\Example.Messaging.Kafka.DotNetFramework451.csproj", "{DCAACB3F-D4C4-4EB9-9AAA-03EBAA90E28F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -111,6 +117,18 @@ Global
 		{616A4D6D-44E7-46BB-A080-DECC15D53448}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{616A4D6D-44E7-46BB-A080-DECC15D53448}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{616A4D6D-44E7-46BB-A080-DECC15D53448}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7456458C-5351-4AFC-8FD5-0414FAD0072D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7456458C-5351-4AFC-8FD5-0414FAD0072D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7456458C-5351-4AFC-8FD5-0414FAD0072D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7456458C-5351-4AFC-8FD5-0414FAD0072D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3AEA210-61A5-484A-ACE5-14DC3D6B32EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3AEA210-61A5-484A-ACE5-14DC3D6B32EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3AEA210-61A5-484A-ACE5-14DC3D6B32EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3AEA210-61A5-484A-ACE5-14DC3D6B32EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCAACB3F-D4C4-4EB9-9AAA-03EBAA90E28F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCAACB3F-D4C4-4EB9-9AAA-03EBAA90E28F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCAACB3F-D4C4-4EB9-9AAA-03EBAA90E28F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCAACB3F-D4C4-4EB9-9AAA-03EBAA90E28F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

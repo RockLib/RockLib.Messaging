@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net451;net462</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>RockLib.Messaging.Kafka</PackageId>
+    <PackageVersion>1.0.0-alpha02</PackageVersion>
+    <Authors>Quicken Loans</Authors>
+    <Description>Implementation of RockLib.Messaging API that sends and receives messages using Kafka.</Description>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes></PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <Copyright>Copyright 2019 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
+    <PackageTags>rocklib messaging kafka</PackageTags>
+    <Version>1.0.0</Version>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\RockLib.Messaging.Kafka.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Confluent.Kafka" Version="1.0.0-beta3" />
+    <PackageReference Include="RockLib.Messaging" Version="2.0.2" />
+  </ItemGroup>
+
+</Project>
