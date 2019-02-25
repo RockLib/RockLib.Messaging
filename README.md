@@ -20,6 +20,12 @@ PM> Install-Package RockLib.Messaging.NamedPipes
 PM> Install-Package RockLib.Messaging.SQS
 ```
 
+### RockLib.Messaging.SNS [![Build status](https://ci.appveyor.com/api/projects/status/0uygq27j92rcehi2?svg=true)](https://ci.appveyor.com/project/RockLib/rocklib-messaging-putf1) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.SNS.svg)](https://www.nuget.org/packages/RockLib.Messaging.SNS)
+
+```powershell
+PM> Install-Package RockLib.Messaging.SNS
+```
+
 ### RockLib.Messaging.Http [![Build status](https://ci.appveyor.com/api/projects/status/ses76e2jw7kha6aa?svg=true)](https://ci.appveyor.com/project/RockLib/rocklib-messaging) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.Http.svg)](https://www.nuget.org/packages/RockLib.Messaging.Http)
 
 ```powershell
@@ -32,6 +38,7 @@ PM> Install-Package RockLib.Messaging.Http
   - [Receive messages](docs/ReceivingMessages.md)
   - [Configure and use RockLib.Messaging.NamedPipes](docs/NamedPipes.md)
   - [Configure and use RockLib.Messaging.SQS](docs/SQS.md)
+  - [Configure and use RockLib.Messaging.SNS](docs/SNS.md)
   - [Configure and use RockLib.Messaging.Http](docs/Http.md)
   - [Configure a .NET Framework application with app.config/web.config](docs/NetFramework.md)
   - [Use RockLib.Messaging with a DI/IOC container](docs/DIContainer.md)
@@ -43,4 +50,5 @@ PM> Install-Package RockLib.Messaging.Http
   - [RockLib.Messaging](https://www.fuget.org/packages/RockLib.Messaging)
   - [RockLib.Messaging.NamedPipes](https://www.fuget.org/packages/RockLib.Messaging.NamedPipes)
   - [RockLib.Messaging.SQS](https://www.fuget.org/packages/RockLib.Messaging.SQS)
+  - [RockLib.Messaging.SNS](https://www.fuget.org/packages/RockLib.Messaging.SNS)
   - [RockLib.Messaging.Http](https://www.fuget.org/packages/RockLib.Messaging.Http)

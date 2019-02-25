@@ -99,8 +99,8 @@ This constructor calls [Constructor 2](#constructor-2), passing along the values
   - The status code to be returned to the client when a message is acknowledged.
 - method (optional, defaults to `POST`)
   - The http method that requests must have in order to be handled. Any request that does not have this method will receive a `405 Method Not Allowed` response.
-- contentType (optional, defaults to `null`)
-  - The content type that requests must match in order to be handled. When specified, any request whose content type does not match this value will receive a `415 Unsupported Media Type` response.
+- requiredHeaders (optional, defaults to `null`)
+  - The HTTP headers that incoming requests are required to match in order to be handled. Any request that does not have match the required headers will receive a 4xx response.
 
 #### Constructor 2
 
@@ -121,8 +121,8 @@ This constructor calls [Constructor 4](#constructor-4), passing along the values
   - The status code to be returned to the client when a message is acknowledged.
 - method (optional, defaults to `POST`)
   - The http method that requests must have in order to be handled. Any request that does not have this method will receive a `405 Method Not Allowed` response.
-- contentType (optional, defaults to `null`)
-  - The content type that requests must match in order to be handled. When specified, any request whose content type does not match this value will receive a `415 Unsupported Media Type` response.
+- requiredHeaders (optional, defaults to `null`)
+  - The HTTP headers that incoming requests are required to match in order to be handled. Any request that does not have match the required headers will receive a 4xx response.
 
 #### Constructor 3
 
@@ -137,8 +137,8 @@ This constructor calls [Constructor 4](#constructor-4), passing along the values
   - An object that determines the http response that is returned to clients, depending on whether the message is acknowledged, rejected, or rolled back.
 - method (optional, defaults to `POST`)
   - The http method that requests must have in order to be handled. Any request that does not have this method will receive a `405 Method Not Allowed` response.
-- contentType (optional, defaults to `null`)
-  - The content type that requests must match in order to be handled. When specified, any request whose content type does not match this value will receive a `415 Unsupported Media Type` response.
+- requiredHeaders (optional, defaults to `null`)
+  - The HTTP headers that incoming requests are required to match in order to be handled. Any request that does not have match the required headers will receive a 4xx response.
 
 #### Constructor 4
 
@@ -155,8 +155,8 @@ This constructor actually does the initialization.
   - An object that determines the http response that is returned to clients, depending on whether the message is acknowledged, rejected, or rolled back.
 - method (optional, defaults to `POST`)
   - The http method that requests must have in order to be handled. Any request that does not have this method will receive a `405 Method Not Allowed` response.
-- contentType (optional, defaults to `null`)
-  - The content type that requests must match in order to be handled. When specified, any request whose content type does not match this value will receive a `415 Unsupported Media Type` response.
+- requiredHeaders (optional, defaults to `null`)
+  - The HTTP headers that incoming requests are required to match in order to be handled. Any request that does not have match the required headers will receive a 4xx response.
 
 #### Path Tokens
 
