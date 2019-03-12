@@ -11,7 +11,7 @@ The KafkaSender class can be directly instantiated and has the following paramet
 - topic
   - The topic to produce messages to.
 - bootstrapServers
-  - Initial list of brokers as a CSV list of broker host or host:port.
+  - List of brokers as a CSV list of broker host or host:port.
 - messageTimeoutMs (optional, defaults to 10000)
   - Local message timeout. This value is only enforced locally and limits the time a produced message waits for successful delivery. A time of 0 is infinite. This is the maximum time librdkafka may use to deliver a message (including retries). Delivery error occurs when either the retry count or the message timeout are exceeded.
 - config (optional, defaults to null)
@@ -48,7 +48,7 @@ ISender sender = MessagingScenarioFactory.CreateSender("commands");
 
 // KafkaSender can also be instantiated directly:
 // ISender sender = new KafkaSender("commands", "test", "localhost:9092",
-//     useBeginProduce: true, config: new ProducerConfig { SocketNagleDisable = true });
+//     messageTimeoutMs: 10000, config: new ProducerConfig { SocketNagleDisable = true });
 
 // Use the sender (for good, not evil):
 sender.Send("DROP DATABASE Production;");
@@ -102,12 +102,12 @@ IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
 //     config: new ConsumerConfig { SocketNagleDisable = true });
 
 // Start the receiver, passing in a lambda function callback to be invoked when a message is received.
-receiver.Start(message =>
+receiver.Start(async message =>
 {
     Console.WriteLine(message.StringPayload);
-    
-    // Since AutoAcknowledge is false in this example, the message must be acknowledged.
-    message.Acknowledge();
+
+    // Always handle the message.
+    await message.AcknowledgeAsync();
 });
 
 // Wait for messages (demo code, don't judge)

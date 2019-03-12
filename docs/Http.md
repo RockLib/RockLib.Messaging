@@ -165,7 +165,7 @@ The `path` and `url` parameters in the constructors above support the concept of
 ```c#
 IReceiver receiver = new HttpListenerReceiver("my_receiver", "http://localhost:5000/api/{api_version}/commands");
 
-receiver.Start(message =>
+receiver.Start(async message =>
 {
     if (message.Headers.TryGetValue("api_version", out string apiVersion))
     {
@@ -173,7 +173,7 @@ receiver.Start(message =>
         // then the value of the apiVersion variable here would be "v1".
     }
 
-    message.Acknowledge();
+    await message.AcknowledgeAsync();
 });
 ```
 

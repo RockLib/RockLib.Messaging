@@ -71,7 +71,7 @@ namespace RockLib.Messaging.Kafka
         public event EventHandler<ErrorEventArgs> Error;
 
         /// <summary>
-        /// Flushes the produces and disposes it.
+        /// Flushes the producer and disposes it.
         /// </summary>
         public void Dispose()
         {
