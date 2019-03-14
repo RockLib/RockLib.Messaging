@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace Rock.Messaging.RabbitMQ
+namespace RockLib.Messaging.RabbitMQ
 {
     public class RabbitSessionConfiguration : IRabbitSessionConfiguration
     {

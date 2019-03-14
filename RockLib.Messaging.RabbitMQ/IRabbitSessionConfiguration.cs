@@ -1,4 +1,4 @@
-﻿namespace Rock.Messaging.RabbitMQ
+﻿namespace RockLib.Messaging.RabbitMQ
 {
     public interface IRabbitSessionConfiguration
     {

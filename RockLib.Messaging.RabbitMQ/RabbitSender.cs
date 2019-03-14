@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using RabbitMQ.Client;
 
-namespace Rock.Messaging.RabbitMQ
+namespace RockLib.Messaging.RabbitMQ
 {
     // needed config values for RabbitSender: u/pass, URL, vHost, exchange name, routing key.
     public class RabbitSender : ISender 

@@ -2,7 +2,7 @@
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace Rock.Messaging.RabbitMQ
+namespace RockLib.Messaging.RabbitMQ
 {
     /* config settings needed for Receiver: U/pass, URL/vHost, QueueName, MaxSimultaneousRequests, AutoAck */
 

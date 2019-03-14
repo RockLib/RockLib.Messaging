@@ -3,7 +3,7 @@ using System.Text;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
 
-namespace Rock.Messaging.RabbitMQ
+namespace RockLib.Messaging.RabbitMQ
 {
     public class RabbitReceiverMessage : IReceiverMessage
     {
