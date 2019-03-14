@@ -1,107 +1,140 @@
 ﻿using System;
+using System.Collections.Generic;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RockLib.Configuration.ObjectFactory;
 
 namespace RockLib.Messaging.RabbitMQ
 {
-    /* config settings needed for Receiver: U/pass, URL/vHost, QueueName, MaxSimultaneousRequests, AutoAck */
-
-/* Queue binding settings: exchange, exchangeType, queueName, Routing Key, (TODO: durable, exclusive, autoDelete)
-   Note: Queue Binding and the Receiver are together because AutoDelete queues will kill themselves off if they've got no listeners/messages. */
-
-    public class RabbitReceiver : IReceiver
+    /// <summary>
+    /// An implementation of <see cref="IReceiver"/> that uses RabbitMQ.
+    /// </summary>
+    public sealed class RabbitReceiver : Receiver
     {
-        private bool _isTopic;
-        private bool _isStarted;
-        
-        private string _exchange;
-        private string _exchangeType;
-        private string _queueName;
-        private string _routingKey;
-        private ushort _maxRequests;
-        private bool _autoAck;
-        private string _name;
+        private Lazy<IConnection> _connection;
+        private Lazy<IModel> _channel;
 
-        private IModel _consumerModel;
-        private IConnection _connection;
-
-
-        public RabbitReceiver(IConnectionFactory conn, IRabbitSessionConfiguration config, bool isTopic = false)
+        /// <summary>
+        /// Initializes a new instances of the <see cref="RabbitReceiver"/> class.
+        /// </summary>
+        /// <param name="name">The name of this instance of <see cref="RabbitReceiver"/>.</param>
+        /// <param name="connection">A factory that will create the RabbitMQ connection.</param>
+        /// <param name="queueName">
+        /// The name of the queue to receive messages from. If <see langword="null"/> and
+        /// <paramref name="exchange"/> is not <see langword="null"/>, then a non-durable,
+        /// exclusive, autodelete queue with a generated name is created.
+        /// </param>
+        /// <param name="exchange">
+        /// The name of the exchange to bind the queue to. If <see langword="null"/>, the queue
+        /// is not bound to an exchange.
+        /// </param>
+        /// <param name="routingKeys">
+        /// The collection of routing keys used to bind the queue and exchange.
+        /// </param>
+        /// <param name="prefetchCount">
+        /// The maximum number of messages that the server will deliver to the channel before
+        /// being acknowledged.
+        /// </param>
+        /// <param name="autoAck">
+        /// Whether messages should be received in an already-acknowledged state. If true, messages
+        /// cannot be rolled back.
+        /// </param>
+        public RabbitReceiver(string name,
+            [DefaultType(typeof(ConnectionFactory))] IConnectionFactory connection,
+            string queueName = null, string exchange = null, IReadOnlyCollection<string> routingKeys = null,
+            ushort prefetchCount = 10, bool autoAck = false)
+            : base(name)
         {
-            _isTopic = isTopic;
+            if (queueName == null && exchange == null)
+                throw new ArgumentNullException(nameof(queueName), "'queueName' cannot be null if 'exchange' is also null.");
 
-            // Binding to fields to keep _config from getting everywhere.
-            _exchange = config.Exchange;
-            _exchangeType = config.ExchangeType;
-            _queueName = config.QueueName;
-            _routingKey = config.RoutingKey;
-            _maxRequests = config.MaxRequests;
-            _autoAck = config.AutoAcknowledge;
-            _name = config.Name;
+            QueueName = queueName;
+            Exchange = exchange;
+            RoutingKeys = routingKeys;
+            PrefetchCount = prefetchCount;
+            AutoAck = autoAck;
 
-            _connection = conn.CreateConnection();
-        }
+            _connection = new Lazy<IConnection>(() => connection.CreateConnection());
 
-
-        public void Start(string selector)
-        {
-            if (_isStarted)
+            _channel = new Lazy<IModel>(() =>
             {
-                return;
-            }
-            _isStarted = true;
-            _consumerModel = _connection.CreateModel();
-            if (!string.IsNullOrWhiteSpace(_exchange))
-            {
-                _consumerModel.ExchangeDeclare(_exchange, _exchangeType ?? (_isTopic ? "topic" : "direct"), true);
-                // Should perhaps configure this default somehow? Also RabbitMQ Topics might not fulfill the same intent as the abstraction?
-                _consumerModel.QueueDeclare(_queueName, durable: true, exclusive: false, autoDelete: false,
-                    arguments: null);
-                // TODO: Discuss: Add config settings for these? It's already pretty cluttered...
-                if (!string.IsNullOrWhiteSpace(selector))
+                var channel = _connection.Value.CreateModel();
+
+                if (Exchange != null)
                 {
-                    _consumerModel.QueueBind(_queueName, _exchange, selector);
+                    if (QueueName == null)
+                        QueueName = channel.QueueDeclare().QueueName;
+
+                    if (RoutingKeys == null)
+                        channel.QueueBind(QueueName, Exchange, "");
+                    else
+                        foreach (var routingKey in RoutingKeys)
+                            channel.QueueBind(QueueName, Exchange, routingKey ?? "");
                 }
-                else
-                {
-                    _consumerModel.QueueBind(_queueName, _exchange, _routingKey ?? string.Empty);
-                }
-            }
-            var consumer = new EventingBasicConsumer(_consumerModel);
-            consumer.Received += delegate(object sender, BasicDeliverEventArgs args)
-            {
-                var messageReceived = new MessageReceivedEventArgs(new RabbitReceiverMessage(args, _consumerModel));
-                OnMessageReceived(messageReceived);
-                if (_autoAck)
-                {
-                    _consumerModel.BasicAck(args.DeliveryTag, false);
-                }
-            };
-            _consumerModel.BasicQos(0, _maxRequests, true);
-            _consumerModel.BasicConsume(_queueName, false, consumer);
+
+                return channel;
+            });
         }
 
-        protected virtual void OnMessageReceived(MessageReceivedEventArgs args)
-        {
-            var handler = MessageReceived;
+        /// <summary>
+        /// Gets the name of the queue to receive messages from.
+        /// </summary>
+        public string QueueName { get; private set; }
 
-            if (handler != null)
-            {
-                handler(this, args);
-            }
+        /// <summary>
+        /// Gets the name of the exchange to bind the queue to.
+        /// </summary>
+        public string Exchange { get; }
+
+        /// <summary>
+        /// Gets the collection of routing keys used to bind the queue and exchange.
+        /// </summary>
+        public IReadOnlyCollection<string> RoutingKeys { get; }
+
+        /// <summary>
+        /// Gets the maximum number of messages that the server will deliver to the
+        /// channel before being acknowledged.
+        /// </summary>
+        public ushort PrefetchCount { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether messages should be received in an
+        /// already-acknowledged state.
+        /// </summary>
+        public bool AutoAck { get; }
+
+        /// <summary>
+        /// Gets the RabbitMQ connection.
+        /// </summary>
+        public IConnection Connection => _connection.Value;
+
+        /// <summary>
+        /// Gets the RabbitMQ channel.
+        /// </summary>
+        public IModel Channel => _channel.Value;
+
+        /// <inheritdoc />
+        protected override void Start()
+        {
+            var consumer = new AsyncEventingBasicConsumer(_channel.Value);
+
+            consumer.Received += (s, e) =>
+                MessageHandler.OnMessageReceivedAsync(this, new RabbitReceiverMessage(e, _channel.Value));
+
+            _channel.Value.BasicQos(0, PrefetchCount, true);
+            _channel.Value.BasicConsume(QueueName, AutoAck, consumer);
         }
 
-        public event EventHandler<MessageReceivedEventArgs> MessageReceived;
-
-        public void Dispose()
+        /// <inheritdoc />
+        protected override void Dispose(bool disposing)
         {
-            _consumerModel.Dispose();
-            _connection.Dispose();
-        }
+            base.Dispose(disposing);
 
-        public string Name
-        {
-            get { return _name; }
+            if (_channel.IsValueCreated)
+                _channel.Value.Dispose();
+
+            if (_connection.IsValueCreated)
+                _connection.Value.Dispose();
         }
     }
 }

@@ -1,48 +1,99 @@
-using System.Collections.Generic;
-using System.Linq;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using RabbitMQ.Client;
+using RockLib.Configuration.ObjectFactory;
 
 namespace RockLib.Messaging.RabbitMQ
 {
-    // needed config values for RabbitSender: u/pass, URL, vHost, exchange name, routing key.
-    public class RabbitSender : ISender 
+    /// <summary>
+    /// An implementation of <see cref="ISender"/> that uses RabbitMQ.
+    /// </summary>
+    public sealed class RabbitSender : ISender
     {
-        const byte highestPriority = 9;
+        private static readonly Task CompletedTask = Task.FromResult(0);
 
-        private readonly string _routingKey;
-        private readonly string _exchange;
-        private readonly IConnection _connection;
-        private readonly string _name;
+        private readonly Lazy<IConnection> _connection;
+        private readonly Lazy<IModel> _channel;
 
-        public RabbitSender(IConnectionFactory conn, string exchange, string routingKey, string name)
+        /// <summary>
+        /// Initializes a new instances of the <see cref="RabbitSender"/> class.
+        /// </summary>
+        /// <param name="name">The name of this instance of <see cref="RabbitSender"/>.</param>
+        /// <param name="connection">A factory that will create the RabbitMQ connection.</param>
+        /// <param name="exchange">The exchange to use when publishing messages.</param>
+        /// <param name="routingKey">The routing key to use when publishing messages.</param>
+        public RabbitSender(string name, 
+            [DefaultType(typeof(ConnectionFactory))] IConnectionFactory connection,
+            string exchange = "", string routingKey = "")
         {
-            _connection = conn.CreateConnection();
-            _exchange = exchange;
-            _routingKey = routingKey;
-            _name = name;
-        }
-        public Task SendAsync(ISenderMessage message)
-        {
-            return Task.Run(delegate
-            {
-                using (var model = _connection.CreateModel())
-                {
-                    var props = model.CreateBasicProperties();
-                    props.Headers = message.Headers.ToDictionary<KeyValuePair<string, string>, string, object>(kvp => kvp.Key, kvp => kvp.Value); // IEnum<KVP<S,S>> in, Dictionary<string, object> out.
-                    props.ContentType = message.MessageFormat.ToString();
-                    props.Priority =  message.Priority > highestPriority ? highestPriority : (message.Priority ?? 0);
-                    // props.ContentEncoding = new NotImplementedException(); // TODO: add this to Rock.Messaging?
-                    model.BasicPublish(_exchange, _routingKey, props, message.BinaryValue);
-                }
-            });
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Exchange = exchange ?? "";
+            RoutingKey = routingKey ?? "";
+
+            _connection = new Lazy<IConnection>(() => connection.CreateConnection());
+            _channel = new Lazy<IModel>(() => _connection.Value.CreateModel());
         }
 
-        public string Name { get { return _name; } }
+        /// <summary>
+        /// Asynchronously sends the specified message.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        /// <param name="cancellationToken">
+        /// The token to monitor for cancellation requests.
+        /// </param>
+        public Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
+        {
+            if (message.OriginatingSystem == null)
+                message.OriginatingSystem = "RabbitMQ";
 
+            var props = _channel.Value.CreateBasicProperties();
+
+            props.Headers = message.Headers;
+
+            // TODO: Should we set any properties (e.g. ContentType, ContentEncoding) on props here?
+            // TODO: Should we support having a different routing key per message (possibly embedded in Headers)?
+
+            _channel.Value.BasicPublish(Exchange, RoutingKey, props, message.BinaryPayload);
+
+            return CompletedTask;
+        }
+
+        /// <summary>
+        /// Gets the name of this instance of <see cref="RabbitSender"/>.
+        /// </summary>
+        public string Name { get; }
+
+        /// <summary>
+        /// Gets the exchange to use when publishing messages.
+        /// </summary>
+        public string Exchange { get; }
+
+        /// <summary>
+        /// Gets the routing key to use when publishing messages.
+        /// </summary>
+        public string RoutingKey { get; }
+
+        /// <summary>
+        /// Gets the RabbitMQ connection.
+        /// </summary>
+        public IConnection Connection => _connection.Value;
+
+        /// <summary>
+        /// Gets the RabbitMQ channel.
+        /// </summary>
+        public IModel Channel => _channel.Value;
+
+        /// <summary>
+        /// Disposes the RabbitMQ channel and connection.
+        /// </summary>
         public void Dispose()
         {
-            _connection.Dispose();
+            if (_channel.IsValueCreated)
+                _channel.Value.Dispose();
+
+            if (_connection.IsValueCreated)
+                _connection.Value.Dispose();
         }
     }
 }

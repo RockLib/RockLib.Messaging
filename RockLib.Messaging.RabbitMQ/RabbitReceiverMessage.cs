@@ -1,61 +1,55 @@
-﻿using System.Linq;
-using System.Text;
-using RabbitMQ.Client.Events;
+﻿using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging.RabbitMQ
 {
-    public class RabbitReceiverMessage : IReceiverMessage
+    /// <summary>
+    /// An implementation of IReceiverMessage for use by the <see cref="RabbitReceiver"/>
+    /// class.
+    /// </summary>
+    public sealed class RabbitReceiverMessage : ReceiverMessage
     {
+        private static readonly Task CompletedTask = Task.FromResult(0);
+
         private BasicDeliverEventArgs _args;
         private IModel _channel;
 
-        public RabbitReceiverMessage(BasicDeliverEventArgs args, IModel channel)
+        internal RabbitReceiverMessage(BasicDeliverEventArgs args, IModel channel)
+             : base(() => args.Body)
         {
             _args = args;
             _channel = channel;
         }
 
-        public string GetStringValue(Encoding encoding)
+        /// <inheritdoc />
+        protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
-            return encoding.GetString(_args.Body);
+            foreach (var header in _args.BasicProperties.Headers)
+                headers.Add(header);
         }
 
-        public byte[] GetBinaryValue(Encoding encoding)
-        {
-            return _args.Body;
-        }
-
-        public string GetHeaderValue(string key, Encoding encoding)
-        {
-            return _args.BasicProperties.Headers.ContainsKey(key)
-                ? _args.BasicProperties.Headers[key].ToString() //TODO: make this better? Not sure :D
-                : null;
-        }
-
-        public string[] GetHeaderNames()
-        {
-            return _args.BasicProperties.Headers.Keys.ToArray();
-        }
-
-        public void Acknowledge()
+        /// <inheritdoc />
+        protected override Task AcknowledgeMessageAsync(CancellationToken cancellationToken)
         {
             _channel.BasicAck(_args.DeliveryTag, false);
+            return CompletedTask;
         }
 
-        public ISenderMessage ToSenderMessage()
+        /// <inheritdoc />
+        protected override Task RollbackMessageAsync(CancellationToken cancellationToken)
         {
-            var senderMessage = new BinarySenderMessage(this.GetBinaryValue(), MessageFormat.Binary, priority: Priority);
-
-            foreach (var name in GetHeaderNames())
-            {
-                senderMessage.Headers.Add(name, GetHeaderValue(name, Encoding.UTF8));
-            }
-
-            return senderMessage;
+            _channel.BasicNack(_args.DeliveryTag, false, true);
+            return CompletedTask;
         }
-    
 
-        public byte? Priority { get { return _args.BasicProperties.Priority; } }
+        /// <inheritdoc />
+        protected override Task RejectMessageAsync(CancellationToken cancellationToken)
+        {
+            _channel.BasicNack(_args.DeliveryTag, false, false);
+            return CompletedTask;
+        }
     }
 }
