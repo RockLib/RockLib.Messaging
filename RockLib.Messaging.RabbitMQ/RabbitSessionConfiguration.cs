@@ -11,8 +11,6 @@ namespace Rock.Messaging.RabbitMQ
 
         [XmlAttribute("autoAcknowledge")]
         public bool AutoAcknowledge { get; set; }
-        [XmlAttribute("vHost")]
-        public string vHost { get; set; }
         [XmlAttribute("routingKey")]
         public string RoutingKey { get; set; }
 
@@ -20,13 +18,6 @@ namespace Rock.Messaging.RabbitMQ
         public string Exchange { get; set; }
         [XmlAttribute("exchangeType")]
         public string ExchangeType { get; set; }
-        [XmlAttribute("uri")]
-        public string ExchangeUrl { get; set; }
-
-        [XmlAttribute("userName")]
-        public string UserName { get; set; }
-        [XmlAttribute("password")] //TODO: Move these someplace else?
-        public string Password { get; set; }
 
         [XmlAttribute("maxParallelRequests")]
         public ushort MaxRequests { get; set; }
