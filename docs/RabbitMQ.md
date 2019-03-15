@@ -96,7 +96,7 @@ MessagingScenarioFactory can be configured with an `RabbitReceiver` named "comma
             "Value": {
                 "Name": "commands",
                 "Connection": { "HostName": "localhost" },
-                "QueueName": "my_queue_name",
+                "Queue": "my_queue_name",
                 "Exchange": "my_exchange",
                 "RoutingKeys": [ "my", "routing", "keys" ],
                 "PrefetchCount": 10,
@@ -114,7 +114,7 @@ IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
 // RabbitReceiver can also be instantiated directly:
 // IReceiver receiver = new RabbitReceiver("commands",
 //     new ConnectionFactory { HostName = "localhost" },
-//     queueName: "my_queue_name", exchange: "my_exchange",
+//     queue: "my_queue_name", exchange: "my_exchange",
 //     routingKeys: new[] { "my", "routing", "keys" },
 //     prefetchCount: 10, autoAck: false);
 
