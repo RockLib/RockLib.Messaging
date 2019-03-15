@@ -38,7 +38,7 @@ namespace RockLib.Messaging.RabbitMQ
             Persistent = persistent;
 
             _connection = new Lazy<IConnection>(() => connection.CreateConnection());
-            _channel = new Lazy<IModel>(() => _connection.Value.CreateModel());
+            _channel = new Lazy<IModel>(() => Connection.CreateModel());
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace RockLib.Messaging.RabbitMQ
             if (message.OriginatingSystem == null)
                 message.OriginatingSystem = "RabbitMQ";
 
-            var properties = _channel.Value.CreateBasicProperties();
+            var properties = Channel.CreateBasicProperties();
 
             properties.Headers = message.Headers;
 
@@ -63,7 +63,7 @@ namespace RockLib.Messaging.RabbitMQ
             // TODO: Should we set any properties (e.g. ContentType, ContentEncoding) on properties here?
             // TODO: Should we support having a different routing key per message (possibly embedded in Headers)?
 
-            _channel.Value.BasicPublish(Exchange, GetRoutingKey(message), properties, message.BinaryPayload);
+            Channel.BasicPublish(Exchange, GetRoutingKey(message), properties, message.BinaryPayload);
 
             return CompletedTask;
         }
@@ -111,10 +111,10 @@ namespace RockLib.Messaging.RabbitMQ
         public void Dispose()
         {
             if (_channel.IsValueCreated)
-                _channel.Value.Dispose();
+                Channel.Dispose();
 
             if (_connection.IsValueCreated)
-                _connection.Value.Dispose();
+                Connection.Dispose();
         }
 
         private string GetRoutingKey(SenderMessage message)

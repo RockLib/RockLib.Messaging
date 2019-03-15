@@ -13,7 +13,6 @@ namespace RockLib.Messaging.RabbitMQ
     {
         private readonly Lazy<IConnection> _connection;
         private readonly Lazy<IModel> _channel;
-        private readonly Lazy<IBasicConsumer> _consumer;
 
         /// <summary>
         /// Initializes a new instances of the <see cref="RabbitReceiver"/> class.
@@ -59,11 +58,11 @@ namespace RockLib.Messaging.RabbitMQ
 
             _channel = new Lazy<IModel>(() =>
             {
-                var channel = _connection.Value.CreateModel();
+                var channel = Connection.CreateModel();
 
-                if (Exchange != null)
+                if (!string.IsNullOrEmpty(Exchange))
                 {
-                    if (QueueName == null)
+                    if (string.IsNullOrEmpty(QueueName))
                         QueueName = channel.QueueDeclare().QueueName;
 
                     if (RoutingKeys == null || RoutingKeys.Count == 0)
@@ -74,13 +73,6 @@ namespace RockLib.Messaging.RabbitMQ
                 }
 
                 return channel;
-            });
-
-            _consumer = new Lazy<IBasicConsumer>(() =>
-            {
-                var consumer = new EventingBasicConsumer(_channel.Value);
-                consumer.Received += OnReceived;
-                return consumer;
             });
         }
 
@@ -125,16 +117,19 @@ namespace RockLib.Messaging.RabbitMQ
         protected override void Start()
         {
             if (PrefetchCount.HasValue)
-                _channel.Value.BasicQos(0, PrefetchCount.Value, false);
+                Channel.BasicQos(0, PrefetchCount.Value, false);
 
-            _channel.Value.BasicConsume(QueueName, AutoAck, _consumer.Value);
+            var consumer = new EventingBasicConsumer(Channel);
+            consumer.Received += OnReceived;
+
+            Channel.BasicConsume(QueueName, AutoAck, consumer);
         }
 
         private async void OnReceived(object s, BasicDeliverEventArgs e)
         {
             try
             {
-                var message = new RabbitReceiverMessage(e, _channel.Value, AutoAck);
+                var message = new RabbitReceiverMessage(e, Channel, AutoAck);
                 await MessageHandler.OnMessageReceivedAsync(this, message).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -149,10 +144,10 @@ namespace RockLib.Messaging.RabbitMQ
             base.Dispose(disposing);
 
             if (_channel.IsValueCreated)
-                _channel.Value.Dispose();
+                Channel.Dispose();
 
             if (_connection.IsValueCreated)
-                _connection.Value.Dispose();
+                Connection.Dispose();
         }
     }
 }
