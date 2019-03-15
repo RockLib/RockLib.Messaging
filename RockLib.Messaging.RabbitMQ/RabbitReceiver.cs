@@ -11,8 +11,9 @@ namespace RockLib.Messaging.RabbitMQ
     /// </summary>
     public sealed class RabbitReceiver : Receiver
     {
-        private Lazy<IConnection> _connection;
-        private Lazy<IModel> _channel;
+        private readonly Lazy<IConnection> _connection;
+        private readonly Lazy<IModel> _channel;
+        private readonly Lazy<IBasicConsumer> _consumer;
 
         /// <summary>
         /// Initializes a new instances of the <see cref="RabbitReceiver"/> class.
@@ -65,7 +66,7 @@ namespace RockLib.Messaging.RabbitMQ
                     if (QueueName == null)
                         QueueName = channel.QueueDeclare().QueueName;
 
-                    if (RoutingKeys == null)
+                    if (RoutingKeys == null || RoutingKeys.Count == 0)
                         channel.QueueBind(QueueName, Exchange, "");
                     else
                         foreach (var routingKey in RoutingKeys)
@@ -73,6 +74,13 @@ namespace RockLib.Messaging.RabbitMQ
                 }
 
                 return channel;
+            });
+
+            _consumer = new Lazy<IBasicConsumer>(() =>
+            {
+                var consumer = new EventingBasicConsumer(_channel.Value);
+                consumer.Received += OnReceived;
+                return consumer;
             });
         }
 
@@ -116,13 +124,21 @@ namespace RockLib.Messaging.RabbitMQ
         /// <inheritdoc />
         protected override void Start()
         {
-            var consumer = new AsyncEventingBasicConsumer(_channel.Value);
+            _channel.Value.BasicQos(0, PrefetchCount, false);
+            _channel.Value.BasicConsume(QueueName, AutoAck, _consumer.Value);
+        }
 
-            consumer.Received += (s, e) =>
-                MessageHandler.OnMessageReceivedAsync(this, new RabbitReceiverMessage(e, _channel.Value));
-
-            _channel.Value.BasicQos(0, PrefetchCount, true);
-            _channel.Value.BasicConsume(QueueName, AutoAck, consumer);
+        private async void OnReceived(object s, BasicDeliverEventArgs e)
+        {
+            try
+            {
+                var message = new RabbitReceiverMessage(e, _channel.Value, AutoAck);
+                await MessageHandler.OnMessageReceivedAsync(this, message).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                OnError("Error in message handler.", ex);
+            }
         }
 
         /// <inheritdoc />

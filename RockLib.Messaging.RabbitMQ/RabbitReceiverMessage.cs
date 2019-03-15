@@ -3,6 +3,7 @@ using RabbitMQ.Client;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace RockLib.Messaging.RabbitMQ
 {
@@ -14,41 +15,51 @@ namespace RockLib.Messaging.RabbitMQ
     {
         private static readonly Task CompletedTask = Task.FromResult(0);
 
-        private BasicDeliverEventArgs _args;
-        private IModel _channel;
+        private readonly BasicDeliverEventArgs _args;
+        private readonly IModel _channel;
+        private readonly bool _autoAck;
 
-        internal RabbitReceiverMessage(BasicDeliverEventArgs args, IModel channel)
+        internal RabbitReceiverMessage(BasicDeliverEventArgs args, IModel channel, bool autoAck)
              : base(() => args.Body)
         {
             _args = args;
             _channel = channel;
+            _autoAck = autoAck;
         }
 
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
             foreach (var header in _args.BasicProperties.Headers)
-                headers.Add(header);
+            {
+                if (header.Value is byte[] binary)
+                    headers.Add(header.Key, Encoding.UTF8.GetString(binary));
+                else
+                    headers.Add(header);
+            }
         }
 
         /// <inheritdoc />
         protected override Task AcknowledgeMessageAsync(CancellationToken cancellationToken)
         {
-            _channel.BasicAck(_args.DeliveryTag, false);
+            if (!_autoAck)
+                _channel.BasicAck(_args.DeliveryTag, false);
             return CompletedTask;
         }
 
         /// <inheritdoc />
         protected override Task RollbackMessageAsync(CancellationToken cancellationToken)
         {
-            _channel.BasicNack(_args.DeliveryTag, false, true);
+            if (!_autoAck)
+                _channel.BasicNack(_args.DeliveryTag, false, true);
             return CompletedTask;
         }
 
         /// <inheritdoc />
         protected override Task RejectMessageAsync(CancellationToken cancellationToken)
         {
-            _channel.BasicNack(_args.DeliveryTag, false, false);
+            if (!_autoAck)
+                _channel.BasicNack(_args.DeliveryTag, false, false);
             return CompletedTask;
         }
     }
