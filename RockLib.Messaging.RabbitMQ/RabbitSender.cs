@@ -25,8 +25,12 @@ namespace RockLib.Messaging.RabbitMQ
         /// <param name="routingKey">The routing key to use when publishing messages.</param>
         /// <param name="routingKeyHeaderName">
         /// The name of the header that contains the routing key to use when publishing messages.
+        /// Each message sent that has a header with this name will be sent with a routing key of
+        /// the header value.
         /// </param>
-        /// <param name="persistent">Whether RabbitMQ will save the message to disk upon receipt.</param>
+        /// <param name="persistent">
+        /// Whether the RabbitMQ server should save the message to disk upon receipt.
+        /// </param>
         public RabbitSender(string name, 
             [DefaultType(typeof(ConnectionFactory))] IConnectionFactory connection,
             string exchange = null, string routingKey = null, string routingKeyHeaderName = null, bool persistent = true)
@@ -85,13 +89,14 @@ namespace RockLib.Messaging.RabbitMQ
 
         /// <summary>
         /// Gets the name of the header that contains the routing key to use when publishing
-        /// messages.
+        /// messages. Each message sent that has a header with this name will be sent with a
+        /// routing key of the header value.
         /// </summary>
         public string RoutingKeyHeaderName { get; }
 
         /// <summary>
-        /// Gets a value indicating whether RabbitMQ will save the message to disk upon
-        /// receipt.
+        /// Gets a value indicating whether the RabbitMQ server should save the message to
+        /// disk upon receipt.
         /// </summary>
         public bool Persistent { get; }
 

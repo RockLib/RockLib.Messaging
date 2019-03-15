@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RockLib.Configuration.ObjectFactory;
@@ -21,15 +22,18 @@ namespace RockLib.Messaging.RabbitMQ
         /// <param name="connection">A factory that will create the RabbitMQ connection.</param>
         /// <param name="queueName">
         /// The name of the queue to receive messages from. If <see langword="null"/> and
-        /// <paramref name="exchange"/> is not <see langword="null"/>, then a non-durable,
-        /// exclusive, autodelete queue with a generated name is created.
+        /// <paramref name="exchange"/> is *not* <see langword="null"/>, then a non-durable,
+        /// exclusive, autodelete queue with a generated name is created, and the generated
+        /// name is used as the queue name.
         /// </param>
         /// <param name="exchange">
         /// The name of the exchange to bind the queue to. If <see langword="null"/>, the queue
-        /// is not bound to an exchange.
+        /// is not bound to an exchange and the <paramref name="routingKeys"/> parameter (if
+        /// provided) is ignored.
         /// </param>
         /// <param name="routingKeys">
-        /// The collection of routing keys used to bind the queue and exchange.
+        /// The collection of routing keys used to bind the queue and exchange. Ignored if
+        /// the <paramref name="exchange"/> parameter is <see langword="null"/>.
         /// </param>
         /// <param name="prefetchCount">
         /// The maximum number of messages that the server will deliver to the channel before
@@ -45,9 +49,6 @@ namespace RockLib.Messaging.RabbitMQ
             ushort? prefetchCount = null, bool autoAck = false)
             : base(name)
         {
-            if (queueName == null && exchange == null)
-                throw new ArgumentNullException(nameof(queueName), "'queueName' cannot be null if 'exchange' is also null.");
-
             QueueName = queueName;
             Exchange = exchange;
             RoutingKeys = routingKeys;
