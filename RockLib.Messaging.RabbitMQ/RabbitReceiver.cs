@@ -43,7 +43,7 @@ namespace RockLib.Messaging.RabbitMQ
         public RabbitReceiver(string name,
             [DefaultType(typeof(ConnectionFactory))] IConnectionFactory connection,
             string queueName = null, string exchange = null, IReadOnlyCollection<string> routingKeys = null,
-            ushort prefetchCount = 10, bool autoAck = false)
+            ushort? prefetchCount = null, bool autoAck = false)
             : base(name)
         {
             if (queueName == null && exchange == null)
@@ -103,7 +103,7 @@ namespace RockLib.Messaging.RabbitMQ
         /// Gets the maximum number of messages that the server will deliver to the
         /// channel before being acknowledged.
         /// </summary>
-        public ushort PrefetchCount { get; }
+        public ushort? PrefetchCount { get; }
 
         /// <summary>
         /// Gets a value indicating whether messages should be received in an
@@ -124,7 +124,9 @@ namespace RockLib.Messaging.RabbitMQ
         /// <inheritdoc />
         protected override void Start()
         {
-            _channel.Value.BasicQos(0, PrefetchCount, false);
+            if (PrefetchCount.HasValue)
+                _channel.Value.BasicQos(0, PrefetchCount.Value, false);
+
             _channel.Value.BasicConsume(QueueName, AutoAck, _consumer.Value);
         }
 
