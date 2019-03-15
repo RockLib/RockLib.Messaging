@@ -124,7 +124,7 @@ namespace RockLib.Messaging.RabbitMQ
 
         private string GetRoutingKey(SenderMessage message)
         {
-            if (message.Headers.TryGetValue(RoutingKeyHeaderName, out var value))
+            if (RoutingKeyHeaderName != null && message.Headers.TryGetValue(RoutingKeyHeaderName, out var value))
             {
                 switch (value)
                 {
