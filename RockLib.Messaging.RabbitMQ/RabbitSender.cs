@@ -23,13 +23,19 @@ namespace RockLib.Messaging.RabbitMQ
         /// <param name="connection">A factory that will create the RabbitMQ connection.</param>
         /// <param name="exchange">The exchange to use when publishing messages.</param>
         /// <param name="routingKey">The routing key to use when publishing messages.</param>
+        /// <param name="routingKeyHeaderName">
+        /// The name of the header that contains the routing key to use when publishing messages.
+        /// </param>
+        /// <param name="persistent">Whether RabbitMQ will save the message to disk upon receipt.</param>
         public RabbitSender(string name, 
             [DefaultType(typeof(ConnectionFactory))] IConnectionFactory connection,
-            string exchange = "", string routingKey = "")
+            string exchange = null, string routingKey = null, string routingKeyHeaderName = null, bool persistent = true)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Exchange = exchange ?? "";
             RoutingKey = routingKey ?? "";
+            RoutingKeyHeaderName = routingKeyHeaderName;
+            Persistent = persistent;
 
             _connection = new Lazy<IConnection>(() => connection.CreateConnection());
             _channel = new Lazy<IModel>(() => _connection.Value.CreateModel());
@@ -47,14 +53,17 @@ namespace RockLib.Messaging.RabbitMQ
             if (message.OriginatingSystem == null)
                 message.OriginatingSystem = "RabbitMQ";
 
-            var props = _channel.Value.CreateBasicProperties();
+            var properties = _channel.Value.CreateBasicProperties();
 
-            props.Headers = message.Headers;
+            properties.Headers = message.Headers;
 
-            // TODO: Should we set any properties (e.g. ContentType, ContentEncoding) on props here?
+            if (Persistent)
+                properties.Persistent = true;
+
+            // TODO: Should we set any properties (e.g. ContentType, ContentEncoding) on properties here?
             // TODO: Should we support having a different routing key per message (possibly embedded in Headers)?
 
-            _channel.Value.BasicPublish(Exchange, RoutingKey, props, message.BinaryPayload);
+            _channel.Value.BasicPublish(Exchange, GetRoutingKey(message), properties, message.BinaryPayload);
 
             return CompletedTask;
         }
@@ -73,6 +82,18 @@ namespace RockLib.Messaging.RabbitMQ
         /// Gets the routing key to use when publishing messages.
         /// </summary>
         public string RoutingKey { get; }
+
+        /// <summary>
+        /// Gets the name of the header that contains the routing key to use when publishing
+        /// messages.
+        /// </summary>
+        public string RoutingKeyHeaderName { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether RabbitMQ will save the message to disk upon
+        /// receipt.
+        /// </summary>
+        public bool Persistent { get; }
 
         /// <summary>
         /// Gets the RabbitMQ connection.
@@ -94,6 +115,24 @@ namespace RockLib.Messaging.RabbitMQ
 
             if (_connection.IsValueCreated)
                 _connection.Value.Dispose();
+        }
+
+        private string GetRoutingKey(SenderMessage message)
+        {
+            if (message.Headers.TryGetValue(RoutingKeyHeaderName, out var value))
+            {
+                switch (value)
+                {
+                    case string routingKey:
+                        return routingKey;
+                    case null:
+                        break;
+                    default:
+                        return value.ToString();
+                }
+            }
+
+            return RoutingKey;
         }
     }
 }
