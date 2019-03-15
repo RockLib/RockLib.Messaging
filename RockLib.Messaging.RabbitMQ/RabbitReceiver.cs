@@ -20,7 +20,7 @@ namespace RockLib.Messaging.RabbitMQ
         /// </summary>
         /// <param name="name">The name of this instance of <see cref="RabbitReceiver"/>.</param>
         /// <param name="connection">A factory that will create the RabbitMQ connection.</param>
-        /// <param name="queueName">
+        /// <param name="queue">
         /// The name of the queue to receive messages from. If <see langword="null"/> and
         /// <paramref name="exchange"/> is *not* <see langword="null"/>, then a non-durable,
         /// exclusive, autodelete queue with a generated name is created, and the generated
@@ -45,11 +45,11 @@ namespace RockLib.Messaging.RabbitMQ
         /// </param>
         public RabbitReceiver(string name,
             [DefaultType(typeof(ConnectionFactory))] IConnectionFactory connection,
-            string queueName = null, string exchange = null, IReadOnlyCollection<string> routingKeys = null,
+            string queue = null, string exchange = null, IReadOnlyCollection<string> routingKeys = null,
             ushort? prefetchCount = null, bool autoAck = false)
             : base(name)
         {
-            QueueName = queueName;
+            Queue = queue;
             Exchange = exchange;
             RoutingKeys = routingKeys;
             PrefetchCount = prefetchCount;
@@ -63,14 +63,14 @@ namespace RockLib.Messaging.RabbitMQ
 
                 if (!string.IsNullOrEmpty(Exchange))
                 {
-                    if (string.IsNullOrEmpty(QueueName))
-                        QueueName = channel.QueueDeclare().QueueName;
+                    if (string.IsNullOrEmpty(Queue))
+                        Queue = channel.QueueDeclare().QueueName;
 
                     if (RoutingKeys == null || RoutingKeys.Count == 0)
-                        channel.QueueBind(QueueName, Exchange, "");
+                        channel.QueueBind(Queue, Exchange, "");
                     else
                         foreach (var routingKey in RoutingKeys)
-                            channel.QueueBind(QueueName, Exchange, routingKey ?? "");
+                            channel.QueueBind(Queue, Exchange, routingKey ?? "");
                 }
 
                 return channel;
@@ -80,7 +80,7 @@ namespace RockLib.Messaging.RabbitMQ
         /// <summary>
         /// Gets the name of the queue to receive messages from.
         /// </summary>
-        public string QueueName { get; private set; }
+        public string Queue { get; private set; }
 
         /// <summary>
         /// Gets the name of the exchange to bind the queue to.
@@ -123,7 +123,7 @@ namespace RockLib.Messaging.RabbitMQ
             var consumer = new EventingBasicConsumer(Channel);
             consumer.Received += OnReceived;
 
-            Channel.BasicConsume(QueueName, AutoAck, consumer);
+            Channel.BasicConsume(Queue, AutoAck, consumer);
         }
 
         private async void OnReceived(object s, BasicDeliverEventArgs e)
