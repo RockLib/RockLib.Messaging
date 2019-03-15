@@ -38,6 +38,12 @@ PM> Install-Package RockLib.Messaging.Http
 PM> Install-Package RockLib.Messaging.Kafka
 ```
 
+### RockLib.Messaging.RabbitMQ [![Build status](https://ci.appveyor.com/api/projects/status/hx4f5pnq7k08xksg?svg=true)](https://ci.appveyor.com/project/RockLib/rocklib-messaging-2aoa3) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.RabbitMQ.svg)](https://www.nuget.org/packages/RockLib.Messaging.RabbitMQ)
+
+```powershell
+PM> Install-Package RockLib.Messaging.RabbitMQ
+```
+
 - [Getting started](docs/GettingStarted.md)
 - How to:
   - [Send messages](docs/SendingMessages.md)
@@ -47,6 +53,7 @@ PM> Install-Package RockLib.Messaging.Kafka
   - [Configure and use RockLib.Messaging.SNS](docs/SNS.md)
   - [Configure and use RockLib.Messaging.Http](docs/Http.md)
   - [Configure and use RockLib.Messaging.Kafka](docs/Kafka.md)
+  - [Configure and use RockLib.Messaging.RabbitMQ](docs/RabbitMQ.md)
   - [Configure a .NET Framework application with app.config/web.config](docs/NetFramework.md)
   - [Use RockLib.Messaging with a DI/IOC container](docs/DIContainer.md)
   - [Send and receive compressed messages](docs/Compressed.md)
@@ -60,3 +67,4 @@ PM> Install-Package RockLib.Messaging.Kafka
   - [RockLib.Messaging.SNS](https://www.fuget.org/packages/RockLib.Messaging.SNS)
   - [RockLib.Messaging.Http](https://www.fuget.org/packages/RockLib.Messaging.Http)
   - [RockLib.Messaging.Kafka](https://www.fuget.org/packages/RockLib.Messaging.Kafka)
+  - [RockLib.Messaging.RabbitMQ](https://www.fuget.org/packages/RockLib.Messaging.RabbitMQ)
