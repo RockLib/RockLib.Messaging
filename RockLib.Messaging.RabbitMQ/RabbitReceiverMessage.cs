@@ -30,6 +30,9 @@ namespace RockLib.Messaging.RabbitMQ
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
+            if (_args.BasicProperties?.Headers == null)
+                return;
+
             foreach (var header in _args.BasicProperties.Headers)
             {
                 if (header.Value is byte[] binary)
