@@ -15,8 +15,8 @@ namespace RockLib.Messaging
     /// </summary>
     public static class MessagingScenarioFactory
     {
-        private static readonly Semimutable<IConfiguration> _configuration =
-            new Semimutable<IConfiguration>(() => Config.Root.GetSection("RockLib.Messaging"));
+        private static readonly Semimutable<IConfiguration> _configuration = 
+            new Semimutable<IConfiguration>(() => Config.Root.GetCompositeSection("RockLib_Messaging", "RockLib.Messaging"));
 
         /// <summary>
         /// Sets the value of the <see cref="Configuration"/> property. Note that this
