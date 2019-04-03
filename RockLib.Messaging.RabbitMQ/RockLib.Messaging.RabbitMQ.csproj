@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="RabbitMQ.Client" Version="5.1.0" />
-    <PackageReference Include="RockLib.Messaging" Version="2.0.3" />
+    <PackageReference Include="RockLib.Messaging" Version="2.0.4" />
   </ItemGroup>
 
 </Project>
