@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.SQS" Version="3.3.3.53" />
-    <PackageReference Include="RockLib.Messaging" Version="2.0.1" />
+    <PackageReference Include="RockLib.Messaging" Version="2.0.4" />
   </ItemGroup>
 
 </Project>
