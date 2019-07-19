@@ -1,3 +1,4 @@
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using Moq;
@@ -41,7 +42,7 @@ namespace RockLib.Messaging.SQS.Tests
 
             using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false))
             {
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
                     receivedMessage = m.StringPayload;
                     quxHeader = m.Headers.GetValue<string>("qux");
@@ -74,9 +75,9 @@ namespace RockLib.Messaging.SQS.Tests
 
             using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false))
             {
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
-                    m.Acknowledge();
+                    await m.AcknowledgeAsync();
                     waitHandle.Set();
                 });
 
@@ -101,9 +102,9 @@ namespace RockLib.Messaging.SQS.Tests
 
             using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false))
             {
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
-                    m.Rollback();
+                    await m.RollbackAsync();
                     waitHandle.Set();
                 });
 
@@ -128,9 +129,9 @@ namespace RockLib.Messaging.SQS.Tests
 
             using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false))
             {
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
-                    m.Reject();
+                    await m.RejectAsync();
                     waitHandle.Set();
                 });
 
@@ -155,7 +156,7 @@ namespace RockLib.Messaging.SQS.Tests
 
             using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: true))
             {
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
                     waitHandle.Set();
                 });
@@ -181,9 +182,9 @@ namespace RockLib.Messaging.SQS.Tests
 
             using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: true))
             {
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
-                    m.Rollback();
+                    await m.RollbackAsync();
                     waitHandle.Set();
                 });
 
@@ -286,3 +287,4 @@ namespace RockLib.Messaging.SQS.Tests
         }
     }
 }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
