@@ -29,6 +29,64 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
+        public void SQSSenderSetsMessageGroupIdWhenSpecifiedInHeader()
+        {
+            var mockSqs = new Mock<IAmazonSQS>();
+
+            using (var sender = new SQSSender(mockSqs.Object, "foo", "http://url.com/foo"))
+                sender.Send(new SenderMessage("") { Headers = { { "SQS.MessageGroupId", "abc" } } });
+
+            mockSqs.Verify(m => m.SendMessageAsync(
+                It.Is<SendMessageRequest>(r =>
+                    !r.MessageAttributes.ContainsKey("SQS.MessageGroupId")
+                    && r.MessageGroupId == "abc"),
+                It.IsAny<CancellationToken>()));
+        }
+
+        [Fact]
+        public void SQSSenderSetsMessageGroupIdWhenSpecifiedInConstructor()
+        {
+            var mockSqs = new Mock<IAmazonSQS>();
+
+            using (var sender = new SQSSender(mockSqs.Object, "foo", "http://url.com/foo", "abc"))
+                sender.Send(new SenderMessage(""));
+
+            mockSqs.Verify(m => m.SendMessageAsync(
+                It.Is<SendMessageRequest>(r => r.MessageGroupId == "abc"),
+                It.IsAny<CancellationToken>()));
+        }
+
+        [Fact]
+        public void SQSSenderSetsMessageGroupIdToHeaderValueWhenSpecifiedInBothHeaderAndConstructor()
+        {
+            var mockSqs = new Mock<IAmazonSQS>();
+
+            using (var sender = new SQSSender(mockSqs.Object, "foo", "http://url.com/foo", "abc"))
+                sender.Send(new SenderMessage("") { Headers = { { "SQS.MessageGroupId", "xyz" } } });
+
+            mockSqs.Verify(m => m.SendMessageAsync(
+                It.Is<SendMessageRequest>(r =>
+                    !r.MessageAttributes.ContainsKey("SQS.MessageGroupId")
+                    && r.MessageGroupId == "xyz"),
+                It.IsAny<CancellationToken>()));
+        }
+
+        [Fact]
+        public void SQSSenderSetsMessageDeduplicationIdWhenSpecifiedInHeader()
+        {
+            var mockSqs = new Mock<IAmazonSQS>();
+
+            using (var sender = new SQSSender(mockSqs.Object, "foo", "http://url.com/foo"))
+                sender.Send(new SenderMessage("") { Headers = { { "SQS.MessageDeduplicationId", "abc" } } });
+
+            mockSqs.Verify(m => m.SendMessageAsync(
+                It.Is<SendMessageRequest>(r =>
+                    !r.MessageAttributes.ContainsKey("SQS.MessageDeduplicationId")
+                    && r.MessageDeduplicationId == "abc"),
+                It.IsAny<CancellationToken>()));
+        }
+
+        [Fact]
         public void SQSReceiverReceivesMessagesFromItsIAmazonSQS()
         {
             var mockSqs = new Mock<IAmazonSQS>();
