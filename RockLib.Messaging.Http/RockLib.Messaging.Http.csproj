@@ -7,7 +7,7 @@
   <PropertyGroup>
     <PackageId>RockLib.Messaging.Http</PackageId>
     <PackageVersion>1.0.2</PackageVersion>
-    <Authors>Quicken Loans</Authors>
+    <Authors>Brian Friesen</Authors>
     <Description>An implementation of RockLib.Messaging that sends and receives messages via HTTP.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReleaseNotes></PackageReleaseNotes>

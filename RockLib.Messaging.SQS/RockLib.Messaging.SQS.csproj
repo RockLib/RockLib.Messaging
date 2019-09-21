@@ -7,7 +7,7 @@
   <PropertyGroup>
     <PackageId>RockLib.Messaging.SQS</PackageId>
     <PackageVersion>2.0.3</PackageVersion>
-    <Authors>Quicken Loans</Authors>
+    <Authors>Brian Friesen</Authors>
     <Description>Implementation of RockLib.Messaging API that sends and receives messages using Amazon SQS.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReleaseNotes></PackageReleaseNotes>

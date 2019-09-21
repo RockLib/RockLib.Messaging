@@ -7,7 +7,7 @@
   <PropertyGroup>
     <PackageId>RockLib.Messaging.Kafka</PackageId>
     <PackageVersion>1.0.0-alpha03</PackageVersion>
-    <Authors>Quicken Loans</Authors>
+    <Authors>Brian Friesen</Authors>
     <Description>Implementation of RockLib.Messaging API that sends and receives messages using Kafka.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReleaseNotes></PackageReleaseNotes>
