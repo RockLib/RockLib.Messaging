@@ -86,6 +86,22 @@ namespace RockLib.Messaging.SQS.Tests
                 It.IsAny<CancellationToken>()));
         }
 
+
+        [Fact]
+        public void SQSSenderSetsMessageDelayWhenSpecifiedInHeader()
+        {
+            var mockSqs = new Mock<IAmazonSQS>();
+
+            using (var sender = new SQSSender(mockSqs.Object, "foo", "http://url.com/foo"))
+                sender.Send(new SenderMessage("") { Headers = { { "SQS.DelaySeconds", 123 } } });
+
+            mockSqs.Verify(m => m.SendMessageAsync(
+                It.Is<SendMessageRequest>(r =>
+                    !r.MessageAttributes.ContainsKey("SQS.DelaySeconds")
+                    && r.DelaySeconds == 123),
+                It.IsAny<CancellationToken>()));
+        }
+
         [Fact]
         public void SQSReceiverReceivesMessagesFromItsIAmazonSQS()
         {
