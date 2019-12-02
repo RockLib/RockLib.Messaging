@@ -118,6 +118,12 @@ namespace RockLib.Messaging.SQS
                 message.Headers.Remove("SQS.MessageDeduplicationId");
             }
 
+            if (message.Headers.TryGetValue("SQS.DelaySeconds", out value) && value != null)
+            {
+                sendMessageRequest.DelaySeconds = (int)value;
+                message.Headers.Remove("SQS.DelaySeconds");
+            }
+
             foreach (var header in message.Headers)
             {
                 sendMessageRequest.MessageAttributes[header.Key] =
