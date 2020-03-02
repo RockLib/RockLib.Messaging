@@ -13,7 +13,7 @@
     <PackageReleaseNotes></PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Copyright>Copyright 2017-2019 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
+    <Copyright>Copyright 2017-2020 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
     <PackageTags>rocklib messaging</PackageTags>
     <Version>2.0.0</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -24,13 +24,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\LICENSE.md" Pack="true" PackagePath=""/>
+    <None Include="..\LICENSE.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="RockLib.Compression" Version="1.0.0" />
     <PackageReference Include="RockLib.Configuration" Version="2.4.1" />
     <PackageReference Include="RockLib.Configuration.ObjectFactory" Version="1.6.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'!='net451'">
+    <PackageReference Include="Microsoft.Extensions.Options" Version="2.2.0" />
   </ItemGroup>
 
 </Project>
