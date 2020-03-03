@@ -7,7 +7,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RockLib.Messaging.Tests.DependencyInjection
+namespace RockLib.Messaging.Tests
 {
     public class DependencyInjectionTests
     {

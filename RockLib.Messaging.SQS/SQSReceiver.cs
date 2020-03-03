@@ -16,12 +16,16 @@ namespace RockLib.Messaging.SQS
     /// </summary>
     public class SQSReceiver : Receiver
     {
-        private readonly IAmazonSQS _sqs;
         private readonly Lazy<Task> _receiveMessagesTask;
 
         private bool _stopped;
 
-        private const int _defaultMaxMessages = 3;
+        /// <summary>The default value for <see cref="MaxMessages"/>.</summary>
+        public const int DefaultMaxMessages = 3;
+
+        /// <summary>The default value for <see cref="WaitTimeSeconds"/>.</summary>
+        public const int DefaultWaitTimeSeconds = 0;
+
         private const int _maxAcknowledgeAttempts = 3;
         private const int _maxReceiveAttempts = 3;
 
@@ -51,9 +55,9 @@ namespace RockLib.Messaging.SQS
         public SQSReceiver(string name,
             string queueUrl,
             string region = null,
-            int maxMessages = _defaultMaxMessages,
+            int maxMessages = DefaultMaxMessages,
             bool autoAcknowledge = true,
-            int waitTimeSeconds = 0,
+            int waitTimeSeconds = DefaultWaitTimeSeconds,
             bool unpackSNS = false)
             : this(region == null ? new AmazonSQSClient() : new AmazonSQSClient(RegionEndpoint.GetBySystemName(region)), name, queueUrl, maxMessages, autoAcknowledge, waitTimeSeconds, unpackSNS)
         {
@@ -83,9 +87,9 @@ namespace RockLib.Messaging.SQS
         public SQSReceiver(IAmazonSQS sqs,
             string name,
             string queueUrl,
-            int maxMessages = _defaultMaxMessages,
+            int maxMessages = DefaultMaxMessages,
             bool autoAcknowledge = true,
-            int waitTimeSeconds = 0,
+            int waitTimeSeconds = DefaultWaitTimeSeconds,
             bool unpackSNS = false)
             : base(name)
         {
@@ -94,7 +98,7 @@ namespace RockLib.Messaging.SQS
             if (waitTimeSeconds < 0)
                 throw new ArgumentOutOfRangeException(nameof(waitTimeSeconds), "Value cannot be negative.");
 
-            _sqs = sqs ?? throw new ArgumentNullException(nameof(sqs));
+            SQSClient = sqs ?? throw new ArgumentNullException(nameof(sqs));
             QueueUrl = queueUrl ?? throw new ArgumentNullException(nameof(queueUrl));
             MaxMessages = maxMessages;
             AutoAcknwoledge = autoAcknowledge;
@@ -136,6 +140,11 @@ namespace RockLib.Messaging.SQS
         public bool UnpackSNS { get; }
 
         /// <summary>
+        /// Gets the object that communicates with SQS.
+        /// </summary>
+        public IAmazonSQS SQSClient { get; }
+
+        /// <summary>
         /// Starts the polling background thread that listens for messages.
         /// </summary>
         protected override void Start()
@@ -169,7 +178,7 @@ namespace RockLib.Messaging.SQS
                 {
                     try
                     {
-                        response = await _sqs.ReceiveMessageAsync(receiveMessageRequest).ConfigureAwait(false);
+                        response = await SQSClient.ReceiveMessageAsync(receiveMessageRequest).ConfigureAwait(false);
 
                         if (response.HttpStatusCode == HttpStatusCode.OK)
                         {
@@ -259,7 +268,7 @@ namespace RockLib.Messaging.SQS
             {
                 try
                 {
-                    var deleteResponse = await _sqs.DeleteMessageAsync(new DeleteMessageRequest
+                    var deleteResponse = await SQSClient.DeleteMessageAsync(new DeleteMessageRequest
                     {
                         QueueUrl = QueueUrl,
                         ReceiptHandle = receiptHandle
@@ -285,7 +294,7 @@ namespace RockLib.Messaging.SQS
             if (_receiveMessagesTask.IsValueCreated)
                 try { _receiveMessagesTask.Value.Wait(); }
                 catch { }
-            _sqs.Dispose();
+            SQSClient.Dispose();
             base.Dispose(disposing);
         }
 

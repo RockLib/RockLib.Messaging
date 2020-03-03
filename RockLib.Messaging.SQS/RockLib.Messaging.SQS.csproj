@@ -13,7 +13,7 @@
     <PackageReleaseNotes></PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Copyright>Copyright 2017-2019 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
+    <Copyright>Copyright 2017-2020 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
     <PackageTags>rocklib messaging sqs</PackageTags>
     <Version>2.0.0</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.SQS" Version="3.3.3.53" />
-    <PackageReference Include="RockLib.Messaging" Version="2.0.4" />
+    <PackageReference Include="RockLib.Messaging" Version="2.1.0" />
   </ItemGroup>
 
 </Project>
