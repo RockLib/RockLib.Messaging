@@ -15,11 +15,11 @@ namespace RockLib.Messaging.NamedPipes.Tests
                 string payload = null;
                 string headerValue = null;
 
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
                     payload = m.StringPayload;
                     headerValue = m.Headers.GetValue<string>("bar");
-                    m.Acknowledge();
+                    await m.AcknowledgeAsync();
                     waitHandle.Set();
                 });
 
