@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using RockLib.Messaging.DependencyInjection;
 using Xunit;
 
-namespace RockLib.Messaging.NamedPipes.Tests.DependencyInjection
+namespace RockLib.Messaging.NamedPipes.Tests
 {
     public class DependencyInjectionTests
     {

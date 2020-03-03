@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using RockLib.Messaging.DependencyInjection;
 using Xunit;
 
-namespace RockLib.Messaging.SNS.Tests.DependencyInjection
+namespace RockLib.Messaging.SNS.Tests
 {
     public class DependencyInjectionTests
     {
