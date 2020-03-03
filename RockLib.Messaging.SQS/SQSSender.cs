@@ -12,10 +12,6 @@ namespace RockLib.Messaging.SQS
     /// </summary>
     public class SQSSender : ISender
     {
-        private readonly string _queueUrl;
-        private readonly IAmazonSQS _sqs;
-        private readonly string _messageGroupId;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SQSReceiver"/> class.
         /// Uses a default implementation of the <see cref="AmazonSQSClient"/> to
@@ -81,16 +77,38 @@ namespace RockLib.Messaging.SQS
         /// </param>
         public SQSSender(IAmazonSQS sqs, string name, string queueUrl, string messageGroupId)
         {
-            _sqs = sqs ?? throw new ArgumentNullException(nameof(sqs));
+            SQSClient = sqs ?? throw new ArgumentNullException(nameof(sqs));
             Name = name ?? throw new ArgumentNullException(nameof(name));
-            _queueUrl = queueUrl ?? throw new ArgumentNullException(nameof(queueUrl));
-            _messageGroupId = messageGroupId;
+            QueueUrl = queueUrl ?? throw new ArgumentNullException(nameof(queueUrl));
+            MessageGroupId = messageGroupId;
         }
 
         /// <summary>
         /// Gets the name of this instance of <see cref="SQSSender"/>.
         /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// Gets the url of the SQS queue.
+        /// </summary>
+        public string QueueUrl { get; }
+
+        /// <summary>
+        /// Gets the tag that specifies that a message belongs to a specific message group.
+        /// Messages that belong to the same message group are processed in a FIFO manner
+        /// (however, messages in different message groups might be processed out of order). To
+        /// interleave multiple ordered streams within a single queue, use MessageGroupId values
+        /// (for example, session data for multiple users). In this scenario, multiple consumers
+        /// can process the queue, but the session data of each user is processed in a FIFO
+        /// fashion.
+        /// <para>This parameter applies only to FIFO (first-in-first-out) queues.</para>
+        /// </summary>
+        public string MessageGroupId { get; }
+
+        /// <summary>
+        /// Gets the object that communicates with SQS.
+        /// </summary>
+        public IAmazonSQS SQSClient { get; }
 
         /// <summary>
         /// Asynchronously sends the specified message.
@@ -102,15 +120,15 @@ namespace RockLib.Messaging.SQS
             if (message.OriginatingSystem == null)
                 message.OriginatingSystem = "SQS";
 
-            var sendMessageRequest = new SendMessageRequest(_queueUrl, message.StringPayload);
+            var sendMessageRequest = new SendMessageRequest(QueueUrl, message.StringPayload);
 
             if (message.Headers.TryGetValue("SQS.MessageGroupId", out var value) && value != null)
             {
                 sendMessageRequest.MessageGroupId = value.ToString();
                 message.Headers.Remove("SQS.MessageGroupId");
             }
-            else if (_messageGroupId != null)
-                sendMessageRequest.MessageGroupId = _messageGroupId;
+            else if (MessageGroupId != null)
+                sendMessageRequest.MessageGroupId = MessageGroupId;
 
             if (message.Headers.TryGetValue("SQS.MessageDeduplicationId", out value) && value != null)
             {
@@ -130,7 +148,7 @@ namespace RockLib.Messaging.SQS
                     new MessageAttributeValue { StringValue = header.Value.ToString(), DataType = "String" };
             }
 
-            return _sqs.SendMessageAsync(sendMessageRequest, cancellationToken);
+            return SQSClient.SendMessageAsync(sendMessageRequest, cancellationToken);
         }
 
         /// <summary>
@@ -138,7 +156,7 @@ namespace RockLib.Messaging.SQS
         /// </summary>
         public void Dispose()
         {
-            _sqs.Dispose();
+            SQSClient.Dispose();
         }
     }
 }
