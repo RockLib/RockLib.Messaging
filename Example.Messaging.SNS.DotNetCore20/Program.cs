@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using RockLib.Messaging.DependencyInjection;
 
 namespace Example.Messaging.SNS.DotNetCore20
 {
@@ -15,7 +17,7 @@ namespace Example.Messaging.SNS.DotNetCore20
     {
         const string DefaultProfile = "default";
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             EnsureAwsCredentials();
 
@@ -30,6 +32,37 @@ namespace Example.Messaging.SNS.DotNetCore20
 
             DisplayPrompt();
 
+            var services = new ServiceCollection();
+
+            services.AddSNSSender("Sender1", options =>
+            {
+                options.Region = "us-east-1"; // TODO: Set Region
+                options.TopicArn = "topic:arn"; // TODO: Set Topic Arn
+            });
+            services.AddSQSReceiver("Receiver1", options =>
+            {
+                options.AutoAcknowledge = false;
+                options.Region = "us-east-1"; // TODO: Set Region
+                options.QueueUrl = "http://aws.com"; // TODO: Set Topic Url
+                options.UnpackSNS = true;
+            });
+            services.AddSQSReceiver("Receiver2", options =>
+            {
+                options.AutoAcknowledge = false;
+                options.Region = "us-east-1"; // TODO: Set Region
+                options.QueueUrl = "http://aws.com"; // TODO: Set Topic Url
+                options.UnpackSNS = true;
+            });
+            services.AddSQSReceiver("Receiver3", options =>
+            {
+                options.AutoAcknowledge = false;
+                options.Region = "us-east-1"; // TODO: Set Region
+                options.QueueUrl = "http://aws.com"; // TODO: Set Topic Url
+                options.UnpackSNS = true;
+            });
+
+            var serviceProvider = services.BuildServiceProvider();
+
             while (true)
             {
                 var c = Console.ReadKey(true).KeyChar;
@@ -37,7 +70,7 @@ namespace Example.Messaging.SNS.DotNetCore20
                 {
                     case '1':
                         Console.WriteLine(c);
-                        RunSender(RunReceivers()).Wait();
+                        RunSender(serviceProvider, RunReceivers(serviceProvider)).Wait();
                         return;
                     case '2':
                         Console.WriteLine(c);
@@ -52,14 +85,14 @@ namespace Example.Messaging.SNS.DotNetCore20
             }
         }
 
-        private static async Task RunSender(List<IReceiver> receivers)
+        private static async Task RunSender(IServiceProvider serviceProvider, List<IReceiver> receivers)
         {
-            using (var sender = MessagingScenarioFactory.CreateSender("Sender"))
+            using (var sender = serviceProvider.GetRequiredService<ISender>())
             {
                 while (true)
                 {
                     Console.WriteLine($"Enter a message for sender '{sender.Name}'. Add headers as a trailing JSON object. Leave blank to quit.");
-                    Console.Write("message > ");
+                    Console.Write("message> ");
                     string message;
                     if ((message = Console.ReadLine()) == "")
                         break;
@@ -77,25 +110,15 @@ namespace Example.Messaging.SNS.DotNetCore20
             }
         }
 
-        private static List<IReceiver> RunReceivers()
+        private static List<IReceiver> RunReceivers(IServiceProvider serviceProvider)
         {
-            var receivers = new List<IReceiver>
-            {
-                CreateReceiver("Receiver1"),
-                CreateReceiver("Receiver2"),
-                CreateReceiver("Receiver3")
-            };
+            var receivers = serviceProvider.GetServices<IReceiver>().ToList();
+            foreach (var receiver in receivers)
+                receiver.Start(m => HandleMessage(m, receiver.Name));
             return receivers;
         }
 
-        private static IReceiver CreateReceiver(string receiverName)
-        {
-            var receiver = MessagingScenarioFactory.CreateReceiver(receiverName);
-            receiver.Start(m => { HandleMessage(m, receiver.Name); });
-            return receiver;
-        }
-
-        private static void HandleMessage(IReceiverMessage m, string name)
+        private static async Task HandleMessage(IReceiverMessage m, string name)
         {
             var builder = new StringBuilder();
             foreach (var header in m.Headers)
@@ -104,6 +127,8 @@ namespace Example.Messaging.SNS.DotNetCore20
             builder.AppendLine($"{name} - {m.StringPayload}");
             builder.AppendLine();
             Console.WriteLine(builder);
+
+            await m.AcknowledgeAsync();
         }
 
         private static void EnsureAwsCredentials()

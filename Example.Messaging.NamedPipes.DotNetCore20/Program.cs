@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Linq;
 using RockLib.Messaging;
+using RockLib.Messaging.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -18,6 +20,13 @@ namespace Example.Messaging.NamedPipes.DotNetCore20
             Console.WriteLine("Tip: Start multiple instances of this app and have them send and receive to each other.");
             Console.Write("selection>");
 
+            var services = new ServiceCollection();
+
+            services.AddNamedPipeSender("Sender1", options => options.PipeName = "Example.Messaging");
+            services.AddNamedPipeReceiver("Receiver1", options => options.PipeName = "Example.Messaging");
+
+            var serviceProvider = services.BuildServiceProvider();
+
             while (true)
             {
                 var c = Console.ReadKey(true).KeyChar;
@@ -25,15 +34,15 @@ namespace Example.Messaging.NamedPipes.DotNetCore20
                 {
                     case '1':
                         Console.WriteLine(c);
-                        RunSender();
+                        RunSender(serviceProvider);
                         return;
                     case '2':
                         Console.WriteLine(c);
-                        RunReceiver();
+                        RunReceiver(serviceProvider);
                         return;
                     case '3':
                         Console.WriteLine(c);
-                        SendAndReceiveOneMessage();
+                        SendAndReceiveOneMessage(serviceProvider);
                         return;
                     case 'q':
                         Console.WriteLine(c);
@@ -42,9 +51,9 @@ namespace Example.Messaging.NamedPipes.DotNetCore20
             }
         }
 
-        private static void RunSender()
+        private static void RunSender(IServiceProvider serviceProvider)
         {
-            using (var sender = MessagingScenarioFactory.CreateSender("Sender1"))
+            using (var sender = serviceProvider.GetRequiredService<ISender>())
             {
                 Console.WriteLine($"Enter a message for sender '{sender.Name}'. Add headers as a trailing JSON object. Leave blank to quit.");
                 string message;
@@ -62,35 +71,39 @@ namespace Example.Messaging.NamedPipes.DotNetCore20
             }
         }
 
-        private static void RunReceiver()
+        private static void RunReceiver(IServiceProvider serviceProvider)
         {
-            using (var receiver = MessagingScenarioFactory.CreateReceiver("Receiver1"))
+            using (var receiver = serviceProvider.GetRequiredService<IReceiver>())
             {
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
                     foreach (var header in m.Headers)
                         Console.WriteLine($"{header.Key}: {header.Value}");
 
                     Console.WriteLine(m.StringPayload);
+
+                    await m.AcknowledgeAsync();
                 });
                 Console.WriteLine($"Receiving messages from receiver '{receiver.Name}'. Press <enter> to quit.");
                 while (Console.ReadKey(true).Key != ConsoleKey.Enter) { }
             }
         }
 
-        private static void SendAndReceiveOneMessage()
+        private static void SendAndReceiveOneMessage(IServiceProvider serviceProvider)
         {
             // Use a wait handle to pause the main thread while waiting for the message to be received.
             var waitHandle = new AutoResetEvent(false);
 
-            var sender = MessagingScenarioFactory.CreateSender("Sender1");
-            var receiver = MessagingScenarioFactory.CreateReceiver("Receiver1");
+            var sender = serviceProvider.GetRequiredService<ISender>();
+            var receiver = serviceProvider.GetRequiredService<IReceiver>();
 
-            receiver.Start(m =>
+            receiver.Start(async m =>
             {
                 var message = m.StringPayload;
 
                 Console.WriteLine($"Message received: {message}");
+
+                await m.AcknowledgeAsync();
 
                 waitHandle.Set();
             });

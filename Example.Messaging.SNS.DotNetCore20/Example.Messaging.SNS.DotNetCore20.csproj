@@ -6,18 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="appsettings.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="RockLib.Messaging.SNS" Version="1.0.0" />
-    <PackageReference Include="RockLib.Messaging.SQS" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+    <PackageReference Include="RockLib.Messaging.SNS" Version="1.1.0" />
+    <PackageReference Include="RockLib.Messaging.SQS" Version="2.1.0" />
   </ItemGroup>
 
 </Project>

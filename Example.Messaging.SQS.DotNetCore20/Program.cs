@@ -6,6 +6,8 @@ using System.Threading;
 using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using RockLib.Messaging.DependencyInjection;
 
 namespace Example.Messaging.SQS.DotNetCore20
 {
@@ -30,6 +32,22 @@ namespace Example.Messaging.SQS.DotNetCore20
 
             DisplayPrompt();
 
+            var services = new ServiceCollection();
+
+            services.AddSQSSender("Sender1", options =>
+            {
+                options.Region = "us-east-1"; // TODO: Set Region
+                options.QueueUrl = "http://aws.com"; // TODO: Set Queue Url
+            });
+            services.AddSQSReceiver("Receiver1", options =>
+            {
+                options.AutoAcknowledge = false;
+                options.Region = "us-east-1"; // TODO: Set Region
+                options.QueueUrl = "http://aws.com"; // TODO: Set Queue Url
+            });
+
+            var serviceProvider = services.BuildServiceProvider();
+
             while (true)
             {
                 var c = Console.ReadKey(true).KeyChar;
@@ -37,15 +55,15 @@ namespace Example.Messaging.SQS.DotNetCore20
                 {
                     case '1':
                         Console.WriteLine(c);
-                        RunSender();
+                        RunSender(serviceProvider);
                         return;
                     case '2':
                         Console.WriteLine(c);
-                        RunReceiver();
+                        RunReceiver(serviceProvider);
                         return;
                     case '3':
                         Console.WriteLine(c);
-                        SendAndReceiveOneMessage();
+                        SendAndReceiveOneMessage(serviceProvider);
                         return;
                     case '4':
                         Console.WriteLine(c);
@@ -60,9 +78,9 @@ namespace Example.Messaging.SQS.DotNetCore20
             }
         }
 
-        private static void RunSender()
+        private static void RunSender(ServiceProvider serviceProvider)
         {
-            using (var sender = MessagingScenarioFactory.CreateSender("Sender1"))
+            using (var sender = serviceProvider.GetRequiredService<ISender>())
             {
                 Console.WriteLine($"Enter a message for sender '{sender.Name}'. Add headers as a trailing JSON object. Leave blank to quit.");
                 string message;
@@ -80,35 +98,39 @@ namespace Example.Messaging.SQS.DotNetCore20
             }
         }
 
-        private static void RunReceiver()
+        private static void RunReceiver(ServiceProvider serviceProvider)
         {
-            using (var receiver = MessagingScenarioFactory.CreateReceiver("Receiver1"))
+            using (var receiver = serviceProvider.GetRequiredService<IReceiver>())
             {
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
                     foreach (var header in m.Headers)
                         Console.WriteLine($"{header.Key}: {header.Value}");
 
                     Console.WriteLine(m.StringPayload);
+
+                    await m.AcknowledgeAsync();
                 });
                 Console.WriteLine($"Receiving messages from receiver '{receiver.Name}'. Press <enter> to quit.");
                 while (Console.ReadKey(true).Key != ConsoleKey.Enter) { }
             }
         }
 
-        private static void SendAndReceiveOneMessage()
+        private static void SendAndReceiveOneMessage(ServiceProvider serviceProvider)
         {
             // Use a wait handle to pause the main thread while waiting for the message to be received.
             var waitHandle = new AutoResetEvent(false);
 
-            var sender = MessagingScenarioFactory.CreateSender("Sender1");
-            var receiver = MessagingScenarioFactory.CreateReceiver("Receiver1");
+            var sender = serviceProvider.GetRequiredService<ISender>();
+            var receiver = serviceProvider.GetRequiredService<IReceiver>();
 
-            receiver.Start(m =>
+            receiver.Start(async m =>
             {
                 var message = m.StringPayload;
 
                 Console.WriteLine($"Message received: {message}");
+
+                await m.AcknowledgeAsync();
 
                 waitHandle.Set();
             });
