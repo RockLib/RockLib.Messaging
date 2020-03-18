@@ -11,6 +11,37 @@ The NamedPipeSender class can be directly instantiated and has the following par
 - pipeName (optional)
   - Name of the named pipe. If not provided, the value of the `name` parameter is used.
 
+---
+
+To add a NamedPipeSender to a service collection for dependency injection, use the `AddNamedPipeSender` method, optionally passing in a `configureOptions` callback:
+
+```c#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddNamedPipeSender("MySender", options => options.PipeName = "MyPipeName");
+}
+```
+
+To bind the `NamedPipeOptions` to a configuration section, use the name of the sender when calling the `Configure` method:
+
+```c#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.Configure<NamedPipeOptions>("MySender", Configuration.GetSection("MyNamedPipe"));
+    services.AddNamedPipeSender("MySender");
+}
+
+/* appsettings.json:
+{
+  "MyNamedPipe": {
+    "PipeName": "MyPipeName"
+  }
+}
+*/
+```
+
+---
+
 MessagingScenarioFactory can be configured with a `NamedPipeSender` named "commands" as follows:
 
 ```json
@@ -53,6 +84,37 @@ The NamedPipeReceiver class can be directly instantiated and has the following p
   - The name of the instance of NamedPipeReceiver.
 - pipeName (optional)
   - Name of the named pipe. If not provided, the value of the `name` parameter is used.
+
+---
+
+To add a NamedPipeSender to a service collection for dependency injection, use the `AddNamedPipeSender` method, optionally passing in a `configureOptions` callback:
+
+```c#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddNamedPipeReceiver("MyReceiver", options => options.PipeName = "MyPipeName");
+}
+```
+
+To bind the `NamedPipeOptions` to a configuration section, use the name of the sender when calling the `Configure` method:
+
+```c#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.Configure<NamedPipeOptions>("MyReceiver", Configuration.GetSection("MyNamedPipe"));
+    services.AddNamedPipeReceiver("MyReceiver");
+}
+
+/* appsettings.json:
+{
+  "MyNamedPipe": {
+    "PipeName": "MyPipeName"
+  }
+}
+*/
+```
+
+---
 
 MessagingScenarioFactory can be configured with a `NamedPipeReceiver` named "commands" as follows:
 
