@@ -11,6 +11,10 @@ The NamedPipeSender class can be directly instantiated and has the following par
 - pipeName (optional)
   - Name of the named pipe. If not provided, the value of the `name` parameter is used.
 
+```c#
+ISender sender = new NamedPipeSender("MySender", "MyPipeName");
+```
+
 ---
 
 To add a NamedPipeSender to a service collection for dependency injection, use the `AddNamedPipeSender` method, optionally passing in a `configureOptions` callback:
@@ -66,9 +70,6 @@ MessagingScenarioFactory can be configured with a `NamedPipeSender` named "comma
 // MessagingScenarioFactory uses the above JSON configuration to create a NamedPipeSender:
 ISender sender = MessagingScenarioFactory.CreateSender("commands");
 
-// NamedPipeSender can also be instantiated directly:
-// ISender sender = new NamedPipeSender("commands", "my-pipe-name");
-
 // Use the sender (for good, not evil):
 sender.Send("DROP DATABASE Production;");
 
@@ -84,6 +85,10 @@ The NamedPipeReceiver class can be directly instantiated and has the following p
   - The name of the instance of NamedPipeReceiver.
 - pipeName (optional)
   - Name of the named pipe. If not provided, the value of the `name` parameter is used.
+
+```c#
+IReceiver receiver = new NamedPipeReceiver("MyReceiver", "MyPipeName");
+```
 
 ---
 
@@ -136,16 +141,13 @@ MessagingScenarioFactory can be configured with a `NamedPipeReceiver` named "com
 // MessagingScenarioFactory uses the above JSON configuration to create a NamedPipeReceiver:
 IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
 
-// NamedPipeReceiver can also be instantiated directly:
-// IReceiver receiver = new NamedPipeReceiver("commands", "my-pipe-name");
-
 // Start the receiver, passing in a lambda function callback to be invoked when a message is received.
-receiver.Start(message =>
+receiver.Start(async message =>
 {
     Console.WriteLine(message.StringPayload);
     
     // Since AutoAcknowledge is false in this example, the message must be acknowledged.
-    message.Acknowledge();
+    await message.AcknowledgeAsync();
 });
 
 // Wait for messages (demo code, don't judge)
