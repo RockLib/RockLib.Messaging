@@ -12,6 +12,42 @@ The SNSSender class can be directly instantiated and has the following parameter
   - The ARN (Amazon Resource Name) of the SNS topic.
 - region (optional, defaults to null)
   - The region of the SNS topic.
+  
+```c#
+ISender sender = new SNSSender("MySender", "arn:aws:sns:us-west-2:123456789012:MyTopic", "us-west-2");
+```
+
+---
+
+To add an SNSSender to a service collection for dependency injection, use the `AddSNSSender` method, optionally passing in a `configureOptions` callback:
+
+```c#
+services.AddSNSSender("MySender", options =>
+{
+    options.Region = "us-west-2";
+    options.TopicArn = "arn:aws:sns:us-west-2:123456789012:MyTopic";
+});```
+
+To bind `SNSSenderOptions` to a configuration section, use the name of the sender when calling the `Configure` method:
+
+```c#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.Configure<SNSSenderOptions>("MySender", Configuration.GetSection("MySNSSender"));
+    services.AddSNSSender("MySender");
+}
+
+/* appsettings.json:
+{
+  "MySNSSender": {
+    "Region": "us-west-2",
+    "TopicArn": "arn:aws:sns:us-west-2:123456789012:MyTopic"
+  }
+}
+*/
+```
+
+---
 
 MessagingScenarioFactory can be configured with an `SNSSender` named "commands" as follows:
 
@@ -22,8 +58,8 @@ MessagingScenarioFactory can be configured with an `SNSSender` named "commands" 
       "Type": "RockLib.Messaging.SNS.SNSSender, RockLib.Messaging.SNS",
       "Value": {
         "Name": "commands",
-        "TopicArn": "TODO: Set Topic ARN",
-        "Region": "TODO: Set Region"
+        "TopicArn": "arn:aws:sns:us-west-2:123456789012:MyTopic",
+        "Region": "us-west-2"
       }
     }
   }
@@ -37,9 +73,6 @@ MessagingScenarioFactory can be configured with an `SNSSender` named "commands" 
 
 // MessagingScenarioFactory uses the above JSON configuration to create a SNSSender:
 ISender sender = MessagingScenarioFactory.CreateSender("commands");
-
-// SNSSender can also be instantiated directly:
-// ISender sender = new SNSSender("commands", "TODO: Set Topic ARN", "TODO: Set Region");
 
 // Use the sender (for good, not evil):
 sender.Send("DROP DATABASE Production;");
