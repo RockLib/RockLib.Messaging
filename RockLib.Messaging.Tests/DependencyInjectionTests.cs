@@ -25,6 +25,10 @@ namespace RockLib.Messaging.Tests
             var sender = serviceProvider.GetRequiredService<ISender>();
 
             sender.Should().BeSameAs(registeredSender);
+
+            var senderLookup = serviceProvider.GetRequiredService<SenderLookup>();
+
+            senderLookup("mySender").Should().BeSameAs(sender);
         }
 
         [Test]
@@ -68,6 +72,12 @@ namespace RockLib.Messaging.Tests
             var transactionalSender = serviceProvider.GetRequiredService<ITransactionalSender>();
 
             transactionalSender.Should().BeSameAs(registeredTransactionalSender);
+
+            var transactionalSenderLookup = serviceProvider.GetRequiredService<TransactionalSenderLookup>();
+            var senderLookup = serviceProvider.GetRequiredService<SenderLookup>();
+
+            transactionalSenderLookup("myTransactionalSender").Should().BeSameAs(transactionalSender);
+            senderLookup("myTransactionalSender").Should().BeSameAs(transactionalSender);
         }
 
         [Test]
@@ -112,6 +122,10 @@ namespace RockLib.Messaging.Tests
             var receiver = serviceProvider.GetRequiredService<IReceiver>();
 
             receiver.Should().BeSameAs(registeredReceiver);
+
+            var receiverLookup = serviceProvider.GetRequiredService<ReceiverLookup>();
+
+            receiverLookup("myReceiver").Should().BeSameAs(receiver);
         }
 
         [Test]
