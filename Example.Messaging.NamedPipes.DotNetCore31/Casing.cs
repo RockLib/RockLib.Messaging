@@ -1,4 +1,4 @@
-﻿namespace Example.Messaging.NamedPipes.DotNetCore20
+﻿namespace Example.Messaging.NamedPipes.DotNetCore31
 {
     enum Casing
     {

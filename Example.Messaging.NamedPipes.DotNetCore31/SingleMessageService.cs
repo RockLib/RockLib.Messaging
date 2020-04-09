@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Example.Messaging.NamedPipes.DotNetCore20
+namespace Example.Messaging.NamedPipes.DotNetCore31
 {
     class SingleMessageService : IHostedService
     {

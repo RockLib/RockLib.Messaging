@@ -4,20 +4,20 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Example.Messaging.NamedPipes.DotNetCore20
+namespace Example.Messaging.NamedPipes.DotNetCore31
 {
     abstract class SendingService : IHostedService
     {
         private readonly ISender _sender;
-        private readonly string _prompt;
         private readonly Thread _senderThread;
 
-        protected SendingService(ISender sender, string prompt)
+        protected SendingService(ISender sender)
         {
             _sender = sender ?? throw new ArgumentNullException(nameof(sender));
-            _prompt = prompt ?? throw new ArgumentNullException(nameof(prompt));
             _senderThread = new Thread(SendMessages) { IsBackground = true };
         }
+
+        protected abstract string Prompt { get; }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
@@ -37,7 +37,7 @@ namespace Example.Messaging.NamedPipes.DotNetCore20
             // get written after the prompt and it's a weird experience for the user.
             Thread.Sleep(500);
 
-            Console.WriteLine(_prompt);
+            Console.WriteLine(Prompt);
             while (true)
             {
                 Console.Write(">");

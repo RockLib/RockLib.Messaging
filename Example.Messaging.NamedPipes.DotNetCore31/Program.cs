@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 using RockLib.Messaging.DependencyInjection;
 using System;
 
-namespace Example.Messaging.NamedPipes.DotNetCore20
+namespace Example.Messaging.NamedPipes.DotNetCore31
 {
     class Program
     {
@@ -69,7 +69,7 @@ namespace Example.Messaging.NamedPipes.DotNetCore20
                             // Configuring a receiver's NamedPipeOptions configuration (appsettings.json in this case):
                             IConfigurationSection commandSettings = hostContext.Configuration.GetSection("CommandSettings");
                             services.Configure<NamedPipeOptions>("CommandReceiver", commandSettings);
-                            services.AddNamedPipeReceiver("CommandReceiver", options => options.PipeName = "command_pipe");
+                            services.AddNamedPipeReceiver("CommandReceiver");
 
                             // Since more than one IReceiver is registered, the constructor of ReceivingService
                             // has a ReceiverLookup lookup parameter, allowing it to retreive receivers by name.
@@ -81,7 +81,8 @@ namespace Example.Messaging.NamedPipes.DotNetCore20
                         Console.WriteLine('4');
                         return hostBuilder.ConfigureServices(services =>
                         {
-                            // Adding a sender/receiver by name using MessagingScenarioFactory:
+                            // Adding a sender/receiver by name using MessagingScenarioFactory (which is defined
+                            // by the 'RockLib.Messaging' configuration section):
                             services.AddSender("ExampleSender");
                             services.AddReceiver("ExampleReceiver");
 
