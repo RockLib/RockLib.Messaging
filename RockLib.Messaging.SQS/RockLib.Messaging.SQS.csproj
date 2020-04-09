@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging.SQS</PackageId>
-    <PackageVersion>2.1.0</PackageVersion>
+    <PackageVersion>2.2.0</PackageVersion>
     <Authors>Brian Friesen</Authors>
     <Description>Implementation of RockLib.Messaging API that sends and receives messages using Amazon SQS.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -28,8 +28,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.SQS" Version="3.3.3.53" />
-    <PackageReference Include="RockLib.Messaging" Version="2.1.0" />
+    <PackageReference Include="AWSSDK.SQS" Version="3.3.102.91" />
+    <PackageReference Include="RockLib.Messaging" Version="2.2.0" />
   </ItemGroup>
 
 </Project>
