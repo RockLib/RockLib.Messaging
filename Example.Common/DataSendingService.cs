@@ -1,8 +1,8 @@
 ﻿using RockLib.Messaging;
 
-namespace Example.Messaging.NamedPipes.DotNetCore31
+namespace Example.Common
 {
-    class DataSendingService : SendingService
+    public class DataSendingService : SendingService
     {
         public DataSendingService(ISender sender)
             : base(sender)

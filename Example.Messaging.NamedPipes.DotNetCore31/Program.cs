@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Example.Common;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RockLib.Messaging.DependencyInjection;
@@ -62,13 +63,13 @@ namespace Example.Messaging.NamedPipes.DotNetCore31
                         return hostBuilder.ConfigureServices((hostContext, services) =>
                         {
                             // Configuring a receiver's NamedPipeOptions from configuration (appsettings.json in this case):
-                            IConfigurationSection dataSettings = hostContext.Configuration.GetSection("DataSettings");
-                            services.Configure<NamedPipeOptions>("DataReceiver", dataSettings);
+                            IConfiguration dataConfig = hostContext.Configuration.GetSection("DataSettings");
+                            services.Configure<NamedPipeOptions>("DataReceiver", dataConfig);
                             services.AddNamedPipeReceiver("DataReceiver");
 
                             // Configuring a receiver's NamedPipeOptions configuration (appsettings.json in this case):
-                            IConfigurationSection commandSettings = hostContext.Configuration.GetSection("CommandSettings");
-                            services.Configure<NamedPipeOptions>("CommandReceiver", commandSettings);
+                            IConfiguration commandConfig = hostContext.Configuration.GetSection("CommandSettings");
+                            services.Configure<NamedPipeOptions>("CommandReceiver", commandConfig);
                             services.AddNamedPipeReceiver("CommandReceiver");
 
                             // Since more than one IReceiver is registered, the constructor of ReceivingService
@@ -83,8 +84,8 @@ namespace Example.Messaging.NamedPipes.DotNetCore31
                         {
                             // Adding a sender/receiver by name using MessagingScenarioFactory (which is defined
                             // by the 'RockLib.Messaging' configuration section):
-                            services.AddSender("ExampleSender");
-                            services.AddReceiver("ExampleReceiver");
+                            services.AddSender("SingleMessageSender");
+                            services.AddReceiver("SingleMessageReceiver");
 
                             // Since only one ISender and one IReceiver are registered, the constructor of
                             // SingleMessageService has an ISender parameter and an IReceiver parameter.

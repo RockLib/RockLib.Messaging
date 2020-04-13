@@ -1,9 +1,9 @@
 ﻿using RockLib.Messaging;
 using System;
 
-namespace Example.Messaging.NamedPipes.DotNetCore31
+namespace Example.Common
 {
-    class CommandSendingService : SendingService
+    public class CommandSendingService : SendingService
     {
         public CommandSendingService(ISender sender)
             : base(sender)

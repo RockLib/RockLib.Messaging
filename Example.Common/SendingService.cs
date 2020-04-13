@@ -4,9 +4,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Example.Messaging.NamedPipes.DotNetCore31
+namespace Example.Common
 {
-    abstract class SendingService : IHostedService
+    public abstract class SendingService : IHostedService
     {
         private readonly ISender _sender;
         private readonly Thread _senderThread;

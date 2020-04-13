@@ -6,10 +6,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Example.Messaging.NamedPipes.DotNetCore31
+namespace Example.Common
 {
-    class ReceivingService : IHostedService
+    public class ReceivingService : IHostedService
     {
+        public const string DataReceiverName = "DataReceiver";
+        public const string CommandReceiverName = "CommandReceiver";
+
         private readonly IReceiver _dataReceiver;
         private readonly IReceiver _commandReceiver;
 
@@ -20,12 +23,20 @@ namespace Example.Messaging.NamedPipes.DotNetCore31
             if (receiverLookup == null)
                 throw new ArgumentNullException(nameof(receiverLookup));
 
-            _dataReceiver = receiverLookup("DataReceiver")
+            _dataReceiver = receiverLookup(DataReceiverName)
                 ?? throw new ArgumentException("Must have an IReceiver registered with the name 'DataReceiver'.", nameof(receiverLookup));
 
-            _commandReceiver = receiverLookup("CommandReceiver")
+            _commandReceiver = receiverLookup(CommandReceiverName)
                 ?? throw new ArgumentException("Must have an IReceiver registered with the name 'CommandReceiver'.", nameof(receiverLookup));
         }
+
+        public static ReceivingService Create(IReceiver dataReceiver, IReceiver commandReceiver) =>
+            new ReceivingService(name => name switch
+            {
+                DataReceiverName => dataReceiver,
+                CommandReceiverName => commandReceiver,
+                _ => null
+            });
 
         public Task StartAsync(CancellationToken cancellationToken)
         {

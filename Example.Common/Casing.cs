@@ -1,6 +1,6 @@
-﻿namespace Example.Messaging.NamedPipes.DotNetCore31
+﻿namespace Example.Common
 {
-    enum Casing
+    public enum Casing
     {
         Default,
         UPPER,

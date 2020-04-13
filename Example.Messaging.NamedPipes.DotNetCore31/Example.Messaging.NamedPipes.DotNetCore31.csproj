@@ -21,4 +21,8 @@
     <PackageReference Include="RockLib.Messaging.NamedPipes" Version="2.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Example.Common\Example.Common.csproj" />
+  </ItemGroup>
+
 </Project>
