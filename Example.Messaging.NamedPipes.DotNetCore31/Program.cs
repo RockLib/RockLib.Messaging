@@ -35,11 +35,10 @@ namespace Example.Messaging.NamedPipes.DotNetCore31
                 {
                     case '1':
                         Console.WriteLine('1');
-                        return hostBuilder.ConfigureServices((hostContext, services) =>
+                        return hostBuilder.ConfigureServices(services =>
                         {
                             // Configuring a sender's NamedPipeOptions programmatically:
-                            services.Configure<NamedPipeOptions>("DataSender", options => options.PipeName = "data_pipe");
-                            services.AddNamedPipeSender("DataSender");
+                            services.AddNamedPipeSender("DataSender", options => options.PipeName = "data_pipe");
 
                             // Since only one ISender is registered, the constructor of DataSendingService
                             // has an ISender parameter. If more than one ISender was registered, the service

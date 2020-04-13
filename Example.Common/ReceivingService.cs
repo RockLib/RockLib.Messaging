@@ -13,52 +13,47 @@ namespace Example.Common
         public const string DataReceiverName = "DataReceiver";
         public const string CommandReceiverName = "CommandReceiver";
 
-        private readonly IReceiver _dataReceiver;
-        private readonly IReceiver _commandReceiver;
-
-        private Casing _casing;
-
         public ReceivingService(ReceiverLookup receiverLookup)
         {
             if (receiverLookup == null)
                 throw new ArgumentNullException(nameof(receiverLookup));
 
-            _dataReceiver = receiverLookup(DataReceiverName)
+            DataReceiver = receiverLookup(DataReceiverName)
                 ?? throw new ArgumentException("Must have an IReceiver registered with the name 'DataReceiver'.", nameof(receiverLookup));
 
-            _commandReceiver = receiverLookup(CommandReceiverName)
+            CommandReceiver = receiverLookup(CommandReceiverName)
                 ?? throw new ArgumentException("Must have an IReceiver registered with the name 'CommandReceiver'.", nameof(receiverLookup));
         }
 
-        public static ReceivingService Create(IReceiver dataReceiver, IReceiver commandReceiver) =>
-            new ReceivingService(name => name switch
-            {
-                DataReceiverName => dataReceiver,
-                CommandReceiverName => commandReceiver,
-                _ => null
-            });
+        public IReceiver DataReceiver { get; }
+
+        public IReceiver CommandReceiver { get; }
+
+        public Casing Casing { get; private set; }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _dataReceiver.Start(DataReceived);
-            _commandReceiver.Start(CommandReceived);
+            DataReceiver.Start(DataReceivedAsync);
+            CommandReceiver.Start(CommandReceivedAsync);
             return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _dataReceiver.Dispose();
-            _commandReceiver.Dispose();
+            DataReceiver.Dispose();
+            CommandReceiver.Dispose();
             return Task.CompletedTask;
         }
 
-        private Task DataReceived(IReceiverMessage message)
+        public Task DataReceivedAsync(IReceiverMessage message)
         {
-            Console.WriteLine(FormatMessage(message.StringPayload));
+            WriteLine(FormatMessage(message.StringPayload));
             return message.AcknowledgeAsync();
         }
 
-        private string FormatMessage(string payload) => _casing switch
+        protected virtual void WriteLine(string message) => Console.WriteLine(message);
+
+        protected virtual string FormatMessage(string payload) => Casing switch
         {
             Casing.UPPER => payload.ToUpperInvariant(),
             Casing.lower => payload.ToLowerInvariant(),
@@ -66,10 +61,10 @@ namespace Example.Common
             _ => payload
         };
 
-        private Task CommandReceived(IReceiverMessage message)
+        private Task CommandReceivedAsync(IReceiverMessage message)
         {
             if (Enum.TryParse(message.StringPayload, ignoreCase: true, out Casing casing))
-                _casing = casing;
+                Casing = casing;
             return message.AcknowledgeAsync();
         }
     }

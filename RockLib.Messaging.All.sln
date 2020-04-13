@@ -49,6 +49,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{4D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.SQS.DotNetCore31", "Example.Messaging.SQS.DotNetCore31\Example.Messaging.SQS.DotNetCore31.csproj", "{8267F208-ACEF-44B2-87F7-5AB8B5ACC334}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Common.Tests", "Example.Common.Tests\Example.Common.Tests.csproj", "{FA9C8FE8-C056-413C-9FB1-75722A74754B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -143,6 +145,10 @@ Global
 		{8267F208-ACEF-44B2-87F7-5AB8B5ACC334}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8267F208-ACEF-44B2-87F7-5AB8B5ACC334}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8267F208-ACEF-44B2-87F7-5AB8B5ACC334}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA9C8FE8-C056-413C-9FB1-75722A74754B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA9C8FE8-C056-413C-9FB1-75722A74754B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA9C8FE8-C056-413C-9FB1-75722A74754B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA9C8FE8-C056-413C-9FB1-75722A74754B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -158,6 +164,7 @@ Global
 		{7605CDBD-F811-4A8D-AA66-2C3628C45BF8} = {4D9FDDA2-CE7E-4B49-AADE-20745A52064C}
 		{9CC4E7E9-9E82-4EE6-AFA1-FEDCA893A017} = {4D9FDDA2-CE7E-4B49-AADE-20745A52064C}
 		{8267F208-ACEF-44B2-87F7-5AB8B5ACC334} = {4D9FDDA2-CE7E-4B49-AADE-20745A52064C}
+		{FA9C8FE8-C056-413C-9FB1-75722A74754B} = {4D9FDDA2-CE7E-4B49-AADE-20745A52064C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3FEE2AF4-936B-474F-A3C0-7118F5655DCC}

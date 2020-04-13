@@ -8,19 +8,20 @@ namespace Example.Common
 {
     public class SingleMessageService : IHostedService
     {
-        private readonly ISender _sender;
-        private readonly IReceiver _receiver;
-
         public SingleMessageService(ISender sender, IReceiver receiver)
         {
-            _sender = sender ?? throw new ArgumentNullException(nameof(sender));
-            _receiver = receiver ?? throw new ArgumentNullException(nameof(receiver));
+            Sender = sender ?? throw new ArgumentNullException(nameof(sender));
+            Receiver = receiver ?? throw new ArgumentNullException(nameof(receiver));
         }
+
+        public ISender Sender { get; }
+
+        public IReceiver Receiver { get; }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _receiver.Start(OnMessageReceived);
-            ThreadPool.QueueUserWorkItem(SendMessage, _sender, false);
+            Receiver.Start(OnMessageReceived);
+            ThreadPool.QueueUserWorkItem(_ => WaitAndSendMessage());
 
             return Task.CompletedTask;
         }
@@ -30,16 +31,20 @@ namespace Example.Common
             return Task.CompletedTask;
         }
 
-        private static Task OnMessageReceived(IReceiverMessage message)
+        private Task OnMessageReceived(IReceiverMessage message)
         {
             Console.WriteLine($"Received message: '{message.StringPayload}'");
             return message.AcknowledgeAsync();
         }
 
-        private static void SendMessage(ISender sender)
+        private void WaitAndSendMessage()
         {
-            Thread.Sleep(1000);
-            sender.Send($"[{DateTime.Now:G}] Example message");
+            Wait();
+            Sender.Send($"[{Now:G}] Example message");
         }
+
+        protected virtual void Wait() => Thread.Sleep(1000);
+
+        protected virtual DateTime Now => DateTime.Now;
     }
 }

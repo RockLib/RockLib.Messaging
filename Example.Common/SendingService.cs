@@ -8,14 +8,15 @@ namespace Example.Common
 {
     public abstract class SendingService : IHostedService
     {
-        private readonly ISender _sender;
         private readonly Thread _senderThread;
 
         protected SendingService(ISender sender)
         {
-            _sender = sender ?? throw new ArgumentNullException(nameof(sender));
+            Sender = sender ?? throw new ArgumentNullException(nameof(sender));
             _senderThread = new Thread(SendMessages) { IsBackground = true };
         }
+
+        public ISender Sender { get; }
 
         protected abstract string Prompt { get; }
 
@@ -27,7 +28,7 @@ namespace Example.Common
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _sender.Dispose();
+            Sender.Dispose();
             return Task.CompletedTask;
         }
 
@@ -41,9 +42,17 @@ namespace Example.Common
             while (true)
             {
                 Console.Write(">");
-                string message = Console.ReadLine();
-                _sender.Send(message);
+                ReadAndSendMessage();
             }
         }
+
+        private void ReadAndSendMessage()
+        {
+            string message = ReadLine();
+            if (message is object)
+                Sender.Send(message);
+        }
+
+        protected virtual string ReadLine() => Console.ReadLine();
     }
 }
