@@ -49,7 +49,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{4D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.SQS.DotNetCore31", "Example.Messaging.SQS.DotNetCore31\Example.Messaging.SQS.DotNetCore31.csproj", "{8267F208-ACEF-44B2-87F7-5AB8B5ACC334}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Common.Tests", "Example.Common.Tests\Example.Common.Tests.csproj", "{FA9C8FE8-C056-413C-9FB1-75722A74754B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Common.Tests", "Example.Common.Tests\Example.Common.Tests.csproj", "{FA9C8FE8-C056-413C-9FB1-75722A74754B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{2533BA4A-E1D7-414F-84A2-EA2FDB1FE3B3}"
+	ProjectSection(SolutionItems) = preProject
+		docs\Compressed.md = docs\Compressed.md
+		docs\DIContainer.md = docs\DIContainer.md
+		docs\GettingStarted.md = docs\GettingStarted.md
+		docs\Http.md = docs\Http.md
+		docs\Kafka.md = docs\Kafka.md
+		docs\NamedPipes.md = docs\NamedPipes.md
+		docs\RabbitMQ.md = docs\RabbitMQ.md
+		README.md = README.md
+		docs\ReceivingMessages.md = docs\ReceivingMessages.md
+		docs\SendingMessages.md = docs\SendingMessages.md
+		docs\SNS.md = docs\SNS.md
+		docs\SQS.md = docs\SQS.md
+		docs\TransactionalSend.md = docs\TransactionalSend.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
