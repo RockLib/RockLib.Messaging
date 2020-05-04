@@ -28,6 +28,8 @@
   - [Configure and use RockLib.Messaging.Http](docs/Http.md)
   - [Configure and use RockLib.Messaging.Kafka](docs/Kafka.md)
   - [Configure and use RockLib.Messaging.RabbitMQ](docs/RabbitMQ.md)
+  - [Configure and use ForwardingReceiver](docs/ForwardingReceiver.md)
+    - Enables the "fault queue" pattern.
   - [Use RockLib.Messaging with a DI/IOC container](docs/DIContainer.md)
   - [Send and receive compressed messages](docs/Compressed.md)
   - [Send messages transactionally](docs/TransactionalSend.md)

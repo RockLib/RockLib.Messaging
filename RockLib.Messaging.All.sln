@@ -55,6 +55,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{2533BA4A-E
 	ProjectSection(SolutionItems) = preProject
 		docs\Compressed.md = docs\Compressed.md
 		docs\DIContainer.md = docs\DIContainer.md
+		docs\ForwardingReceiver.md = docs\ForwardingReceiver.md
 		docs\GettingStarted.md = docs\GettingStarted.md
 		docs\Http.md = docs\Http.md
 		docs\Kafka.md = docs\Kafka.md
