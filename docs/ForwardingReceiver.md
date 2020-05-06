@@ -39,7 +39,7 @@ public void ConfigureServices(IServiceCollection services)
     services.AddSQSSender("RejectQueue", options => options.QueueUrl = "my-reject-queue-url");
     services.AddSQSSender("RetryQueue", options => options.QueueUrl = "my-retry-queue-url");
 
-    services.AddSQSReceiver("MainQueue", options =>
+    services.AddSQSReceiver("MyForwardingReceiver", options =>
         {
             options.QueueUrl = "my-main-queue-url";
             options.AutoAcknowledge = false;
@@ -64,32 +64,33 @@ An equivalent forwarding receiver can be defined in config:
   "RockLib.Messaging": {
     "Senders": [
       {
-        "Type": "RockLib.Messaging.NamedPipes.NamedPipeSender, RockLib.Messaging.NamedPipes",
+        "Type": "RockLib.Messaging.SQS.SQSSender, RockLib.Messaging.SQS",
         "Value": {
           "Name": "RejectQueue",
-          "PipeName": "example_pipe"
+          "QueueUrl": "my-reject-queue-url"
         }
       },
       {
-        "Type": "RockLib.Messaging.NamedPipes.NamedPipeSender, RockLib.Messaging.NamedPipes",
+        "Type": "RockLib.Messaging.SQS.SQSSender, RockLib.Messaging.SQS",
         "Value": {
           "Name": "RetryQueue",
-          "PipeName": "example_pipe"
+          "QueueUrl": "my-retry-queue-url"
         }
       }
     ],
     "Receivers": [
       {
-        "Type": "RockLib.Messaging.NamedPipes.NamedPipeReceiver, RockLib.Messaging.NamedPipes",
+        "Type": "RockLib.Messaging.SQS.SQSReceiver, RockLib.Messaging.SQS",
         "Value": {
           "Name": "MainQueue",
-          "PipeName": "example_pipe"
+          "QueueUrl": "my-main-queue-url",
+          "AutoAcknowledge": false
         }
       },
       {
         "Type": "RockLib.Messaging.ForwardingReceiver, RockLib.Messaging",
         "Value": {
-          "Name": "ForwardingQueue",
+          "Name": "MyForwardingReceiver",
           "ReceiverName": "MainQueue",
           "RejectForwarderName": "RejectQueue",
           "RejectOutcome": "Acknowledge",
@@ -105,7 +106,7 @@ An equivalent forwarding receiver can be defined in config:
 This forwarding receiver can be created by `MessagingScenarioFactory`:
 
 ```c#
-IReceiver receiver = MessagingScenarioFactory.CreateReceiver("ForwardingQueue");
+IReceiver receiver = MessagingScenarioFactory.CreateReceiver("MyForwardingReceiver");
 ```
 
 [decorator]: https://en.wikipedia.org/wiki/Decorator_pattern
