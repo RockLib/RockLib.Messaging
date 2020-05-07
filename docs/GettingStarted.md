@@ -8,37 +8,94 @@ Create two .NET Core 2.0 (or above) console applications named "SenderApp" and "
 
 ---
 
-Add a nuget reference for "RockLib.Messaging.NamedPipes" to each project.
+Add a nuget references for "RockLib.Messaging.NamedPipes" and "Microsoft.Extensions.Hosting" to each project.
 
 ---
 
-Add a new JSON file to each project named 'appsettings.json'. Set its 'Copy to Output Directory' setting to 'Copy always'. Add the following configuration for the SenderApp project:
+Add a class named 'SendingService' to the SenderApp project and replace its contents with the following:
 
-```json
+```c#
+using Microsoft.Extensions.Hosting;
+using RockLib.Messaging;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace SenderApp
 {
-    "RockLib.Messaging": {
-        "senders": {
-            "type": "RockLib.Messaging.NamedPipes.NamedPipeSender, RockLib.Messaging.NamedPipes",
-            "value": {
-                "name": "Sender1",
-                "pipeName": "Example.Messaging"
+    public class SendingService : IHostedService
+    {
+        private readonly ISender _sender;
+
+        public SendingService(ISender sender)
+        {
+            _sender = sender;
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            ThreadPool.QueueUserWorkItem(SendMessages);
+            return Task.CompletedTask;
+        }
+
+        private void SendMessages(object state)
+        {
+            Console.WriteLine($"Enter messages for sender '{_sender.Name}'.");
+            string message;
+            while (true)
+            {
+                Console.Write(">");
+                if ((message = Console.ReadLine()) == null)
+                    return;
+                _sender.Send(message);
             }
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            _sender.Dispose();
+            return Task.CompletedTask;
         }
     }
 }
 ```
 
-Add the following configuration for the ReceiverApp project:
+Add a class named 'ReceivingService' to the ReceiverApp project and replace its contents with the following:
 
-```json
+```c#
+using Microsoft.Extensions.Hosting;
+using RockLib.Messaging;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace ReceiverApp
 {
-    "RockLib.Messaging": {
-        "receivers": {
-            "type": "RockLib.Messaging.NamedPipes.NamedPipeReceiver, RockLib.Messaging.NamedPipes",
-            "value": {
-                "name": "Receiver1",
-                "pipeName": "Example.Messaging"
-            }
+    public class ReceivingService : IHostedService
+    {
+        private readonly IReceiver _receiver;
+
+        public ReceivingService(IReceiver receiver)
+        {
+            _receiver = receiver;
+        }
+
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            _receiver.Start(OnMessageReceived);
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            _receiver.Dispose();
+            return Task.CompletedTask;
+        }
+
+        private async Task OnMessageReceived(IReceiverMessage message)
+        {
+            Console.WriteLine(message.StringPayload);
+            await message.AcknowledgeAsync();
         }
     }
 }
@@ -49,27 +106,27 @@ Add the following configuration for the ReceiverApp project:
 Edit the `Program.cs` file in the SenderApp project as follows:
 
 ```c#
-using RockLib.Messaging;
-using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using RockLib.Messaging.DependencyInjection;
 
 namespace SenderApp
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            using (ISender sender = MessagingScenarioFactory.CreateSender("Sender1"))
-            {
-                Console.WriteLine($"Enter a message for sender '{sender.Name}'. Leave blank to quit.");
-                string message;
-                while (true)
+            CreateHostBuilder(args).Build().Run();
+        }
+
+        private static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
+                .ConfigureServices(services =>
                 {
-                    Console.Write("message>");
-                    if ((message = Console.ReadLine()) == "")
-                        return;
-                    sender.Send(message);
-                }
-            }
+                    services.AddNamedPipeSender("MySender", options => options.PipeName = "ExamplePipe");
+                    services.AddHostedService<SendingService>();
+                });
         }
     }
 }
@@ -80,21 +137,27 @@ namespace SenderApp
 Edit the `Program.cs` file in the ReceiverApp project as follows:
 
 ```c#
-using RockLib.Messaging;
-using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using RockLib.Messaging.DependencyInjection;
 
 namespace ReceiverApp
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            using (IReceiver receiver = MessagingScenarioFactory.CreateReceiver("Receiver1"))
-            {
-                receiver.Start(message => Console.WriteLine(message.StringPayload));
-                Console.WriteLine($"Receiving messages from receiver '{receiver.Name}'. Press <enter> to quit.");
-                while (Console.ReadKey(true).Key != ConsoleKey.Enter) { }
-            }
+            CreateHostBuilder(args).Build().Run();
+        }
+
+        private static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
+                .ConfigureServices(services =>
+                {
+                    services.AddNamedPipeReceiver("MyReceiver", options => options.PipeName = "ExamplePipe");
+                    services.AddHostedService<ReceivingService>();
+                });
         }
     }
 }
@@ -102,4 +165,4 @@ namespace ReceiverApp
 
 ---
 
-Start both apps. SenderApp will receive input from the user and send it to the named pipe. ReceiverApp will listen to the named pipe and display any received messages.
+Start both apps. SenderApp will receive input from the user and send it to the named pipe. ReceiverApp will listen to the named pipe and display any received messages. Press Ctrl+C to exit the apps.
