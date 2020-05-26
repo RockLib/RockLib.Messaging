@@ -1,14 +1,13 @@
 ﻿using FluentAssertions;
-using NUnit.Framework;
 using RockLib.Messaging.Testing;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace RockLib.Messaging.Tests
 {
-    [TestFixture]
     public class ForwardingMessageHandlerTests
     {
-        [Test]
+        [Fact]
         public async Task OnMessageReceivedCallsInnerHandlerOnMessageReceivedWithForwardingReceiverMessage()
         {
             var receiver = new FakeReceiver();
