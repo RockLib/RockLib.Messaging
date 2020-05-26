@@ -60,6 +60,8 @@ namespace SenderApp
 }
 ```
 
+---
+
 Add a class named 'ReceivingService' to the ReceiverApp project and replace its contents with the following:
 
 ```c#
@@ -165,4 +167,4 @@ namespace ReceiverApp
 
 ---
 
-Start both apps. SenderApp will receive input from the user and send it to the named pipe. ReceiverApp will listen to the named pipe and display any received messages. Press Ctrl+C to exit the apps.
+Start both apps. SenderApp will receive input from the user and send it to the named pipe. ReceiverApp will listen to the named pipe and display any received messages. Press Ctrl+C to exit each app.
