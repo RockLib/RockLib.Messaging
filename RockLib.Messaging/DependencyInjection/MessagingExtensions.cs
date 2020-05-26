@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using RockLib.Configuration.ObjectFactory;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RockLib.Messaging.DependencyInjection
@@ -57,10 +58,11 @@ namespace RockLib.Messaging.DependencyInjection
             if (registration is null)
                 throw new ArgumentNullException(nameof(registration));
 
-            services.VerifySenderLookupDescriptor(lifetime);
-
             var builder = new SenderBuilder(registration);
+
             services.Add(new ServiceDescriptor(typeof(ISender), builder.Build, lifetime));
+            services.SetSenderLookupDescriptor(lifetime);
+
             return builder;
         }
 
@@ -107,11 +109,12 @@ namespace RockLib.Messaging.DependencyInjection
             if (registration is null)
                 throw new ArgumentNullException(nameof(registration));
 
-            services.VerifyTransactionalSenderLookupDescriptor(lifetime);
-            services.VerifySenderLookupDescriptor(lifetime);
-
             var builder = new TransactionalSenderBuilder(registration);
+
             services.Add(new ServiceDescriptor(typeof(ITransactionalSender), builder.Build, lifetime));
+            services.SetTransactionalSenderLookupDescriptor(lifetime);
+            services.SetSenderLookupDescriptor(lifetime);
+
             return builder;
         }
 
@@ -158,51 +161,132 @@ namespace RockLib.Messaging.DependencyInjection
             if (registration is null)
                 throw new ArgumentNullException(nameof(registration));
 
-            services.VerifyReceiverLookupDescriptor(lifetime);
-
             var builder = new ReceiverBuilder(registration);
+
             services.Add(new ServiceDescriptor(typeof(IReceiver), builder.Build, lifetime));
+            services.SetReceiverLookupDescriptor(lifetime);
+
             return builder;
         }
 
-        private static bool NamesEqual(string messagingServiceName, string lookupName) =>
-            string.Equals(messagingServiceName, lookupName, StringComparison.OrdinalIgnoreCase);
-
-        private static void VerifySenderLookupDescriptor(this IServiceCollection services, ServiceLifetime messagingServiceLifetime) =>
-            services.VerifyLookupDescriptor<SenderLookup>(messagingServiceLifetime, serviceProvider => name =>
-                serviceProvider.GetServices<ISender>().FirstOrDefault(sender => NamesEqual(sender.Name, name))
-                ?? serviceProvider.GetServices<ITransactionalSender>().FirstOrDefault(sender => NamesEqual(sender.Name, name)));
-
-        private static void VerifyTransactionalSenderLookupDescriptor(this IServiceCollection services, ServiceLifetime messagingServiceLifetime) =>
-            services.VerifyLookupDescriptor<TransactionalSenderLookup>(messagingServiceLifetime, serviceProvider => name =>
-                serviceProvider.GetServices<ITransactionalSender>().FirstOrDefault(sender => NamesEqual(sender.Name, name)));
-
-        private static void VerifyReceiverLookupDescriptor(this IServiceCollection services, ServiceLifetime messagingServiceLifetime) =>
-            services.VerifyLookupDescriptor<ReceiverLookup>(messagingServiceLifetime, serviceProvider => name =>
-                serviceProvider.GetServices<IReceiver>().FirstOrDefault(receiver => NamesEqual(receiver.Name, name)));
-
-        private static void VerifyLookupDescriptor<TLookup>(this IServiceCollection services,
-            ServiceLifetime messagingServiceLifetime, Func<IServiceProvider, TLookup> lookupFactory) where TLookup : class
+        private static bool NamesEqual(string messagingServiceName, string lookupName)
         {
-            // Registering a lookup delegate only makes sense if all of the messaging services
-            // are registered as singleton. Make sure to only register the lookup delegate if
-            // the current messaging service is being registered as singleton. Also, make sure
-            // to clear out the lookup delegate if the current messaging service is *not* being
-            // registered as singleton. This is done to avoid having the lookup delegate create
-            // transient or scoped messaging services just to immediately throw them away because
-            // they don't match the given name.
+            if (string.Equals(messagingServiceName, lookupName, StringComparison.OrdinalIgnoreCase))
+                return true;
 
-            if (messagingServiceLifetime == ServiceLifetime.Singleton)
+            if (lookupName is null)
+                return string.Equals(messagingServiceName, "default", StringComparison.OrdinalIgnoreCase);
+
+            return false;
+        }
+
+        private static void SetSenderLookupDescriptor(this IServiceCollection services, ServiceLifetime messagingServiceLifetime)
+        {
+            // Clear the existing SenderLookup descriptor, if it exists.
+            for (int i = 0; i < services.Count; i++)
+                if (services[i].ServiceType == typeof(SenderLookup))
+                    services.RemoveAt(i--);
+
+            // Capture which senders and which transactional senders are singleton according to index.
+            IReadOnlyList<bool> isSingletonSender = services.Where(service => service.ServiceType == typeof(ISender))
+                .Select(service => service.Lifetime == ServiceLifetime.Singleton)
+                .ToArray();
+            IReadOnlyList<bool> isSingletonTransactionalSender = services.Where(service => service.ServiceType == typeof(ITransactionalSender))
+                .Select(service => service.Lifetime == ServiceLifetime.Singleton)
+                .ToArray();
+
+            SenderLookup SenderFactory(IServiceProvider serviceProvider) => name =>
             {
-                if (!services.Any(s => s.ServiceType == typeof(TLookup)))
-                    services.AddSingleton(lookupFactory);
-            }
-            else
+                // Find the first sender that has a matching name.
+                var senders = serviceProvider.GetServices<ISender>().ToArray();
+                var selectedSender = senders.FirstOrDefault(sender => NamesEqual(sender.Name, name));
+
+                if (selectedSender != null)
+                {
+                    // Immediately dispose any non-singleton senders that weren't selected.
+                    for (int i = 0; i < senders.Length; i++)
+                        if (!isSingletonSender[i] && !ReferenceEquals(senders[i], selectedSender))
+                            senders[i].Dispose();
+                }
+                else
+                {
+                    // Immediately dispose of all non-singleton senders, since none were selected.
+                    for (int i = 0; i < senders.Length; i++)
+                        if (!isSingletonSender[i])
+                            senders[i].Dispose();
+
+                    // Find the first transactional sender that has a matching name.
+                    var transactionalSenders = serviceProvider.GetServices<ITransactionalSender>().ToArray();
+                    selectedSender = transactionalSenders.FirstOrDefault(sender => NamesEqual(sender.Name, name));
+
+                    // Immediately dispose any non-singleton transactional senders that weren't selected.
+                    for (int i = 0; i < transactionalSenders.Length; i++)
+                        if (!isSingletonTransactionalSender[i] && !ReferenceEquals(transactionalSenders[i], selectedSender))
+                            transactionalSenders[i].Dispose();
+                }
+
+                return selectedSender;
+            };
+
+            services.Add(new ServiceDescriptor(typeof(SenderLookup), SenderFactory, messagingServiceLifetime));
+        }
+
+        private static void SetTransactionalSenderLookupDescriptor(this IServiceCollection services, ServiceLifetime messagingServiceLifetime)
+        {
+            // Clear the existing TransactionalSenderLookup descriptor, if it exists.
+            for (int i = 0; i < services.Count; i++)
+                if (services[i].ServiceType == typeof(TransactionalSenderLookup))
+                    services.RemoveAt(i--);
+
+            // Capture which transactional senders are singleton according to index.
+            IReadOnlyList<bool> isSingletonTransactionalSender = services.Where(service => service.ServiceType == typeof(ITransactionalSender))
+                .Select(service => service.Lifetime == ServiceLifetime.Singleton)
+                .ToArray();
+
+            TransactionalSenderLookup TransactionalSenderFactory(IServiceProvider serviceProvider) => name =>
             {
-                for (int i = 0; i < services.Count; i++)
-                    if (services[i].ServiceType == typeof(TLookup))
-                        services.RemoveAt(i--);
-            }
+                // Find the first transactional sender that has a matching name.
+                var transactionalSenders = serviceProvider.GetServices<ITransactionalSender>().ToArray();
+                var selectedTransactionalSender = transactionalSenders.FirstOrDefault(sender => NamesEqual(sender.Name, name));
+
+                // Immediately dispose any non-singleton transactional senders that weren't selected.
+                for (int i = 0; i < transactionalSenders.Length; i++)
+                    if (!isSingletonTransactionalSender[i] && !ReferenceEquals(transactionalSenders[i], selectedTransactionalSender))
+                        transactionalSenders[i].Dispose();
+
+                return selectedTransactionalSender;
+            };
+
+            services.Add(new ServiceDescriptor(typeof(TransactionalSenderLookup), TransactionalSenderFactory, messagingServiceLifetime));
+        }
+
+        private static void SetReceiverLookupDescriptor(this IServiceCollection services, ServiceLifetime messagingServiceLifetime)
+        {
+            // Clear the existing ReceiverLookup descriptor, if it exists.
+            for (int i = 0; i < services.Count; i++)
+                if (services[i].ServiceType == typeof(ReceiverLookup))
+                    services.RemoveAt(i--);
+
+            // Capture which receivers are singleton according to index.
+            IReadOnlyList<bool> isSingletonReceiver = services.Where(service => service.ServiceType == typeof(IReceiver))
+                .Select(service => service.Lifetime == ServiceLifetime.Singleton)
+                .ToArray();
+
+            ReceiverLookup ReceiverLookupFactory(IServiceProvider serviceProvider) => name =>
+            {
+                // Find the first receiver that has a matching name.
+                var receivers = serviceProvider.GetServices<IReceiver>().ToArray();
+                var selectedReceiver = receivers.FirstOrDefault(receiver => NamesEqual(receiver.Name, name));
+
+                // Immediately dispose any non-singleton receivers that weren't selected.
+                for (int i = 0; i < receivers.Length; i++)
+                    if (!isSingletonReceiver[i] && !ReferenceEquals(receivers[i], selectedReceiver))
+                        receivers[i].Dispose();
+
+                return selectedReceiver;
+            };
+
+            services.Add(new ServiceDescriptor(typeof(ReceiverLookup), ReceiverLookupFactory, messagingServiceLifetime));
         }
     }
 }

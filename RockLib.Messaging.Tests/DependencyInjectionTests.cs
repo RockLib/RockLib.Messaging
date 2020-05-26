@@ -31,6 +31,115 @@ namespace RockLib.Messaging.Tests
             senderLookup("mySender").Should().BeSameAs(sender);
         }
 
+        [Test(Description = "Resolved (transactional) senders that are not singleton and are not selected are disposed")]
+        public void SenderLookupTest()
+        {
+            var mockSenderSingleton = GetMockSender("singleton");
+            var mockSenderTransient = GetMockSender("transient");
+            var mockSenderScoped = GetMockSender("scoped");
+
+            var mockTransactionalSenderSingleton = GetMockTransactionalSender("singletonTransactional");
+            var mockTransactionalSenderTransient = GetMockTransactionalSender("transientTransactional");
+            var mockTransactionalSenderScoped = GetMockTransactionalSender("scopedTransactional");
+
+            var services = new ServiceCollection();
+
+            services.AddSender(sp => mockSenderSingleton.Object, ServiceLifetime.Singleton);
+            services.AddSender(sp => mockSenderTransient.Object, ServiceLifetime.Transient);
+            services.AddSender(sp => mockSenderScoped.Object, ServiceLifetime.Scoped);
+
+            services.AddTransactionalSender(sp => mockTransactionalSenderSingleton.Object, ServiceLifetime.Singleton);
+            services.AddTransactionalSender(sp => mockTransactionalSenderTransient.Object, ServiceLifetime.Transient);
+            services.AddTransactionalSender(sp => mockTransactionalSenderScoped.Object, ServiceLifetime.Scoped);
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            var senderLookup = serviceProvider.GetRequiredService<SenderLookup>();
+
+            senderLookup("singleton").Should().BeSameAs(mockSenderSingleton.Object);
+
+            mockSenderSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockSenderTransient.Verify(m => m.Dispose(), Times.Once());
+            mockSenderScoped.Verify(m => m.Dispose(), Times.Once());
+
+            mockTransactionalSenderSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockTransactionalSenderTransient.Verify(m => m.Dispose(), Times.Never());
+            mockTransactionalSenderScoped.Verify(m => m.Dispose(), Times.Never());
+            
+            ClearInvocations();
+
+            senderLookup("transient").Should().BeSameAs(mockSenderTransient.Object);
+
+            mockSenderSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockSenderTransient.Verify(m => m.Dispose(), Times.Never());
+            mockSenderScoped.Verify(m => m.Dispose(), Times.Once());
+
+            mockTransactionalSenderSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockTransactionalSenderTransient.Verify(m => m.Dispose(), Times.Never());
+            mockTransactionalSenderScoped.Verify(m => m.Dispose(), Times.Never());
+
+            ClearInvocations();
+
+            senderLookup("scoped").Should().BeSameAs(mockSenderScoped.Object);
+
+            mockSenderSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockSenderTransient.Verify(m => m.Dispose(), Times.Once());
+            mockSenderScoped.Verify(m => m.Dispose(), Times.Never());
+
+            mockTransactionalSenderSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockTransactionalSenderTransient.Verify(m => m.Dispose(), Times.Never());
+            mockTransactionalSenderScoped.Verify(m => m.Dispose(), Times.Never());
+
+            mockSenderSingleton.Invocations.Clear();
+            mockSenderTransient.Invocations.Clear();
+            mockSenderScoped.Invocations.Clear();
+
+            senderLookup("singletonTransactional").Should().BeSameAs(mockTransactionalSenderSingleton.Object);
+
+            mockSenderSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockSenderTransient.Verify(m => m.Dispose(), Times.Once());
+            mockSenderScoped.Verify(m => m.Dispose(), Times.Once());
+
+            mockTransactionalSenderSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockTransactionalSenderTransient.Verify(m => m.Dispose(), Times.Once());
+            mockTransactionalSenderScoped.Verify(m => m.Dispose(), Times.Once());
+
+            ClearInvocations();
+
+            senderLookup("transientTransactional").Should().BeSameAs(mockTransactionalSenderTransient.Object);
+
+            mockSenderSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockSenderTransient.Verify(m => m.Dispose(), Times.Once());
+            mockSenderScoped.Verify(m => m.Dispose(), Times.Once());
+
+            mockTransactionalSenderSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockTransactionalSenderTransient.Verify(m => m.Dispose(), Times.Never());
+            mockTransactionalSenderScoped.Verify(m => m.Dispose(), Times.Once());
+
+            ClearInvocations();
+
+            senderLookup("scopedTransactional").Should().BeSameAs(mockTransactionalSenderScoped.Object);
+
+            mockSenderSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockSenderTransient.Verify(m => m.Dispose(), Times.Once());
+            mockSenderScoped.Verify(m => m.Dispose(), Times.Once());
+
+            mockTransactionalSenderSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockTransactionalSenderTransient.Verify(m => m.Dispose(), Times.Once());
+            mockTransactionalSenderScoped.Verify(m => m.Dispose(), Times.Never());
+
+            void ClearInvocations()
+            {
+                mockTransactionalSenderSingleton.Invocations.Clear();
+                mockTransactionalSenderTransient.Invocations.Clear();
+                mockTransactionalSenderScoped.Invocations.Clear();
+
+                mockSenderSingleton.Invocations.Clear();
+                mockSenderTransient.Invocations.Clear();
+                mockSenderScoped.Invocations.Clear();
+            }
+        }
+
         [Test]
         public void SenderDecoratorTest()
         {
@@ -80,6 +189,53 @@ namespace RockLib.Messaging.Tests
             senderLookup("myTransactionalSender").Should().BeSameAs(transactionalSender);
         }
 
+        [Test(Description = "Resolved transactional senders that are not singleton and are not selected are disposed")]
+        public void TransactionalSenderLookupTest()
+        {
+            var mockTransactionalSenderSingleton = GetMockTransactionalSender("singleton");
+            var mockTransactionalSenderTransient = GetMockTransactionalSender("transient");
+            var mockTransactionalSenderScoped = GetMockTransactionalSender("scoped");
+
+            var services = new ServiceCollection();
+
+            services.AddTransactionalSender(sp => mockTransactionalSenderSingleton.Object, ServiceLifetime.Singleton);
+            services.AddTransactionalSender(sp => mockTransactionalSenderTransient.Object, ServiceLifetime.Transient);
+            services.AddTransactionalSender(sp => mockTransactionalSenderScoped.Object, ServiceLifetime.Scoped);
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            var transactionalSenderLookup = serviceProvider.GetRequiredService<TransactionalSenderLookup>();
+
+            transactionalSenderLookup("singleton").Should().BeSameAs(mockTransactionalSenderSingleton.Object);
+
+            mockTransactionalSenderSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockTransactionalSenderTransient.Verify(m => m.Dispose(), Times.Once());
+            mockTransactionalSenderScoped.Verify(m => m.Dispose(), Times.Once());
+            
+            ClearInvocations();
+
+            transactionalSenderLookup("transient").Should().BeSameAs(mockTransactionalSenderTransient.Object);
+
+            mockTransactionalSenderSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockTransactionalSenderTransient.Verify(m => m.Dispose(), Times.Never());
+            mockTransactionalSenderScoped.Verify(m => m.Dispose(), Times.Once());
+
+            ClearInvocations();
+
+            transactionalSenderLookup("scoped").Should().BeSameAs(mockTransactionalSenderScoped.Object);
+
+            mockTransactionalSenderSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockTransactionalSenderTransient.Verify(m => m.Dispose(), Times.Once());
+            mockTransactionalSenderScoped.Verify(m => m.Dispose(), Times.Never());
+
+            void ClearInvocations()
+            {
+                mockTransactionalSenderSingleton.Invocations.Clear();
+                mockTransactionalSenderTransient.Invocations.Clear();
+                mockTransactionalSenderScoped.Invocations.Clear();
+            }
+        }
+
         [Test]
         public void TransactionalSenderDecoratorTest()
         {
@@ -126,6 +282,53 @@ namespace RockLib.Messaging.Tests
             var receiverLookup = serviceProvider.GetRequiredService<ReceiverLookup>();
 
             receiverLookup("myReceiver").Should().BeSameAs(receiver);
+        }
+
+        [Test(Description="Resolved receivers that are not singleton and are not selected are disposed")]
+        public void ReceiverLookupTest()
+        {
+            var mockReceiverSingleton = GetMockReceiver("singleton");
+            var mockReceiverTransient = GetMockReceiver("transient");
+            var mockReceiverScoped = GetMockReceiver("scoped");
+
+            var services = new ServiceCollection();
+
+            services.AddReceiver(sp => mockReceiverSingleton.Object, ServiceLifetime.Singleton);
+            services.AddReceiver(sp => mockReceiverTransient.Object, ServiceLifetime.Transient);
+            services.AddReceiver(sp => mockReceiverScoped.Object, ServiceLifetime.Scoped);
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            var receiverLookup = serviceProvider.GetRequiredService<ReceiverLookup>();
+
+            receiverLookup("singleton").Should().BeSameAs(mockReceiverSingleton.Object);
+
+            mockReceiverSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockReceiverTransient.Verify(m => m.Dispose(), Times.Once());
+            mockReceiverScoped.Verify(m => m.Dispose(), Times.Once());
+
+            ClearInvocations();
+
+            receiverLookup("transient").Should().BeSameAs(mockReceiverTransient.Object);
+
+            mockReceiverSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockReceiverTransient.Verify(m => m.Dispose(), Times.Never());
+            mockReceiverScoped.Verify(m => m.Dispose(), Times.Once());
+
+            ClearInvocations();
+
+            receiverLookup("scoped").Should().BeSameAs(mockReceiverScoped.Object);
+
+            mockReceiverSingleton.Verify(m => m.Dispose(), Times.Never());
+            mockReceiverTransient.Verify(m => m.Dispose(), Times.Once());
+            mockReceiverScoped.Verify(m => m.Dispose(), Times.Never());
+
+            void ClearInvocations()
+            {
+                mockReceiverSingleton.Invocations.Clear();
+                mockReceiverTransient.Invocations.Clear();
+                mockReceiverScoped.Invocations.Clear();
+            }
         }
 
         [Test]
@@ -213,17 +416,17 @@ namespace RockLib.Messaging.Tests
             return mockSender;
         }
 
-        private static Mock<ITransactionalSender> GetMockTransactionalSender()
+        private static Mock<ITransactionalSender> GetMockTransactionalSender(string transactionalSenderName = "myTransactionalSender")
         {
             var mockTransactionalSender = new Mock<ITransactionalSender>();
-            mockTransactionalSender.Setup(m => m.Name).Returns("myTransactionalSender");
+            mockTransactionalSender.Setup(m => m.Name).Returns(transactionalSenderName);
             return mockTransactionalSender;
         }
 
-        private static Mock<IReceiver> GetMockReceiver()
+        private static Mock<IReceiver> GetMockReceiver(string receiverName = "myReceiver")
         {
             var mockReceiver = new Mock<IReceiver>();
-            mockReceiver.Setup(m => m.Name).Returns("myReceiver");
+            mockReceiver.Setup(m => m.Name).Returns(receiverName);
             return mockReceiver;
         }
     }
