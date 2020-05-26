@@ -1,17 +1,17 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using NUnit.Framework;
 using RockLib.Messaging.DependencyInjection;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace RockLib.Messaging.Tests
 {
     public class DependencyInjectionTests
     {
-        [Test]
+        [Fact]
         public void SenderTest()
         {
             var services = new ServiceCollection();
@@ -31,7 +31,7 @@ namespace RockLib.Messaging.Tests
             senderLookup("mySender").Should().BeSameAs(sender);
         }
 
-        [Test(Description = "Resolved (transactional) senders that are not singleton and are not selected are disposed")]
+        [Fact(DisplayName = "Resolved (transactional) senders that are not singleton and are not selected are disposed")]
         public void SenderLookupTest()
         {
             var mockSenderSingleton = GetMockSender("singleton");
@@ -140,7 +140,7 @@ namespace RockLib.Messaging.Tests
             }
         }
 
-        [Test]
+        [Fact]
         public void SenderDecoratorTest()
         {
             var services = new ServiceCollection();
@@ -167,7 +167,7 @@ namespace RockLib.Messaging.Tests
             public Task SendAsync(SenderMessage message, CancellationToken cancellationToken) => Sender.SendAsync(message, cancellationToken);
         }
 
-        [Test]
+        [Fact]
         public void TransactionalSenderTest()
         {
             var services = new ServiceCollection();
@@ -189,7 +189,7 @@ namespace RockLib.Messaging.Tests
             senderLookup("myTransactionalSender").Should().BeSameAs(transactionalSender);
         }
 
-        [Test(Description = "Resolved transactional senders that are not singleton and are not selected are disposed")]
+        [Fact(DisplayName = "Resolved transactional senders that are not singleton and are not selected are disposed")]
         public void TransactionalSenderLookupTest()
         {
             var mockTransactionalSenderSingleton = GetMockTransactionalSender("singleton");
@@ -236,7 +236,7 @@ namespace RockLib.Messaging.Tests
             }
         }
 
-        [Test]
+        [Fact]
         public void TransactionalSenderDecoratorTest()
         {
             var services = new ServiceCollection();
@@ -264,7 +264,7 @@ namespace RockLib.Messaging.Tests
             public Task SendAsync(SenderMessage message, CancellationToken cancellationToken) => Sender.SendAsync(message, cancellationToken);
         }
 
-        [Test]
+        [Fact]
         public void ReceiverTest()
         {
             var services = new ServiceCollection();
@@ -284,7 +284,7 @@ namespace RockLib.Messaging.Tests
             receiverLookup("myReceiver").Should().BeSameAs(receiver);
         }
 
-        [Test(Description="Resolved receivers that are not singleton and are not selected are disposed")]
+        [Fact(DisplayName = "Resolved receivers that are not singleton and are not selected are disposed")]
         public void ReceiverLookupTest()
         {
             var mockReceiverSingleton = GetMockReceiver("singleton");
@@ -331,7 +331,7 @@ namespace RockLib.Messaging.Tests
             }
         }
 
-        [Test]
+        [Fact]
         public void ReceiverDecoratorTest()
         {
             var services = new ServiceCollection();
@@ -362,7 +362,7 @@ namespace RockLib.Messaging.Tests
             public void Dispose() => Receiver.Dispose();
         }
 
-        [Test]
+        [Fact]
         public void ForwardingReceiverTest()
         {
             var services = new ServiceCollection();

@@ -1,13 +1,12 @@
-﻿using NUnit.Framework;
-using RockLib.Messaging.Testing;
+﻿using RockLib.Messaging.Testing;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace RockLib.Messaging.Tests
 {
-    [TestFixture]
     public class ReceiverExtensionsTests
     {
-        [Test]
+        [Fact]
         public async Task TheCallbackPassedToStart1IsInvokedWhenAMessageIsReceived()
         {
             var receiver = new FakeReceiver();
@@ -25,7 +24,7 @@ namespace RockLib.Messaging.Tests
             Assert.True(received);
         }
 
-        [Test]
+        [Fact]
         public async Task TheCallbackPassedToStart2IsInvokedWhenAMessageIsReceived()
         {
             var receiver = new FakeReceiver();
@@ -45,7 +44,7 @@ namespace RockLib.Messaging.Tests
             Assert.True(received);
         }
 
-        [Test]
+        [Fact]
         public async Task TheCallbackPassedToStart3IsInvokedWhenAMessageIsReceived()
         {
             var receiver = new FakeReceiver();
@@ -63,7 +62,7 @@ namespace RockLib.Messaging.Tests
             Assert.True(received);
         }
 
-        [Test]
+        [Fact]
         public async Task TheCallbackPassedToStart4IsInvokedWhenAMessageIsReceived()
         {
             var receiver = new FakeReceiver();

@@ -1,12 +1,11 @@
 ﻿using FluentAssertions;
-using NUnit.Framework;
+using Xunit;
 
 namespace RockLib.Messaging.Tests
 {
-    [TestFixture]
     public class ForwardingReceiverTests
     {
-        [Test]
+        [Fact]
         public void SettingMessageHandlerSetsTheMessageHandlerOfTheReceiverToAForwardingMessageHandler()
         {
             var receiver = new FakeReceiver();

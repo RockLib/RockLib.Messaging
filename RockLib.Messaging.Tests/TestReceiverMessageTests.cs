@@ -1,16 +1,15 @@
 ﻿using FluentAssertions;
-using NUnit.Framework;
 using RockLib.Messaging.Testing;
 using System;
 using System.Text;
+using Xunit;
 using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Tests
 {
-    [TestFixture]
     public class TestReceiverMessageTests
     {
-        [Test]
+        [Fact]
         public void StringPayloadIsSetFromStringPayload()
         {
             var message = new FakeReceiverMessage("Hello, world!");
@@ -18,7 +17,7 @@ namespace RockLib.Messaging.Tests
             message.StringPayload.Should().BeSameAs("Hello, world!");
         }
 
-        [Test]
+        [Fact]
         public void BinaryPayloadIsSetFromUTF8EncodedStringPayload()
         {
             var message = new FakeReceiverMessage("Hello, world!");
@@ -26,7 +25,7 @@ namespace RockLib.Messaging.Tests
             message.BinaryPayload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes("Hello, world!"), x => x.WithStrictOrdering());
         }
 
-        [Test]
+        [Fact]
         public void BinaryPayloadIsSetFromBinaryPayload()
         {
             var payload = new byte[] { 1, 2, 3, 4, 5 };
@@ -36,7 +35,7 @@ namespace RockLib.Messaging.Tests
             message.BinaryPayload.Should().BeSameAs(payload);
         }
 
-        [Test]
+        [Fact]
         public void StringPayloadIsSetFromBase64EncodedBinaryPayload()
         {
             var payload = new byte[] { 1, 2, 3, 4, 5 };
@@ -46,7 +45,7 @@ namespace RockLib.Messaging.Tests
             message.StringPayload.Should().Be(Convert.ToBase64String(payload));
         }
 
-        [Test]
+        [Fact]
         public void PublicHeaderPropertyIsNotTheSameAsExplicitInterfaceHeaderProperty()
         {
             var message = new FakeReceiverMessage("Hello, world!");
@@ -54,7 +53,7 @@ namespace RockLib.Messaging.Tests
             ((object)message.Headers).Should().NotBeSameAs(((IReceiverMessage)message).Headers);
         }
 
-        [Test]
+        [Fact]
         public void PublicHeaderPropertyHasSameContentsAsExplicitInterfaceHeaderProperty()
         {
             var message = new FakeReceiverMessage("Hello, world!");
@@ -71,7 +70,7 @@ namespace RockLib.Messaging.Tests
             interfaceHeaders["bar"].Should().Be(123);
         }
 
-        [Test]
+        [Fact]
         public void HandledIsFalseBeforeMessageIsHandled()
         {
             var message = new FakeReceiverMessage("Hello, world!");
@@ -79,7 +78,7 @@ namespace RockLib.Messaging.Tests
             message.Handled.Should().BeFalse();
         }
 
-        [Test]
+        [Fact]
         public void HandledByIsNullBeforeMessageIsHandled()
         {
             var message = new FakeReceiverMessage("Hello, world!");
@@ -87,7 +86,7 @@ namespace RockLib.Messaging.Tests
             message.HandledBy.Should().BeNull();
         }
 
-        [Test]
+        [Fact]
         public async Task HandledIsTrueAfterAcknowledgeIsCalled()
         {
             var message = new FakeReceiverMessage("Hello, world!");
@@ -97,7 +96,7 @@ namespace RockLib.Messaging.Tests
             message.Handled.Should().BeTrue();
         }
 
-        [Test]
+        [Fact]
         public async Task HandledByIsAcknowledgeAfterAcknowledgeIsCalled()
         {
             var message = new FakeReceiverMessage("Hello, world!");
@@ -107,7 +106,7 @@ namespace RockLib.Messaging.Tests
             message.HandledBy.Should().Be(nameof(message.AcknowledgeAsync));
         }
 
-        [Test]
+        [Fact]
         public async Task HandledIsTrueAfterRollbackIsCalled()
         {
             var message = new FakeReceiverMessage("Hello, world!");
@@ -117,7 +116,7 @@ namespace RockLib.Messaging.Tests
             message.Handled.Should().BeTrue();
         }
 
-        [Test]
+        [Fact]
         public async Task HandledByIsRollbackAfterRollbackIsCalled()
         {
             var message = new FakeReceiverMessage("Hello, world!");
@@ -127,7 +126,7 @@ namespace RockLib.Messaging.Tests
             message.HandledBy.Should().Be(nameof(message.RollbackAsync));
         }
 
-        [Test]
+        [Fact]
         public async Task HandledIsTrueAfterRejectIsCalled()
         {
             var message = new FakeReceiverMessage("Hello, world!");
@@ -137,7 +136,7 @@ namespace RockLib.Messaging.Tests
             message.Handled.Should().BeTrue();
         }
 
-        [Test]
+        [Fact]
         public async Task HandledByIsRejectAfterRejectIsCalled()
         {
             var message = new FakeReceiverMessage("Hello, world!");
@@ -147,7 +146,7 @@ namespace RockLib.Messaging.Tests
             message.HandledBy.Should().Be(nameof(message.RejectAsync));
         }
 
-        [Test]
+        [Fact]
         public async Task AcknowledgeThrowsIfHandledIsTrue()
         {
             var message = new FakeReceiverMessage("Hello, world!");
@@ -160,7 +159,7 @@ namespace RockLib.Messaging.Tests
                 .WithMessage($"Cannot {nameof(message.AcknowledgeAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.");
         }
 
-        [Test]
+        [Fact]
         public async Task RollbackThrowsIfHandledIsTrue()
         {
             var message = new FakeReceiverMessage("Hello, world!");
@@ -173,7 +172,7 @@ namespace RockLib.Messaging.Tests
                 .WithMessage($"Cannot {nameof(message.RollbackAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.");
         }
 
-        [Test]
+        [Fact]
         public async Task RejectThrowsIfHandledIsTrue()
         {
             var message = new FakeReceiverMessage("Hello, world!");

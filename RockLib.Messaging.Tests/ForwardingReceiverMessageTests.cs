@@ -1,14 +1,13 @@
 ﻿using FluentAssertions;
-using NUnit.Framework;
 using RockLib.Messaging.Testing;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace RockLib.Messaging.Tests
 {
-    [TestFixture]
     public class ForwardingReceiverMessageTests
     {
-        [Test]
+        [Fact]
         public async Task AcknowledgeCallsInnerMessageAcknowledgeIfAcknowledgeForwarderIsNull()
         {
             var receiver = new FakeReceiver();
@@ -22,7 +21,7 @@ namespace RockLib.Messaging.Tests
             message.HandledBy.Should().Be(nameof(IReceiverMessage.AcknowledgeAsync));
         }
 
-        [Test]
+        [Fact]
         public async Task AcknowledgeSendsMessageToAcknowledgeForwarderWhenAcknowledgeForwarderIsNotNull()
         {
             var forwarder = new FakeSender();
@@ -39,9 +38,10 @@ namespace RockLib.Messaging.Tests
             forwarder.SentMessages[0].StringPayload.Should().Be("Hello, world!");
         }
 
-        [TestCase(ForwardingOutcome.Acknowledge)]
-        [TestCase(ForwardingOutcome.Rollback)]
-        [TestCase(ForwardingOutcome.Reject)]
+        [Theory]
+        [InlineData(ForwardingOutcome.Acknowledge)]
+        [InlineData(ForwardingOutcome.Rollback)]
+        [InlineData(ForwardingOutcome.Reject)]
         public async Task AcknowledgeHandlesInnerMessageAccordingToAcknowledgeOutcomeWhenAcknowledgeForwarderIsNotNull(ForwardingOutcome outcome)
         {
             var forwarder = new FakeSender();
@@ -57,7 +57,7 @@ namespace RockLib.Messaging.Tests
             message.HandledBy.Should().Be($"{outcome}Async");
         }
 
-        [Test]
+        [Fact]
         public async Task RollbackCallsInnerMessageRollbackIfRollbackForwarderIsNull()
         {
             var receiver = new FakeReceiver();
@@ -71,7 +71,7 @@ namespace RockLib.Messaging.Tests
             message.HandledBy.Should().Be(nameof(IReceiverMessage.RollbackAsync));
         }
 
-        [Test]
+        [Fact]
         public async Task RollbackSendsMessageToRollbackForwarderWhenRollbackForwarderIsNotNull()
         {
             var forwarder = new FakeSender();
@@ -88,9 +88,10 @@ namespace RockLib.Messaging.Tests
             forwarder.SentMessages[0].StringPayload.Should().Be("Hello, world!");
         }
 
-        [TestCase(ForwardingOutcome.Acknowledge)]
-        [TestCase(ForwardingOutcome.Rollback)]
-        [TestCase(ForwardingOutcome.Reject)]
+        [Theory]
+        [InlineData(ForwardingOutcome.Acknowledge)]
+        [InlineData(ForwardingOutcome.Rollback)]
+        [InlineData(ForwardingOutcome.Reject)]
         public async Task RollbackHandlesInnerMessageAccordingToRollbackOutcomeWhenRollbackForwarderIsNotNull(ForwardingOutcome outcome)
         {
             var forwarder = new FakeSender();
@@ -106,7 +107,7 @@ namespace RockLib.Messaging.Tests
             message.HandledBy.Should().Be($"{outcome}Async");
         }
 
-        [Test]
+        [Fact]
         public async Task RejectCallsInnerMessageRejectWhenRejectForwarderIsNull()
         {
             var receiver = new FakeReceiver();
@@ -120,7 +121,7 @@ namespace RockLib.Messaging.Tests
             message.HandledBy.Should().Be(nameof(IReceiverMessage.RejectAsync));
         }
 
-        [Test]
+        [Fact]
         public async Task RejectSendsMessageToRejectForwarderWhenRejectForwarderIsNotNull()
         {
             var forwarder = new FakeSender();
@@ -137,9 +138,10 @@ namespace RockLib.Messaging.Tests
             forwarder.SentMessages[0].StringPayload.Should().Be("Hello, world!");
         }
 
-        [TestCase(ForwardingOutcome.Acknowledge)]
-        [TestCase(ForwardingOutcome.Rollback)]
-        [TestCase(ForwardingOutcome.Reject)]
+        [Theory]
+        [InlineData(ForwardingOutcome.Acknowledge)]
+        [InlineData(ForwardingOutcome.Rollback)]
+        [InlineData(ForwardingOutcome.Reject)]
         public async Task RejectHandlesInnerMessageAccordingToRejectOutcomeWhenRejectForwarderIsNotNull(ForwardingOutcome outcome)
         {
             var forwarder = new FakeSender();

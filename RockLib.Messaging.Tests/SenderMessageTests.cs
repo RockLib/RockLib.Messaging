@@ -1,20 +1,19 @@
 ﻿using FluentAssertions;
-using NUnit.Framework;
 using RockLib.Compression;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace RockLib.Messaging.Tests
 {
-    [TestFixture]
     public class SenderMessageTests
     {
         private static readonly GZipCompressor _gzip = new GZipCompressor();
 
-        [Test]
+        [Fact]
         public void StringConstructorNotCompressed()
         {
             var payload = "Hello, world!";
@@ -34,7 +33,7 @@ namespace RockLib.Messaging.Tests
             message.IsCompressed.Should().BeFalse();
         }
 
-        [Test]
+        [Fact]
         public void StringConstructorCompressed()
         {
             var payload = GetCompressablePayload("Hello, world!");
@@ -54,7 +53,7 @@ namespace RockLib.Messaging.Tests
             message.IsCompressed.Should().BeTrue();
         }
 
-        [Test]
+        [Fact]
         public void BinaryConstructorNotCompressed()
         {
             var payload = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -74,7 +73,7 @@ namespace RockLib.Messaging.Tests
             message.IsCompressed.Should().BeFalse();
         }
 
-        [Test]
+        [Fact]
         public void BinaryConstructorCompressed()
         {
             var payload = GetCompressablePayload(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
@@ -94,7 +93,7 @@ namespace RockLib.Messaging.Tests
             message.IsCompressed.Should().BeTrue();
         }
 
-        [Test]
+        [Fact]
         public void ReceiverMessageConstructorUncompressedStringPayload()
         {
             var payload = "Hello, world!";
@@ -115,7 +114,7 @@ namespace RockLib.Messaging.Tests
             message.IsCompressed.Should().BeFalse();
         }
 
-        [Test]
+        [Fact]
         public void ReceiverMessageConstructorCompressedStringPayload()
         {
             var payload = GetCompressablePayload("Hello, world!");
@@ -136,7 +135,7 @@ namespace RockLib.Messaging.Tests
             message.IsCompressed.Should().BeTrue();
         }
 
-        [Test]
+        [Fact]
         public void ReceiverMessageConstructorUncompressedBinaryPayload()
         {
             var payload = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -157,7 +156,7 @@ namespace RockLib.Messaging.Tests
             message.IsCompressed.Should().BeFalse();
         }
 
-        [Test]
+        [Fact]
         public void ReceiverMessageConstructorCompressedBinaryPayload()
         {
             var payload = GetCompressablePayload(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });

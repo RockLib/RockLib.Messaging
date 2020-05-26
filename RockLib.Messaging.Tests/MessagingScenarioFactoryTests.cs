@@ -1,18 +1,17 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Configuration;
-using NUnit.Framework;
 using RockLib.Configuration.ObjectFactory;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace RockLib.Messaging.Tests
 {
-    [TestFixture]
     public class MessagingScenarioFactoryTests
     {
-        [Test]
+        [Fact]
         public void CreateSenderCreatesSenderWithSingleSenderConfig()
         {
             var config = new ConfigurationBuilder()
@@ -27,7 +26,7 @@ namespace RockLib.Messaging.Tests
             sender.PipeName.Should().Be("PipeName1");
         }
 
-        [Test]
+        [Fact]
         public void CreateSenderCreatesSendersWithMultipleSendersConfig()
         {
             var config = new ConfigurationBuilder()
@@ -47,7 +46,7 @@ namespace RockLib.Messaging.Tests
             sender2.PipeName.Should().Be("PipeName2");
         }
 
-        [Test]
+        [Fact]
         public void CreateReceiverCreatesReceiverWithSingleReceiverConfig()
         {
             var config = new ConfigurationBuilder()
@@ -62,7 +61,7 @@ namespace RockLib.Messaging.Tests
             receiver.PipeName.Should().Be("PipeName1");
         }
 
-        [Test]
+        [Fact]
         public void CreateReceiverCreatesReceiversWithMultipleReceiversConfig()
         {
             var config = new ConfigurationBuilder()
@@ -82,7 +81,7 @@ namespace RockLib.Messaging.Tests
             receiver2.PipeName.Should().Be("PipeName2");
         }
 
-        [Test]
+        [Fact]
         public void DefaultTypesFunctionsProperly()
         {
             var config = new ConfigurationBuilder()
@@ -107,7 +106,7 @@ namespace RockLib.Messaging.Tests
             receiver.Should().BeOfType<TestReceiver>();
         }
 
-        [Test]
+        [Fact]
         public void ValueConvertersFunctionsProperly()
         {
             var config = new ConfigurationBuilder()
@@ -144,7 +143,7 @@ namespace RockLib.Messaging.Tests
             receiver.Location.Y.Should().Be(4);
         }
 
-        [Test]
+        [Fact]
         public void ResolverFunctionsProperly()
         {
             var config = new ConfigurationBuilder()
@@ -168,7 +167,7 @@ namespace RockLib.Messaging.Tests
             receiver.Dependency.Should().BeSameAs(dependency);
         }
 
-        [Test]
+        [Fact]
         public void ReloadOnConfigChangeTrueFunctionsProperly()
         {
             var config = new ConfigurationBuilder()
@@ -189,7 +188,7 @@ namespace RockLib.Messaging.Tests
             receiver.Should().BeAssignableTo<ConfigReloadingProxy<IReceiver>>();
         }
 
-        [Test]
+        [Fact]
         public void ReloadOnConfigChangeFalseFunctionsProperly()
         {
             var config = new ConfigurationBuilder()
