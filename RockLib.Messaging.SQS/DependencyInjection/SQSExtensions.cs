@@ -1,4 +1,6 @@
 ﻿#if !NET451
+using Amazon;
+using Amazon.SQS;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using RockLib.Messaging.SQS;
@@ -26,7 +28,12 @@ namespace RockLib.Messaging.DependencyInjection
                 var options = optionsMonitor?.Get(name) ?? new SQSSenderOptions();
                 configureOptions?.Invoke(options);
 
-                return new SQSSender(name, options.QueueUrl, options.Region, options.MessageGroupId);
+                var sqsClient = options.SqsClient
+                    ?? (options.Region == null
+                        ? new AmazonSQSClient()
+                        : new AmazonSQSClient(RegionEndpoint.GetBySystemName(options.Region)));
+
+                return new SQSSender(sqsClient, name, options.QueueUrl, options.MessageGroupId);
             });
         }
 
@@ -45,7 +52,12 @@ namespace RockLib.Messaging.DependencyInjection
                 var options = optionsMonitor?.Get(name) ?? new SQSReceiverOptions();
                 configureOptions?.Invoke(options);
 
-                return new SQSReceiver(name, options.QueueUrl, options.Region, options.MaxMessages,
+                var sqsClient = options.SqsClient
+                    ?? (options.Region == null
+                        ? new AmazonSQSClient()
+                        : new AmazonSQSClient(RegionEndpoint.GetBySystemName(options.Region)));
+
+                return new SQSReceiver(sqsClient, name, options.QueueUrl, options.MaxMessages,
                     options.AutoAcknowledge, options.WaitTimeSeconds, options.UnpackSNS);
             });
         }
