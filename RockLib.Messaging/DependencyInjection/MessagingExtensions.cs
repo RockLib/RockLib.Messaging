@@ -61,7 +61,7 @@ namespace RockLib.Messaging.DependencyInjection
             var builder = new SenderBuilder(registration);
 
             services.Add(new ServiceDescriptor(typeof(ISender), builder.Build, lifetime));
-            services.SetSenderLookupDescriptor(lifetime);
+            services.SetSenderLookupDescriptor();
 
             return builder;
         }
@@ -112,8 +112,8 @@ namespace RockLib.Messaging.DependencyInjection
             var builder = new TransactionalSenderBuilder(registration);
 
             services.Add(new ServiceDescriptor(typeof(ITransactionalSender), builder.Build, lifetime));
-            services.SetTransactionalSenderLookupDescriptor(lifetime);
-            services.SetSenderLookupDescriptor(lifetime);
+            services.SetTransactionalSenderLookupDescriptor();
+            services.SetSenderLookupDescriptor();
 
             return builder;
         }
@@ -164,7 +164,7 @@ namespace RockLib.Messaging.DependencyInjection
             var builder = new ReceiverBuilder(registration);
 
             services.Add(new ServiceDescriptor(typeof(IReceiver), builder.Build, lifetime));
-            services.SetReceiverLookupDescriptor(lifetime);
+            services.SetReceiverLookupDescriptor();
 
             return builder;
         }
@@ -180,7 +180,7 @@ namespace RockLib.Messaging.DependencyInjection
             return false;
         }
 
-        private static void SetSenderLookupDescriptor(this IServiceCollection services, ServiceLifetime messagingServiceLifetime)
+        private static void SetSenderLookupDescriptor(this IServiceCollection services)
         {
             // Clear the existing SenderLookup descriptor, if it exists.
             for (int i = 0; i < services.Count; i++)
@@ -228,10 +228,10 @@ namespace RockLib.Messaging.DependencyInjection
                 return selectedSender;
             };
 
-            services.Add(new ServiceDescriptor(typeof(SenderLookup), SenderFactory, messagingServiceLifetime));
+            services.AddSingleton(SenderFactory);
         }
 
-        private static void SetTransactionalSenderLookupDescriptor(this IServiceCollection services, ServiceLifetime messagingServiceLifetime)
+        private static void SetTransactionalSenderLookupDescriptor(this IServiceCollection services)
         {
             // Clear the existing TransactionalSenderLookup descriptor, if it exists.
             for (int i = 0; i < services.Count; i++)
@@ -257,10 +257,10 @@ namespace RockLib.Messaging.DependencyInjection
                 return selectedTransactionalSender;
             };
 
-            services.Add(new ServiceDescriptor(typeof(TransactionalSenderLookup), TransactionalSenderFactory, messagingServiceLifetime));
+            services.AddSingleton(TransactionalSenderFactory);
         }
 
-        private static void SetReceiverLookupDescriptor(this IServiceCollection services, ServiceLifetime messagingServiceLifetime)
+        private static void SetReceiverLookupDescriptor(this IServiceCollection services)
         {
             // Clear the existing ReceiverLookup descriptor, if it exists.
             for (int i = 0; i < services.Count; i++)
@@ -286,7 +286,7 @@ namespace RockLib.Messaging.DependencyInjection
                 return selectedReceiver;
             };
 
-            services.Add(new ServiceDescriptor(typeof(ReceiverLookup), ReceiverLookupFactory, messagingServiceLifetime));
+            services.AddSingleton(ReceiverLookupFactory);
         }
     }
 }
