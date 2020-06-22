@@ -1,5 +1,7 @@
 ﻿#if !NET451
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RockLib.Configuration;
 using RockLib.Configuration.ObjectFactory;
 using System;
 using System.Collections.Generic;
@@ -17,12 +19,12 @@ namespace RockLib.Messaging.DependencyInjection
 
         /// <summary>
         /// Adds an <see cref="ISender"/> to the service collection where the sender is
-        /// created by <see cref="MessagingScenarioFactory"/>.
+        /// created from the 'RockLib_Messaging' / 'RockLib.Messaging' composite section
+        /// of the registered <see cref="IConfiguration"/>.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="senderName">
-        /// The name that identifies which sender from <see cref="MessagingScenarioFactory.Configuration"/>
-        /// to create.
+        /// The name that identifies which sender from configuration to create.
         /// </param>
         /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the sender.</param>
         /// <returns>A new <see cref="ISenderBuilder"/> for decorating the <see cref="ISender"/>.</returns>
@@ -36,8 +38,10 @@ namespace RockLib.Messaging.DependencyInjection
 
             return services.AddSender(serviceProvider =>
             {
+                var messagingSection = GetMessagingSection(serviceProvider);
                 var resolver = new Resolver(serviceProvider.GetService);
-                return MessagingScenarioFactory.CreateSender(senderName, resolver: resolver);
+
+                return messagingSection.CreateSender(senderName, resolver: resolver);
             }, lifetime);
         }
 
@@ -61,19 +65,19 @@ namespace RockLib.Messaging.DependencyInjection
             var builder = new SenderBuilder(registration);
 
             services.Add(new ServiceDescriptor(typeof(ISender), builder.Build, lifetime));
-            services.SetSenderLookupDescriptor(lifetime);
+            services.SetSenderLookupDescriptor();
 
             return builder;
         }
 
         /// <summary>
         /// Adds an <see cref="ITransactionalSender"/> to the service collection where the sender is
-        /// created by <see cref="MessagingScenarioFactory"/>.
+        /// created from the 'RockLib_Messaging' / 'RockLib.Messaging' composite section
+        /// of the registered <see cref="IConfiguration"/>.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="senderName">
-        /// The name that identifies which sender from <see cref="MessagingScenarioFactory.Configuration"/>
-        /// to create.
+        /// The name that identifies which sender from configuration to create.
         /// </param>
         /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the transactional sender.</param>
         /// <returns>A new <see cref="ITransactionalSender"/> for decorating the <see cref="ITransactionalSender"/>.</returns>
@@ -87,8 +91,10 @@ namespace RockLib.Messaging.DependencyInjection
 
             return services.AddTransactionalSender(serviceProvider =>
             {
+                var messagingSection = GetMessagingSection(serviceProvider);
                 var resolver = new Resolver(serviceProvider.GetService);
-                return (ITransactionalSender)MessagingScenarioFactory.CreateSender(senderName, resolver: resolver);
+
+                return (ITransactionalSender)messagingSection.CreateSender(senderName, resolver: resolver);
             }, lifetime);
         }
 
@@ -112,20 +118,20 @@ namespace RockLib.Messaging.DependencyInjection
             var builder = new TransactionalSenderBuilder(registration);
 
             services.Add(new ServiceDescriptor(typeof(ITransactionalSender), builder.Build, lifetime));
-            services.SetTransactionalSenderLookupDescriptor(lifetime);
-            services.SetSenderLookupDescriptor(lifetime);
+            services.SetTransactionalSenderLookupDescriptor();
+            services.SetSenderLookupDescriptor();
 
             return builder;
         }
 
         /// <summary>
         /// Adds an <see cref="IReceiver"/> to the service collection where the receiver is
-        /// created by <see cref="MessagingScenarioFactory"/>.
+        /// created from the 'RockLib_Messaging' / 'RockLib.Messaging' composite section
+        /// of the registered <see cref="IConfiguration"/>.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="receiverName">
-        /// The name that identifies which receiver from <see cref="MessagingScenarioFactory.Configuration"/>
-        /// to create.
+        /// The name that identifies which receiver from configuration to create.
         /// </param>
         /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the receiver.</param>
         /// <returns>A new <see cref="IReceiverBuilder"/> for decorating the <see cref="IReceiver"/>.</returns>
@@ -139,8 +145,10 @@ namespace RockLib.Messaging.DependencyInjection
 
             return services.AddReceiver(serviceProvider =>
             {
+                var messagingSection = GetMessagingSection(serviceProvider);
                 var resolver = new Resolver(serviceProvider.GetService);
-                return MessagingScenarioFactory.CreateReceiver(receiverName, resolver: resolver);
+
+                return messagingSection.CreateReceiver(receiverName, resolver: resolver);
             }, lifetime);
         }
 
@@ -164,9 +172,15 @@ namespace RockLib.Messaging.DependencyInjection
             var builder = new ReceiverBuilder(registration);
 
             services.Add(new ServiceDescriptor(typeof(IReceiver), builder.Build, lifetime));
-            services.SetReceiverLookupDescriptor(lifetime);
+            services.SetReceiverLookupDescriptor();
 
             return builder;
+        }
+
+        private static IConfigurationSection GetMessagingSection(IServiceProvider serviceProvider)
+        {
+            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+            return configuration.GetCompositeSection("RockLib_Messaging", "RockLib.Messaging");
         }
 
         private static bool NamesEqual(string messagingServiceName, string lookupName)
@@ -180,7 +194,7 @@ namespace RockLib.Messaging.DependencyInjection
             return false;
         }
 
-        private static void SetSenderLookupDescriptor(this IServiceCollection services, ServiceLifetime messagingServiceLifetime)
+        private static void SetSenderLookupDescriptor(this IServiceCollection services)
         {
             // Clear the existing SenderLookup descriptor, if it exists.
             for (int i = 0; i < services.Count; i++)
@@ -228,10 +242,10 @@ namespace RockLib.Messaging.DependencyInjection
                 return selectedSender;
             };
 
-            services.Add(new ServiceDescriptor(typeof(SenderLookup), SenderFactory, messagingServiceLifetime));
+            services.AddSingleton(SenderFactory);
         }
 
-        private static void SetTransactionalSenderLookupDescriptor(this IServiceCollection services, ServiceLifetime messagingServiceLifetime)
+        private static void SetTransactionalSenderLookupDescriptor(this IServiceCollection services)
         {
             // Clear the existing TransactionalSenderLookup descriptor, if it exists.
             for (int i = 0; i < services.Count; i++)
@@ -257,10 +271,10 @@ namespace RockLib.Messaging.DependencyInjection
                 return selectedTransactionalSender;
             };
 
-            services.Add(new ServiceDescriptor(typeof(TransactionalSenderLookup), TransactionalSenderFactory, messagingServiceLifetime));
+            services.AddSingleton(TransactionalSenderFactory);
         }
 
-        private static void SetReceiverLookupDescriptor(this IServiceCollection services, ServiceLifetime messagingServiceLifetime)
+        private static void SetReceiverLookupDescriptor(this IServiceCollection services)
         {
             // Clear the existing ReceiverLookup descriptor, if it exists.
             for (int i = 0; i < services.Count; i++)
@@ -286,7 +300,7 @@ namespace RockLib.Messaging.DependencyInjection
                 return selectedReceiver;
             };
 
-            services.Add(new ServiceDescriptor(typeof(ReceiverLookup), ReceiverLookupFactory, messagingServiceLifetime));
+            services.AddSingleton(ReceiverLookupFactory);
         }
     }
 }
