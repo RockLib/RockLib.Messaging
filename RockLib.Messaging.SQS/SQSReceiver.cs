@@ -168,7 +168,8 @@ namespace RockLib.Messaging.SQS
                     MaxNumberOfMessages = MaxMessages,
                     QueueUrl = QueueUrl,
                     MessageAttributeNames = new List<string> { "*" },
-                    WaitTimeSeconds = WaitTimeSeconds
+                    WaitTimeSeconds = WaitTimeSeconds,
+                    AttributeNames = new List<string> { "All" }
                 };
 
                 ReceiveMessageResponse response = null;

@@ -44,12 +44,18 @@ namespace RockLib.Messaging.SQS
             if (TryGetSNSMessage(Message.Body, _unpackSns, out var snsMessage))
             {
                 headers["TopicARN"] = snsMessage.TopicARN;
+
                 foreach (var attribute in snsMessage.MessageAttributes)
                     headers[attribute.Key] = attribute.Value.Value;
             }
             else
+            {
+                foreach (var attribute in Message.Attributes)
+                    headers[$"SQS.{attribute.Key}"] = attribute.Value;
+
                 foreach (var attribute in Message.MessageAttributes)
-                    headers.Add(attribute.Key, attribute.Value.StringValue);
+                    headers[attribute.Key] = attribute.Value.StringValue;
+            }
         }
 
         private static string GetRawPayload(string messageBody, bool unpackSNS)

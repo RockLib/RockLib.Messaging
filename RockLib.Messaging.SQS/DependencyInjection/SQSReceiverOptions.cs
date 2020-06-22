@@ -1,4 +1,5 @@
 ﻿#if !NET451
+using Amazon.SQS;
 using RockLib.Messaging.SQS;
 using System;
 
@@ -14,6 +15,11 @@ namespace RockLib.Messaging.DependencyInjection
         private int _waitTimeSeconds = SQSReceiver.DefaultWaitTimeSeconds;
 
         /// <summary>
+        /// Gets or sets the object that communicates with SQS.
+        /// </summary>
+        public IAmazonSQS SqsClient { get; set; }
+
+        /// <summary>
         /// Gets or sets the url of the SQS queue.
         /// </summary>
         public string QueueUrl
@@ -23,7 +29,7 @@ namespace RockLib.Messaging.DependencyInjection
         }
 
         /// <summary>
-        /// Gets or sets the region of the SQS queue.
+        /// Gets or sets the region of the SQS client.
         /// </summary>
         public string Region { get; set; }
 
