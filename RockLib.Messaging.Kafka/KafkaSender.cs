@@ -17,12 +17,8 @@ namespace RockLib.Messaging.Kafka
         /// Initializes a new instance of the <see cref="KafkaSender"/> class.
         /// </summary>
         /// <param name="name">The name of the sender.</param>
-        /// <param name="topic">
-        /// The topic to produce messages to.
-        /// </param>
-        /// <param name="bootstrapServers">
-        /// List of brokers as a CSV list of broker host or host:port.
-        /// </param>
+        /// <param name="topic">The topic to produce messages to.</param>
+        /// <param name="bootstrapServers">List of brokers as a CSV list of broker host or host:port.</param>
         /// <param name="messageTimeoutMs">
         /// Local message timeout. This value is only enforced locally and limits the time
         /// a produced message waits for successful delivery. A time of 0 is infinite. This
@@ -44,7 +40,6 @@ namespace RockLib.Messaging.Kafka
             Config.MessageTimeoutMs = Config.MessageTimeoutMs ?? messageTimeoutMs;
 
             var producerBuilder = new ProducerBuilder<Null, string>(Config);
-
             producerBuilder.SetErrorHandler(OnError);
 
             _producer = new Lazy<IProducer<Null, string>>(() => producerBuilder.Build());
@@ -71,26 +66,12 @@ namespace RockLib.Messaging.Kafka
         public event EventHandler<ErrorEventArgs> Error;
 
         /// <summary>
-        /// Flushes the producer and disposes it.
-        /// </summary>
-        public void Dispose()
-        {
-            if (_producer.IsValueCreated)
-            {
-                _producer.Value.Flush(TimeSpan.FromSeconds(10));
-                _producer.Value.Dispose();
-            }
-        }
-
-        /// <summary>
         /// Asynchronously sends the specified message.
         /// </summary>
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
         {
-            var producer = _producer.Value;
-
             if (message.OriginatingSystem == null)
                 message.OriginatingSystem = "Kafka";
 
@@ -103,31 +84,23 @@ namespace RockLib.Messaging.Kafka
                     kafkaMessage.Headers.Add(header.Key, Encoding.UTF8.GetBytes(header.Value.ToString()));
             }
 
-            var taskSource = new TaskCompletionSource<int>();
-
-            void OnDelivery(DeliveryReport<Null, string> deliveryReport)
-            {
-                if (deliveryReport?.Error.IsError == true)
-                    taskSource.SetException(new KafkaException(deliveryReport.Error));
-                else
-                    taskSource.SetResult(0);
-            }
-
-            try
-            {
-                producer.BeginProduce(Topic, kafkaMessage, OnDelivery);
-            }
-            catch (Exception ex)
-            {
-                taskSource.SetException(ex);
-            }
-
-            return taskSource.Task;
+            return _producer.Value.ProduceAsync(Topic, kafkaMessage);
         }
 
-        private void OnError(Producer<Null, string> producer, Error error)
+        /// <summary>
+        /// Flushes the producer and disposes it.
+        /// </summary>
+        public void Dispose()
         {
-            Error?.Invoke(this, new ErrorEventArgs(error.Reason, new KafkaException(error)));
+            if (_producer.IsValueCreated)
+            {
+                _producer.Value.Flush(TimeSpan.FromSeconds(10));
+                _producer.Value.Dispose();
+            }
         }
+
+        private void OnError(IProducer<Null, string> producer, Error error) 
+            => Error?.Invoke(this, new ErrorEventArgs(error.Reason, new KafkaException(error)));
+
     }
 }

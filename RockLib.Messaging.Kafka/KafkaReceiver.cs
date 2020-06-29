@@ -30,13 +30,8 @@ namespace RockLib.Messaging.Kafka
         /// all matching topics (which is updated as topics are added / removed from the
         /// cluster). A regex must be front anchored to be recognized as a regex. e.g. ^myregex
         /// </param>
-        /// <param name="groupId">
-        /// Client group id string. All clients sharing the same group.id belong to the same
-        /// group.
-        /// </param>
-        /// <param name="bootstrapServers">
-        /// List of brokers as a CSV list of broker host or host:port.
-        /// </param>
+        /// <param name="groupId">Client group id string. All clients sharing the same group.id belong to the same group.</param>
+        /// <param name="bootstrapServers">List of brokers as a CSV list of broker host or host:port.</param>
         /// <param name="config">
         /// A collection of librdkafka configuration parameters (refer to
         /// https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) and parameters
@@ -154,10 +149,9 @@ namespace RockLib.Messaging.Kafka
             }
         }
 
-        private void OnError(Consumer<Ignore, string> producer, Error error)
+        private void OnError(IConsumer<Ignore, string> consumer, Error error)
         {
-            try { throw new KafkaException(error); }
-            catch (Exception ex) { OnError(error.Reason, ex); }
+            OnError(error.Reason, new KafkaException(error));
 
             if (_connected != false)
             {

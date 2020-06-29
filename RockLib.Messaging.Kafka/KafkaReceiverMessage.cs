@@ -14,7 +14,7 @@ namespace RockLib.Messaging.Kafka
     public class KafkaReceiverMessage : ReceiverMessage
     {
         internal KafkaReceiverMessage(IConsumer<Ignore, string> consumer, ConsumeResult<Ignore, string> result)
-            : base(() => result.Value)
+            : base(() => result.Message.Value)
         {
             Consumer = consumer;
             Result = result;
@@ -33,9 +33,9 @@ namespace RockLib.Messaging.Kafka
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
-            if (Result.Headers != null)
-                foreach (var header in Result.Headers)
-                    headers.Add(header.Key, Encoding.UTF8.GetString(header.Value));
+            if (Result.Message?.Headers != null)
+                foreach (var header in Result.Message.Headers)
+                    headers.Add(header.Key, Encoding.UTF8.GetString(header.GetValueBytes()));
         }
 
         /// <inheritdoc />
