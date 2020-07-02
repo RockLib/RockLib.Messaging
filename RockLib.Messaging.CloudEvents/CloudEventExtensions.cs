@@ -8,17 +8,17 @@ namespace RockLib.Messaging.CloudEvents
     public static class CloudEventExtensions
     {
         /// <summary>
-        /// Creates an instance of <see cref="CloudEvent"/> with properties mapped from the headers of
+        /// Creates an instance of <see cref="DefaultCloudEvent"/> with properties mapped from the headers of
         /// <paramref name="receiverMessage"/>.
         /// </summary>
         /// <param name="receiverMessage">
-        /// The <see cref="IReceiverMessage"/> to be mapped to the new <see cref="CloudEvent"/>.
+        /// The <see cref="IReceiverMessage"/> to be mapped to the new <see cref="DefaultCloudEvent"/>.
         /// </param>
         /// <returns>
-        /// A new <see cref="CloudEvent"/> with properties mapped from the headers of the <see cref="IReceiverMessage"/>.
+        /// A new <see cref="DefaultCloudEvent"/> with properties mapped from the headers of the <see cref="IReceiverMessage"/>.
         /// </returns>
-        public static CloudEvent ToCloudEvent(this IReceiverMessage receiverMessage) =>
-            CloudEvent.Create(receiverMessage);
+        public static DefaultCloudEvent ToCloudEvent(this IReceiverMessage receiverMessage) =>
+            DefaultCloudEvent.Create(receiverMessage);
 
         /// <summary>
         /// Adds a <see cref="ValidatingSender"/> decorator that ensures messages are valid CloudEvents.
@@ -26,6 +26,6 @@ namespace RockLib.Messaging.CloudEvents
         /// <param name="builder">The <see cref="ISenderBuilder"/>.</param>
         /// <returns>The same <see cref="ISenderBuilder"/>.</returns>
         public static ISenderBuilder AddCloudEventValidation(this ISenderBuilder builder) =>
-            builder.AddValidation(CloudEvent.Validate);
+            builder.AddValidation(DefaultCloudEvent.Validate);
     }
 }
