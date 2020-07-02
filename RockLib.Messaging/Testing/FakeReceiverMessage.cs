@@ -38,6 +38,7 @@ namespace RockLib.Messaging.Testing
         {
             BinaryPayload = payload ?? throw new ArgumentNullException(nameof(payload));
             StringPayload = Convert.ToBase64String(payload);
+            Headers.Add(HeaderNames.IsBinaryPayload, true);
         }
 
         private FakeReceiverMessage()
