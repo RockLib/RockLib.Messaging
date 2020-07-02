@@ -46,7 +46,7 @@ namespace RockLib.Messaging.CloudEvents
         /// A new <see cref="DefaultCloudEvent"/> with properties mapped from the headers of the <see cref="IReceiverMessage"/>.
         /// </returns>
         public static DefaultCloudEvent Create(IReceiverMessage receiverMessage) =>
-            Create<DefaultCloudEvent>(receiverMessage ?? throw new ArgumentNullException(nameof(receiverMessage)));
+            CreateCore<DefaultCloudEvent>(receiverMessage ?? throw new ArgumentNullException(nameof(receiverMessage)));
 
         /// <summary>
         /// Converts the <see cref="DefaultCloudEvent"/> to a <see cref="SenderMessage"/> by calling

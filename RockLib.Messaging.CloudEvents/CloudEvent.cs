@@ -129,14 +129,17 @@ namespace RockLib.Messaging.CloudEvents
             if (Type != null)
                 senderMessage.Headers[TypeHeader] = Type;
 
-            if (Time != null)
-                senderMessage.Headers[TimeHeader] = Time.Value;
-
             if (DataContentType != null)
                 senderMessage.Headers[DataContentTypeHeader] = DataContentType;
 
+            if (DataSchema != null)
+                senderMessage.Headers[DataSchemaHeader] = DataSchema;
+
             if (Subject != null)
                 senderMessage.Headers[SubjectHeader] = Subject;
+
+            if (Time != null)
+                senderMessage.Headers[TimeHeader] = Time.Value;
 
             return senderMessage;
         }
@@ -147,10 +150,14 @@ namespace RockLib.Messaging.CloudEvents
         /// <param name="senderMessage">The <see cref="SenderMessage"/> to validate.</param>
         protected static void ValidateCore(SenderMessage senderMessage)
         {
+            if (senderMessage is null)
+                throw new ArgumentNullException(nameof(senderMessage));
+
             if (!HasHeaderOfType<string>(senderMessage, IdHeader))
                 senderMessage.Headers[IdHeader] = Guid.NewGuid().ToString();
 
-            if (!HasHeaderOfType<string>(senderMessage, SourceHeader))
+            if (!HasHeaderOfType<Uri>(senderMessage, SourceHeader)
+                && !HasHeaderOfType<string>(senderMessage, SourceHeader))
                 throw new CloudEventValidationException("'Missing Source' error.");
 
             if (!HasHeaderOfType<string>(senderMessage, TypeHeader))
@@ -172,7 +179,7 @@ namespace RockLib.Messaging.CloudEvents
         /// <returns>
         /// A new instance of <typeparamref name="TCloudEvent"/> with its base cloud event attributes set.
         /// </returns>
-        protected static TCloudEvent Create<TCloudEvent>(IReceiverMessage receiverMessage)
+        protected static TCloudEvent CreateCore<TCloudEvent>(IReceiverMessage receiverMessage)
             where TCloudEvent : CloudEvent, new()
         {
             var cloudEvent = new TCloudEvent();
@@ -187,8 +194,6 @@ namespace RockLib.Messaging.CloudEvents
 
             if (receiverMessage.Headers.TryGetValue(SourceHeader, out Uri source))
                 cloudEvent.Source = source;
-            else if (receiverMessage.Headers.TryGetValue(SourceHeader, out string sourceString))
-                cloudEvent.Source = new Uri(sourceString);
 
             // SpecVersion?
 
@@ -202,8 +207,6 @@ namespace RockLib.Messaging.CloudEvents
 
             if (receiverMessage.Headers.TryGetValue(DataSchemaHeader, out Uri dataSchema))
                 cloudEvent.DataSchema = dataSchema;
-            else if (receiverMessage.Headers.TryGetValue(DataSchemaHeader, out string dataSchemaString))
-                cloudEvent.DataSchema = new Uri(dataSchemaString);
 
             if (receiverMessage.Headers.TryGetValue(SubjectHeader, out string subject))
                 cloudEvent.Subject = subject;
