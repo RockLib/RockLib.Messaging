@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Mime;
 using System.Reflection;
 using System.Text;
 
@@ -198,6 +199,8 @@ namespace RockLib.Messaging
                 return uri.ToString();
             if (value is DateTimeOffset dateTimeOffset)
                 return dateTimeOffset.ToString("O");
+            if (value is ContentType contentType)
+                return contentType.ToString();
             throw new ArgumentException("Header value must be primitive or enum type or one of: String, Decimal, DateTime, TimeSpan, Guid, Uri, or DateTimeOffset.", nameof(value));
         }
 
