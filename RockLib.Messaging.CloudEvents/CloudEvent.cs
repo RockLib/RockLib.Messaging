@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Mime;
 
 namespace RockLib.Messaging.CloudEvents
@@ -106,6 +107,11 @@ namespace RockLib.Messaging.CloudEvents
         public DateTime? Time { get; set; }
 
         /// <summary>
+        /// Any additional attributes not specific to this CloudEvent type.
+        /// </summary>
+        public IDictionary<string, object> AdditionalAttributes { get; } = new Dictionary<string, object>();
+
+        /// <summary>
         /// Domain-specific information about the occurrence (i.e. the payload). This might include
         /// information about the occurrence, details about the data that was changed, or more.
         /// </summary>
@@ -168,6 +174,9 @@ namespace RockLib.Messaging.CloudEvents
             if (Time != null)
                 senderMessage.Headers[protocolBinding.GetHeaderName(TimeHeader)] = Time.Value;
 
+            foreach (var attribute in AdditionalAttributes)
+                senderMessage.Headers[attribute.Key] = attribute.Value;
+
             return senderMessage;
         }
 
@@ -228,6 +237,10 @@ namespace RockLib.Messaging.CloudEvents
                 protocolBinding = DefaultProtocolBinding;
 
             var cloudEvent = new TCloudEvent();
+            var additionalAttributes = cloudEvent.AdditionalAttributes;
+
+            foreach (var header in receiverMessage.Headers)
+                additionalAttributes.Add(header);
 
             if (receiverMessage.IsBinary())
                 cloudEvent.SetData(receiverMessage.BinaryPayload);
@@ -235,31 +248,58 @@ namespace RockLib.Messaging.CloudEvents
                 cloudEvent.SetData(receiverMessage.StringPayload);
 
             if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(IdHeader), out string id))
+            {
                 cloudEvent.Id = id;
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(IdHeader));
+            }
 
             if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(SourceHeader), out Uri source))
+            {
                 cloudEvent.Source = source;
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(SourceHeader));
+            }
 
             // SpecVersion?
 
             if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(TypeHeader), out string type))
+            {
                 cloudEvent.Type = type;
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(TypeHeader));
+            }
 
             if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(DataContentTypeHeader), out ContentType dataContentType))
+            {
                 cloudEvent.DataContentType = dataContentType;
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(DataContentTypeHeader));
+            }
             else if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(DataContentTypeHeader), out string dataContentTypeString))
+            {
                 cloudEvent.DataContentType = new ContentType(dataContentTypeString);
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(DataContentTypeHeader));
+            }
 
             if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(DataSchemaHeader), out Uri dataSchema))
+            {
                 cloudEvent.DataSchema = dataSchema;
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(DataSchemaHeader));
+            }
 
             if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(SubjectHeader), out string subject))
+            {
                 cloudEvent.Subject = subject;
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(SubjectHeader));
+            }
 
             if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(TimeHeader), out DateTime time))
+            {
                 cloudEvent.Time = time;
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(TimeHeader));
+            }
             else if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(TimeHeader), out string timeString))
+            {
                 cloudEvent.Time = DateTime.Parse(timeString);
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(TimeHeader));
+            }
 
             return cloudEvent;
         }

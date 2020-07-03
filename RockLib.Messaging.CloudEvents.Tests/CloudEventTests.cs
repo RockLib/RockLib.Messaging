@@ -126,6 +126,21 @@ namespace RockLib.Messaging.CloudEvents.Tests
         }
 
         [Fact]
+        public void ToSenderMessageMethodHappyPath6()
+        {
+            // Additional attributes provided
+
+            var cloudEvent = new TestCloudEvent();
+            cloudEvent.AdditionalAttributes.Add("foo", "abc");
+            cloudEvent.AdditionalAttributes.Add("bar", 123);
+
+            var senderMessage = cloudEvent.ToSenderMessage();
+
+            senderMessage.Headers.Should().ContainKey("foo").WhichValue.Should().Be("abc");
+            senderMessage.Headers.Should().ContainKey("bar").WhichValue.Should().Be(123);
+        }
+
+        [Fact]
         public void ValidateCoreMethodHappyPath1()
         {
             var senderMessage = new SenderMessage("Hello, world!");
@@ -286,6 +301,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.DataSchema.Should().BeSameAs(dataSchema);
             cloudEvent.Subject.Should().Be("MySubject");
             cloudEvent.Time.Should().Be(time);
+            cloudEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
         [Fact]
@@ -304,6 +320,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.DataSchema.Should().BeNull();
             cloudEvent.Subject.Should().BeNull();
             cloudEvent.Time.Should().BeNull();
+            cloudEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
         [Fact]
@@ -329,6 +346,23 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.DataContentType.ToString().Should().Be(dataContentType);
             cloudEvent.DataSchema.ToString().Should().Be(dataSchema);
             cloudEvent.Time.GetValueOrDefault().ToString("O").Should().Be(time);
+            cloudEvent.AdditionalAttributes.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void CreateCoreMethodHappyPath6()
+        {
+            // Additional attributes provided
+
+            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+            receiverMessage.Headers.Add("foo", "abc");
+            receiverMessage.Headers.Add("bar", 123);
+
+            var cloudEvent = TestCloudEvent.Create(receiverMessage);
+
+            cloudEvent.AdditionalAttributes.Should().HaveCount(2);
+            cloudEvent.AdditionalAttributes.Should().ContainKey("foo").WhichValue.Should().Be("abc");
+            cloudEvent.AdditionalAttributes.Should().ContainKey("bar").WhichValue.Should().Be(123);
         }
 
         [Fact]
