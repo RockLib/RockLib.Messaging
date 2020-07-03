@@ -31,9 +31,14 @@ namespace RockLib.Messaging.CloudEvents
         /// order to represent a CloudEvent. Adds any missing required headers that can be determined
         /// at runtime.
         /// </summary>
-        /// <param name="senderMessage"></param>
-        public static void Validate(SenderMessage senderMessage) =>
-            ValidateCore(senderMessage ?? throw new ArgumentNullException(nameof(senderMessage)));
+        /// <param name="senderMessage">The <see cref="SenderMessage"/> to validate.</param>
+        /// <param name="protocolBinding">
+        /// The <see cref="IProtocolBinding"/> used to map CloudEvent attributes to <see cref="SenderMessage"/>
+        /// headers. If <see langword="null"/>, then <see cref="CloudEvent.DefaultProtocolBinding"/> is used
+        /// instead.
+        /// </param>
+        public static void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null) =>
+            ValidateCore(senderMessage ?? throw new ArgumentNullException(nameof(senderMessage)), protocolBinding);
 
         /// <summary>
         /// Creates an instance of <see cref="DefaultCloudEvent"/> with properties mapped from the headers of
@@ -42,11 +47,16 @@ namespace RockLib.Messaging.CloudEvents
         /// <param name="receiverMessage">
         /// The <see cref="IReceiverMessage"/> to be mapped to the new <see cref="DefaultCloudEvent"/>.
         /// </param>
+        /// <param name="protocolBinding">
+        /// The <see cref="IProtocolBinding"/> used to map <see cref="IReceiverMessage"/> headers to
+        /// CloudEvent attributes. If <see langword="null"/>, then <see cref="CloudEvent.DefaultProtocolBinding"/>
+        /// is used instead.
+        /// </param>
         /// <returns>
         /// A new <see cref="DefaultCloudEvent"/> with properties mapped from the headers of the <see cref="IReceiverMessage"/>.
         /// </returns>
-        public static DefaultCloudEvent Create(IReceiverMessage receiverMessage) =>
-            CreateCore<DefaultCloudEvent>(receiverMessage ?? throw new ArgumentNullException(nameof(receiverMessage)));
+        public static DefaultCloudEvent Create(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null) =>
+            CreateCore<DefaultCloudEvent>(receiverMessage ?? throw new ArgumentNullException(nameof(receiverMessage)), protocolBinding);
 
         /// <summary>
         /// Converts the <see cref="DefaultCloudEvent"/> to a <see cref="SenderMessage"/> by calling
@@ -54,6 +64,6 @@ namespace RockLib.Messaging.CloudEvents
         /// </summary>
         /// <param name="cloudEvent">The <see cref="DefaultCloudEvent"/> to convert to a <see cref="SenderMessage"/>.</param>
         public static implicit operator SenderMessage(DefaultCloudEvent cloudEvent) =>
-            cloudEvent?.ToSenderMessage();
+            cloudEvent?.ToSenderMessage(DefaultProtocolBinding);
     }
 }

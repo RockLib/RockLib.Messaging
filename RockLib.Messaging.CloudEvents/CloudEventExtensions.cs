@@ -14,18 +14,26 @@ namespace RockLib.Messaging.CloudEvents
         /// <param name="receiverMessage">
         /// The <see cref="IReceiverMessage"/> to be mapped to the new <see cref="DefaultCloudEvent"/>.
         /// </param>
+        /// <param name="protocolBinding">
+        /// The <see cref="IProtocolBinding"/> used to map <see cref="IReceiverMessage"/> headers to
+        /// CloudEvent attributes.
+        /// </param>
         /// <returns>
         /// A new <see cref="DefaultCloudEvent"/> with properties mapped from the headers of the <see cref="IReceiverMessage"/>.
         /// </returns>
-        public static DefaultCloudEvent ToCloudEvent(this IReceiverMessage receiverMessage) =>
-            DefaultCloudEvent.Create(receiverMessage);
+        public static DefaultCloudEvent ToCloudEvent(this IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null) =>
+            DefaultCloudEvent.Create(receiverMessage, protocolBinding);
 
         /// <summary>
         /// Adds a <see cref="ValidatingSender"/> decorator that ensures messages are valid CloudEvents.
         /// </summary>
         /// <param name="builder">The <see cref="ISenderBuilder"/>.</param>
+        /// <param name="protocolBinding">
+        /// The <see cref="IProtocolBinding"/> used to map CloudEvent attributes to <see cref="SenderMessage"/>
+        /// headers.
+        /// </param>
         /// <returns>The same <see cref="ISenderBuilder"/>.</returns>
-        public static ISenderBuilder AddCloudEventValidation(this ISenderBuilder builder) =>
-            builder.AddValidation(DefaultCloudEvent.Validate);
+        public static ISenderBuilder AddCloudEventValidation(this ISenderBuilder builder, IProtocolBinding protocolBinding = null) =>
+            builder.AddValidation(message => DefaultCloudEvent.Validate(message, protocolBinding));
     }
 }

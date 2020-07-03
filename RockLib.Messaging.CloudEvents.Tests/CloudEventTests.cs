@@ -343,9 +343,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
         private class TestCloudEvent : CloudEvent
         {
-            public static void Validate(SenderMessage senderMessage) => ValidateCore(senderMessage);
+            public static void Validate(SenderMessage senderMessage) => ValidateCore(senderMessage, null);
 
-            public static TestCloudEvent Create(IReceiverMessage receiverMessage) => CreateCore<TestCloudEvent>(receiverMessage);
+            public static TestCloudEvent Create(IReceiverMessage receiverMessage) => CreateCore<TestCloudEvent>(receiverMessage, null);
         }
     }
 }
