@@ -9,29 +9,29 @@ namespace RockLib.Messaging.CloudEvents
     /// </summary>
     public abstract class CloudEvent
     {
-        /// <summary>The name of the <see cref="Id"/> header.</summary>
-        public const string IdHeader = "id";
+        /// <summary>The name of the <see cref="Id"/> attribute.</summary>
+        public const string IdAttribute = "id";
 
-        /// <summary>The name of the <see cref="Source"/> header.</summary>
-        public const string SourceHeader = "source";
+        /// <summary>The name of the <see cref="Source"/> attribute.</summary>
+        public const string SourceAttribute = "source";
 
-        /// <summary>The name of the <see cref="SpecVersion"/> header.</summary>
-        public const string SpecVersionHeader = "specversion";
+        /// <summary>The name of the <see cref="SpecVersion"/> attribute.</summary>
+        public const string SpecVersionAttribute = "specversion";
 
-        /// <summary>The name of the <see cref="Type"/> header.</summary>
-        public const string TypeHeader = "type";
+        /// <summary>The name of the <see cref="Type"/> attribute.</summary>
+        public const string TypeAttribute = "type";
 
-        /// <summary>The name of the <see cref="DataContentType"/> header.</summary>
-        public const string DataContentTypeHeader = "datacontenttype";
+        /// <summary>The name of the <see cref="DataContentType"/> attribute.</summary>
+        public const string DataContentTypeAttribute = "datacontenttype";
 
-        /// <summary>The name of the <see cref="DataSchema"/> header.</summary>
-        public const string DataSchemaHeader = "dataschema";
+        /// <summary>The name of the <see cref="DataSchema"/> attribute.</summary>
+        public const string DataSchemaAttribute = "dataschema";
 
-        /// <summary>The name of the <see cref="Subject"/> header.</summary>
-        public const string SubjectHeader = "subject";
+        /// <summary>The name of the <see cref="Subject"/> attribute.</summary>
+        public const string SubjectAttribute = "subject";
 
-        /// <summary>The name of the <see cref="Time"/> header.</summary>
-        public const string TimeHeader = "time";
+        /// <summary>The name of the <see cref="Time"/> attribute.</summary>
+        public const string TimeAttribute = "time";
 
         private static IProtocolBinding _defaultProtocolBinding = ProtocolBinding.Default;
 
@@ -152,27 +152,27 @@ namespace RockLib.Messaging.CloudEvents
                 senderMessage = new SenderMessage("");
 
             if (Id != null)
-                senderMessage.Headers[protocolBinding.GetHeaderName(IdHeader)] = Id;
+                senderMessage.Headers[protocolBinding.GetHeaderName(IdAttribute)] = Id;
 
             if (Source != null)
-                senderMessage.Headers[protocolBinding.GetHeaderName(SourceHeader)] = Source;
+                senderMessage.Headers[protocolBinding.GetHeaderName(SourceAttribute)] = Source;
 
-            senderMessage.Headers[protocolBinding.GetHeaderName(SpecVersionHeader)] = SpecVersion;
+            senderMessage.Headers[protocolBinding.GetHeaderName(SpecVersionAttribute)] = SpecVersion;
 
             if (Type != null)
-                senderMessage.Headers[protocolBinding.GetHeaderName(TypeHeader)] = Type;
+                senderMessage.Headers[protocolBinding.GetHeaderName(TypeAttribute)] = Type;
 
             if (DataContentType != null)
-                senderMessage.Headers[protocolBinding.GetHeaderName(DataContentTypeHeader)] = DataContentType;
+                senderMessage.Headers[protocolBinding.GetHeaderName(DataContentTypeAttribute)] = DataContentType;
 
             if (DataSchema != null)
-                senderMessage.Headers[protocolBinding.GetHeaderName(DataSchemaHeader)] = DataSchema;
+                senderMessage.Headers[protocolBinding.GetHeaderName(DataSchemaAttribute)] = DataSchema;
 
             if (Subject != null)
-                senderMessage.Headers[protocolBinding.GetHeaderName(SubjectHeader)] = Subject;
+                senderMessage.Headers[protocolBinding.GetHeaderName(SubjectAttribute)] = Subject;
 
             if (Time != null)
-                senderMessage.Headers[protocolBinding.GetHeaderName(TimeHeader)] = Time.Value;
+                senderMessage.Headers[protocolBinding.GetHeaderName(TimeAttribute)] = Time.Value;
 
             foreach (var attribute in AdditionalAttributes)
                 senderMessage.Headers[attribute.Key] = attribute.Value;
@@ -196,18 +196,18 @@ namespace RockLib.Messaging.CloudEvents
             if (protocolBinding is null)
                 protocolBinding = DefaultProtocolBinding;
 
-            if (!TryGetHeaderValue<string>(senderMessage, protocolBinding.GetHeaderName(IdHeader), out _))
-                senderMessage.Headers[protocolBinding.GetHeaderName(IdHeader)] = Guid.NewGuid().ToString();
+            if (!TryGetHeaderValue<string>(senderMessage, protocolBinding.GetHeaderName(IdAttribute), out _))
+                senderMessage.Headers[protocolBinding.GetHeaderName(IdAttribute)] = Guid.NewGuid().ToString();
 
-            if (!TryGetHeaderValue<Uri>(senderMessage, protocolBinding.GetHeaderName(SourceHeader), out _)
-                && !TryGetHeaderValue<string>(senderMessage, protocolBinding.GetHeaderName(SourceHeader), out _))
-                throw new CloudEventValidationException($"The '{protocolBinding.GetHeaderName(SourceHeader)}' header is missing from the SenderMessage.");
+            if (!TryGetHeaderValue<Uri>(senderMessage, protocolBinding.GetHeaderName(SourceAttribute), out _)
+                && !TryGetHeaderValue<string>(senderMessage, protocolBinding.GetHeaderName(SourceAttribute), out _))
+                throw new CloudEventValidationException($"The '{protocolBinding.GetHeaderName(SourceAttribute)}' header is missing from the SenderMessage.");
 
-            if (!TryGetHeaderValue<string>(senderMessage, protocolBinding.GetHeaderName(TypeHeader), out _))
-                throw new CloudEventValidationException($"The '{protocolBinding.GetHeaderName(TypeHeader)}' header is missing from the SenderMessage.");
+            if (!TryGetHeaderValue<string>(senderMessage, protocolBinding.GetHeaderName(TypeAttribute), out _))
+                throw new CloudEventValidationException($"The '{protocolBinding.GetHeaderName(TypeAttribute)}' header is missing from the SenderMessage.");
 
-            if (!TryGetHeaderValue<DateTime>(senderMessage, protocolBinding.GetHeaderName(TimeHeader), out _))
-                senderMessage.Headers[protocolBinding.GetHeaderName(TimeHeader)] = DateTime.UtcNow;
+            if (!TryGetHeaderValue<DateTime>(senderMessage, protocolBinding.GetHeaderName(TimeAttribute), out _))
+                senderMessage.Headers[protocolBinding.GetHeaderName(TimeAttribute)] = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -247,58 +247,58 @@ namespace RockLib.Messaging.CloudEvents
             else
                 cloudEvent.SetData(receiverMessage.StringPayload);
 
-            if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(IdHeader), out string id))
+            if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(IdAttribute), out string id))
             {
                 cloudEvent.Id = id;
-                additionalAttributes.Remove(protocolBinding.GetHeaderName(IdHeader));
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(IdAttribute));
             }
 
-            if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(SourceHeader), out Uri source))
+            if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(SourceAttribute), out Uri source))
             {
                 cloudEvent.Source = source;
-                additionalAttributes.Remove(protocolBinding.GetHeaderName(SourceHeader));
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(SourceAttribute));
             }
 
             // SpecVersion?
 
-            if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(TypeHeader), out string type))
+            if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(TypeAttribute), out string type))
             {
                 cloudEvent.Type = type;
-                additionalAttributes.Remove(protocolBinding.GetHeaderName(TypeHeader));
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(TypeAttribute));
             }
 
-            if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(DataContentTypeHeader), out ContentType dataContentType))
+            if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(DataContentTypeAttribute), out ContentType dataContentType))
             {
                 cloudEvent.DataContentType = dataContentType;
-                additionalAttributes.Remove(protocolBinding.GetHeaderName(DataContentTypeHeader));
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(DataContentTypeAttribute));
             }
-            else if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(DataContentTypeHeader), out string dataContentTypeString))
+            else if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(DataContentTypeAttribute), out string dataContentTypeString))
             {
                 cloudEvent.DataContentType = new ContentType(dataContentTypeString);
-                additionalAttributes.Remove(protocolBinding.GetHeaderName(DataContentTypeHeader));
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(DataContentTypeAttribute));
             }
 
-            if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(DataSchemaHeader), out Uri dataSchema))
+            if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(DataSchemaAttribute), out Uri dataSchema))
             {
                 cloudEvent.DataSchema = dataSchema;
-                additionalAttributes.Remove(protocolBinding.GetHeaderName(DataSchemaHeader));
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(DataSchemaAttribute));
             }
 
-            if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(SubjectHeader), out string subject))
+            if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(SubjectAttribute), out string subject))
             {
                 cloudEvent.Subject = subject;
-                additionalAttributes.Remove(protocolBinding.GetHeaderName(SubjectHeader));
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(SubjectAttribute));
             }
 
-            if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(TimeHeader), out DateTime time))
+            if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(TimeAttribute), out DateTime time))
             {
                 cloudEvent.Time = time;
-                additionalAttributes.Remove(protocolBinding.GetHeaderName(TimeHeader));
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(TimeAttribute));
             }
-            else if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(TimeHeader), out string timeString))
+            else if (receiverMessage.Headers.TryGetValue(protocolBinding.GetHeaderName(TimeAttribute), out string timeString))
             {
                 cloudEvent.Time = DateTime.Parse(timeString);
-                additionalAttributes.Remove(protocolBinding.GetHeaderName(TimeHeader));
+                additionalAttributes.Remove(protocolBinding.GetHeaderName(TimeAttribute));
             }
 
             return cloudEvent;

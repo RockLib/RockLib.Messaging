@@ -32,27 +32,27 @@
 
         private class DefaultProtocolBinding : IProtocolBinding
         {
-            string IProtocolBinding.GetHeaderName(string headerKey) => headerKey;
+            string IProtocolBinding.GetHeaderName(string attributeName) => attributeName;
         }
 
         private class AmqpProtocolBinding : IProtocolBinding
         {
-            string IProtocolBinding.GetHeaderName(string headerKey) => "cloudEvents:" + headerKey;
+            string IProtocolBinding.GetHeaderName(string attributeName) => "cloudEvents:" + attributeName;
         }
 
         private class HttpProtocolBinding : IProtocolBinding
         {
-            string IProtocolBinding.GetHeaderName(string headerKey) => "ce_" + headerKey;
+            string IProtocolBinding.GetHeaderName(string attributeName) => "ce_" + attributeName;
         }
 
         private class KafkaProtocolBinding : IProtocolBinding
         {
-            string IProtocolBinding.GetHeaderName(string headerKey) => "ce_" + headerKey;
+            string IProtocolBinding.GetHeaderName(string attributeName) => "ce_" + attributeName;
         }
 
         private class MqttProtocolBinding : IProtocolBinding
         {
-            string IProtocolBinding.GetHeaderName(string headerKey) => headerKey;
+            string IProtocolBinding.GetHeaderName(string attributeName) => attributeName;
         }
     }
 }

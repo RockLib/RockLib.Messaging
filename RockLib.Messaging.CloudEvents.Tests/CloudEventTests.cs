@@ -96,14 +96,14 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
-            senderMessage.Headers[CloudEvent.DataContentTypeHeader].Should().Be(dataContentType.ToString());
-            senderMessage.Headers[CloudEvent.DataSchemaHeader].Should().Be(dataSchema.ToString());
-            senderMessage.Headers[CloudEvent.IdHeader].Should().Be(id);
-            senderMessage.Headers[CloudEvent.SourceHeader].Should().Be(source.ToString());
-            senderMessage.Headers[CloudEvent.SpecVersionHeader].Should().Be("1.0");
-            senderMessage.Headers[CloudEvent.SubjectHeader].Should().Be(subject);
-            senderMessage.Headers[CloudEvent.TimeHeader].Should().Be(time.ToString("O"));
-            senderMessage.Headers[CloudEvent.TypeHeader].Should().Be(type);
+            senderMessage.Headers[CloudEvent.DataContentTypeAttribute].Should().Be(dataContentType.ToString());
+            senderMessage.Headers[CloudEvent.DataSchemaAttribute].Should().Be(dataSchema.ToString());
+            senderMessage.Headers[CloudEvent.IdAttribute].Should().Be(id);
+            senderMessage.Headers[CloudEvent.SourceAttribute].Should().Be(source.ToString());
+            senderMessage.Headers[CloudEvent.SpecVersionAttribute].Should().Be("1.0");
+            senderMessage.Headers[CloudEvent.SubjectAttribute].Should().Be(subject);
+            senderMessage.Headers[CloudEvent.TimeAttribute].Should().Be(time.ToString("O"));
+            senderMessage.Headers[CloudEvent.TypeAttribute].Should().Be(type);
         }
 
         [Fact]
@@ -115,14 +115,14 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.DataContentTypeHeader);
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.DataSchemaHeader);
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.IdHeader);
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.SourceHeader);
-            senderMessage.Headers[CloudEvent.SpecVersionHeader].Should().Be("1.0");
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.SubjectHeader);
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.TimeHeader);
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.TypeHeader);
+            senderMessage.Headers.Should().NotContainKey(CloudEvent.DataContentTypeAttribute);
+            senderMessage.Headers.Should().NotContainKey(CloudEvent.DataSchemaAttribute);
+            senderMessage.Headers.Should().NotContainKey(CloudEvent.IdAttribute);
+            senderMessage.Headers.Should().NotContainKey(CloudEvent.SourceAttribute);
+            senderMessage.Headers[CloudEvent.SpecVersionAttribute].Should().Be("1.0");
+            senderMessage.Headers.Should().NotContainKey(CloudEvent.SubjectAttribute);
+            senderMessage.Headers.Should().NotContainKey(CloudEvent.TimeAttribute);
+            senderMessage.Headers.Should().NotContainKey(CloudEvent.TypeAttribute);
         }
 
         [Fact]
@@ -145,10 +145,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var senderMessage = new SenderMessage("Hello, world!");
 
-            senderMessage.Headers.Add(CloudEvent.IdHeader, "MyId");
-            senderMessage.Headers.Add(CloudEvent.SourceHeader, new Uri("http://MySource"));
-            senderMessage.Headers.Add(CloudEvent.TypeHeader, "MyType");
-            senderMessage.Headers.Add(CloudEvent.TimeHeader, DateTime.UtcNow);
+            senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
+            senderMessage.Headers.Add(CloudEvent.SourceAttribute, new Uri("http://MySource"));
+            senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
+            senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
 
             Action act = () => TestCloudEvent.Validate(senderMessage);
 
@@ -160,10 +160,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var senderMessage = new SenderMessage("Hello, world!");
 
-            senderMessage.Headers.Add(CloudEvent.IdHeader, "MyId");
-            senderMessage.Headers.Add(CloudEvent.SourceHeader, "http://MySource");
-            senderMessage.Headers.Add(CloudEvent.TypeHeader, "MyType");
-            senderMessage.Headers.Add(CloudEvent.TimeHeader, DateTime.UtcNow);
+            senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
+            senderMessage.Headers.Add(CloudEvent.SourceAttribute, "http://MySource");
+            senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
+            senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
 
             Action act = () => TestCloudEvent.Validate(senderMessage);
 
@@ -187,15 +187,15 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var senderMessage = new SenderMessage("Hello, world!");
 
-            senderMessage.Headers.Add(CloudEvent.SourceHeader, new Uri("http://MySource"));
-            senderMessage.Headers.Add(CloudEvent.TypeHeader, "MyType");
-            senderMessage.Headers.Add(CloudEvent.TimeHeader, DateTime.UtcNow);
+            senderMessage.Headers.Add(CloudEvent.SourceAttribute, new Uri("http://MySource"));
+            senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
+            senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
 
             Action act = () => TestCloudEvent.Validate(senderMessage);
 
             act.Should().NotThrow();
 
-            senderMessage.Headers[CloudEvent.IdHeader].Should().NotBeNull();
+            senderMessage.Headers[CloudEvent.IdAttribute].Should().NotBeNull();
         }
 
         [Fact]
@@ -205,9 +205,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var senderMessage = new SenderMessage("Hello, world!");
 
-            senderMessage.Headers.Add(CloudEvent.IdHeader, "MyId");
-            senderMessage.Headers.Add(CloudEvent.TypeHeader, "MyType");
-            senderMessage.Headers.Add(CloudEvent.TimeHeader, DateTime.UtcNow);
+            senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
+            senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
+            senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
 
             Action act = () => TestCloudEvent.Validate(senderMessage);
 
@@ -221,9 +221,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var senderMessage = new SenderMessage("Hello, world!");
 
-            senderMessage.Headers.Add(CloudEvent.IdHeader, "MyId");
-            senderMessage.Headers.Add(CloudEvent.SourceHeader, new Uri("http://MySource"));
-            senderMessage.Headers.Add(CloudEvent.TimeHeader, DateTime.UtcNow);
+            senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
+            senderMessage.Headers.Add(CloudEvent.SourceAttribute, new Uri("http://MySource"));
+            senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
 
             Action act = () => TestCloudEvent.Validate(senderMessage);
 
@@ -237,15 +237,15 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var senderMessage = new SenderMessage("Hello, world!");
 
-            senderMessage.Headers.Add(CloudEvent.IdHeader, "MyId");
-            senderMessage.Headers.Add(CloudEvent.SourceHeader, new Uri("http://MySource"));
-            senderMessage.Headers.Add(CloudEvent.TypeHeader, "MyType");
+            senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
+            senderMessage.Headers.Add(CloudEvent.SourceAttribute, new Uri("http://MySource"));
+            senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
 
             Action act = () => TestCloudEvent.Validate(senderMessage);
 
             act.Should().NotThrow();
 
-            senderMessage.Headers[CloudEvent.TimeHeader].Should().NotBeNull();
+            senderMessage.Headers[CloudEvent.TimeAttribute].Should().NotBeNull();
         }
 
         [Fact]
@@ -284,13 +284,13 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var dataSchema = new Uri("http://MySource");
             var time = DateTime.UtcNow;
 
-            receiverMessage.Headers.Add(CloudEvent.IdHeader, "MyId");
-            receiverMessage.Headers.Add(CloudEvent.SourceHeader, source);
-            receiverMessage.Headers.Add(CloudEvent.TypeHeader, "MyType");
-            receiverMessage.Headers.Add(CloudEvent.DataContentTypeHeader, dataContentType);
-            receiverMessage.Headers.Add(CloudEvent.DataSchemaHeader, dataSchema);
-            receiverMessage.Headers.Add(CloudEvent.SubjectHeader, "MySubject");
-            receiverMessage.Headers.Add(CloudEvent.TimeHeader, time);
+            receiverMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
+            receiverMessage.Headers.Add(CloudEvent.SourceAttribute, source);
+            receiverMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
+            receiverMessage.Headers.Add(CloudEvent.DataContentTypeAttribute, dataContentType);
+            receiverMessage.Headers.Add(CloudEvent.DataSchemaAttribute, dataSchema);
+            receiverMessage.Headers.Add(CloudEvent.SubjectAttribute, "MySubject");
+            receiverMessage.Headers.Add(CloudEvent.TimeAttribute, time);
 
             var cloudEvent = TestCloudEvent.Create(receiverMessage);
 
@@ -335,10 +335,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var dataSchema = new Uri("http://MySource").ToString();
             var time = DateTime.UtcNow.ToString("O");
 
-            receiverMessage.Headers.Add(CloudEvent.SourceHeader, source);
-            receiverMessage.Headers.Add(CloudEvent.DataContentTypeHeader, dataContentType);
-            receiverMessage.Headers.Add(CloudEvent.DataSchemaHeader, dataSchema);
-            receiverMessage.Headers.Add(CloudEvent.TimeHeader, time);
+            receiverMessage.Headers.Add(CloudEvent.SourceAttribute, source);
+            receiverMessage.Headers.Add(CloudEvent.DataContentTypeAttribute, dataContentType);
+            receiverMessage.Headers.Add(CloudEvent.DataSchemaAttribute, dataSchema);
+            receiverMessage.Headers.Add(CloudEvent.TimeAttribute, time);
 
             var cloudEvent = TestCloudEvent.Create(receiverMessage);
 
