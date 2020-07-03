@@ -196,17 +196,17 @@ namespace RockLib.Messaging.CloudEvents
             if (protocolBinding is null)
                 protocolBinding = DefaultProtocolBinding;
 
-            if (!HasHeaderOfType<string>(senderMessage, protocolBinding.GetHeaderName(IdHeader)))
+            if (!TryGetHeaderValue<string>(senderMessage, protocolBinding.GetHeaderName(IdHeader), out _))
                 senderMessage.Headers[protocolBinding.GetHeaderName(IdHeader)] = Guid.NewGuid().ToString();
 
-            if (!HasHeaderOfType<Uri>(senderMessage, protocolBinding.GetHeaderName(SourceHeader))
-                && !HasHeaderOfType<string>(senderMessage, protocolBinding.GetHeaderName(SourceHeader)))
+            if (!TryGetHeaderValue<Uri>(senderMessage, protocolBinding.GetHeaderName(SourceHeader), out _)
+                && !TryGetHeaderValue<string>(senderMessage, protocolBinding.GetHeaderName(SourceHeader), out _))
                 throw new CloudEventValidationException($"The '{protocolBinding.GetHeaderName(SourceHeader)}' header is missing from the SenderMessage.");
 
-            if (!HasHeaderOfType<string>(senderMessage, protocolBinding.GetHeaderName(TypeHeader)))
+            if (!TryGetHeaderValue<string>(senderMessage, protocolBinding.GetHeaderName(TypeHeader), out _))
                 throw new CloudEventValidationException($"The '{protocolBinding.GetHeaderName(TypeHeader)}' header is missing from the SenderMessage.");
 
-            if (!HasHeaderOfType<DateTime>(senderMessage, protocolBinding.GetHeaderName(TimeHeader)))
+            if (!TryGetHeaderValue<DateTime>(senderMessage, protocolBinding.GetHeaderName(TimeHeader), out _))
                 senderMessage.Headers[protocolBinding.GetHeaderName(TimeHeader)] = DateTime.UtcNow;
         }
 
@@ -304,8 +304,31 @@ namespace RockLib.Messaging.CloudEvents
             return cloudEvent;
         }
 
-        private static bool HasHeaderOfType<T>(SenderMessage senderMessage, string headerName) =>
-            senderMessage.Headers.TryGetValue(headerName, out var value)
-                && value is T;
+        /// <summary>
+        /// Gets the value of the header with the specified name as type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the header value.</typeparam>
+        /// <param name="senderMessage">The <see cref="SenderMessage"/>.</param>
+        /// <param name="headerName">The name of the header.</param>
+        /// <param name="value">
+        /// When this method returns, the value of the header with the specified name, if the
+        /// header is found; otherwise, the default value for the type of the <paramref name="value"/>
+        /// parameter. This parameter is passed uninitialized.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if the message contains a header with the specified name; otherwise,
+        /// <see langword="false"/>.
+        /// </returns>
+        protected static bool TryGetHeaderValue<T>(SenderMessage senderMessage, string headerName, out T value)
+        {
+            if (senderMessage.Headers.TryGetValue(headerName, out var obj) && obj is T)
+            {
+                // TODO: If obj is not of type T, try to convert it to T.
+                value = (T)obj;
+                return true;
+            }
+            value = default;
+            return false;
+        }
     }
 }
