@@ -3,7 +3,7 @@
 namespace RockLib.Messaging
 {
     /// <summary>
-    /// Provides data for the <see cref="IReceiver.Error"/> event.
+    /// Provides data for error events such as <see cref="IReceiver.Error"/>.
     /// </summary>
     public class ErrorEventArgs : EventArgs
     {
