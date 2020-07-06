@@ -5,7 +5,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 {
     public class ProtocolBindingTests
     {
-        [Fact]
+        [Fact(DisplayName = "Default field's GetHeaderName method returns attribute name unmodified")]
         public void DefaultFieldHappyPath()
         {
             var attributeName = "MyAttribute";
@@ -15,7 +15,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             headerName.Should().BeSameAs(attributeName);
         }
 
-        [Fact]
+        [Fact(DisplayName = "Amqp field's GetHeaderName method returns 'cloudEvents:' + attribute name")]
         public void AmqpFieldHappyPath()
         {
             var attributeName = "MyAttribute";
@@ -25,7 +25,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             headerName.Should().Be("cloudEvents:" + attributeName);
         }
 
-        [Fact]
+        [Fact(DisplayName = "Http field's GetHeaderName method returns 'ce_' + attribute name")]
         public void HttpFieldHappyPath()
         {
             var attributeName = "MyAttribute";
@@ -35,7 +35,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             headerName.Should().Be("ce_" + attributeName);
         }
 
-        [Fact]
+        [Fact(DisplayName = "Kafka field's GetHeaderName method returns 'ce_' + attribute name")]
         public void KafkaFieldHappyPath()
         {
             var attributeName = "MyAttribute";
@@ -45,7 +45,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             headerName.Should().Be("ce_" + attributeName);
         }
 
-        [Fact]
+        [Fact(DisplayName = "Mqtt field's GetHeaderName method returns attribute name unmodified")]
         public void MqttFieldHappyPath()
         {
             var attributeName = "MyAttribute";

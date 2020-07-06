@@ -9,7 +9,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
 {
     public class CloudEventTests
     {
-        [Fact]
+        #region SetData
+
+        [Fact(DisplayName = "SetData method 1 sets the Data property")]
         public void SetDataMethod1HappyPath()
         {
             var stringData = "Hello, world!";
@@ -21,7 +23,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.Data.Should().BeSameAs(stringData);
         }
 
-        [Fact]
+        [Fact(DisplayName = "SetData method 2 sets the Data property")]
         public void SetDataMethod2HappyPath()
         {
             var binaryData = new byte[] { 1, 2, 3, 4 };
@@ -33,7 +35,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.Data.Should().BeSameAs(binaryData);
         }
 
-        [Fact]
+        #endregion
+
+        #region ToSenderMessage
+
+        [Fact(DisplayName = "ToSenderMessage method maps string data to StringPayload")]
         public void ToSenderMessageMethodHappyPath1()
         {
             var stringData = "Hello, world!";
@@ -46,7 +52,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.StringPayload.Should().BeSameAs(stringData);
         }
 
-        [Fact]
+        [Fact(DisplayName = "ToSenderMessage method maps binary data to BinaryPayload")]
         public void ToSenderMessageMethodHappyPath2()
         {
             var binaryData = new byte[] { 1, 2, 3, 4 };
@@ -59,7 +65,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.BinaryPayload.Should().BeSameAs(binaryData);
         }
 
-        [Fact]
+        [Fact(DisplayName = "ToSenderMessage method maps null data to empty StringPayload")]
         public void ToSenderMessageMethodHappyPath3()
         {
             // null Data
@@ -71,7 +77,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.StringPayload.Should().Be("");
         }
 
-        [Fact]
+        [Fact(DisplayName = "ToSenderMessage method maps cloud event attributes to sender message headers")]
         public void ToSenderMessageMethodHappyPath4()
         {
             // All properties provided
@@ -107,7 +113,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers[CloudEvent.TypeAttribute].Should().Be(type);
         }
 
-        [Fact]
+        [Fact(DisplayName = "ToSenderMessage method does not map null cloud event attributes to sender message headers")]
         public void ToSenderMessageMethodHappyPath5()
         {
             // No properties provided
@@ -126,7 +132,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Should().NotContainKey(CloudEvent.TypeAttribute);
         }
 
-        [Fact]
+        [Fact(DisplayName = "ToSenderMessage method adds additional attributes to sender message headers")]
         public void ToSenderMessageMethodHappyPath6()
         {
             // Additional attributes provided
@@ -141,7 +147,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Should().ContainKey("bar").WhichValue.Should().Be(123);
         }
 
-        [Fact]
+        [Fact(DisplayName = "ToSenderMessage method applies specified protocol binding to each attribute")]
         public void ToSenderMessageMethodHappyPath7()
         {
             // Non-default protocol binding
@@ -152,14 +158,26 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var id = "MyId";
 
-            var cloudEvent = new TestCloudEvent { Id = id };
+            var cloudEvent = new TestCloudEvent
+            {
+                Id = id,
+                AdditionalAttributes = { { "foo", "abc" } }
+            };
 
             var senderMessage = cloudEvent.ToSenderMessage(mockProtocolBinding.Object);
 
             senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.IdAttribute).WhichValue.Should().BeSameAs(id);
+            senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.SpecVersionAttribute).WhichValue.Should().Be("1.0");
+
+            // Note that AdditionalAttributes are mapped verbatim (i.e. not using the protocol binding).
+            senderMessage.Headers.Should().ContainKey("foo").WhichValue.Should().Be("abc");
         }
 
-        [Fact]
+        #endregion
+
+        #region ValidateCore
+
+        [Fact(DisplayName = "ValidateCore method does not throw when given valid sender message")]
         public void ValidateCoreMethodHappyPath1()
         {
             var senderMessage = new SenderMessage("Hello, world!");
@@ -174,7 +192,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().NotThrow();
         }
 
-        [Fact]
+        [Fact(DisplayName = "ValidateCore method does not throw when given valid sender message with stringly typed attributes")]
         public void ValidateCoreMethodHappyPath2()
         {
             var senderMessage = new SenderMessage("Hello, world!");
@@ -182,14 +200,14 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
             senderMessage.Headers.Add(CloudEvent.SourceAttribute, "http://MySource");
             senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
-            senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
+            senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow.ToString("O"));
 
             Action act = () => TestCloudEvent.Validate(senderMessage);
 
             act.Should().NotThrow();
         }
 
-        [Fact]
+        [Fact(DisplayName = "ValidateCore method does not throw when given valid sender message for specified protocol binding")]
         public void ValidateCoreMethodHappyPath3()
         {
             // Non-default protocol binding
@@ -209,7 +227,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().NotThrow();
         }
 
-        [Fact]
+        [Fact(DisplayName = "ValidateCore method throws given null senderMessage parameter")]
         public void ValidateCoreMethodSadPath1()
         {
             // Null senderMessage
@@ -219,25 +237,28 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*senderMessage*");
         }
 
-        [Fact]
+        [Fact(DisplayName = "ValidateCore method adds Id header if missing")]
         public void ValidateCoreMethodSadPath2()
         {
             // Missing Id
 
             var senderMessage = new SenderMessage("Hello, world!");
 
-            senderMessage.Headers.Add(CloudEvent.SourceAttribute, new Uri("http://MySource"));
-            senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
-            senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
+            senderMessage.Headers.Add("test-" + CloudEvent.SourceAttribute, new Uri("http://MySource"));
+            senderMessage.Headers.Add("test-" + CloudEvent.TypeAttribute, "MyType");
+            senderMessage.Headers.Add("test-" + CloudEvent.TimeAttribute, DateTime.UtcNow);
 
-            Action act = () => TestCloudEvent.Validate(senderMessage);
+            var mockProtocolBinding = new Mock<IProtocolBinding>();
+            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
+
+            Action act = () => TestCloudEvent.Validate(senderMessage, mockProtocolBinding.Object);
 
             act.Should().NotThrow();
 
-            senderMessage.Headers[CloudEvent.IdAttribute].Should().NotBeNull();
+            senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.IdAttribute).WhichValue.Should().NotBeNull();
         }
 
-        [Fact]
+        [Fact(DisplayName = "ValidateCore method throws given missing Source header")]
         public void ValidateCoreMethodSadPath3()
         {
             // Missing Source
@@ -253,7 +274,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().ThrowExactly<CloudEventValidationException>();
         }
 
-        [Fact]
+        [Fact(DisplayName = "ValidateCore method throws given missing Type header")]
         public void ValidateCoreMethodSadPath4()
         {
             // Missing Type
@@ -269,25 +290,32 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().ThrowExactly<CloudEventValidationException>();
         }
 
-        [Fact]
+        [Fact(DisplayName = "ValidateCore method adds Time header if missing")]
         public void ValidateCoreMethodSadPath5()
         {
             // Missing Time
 
             var senderMessage = new SenderMessage("Hello, world!");
 
-            senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
-            senderMessage.Headers.Add(CloudEvent.SourceAttribute, new Uri("http://MySource"));
-            senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
+            senderMessage.Headers.Add("test-" + CloudEvent.IdAttribute, "MyId");
+            senderMessage.Headers.Add("test-" + CloudEvent.SourceAttribute, new Uri("http://MySource"));
+            senderMessage.Headers.Add("test-" + CloudEvent.TypeAttribute, "MyType");
 
-            Action act = () => TestCloudEvent.Validate(senderMessage);
+            var mockProtocolBinding = new Mock<IProtocolBinding>();
+            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
+
+            Action act = () => TestCloudEvent.Validate(senderMessage, mockProtocolBinding.Object);
 
             act.Should().NotThrow();
 
-            senderMessage.Headers[CloudEvent.TimeAttribute].Should().NotBeNull();
+            senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.TimeAttribute).WhichValue.Should().NotBeNull();
         }
 
-        [Fact]
+        #endregion
+
+        #region CreateCore
+
+        [Fact(DisplayName = "CreateCore method creates cloud event with binary data")]
         public void CreateCoreMethodHappyPath1()
         {
             var binaryData = new byte[] { 1, 2, 3, 4 };
@@ -299,7 +327,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.Data.Should().BeSameAs(binaryData);
         }
 
-        [Fact]
+        [Fact(DisplayName = "CreateCore method creates cloud event with binary data")]
         public void CreateCoreMethodHappyPath2()
         {
             var stringData = "Hello, world!";
@@ -311,7 +339,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.Data.Should().BeSameAs(stringData);
         }
 
-        [Fact]
+        [Fact(DisplayName = "CreateCore method maps cloud event attributes from receiver message headers")]
         public void CreateCoreMethodHappyPath3()
         {
             // All properties provided
@@ -343,7 +371,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(DisplayName = "CreateCore method does not require any cloud event attributes to be mapped")]
         public void CreateCoreMethodHappyPath4()
         {
             // No properties provided
@@ -362,7 +390,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(DisplayName = "CreateCore method maps from stringly typed receiver message headers")]
         public void CreateCoreMethodHappyPath5()
         {
             // Alternate property types provided
@@ -388,7 +416,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(DisplayName = "CreateCore method maps additional attributes verbatim")]
         public void CreateCoreMethodHappyPath6()
         {
             // Additional attributes provided
@@ -397,7 +425,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
             receiverMessage.Headers.Add("foo", "abc");
             receiverMessage.Headers.Add("bar", 123);
 
-            var cloudEvent = TestCloudEvent.Create(receiverMessage);
+            var mockProtocolBinding = new Mock<IProtocolBinding>();
+            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
+
+            var cloudEvent = TestCloudEvent.Create(receiverMessage, mockProtocolBinding.Object);
 
             cloudEvent.AdditionalAttributes.Should().HaveCount(2);
             cloudEvent.AdditionalAttributes.Should().ContainKey("foo").WhichValue.Should().Be("abc");
@@ -405,13 +436,13 @@ namespace RockLib.Messaging.CloudEvents.Tests
         }
 
 
-        [Fact]
+        [Fact(DisplayName = "CreateCore method maps with the specified protocol binding")]
         public void CreateCoreMethodHappyPath7()
         {
             // Non-default protocol binding
 
             var receiverMessage = new FakeReceiverMessage("Hello, world!");
-
+            receiverMessage.Headers.Add("foo", "abc");
             receiverMessage.Headers.Add("test-" + CloudEvent.IdAttribute, "MyId");
 
             var mockProtocolBinding = new Mock<IProtocolBinding>();
@@ -420,9 +451,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var cloudEvent = TestCloudEvent.Create(receiverMessage, mockProtocolBinding.Object);
 
             cloudEvent.Id.Should().Be("MyId");
+            cloudEvent.AdditionalAttributes.Should().ContainKey("foo").WhichValue.Should().Be("abc");
         }
 
-        [Fact]
+        [Fact(DisplayName = "CreateCore method throws when receiverMessage parameter is null")]
         public void CreateCoreMethodSadPath()
         {
             // Null receiverMessage
@@ -431,6 +463,44 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*receiverMessage*");
         }
+
+        #endregion
+
+        #region Implicit conversion operator
+
+        [Fact(DisplayName = "Implicit conversion operator works by calling ToSenderMessage")]
+        public void ImplicitConversionOperatorHappyPath1()
+        {
+            var mockCloudEvent = new Mock<CloudEvent>();
+            mockCloudEvent.Setup(m => m.ToSenderMessage(It.IsAny<IProtocolBinding>())).CallBase().Verifiable();
+            mockCloudEvent.Object.SetData("Hello, world!");
+            mockCloudEvent.Object.Id = "MyId";
+            mockCloudEvent.Object.Source = new Uri("http://mysource/");
+            mockCloudEvent.Object.Type = "test";
+            mockCloudEvent.Object.AdditionalAttributes.Add("foo", "abc");
+
+            SenderMessage senderMessage = mockCloudEvent.Object;
+
+            senderMessage.StringPayload.Should().Be("Hello, world!");
+            senderMessage.Headers.Should().ContainKey(CloudEvent.IdAttribute).WhichValue.Should().Be("MyId");
+            senderMessage.Headers.Should().ContainKey(CloudEvent.SourceAttribute).WhichValue.ToString().Should().Be("http://mysource/");
+            senderMessage.Headers.Should().ContainKey(CloudEvent.TypeAttribute).WhichValue.Should().Be("test");
+            senderMessage.Headers.Should().ContainKey("foo").WhichValue.Should().Be("abc");
+
+            mockCloudEvent.Verify(m => m.ToSenderMessage(CloudEvent.DefaultProtocolBinding), Times.Once());
+        }
+
+        [Fact(DisplayName = "Implicit conversion operator returns null given null cloud event")]
+        public void ImplicitConversionOperatorHappyPath2()
+        {
+            CloudEvent cloudEvent = null;
+
+            SenderMessage senderMessage = cloudEvent;
+
+            senderMessage.Should().BeNull();
+        }
+
+        #endregion
 
         private class TestCloudEvent : CloudEvent
         {
