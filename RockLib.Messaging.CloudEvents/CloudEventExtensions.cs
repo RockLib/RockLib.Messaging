@@ -8,21 +8,21 @@ namespace RockLib.Messaging.CloudEvents
     public static class CloudEventExtensions
     {
         /// <summary>
-        /// Creates an instance of <see cref="DefaultCloudEvent"/> with properties mapped from the headers of
+        /// Creates an instance of <see cref="CloudEvent"/> with properties mapped from the headers of
         /// <paramref name="receiverMessage"/>.
         /// </summary>
         /// <param name="receiverMessage">
-        /// The <see cref="IReceiverMessage"/> to be mapped to the new <see cref="DefaultCloudEvent"/>.
+        /// The <see cref="IReceiverMessage"/> to be mapped to the new <see cref="CloudEvent"/>.
         /// </param>
         /// <param name="protocolBinding">
         /// The <see cref="IProtocolBinding"/> used to map <see cref="IReceiverMessage"/> headers to
         /// CloudEvent attributes.
         /// </param>
         /// <returns>
-        /// A new <see cref="DefaultCloudEvent"/> with properties mapped from the headers of the <see cref="IReceiverMessage"/>.
+        /// A new <see cref="CloudEvent"/> with properties mapped from the headers of the <see cref="IReceiverMessage"/>.
         /// </returns>
-        public static DefaultCloudEvent ToCloudEvent(this IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null) =>
-            DefaultCloudEvent.Create(receiverMessage, protocolBinding);
+        public static CloudEvent ToCloudEvent(this IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null) =>
+            CloudEvent.CreateCore<CloudEvent>(receiverMessage, protocolBinding);
 
         /// <summary>
         /// Adds a <see cref="ValidatingSender"/> decorator that ensures messages are valid CloudEvents.
@@ -34,6 +34,6 @@ namespace RockLib.Messaging.CloudEvents
         /// </param>
         /// <returns>The same <see cref="ISenderBuilder"/>.</returns>
         public static ISenderBuilder AddCloudEventValidation(this ISenderBuilder builder, IProtocolBinding protocolBinding = null) =>
-            builder.AddValidation(message => DefaultCloudEvent.Validate(message, protocolBinding));
+            builder.AddValidation(message => CloudEvent.ValidateCore(message, protocolBinding));
     }
 }

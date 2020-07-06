@@ -5,9 +5,9 @@ using System.Net.Mime;
 namespace RockLib.Messaging.CloudEvents
 {
     /// <summary>
-    /// The base type for cloud events.
+    /// Defines a cloud event.
     /// </summary>
-    public abstract class CloudEvent
+    public class CloudEvent
     {
         /// <summary>The name of the <see cref="Id"/> attribute.</summary>
         public const string IdAttribute = "id";
@@ -33,16 +33,33 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>The name of the <see cref="Time"/> attribute.</summary>
         public const string TimeAttribute = "time";
 
-        private static IProtocolBinding _defaultProtocolBinding = ProtocolBinding.Default;
+        private static IProtocolBinding _defaultProtocolBinding;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CloudEvent"/> class.
+        /// </summary>
+        public CloudEvent() { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CloudEvent"/> class.
+        /// </summary>
+        /// <param name="data">The data (payload) of the cloud event.</param>
+        public CloudEvent(string data) => Data = data;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CloudEvent"/> class.
+        /// </summary>
+        /// <param name="data">The data (payload) of the cloud event.</param>
+        public CloudEvent(byte[] data) => Data = data;
 
         /// <summary>
         /// Gets or sets the default <see cref="IProtocolBinding"/>. This is used when one a
-        /// <see cref="IProtocolBinding"/> is required by a method but was not provided
+        /// <see cref="IProtocolBinding"/> is required by a cloud event method but was not provided
         /// (i.e. passed as <see langword="null"/>) by the caller.
         /// </summary>
         public static IProtocolBinding DefaultProtocolBinding
         {
-            get => _defaultProtocolBinding;
+            get => _defaultProtocolBinding ?? (_defaultProtocolBinding = ProtocolBinding.Default);
             set => _defaultProtocolBinding = value ?? throw new ArgumentNullException(nameof(value));
         }
 
@@ -181,6 +198,14 @@ namespace RockLib.Messaging.CloudEvents
         }
 
         /// <summary>
+        /// Converts the <see cref="CloudEvent"/> to a <see cref="SenderMessage"/> by calling
+        /// <see cref="ToSenderMessage"/>.
+        /// </summary>
+        /// <param name="cloudEvent">The <see cref="CloudEvent"/> to convert to a <see cref="SenderMessage"/>.</param>
+        public static implicit operator SenderMessage(CloudEvent cloudEvent) =>
+            cloudEvent?.ToSenderMessage(DefaultProtocolBinding);
+
+        /// <summary>
         /// Ensures that the required base cloud event attributes are present.
         /// </summary>
         /// <param name="senderMessage">The <see cref="SenderMessage"/> to validate.</param>
@@ -188,7 +213,7 @@ namespace RockLib.Messaging.CloudEvents
         /// The <see cref="IProtocolBinding"/> used to map CloudEvent attributes to <see cref="SenderMessage"/>
         /// headers. If <see langword="null"/>, then <see cref="DefaultProtocolBinding"/> is used instead.
         /// </param>
-        protected static void ValidateCore(SenderMessage senderMessage, IProtocolBinding protocolBinding)
+        protected internal static void ValidateCore(SenderMessage senderMessage, IProtocolBinding protocolBinding)
         {
             if (senderMessage is null)
                 throw new ArgumentNullException(nameof(senderMessage));
@@ -227,7 +252,7 @@ namespace RockLib.Messaging.CloudEvents
         /// <returns>
         /// A new instance of <typeparamref name="TCloudEvent"/> with its base cloud event attributes set.
         /// </returns>
-        protected static TCloudEvent CreateCore<TCloudEvent>(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding)
+        protected internal static TCloudEvent CreateCore<TCloudEvent>(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding)
             where TCloudEvent : CloudEvent, new()
         {
             if (receiverMessage is null)
