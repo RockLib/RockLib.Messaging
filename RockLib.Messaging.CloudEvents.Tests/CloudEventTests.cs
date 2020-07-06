@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Moq;
 using RockLib.Messaging.Testing;
 using System;
 using System.Net.Mime;
@@ -141,6 +142,24 @@ namespace RockLib.Messaging.CloudEvents.Tests
         }
 
         [Fact]
+        public void ToSenderMessageMethodHappyPath7()
+        {
+            // Non-default protocol binding
+
+            var mockProtocolBinding = new Mock<IProtocolBinding>();
+            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>()))
+                .Returns<string>(header => "test-" + header);
+
+            var id = "MyId";
+
+            var cloudEvent = new TestCloudEvent { Id = id };
+
+            var senderMessage = cloudEvent.ToSenderMessage(mockProtocolBinding.Object);
+
+            senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.IdAttribute).WhichValue.Should().BeSameAs(id);
+        }
+
+        [Fact]
         public void ValidateCoreMethodHappyPath1()
         {
             var senderMessage = new SenderMessage("Hello, world!");
@@ -166,6 +185,26 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
 
             Action act = () => TestCloudEvent.Validate(senderMessage);
+
+            act.Should().NotThrow();
+        }
+
+        [Fact]
+        public void ValidateCoreMethodHappyPath3()
+        {
+            // Non-default protocol binding
+
+            var senderMessage = new SenderMessage("Hello, world!");
+
+            senderMessage.Headers.Add("test-" + CloudEvent.IdAttribute, "MyId");
+            senderMessage.Headers.Add("test-" + CloudEvent.SourceAttribute, new Uri("http://MySource"));
+            senderMessage.Headers.Add("test-" + CloudEvent.TypeAttribute, "MyType");
+            senderMessage.Headers.Add("test-" + CloudEvent.TimeAttribute, DateTime.UtcNow);
+
+            var mockProtocolBinding = new Mock<IProtocolBinding>();
+            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
+
+            Action act = () => TestCloudEvent.Validate(senderMessage, mockProtocolBinding.Object);
 
             act.Should().NotThrow();
         }
@@ -365,6 +404,24 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.AdditionalAttributes.Should().ContainKey("bar").WhichValue.Should().Be(123);
         }
 
+
+        [Fact]
+        public void CreateCoreMethodHappyPath7()
+        {
+            // Non-default protocol binding
+
+            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+
+            receiverMessage.Headers.Add("test-" + CloudEvent.IdAttribute, "MyId");
+
+            var mockProtocolBinding = new Mock<IProtocolBinding>();
+            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
+
+            var cloudEvent = TestCloudEvent.Create(receiverMessage, mockProtocolBinding.Object);
+
+            cloudEvent.Id.Should().Be("MyId");
+        }
+
         [Fact]
         public void CreateCoreMethodSadPath()
         {
@@ -377,9 +434,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
         private class TestCloudEvent : CloudEvent
         {
-            public static void Validate(SenderMessage senderMessage) => ValidateCore(senderMessage, null);
+            public static void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null) =>
+                ValidateCore(senderMessage, protocolBinding);
 
-            public static TestCloudEvent Create(IReceiverMessage receiverMessage) => CreateCore<TestCloudEvent>(receiverMessage, null);
+            public static TestCloudEvent Create(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null) =>
+                CreateCore<TestCloudEvent>(receiverMessage, protocolBinding);
         }
     }
 }
