@@ -10,7 +10,7 @@
     /// consumers will need to have some out-of-band communication with the event producer to understand
     /// how to interpret the value of the attribute.</para>
     /// </summary>
-    public class SequenceEvent : CloudEvent
+    public class SequentialEvent : CloudEvent
     {
         /// <summary>The name of the <see cref="Sequence"/> attribute.</summary>
         public const string SequenceAttribute = "sequence";
@@ -19,21 +19,21 @@
         public const string SequenceTypeAttribute = "sequencetype";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SequenceEvent"/> class.
+        /// Initializes a new instance of the <see cref="SequentialEvent"/> class.
         /// </summary>
-        public SequenceEvent() { }
+        public SequentialEvent() { }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SequenceEvent"/> class.
+        /// Initializes a new instance of the <see cref="SequentialEvent"/> class.
         /// </summary>
-        /// <param name="data">The data (payload) of the sequence event.</param>
-        public SequenceEvent(string data) : base(data) { }
+        /// <param name="data">The data (payload) of the sequential event.</param>
+        public SequentialEvent(string data) : base(data) { }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SequenceEvent"/> class.
+        /// Initializes a new instance of the <see cref="SequentialEvent"/> class.
         /// </summary>
-        /// <param name="data">The data (payload) of the sequence event.</param>
-        public SequenceEvent(byte[] data) : base(data) { }
+        /// <param name="data">The data (payload) of the sequential event.</param>
+        public SequentialEvent(byte[] data) : base(data) { }
 
         /// <summary>
         /// REQUIRED. Value expressing the relative order of the event. This enables interpretation of
@@ -48,10 +48,10 @@
         public string SequenceType { get; set; }
 
         /// <summary>
-        /// Creates a <see cref="SenderMessage"/> with headers mapped from the attributes of this sequence event.
+        /// Creates a <see cref="SenderMessage"/> with headers mapped from the attributes of this sequential event.
         /// </summary>
         /// <param name="protocolBinding">
-        /// The <see cref="IProtocolBinding"/> used to map SequenceEvent attributes to <see cref="SenderMessage"/>
+        /// The <see cref="IProtocolBinding"/> used to map SequentialEvent attributes to <see cref="SenderMessage"/>
         /// headers. If <see langword="null"/>, then <see cref="CloudEvent.DefaultProtocolBinding"/> is used
         /// instead.
         /// </param>
@@ -73,7 +73,7 @@
         }
 
         /// <summary>
-        /// Ensures that the attributes for the sequence event are present.
+        /// Ensures that the attributes for the sequential event are present.
         /// </summary>
         /// <param name="senderMessage">The <see cref="SenderMessage"/> to validate.</param>
         /// <param name="protocolBinding">
@@ -91,11 +91,11 @@
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="SequenceEvent"/> and initializes its sequence event
+        /// Creates an instance of <see cref="SequentialEvent"/> and initializes its sequential event
         /// attributes according to the payload and headers of the <paramref name="receiverMessage"/>.
         /// </summary>
         /// <param name="receiverMessage">
-        /// The <see cref="IReceiverMessage"/> with headers that map to sequence event attributes.
+        /// The <see cref="IReceiverMessage"/> with headers that map to sequential event attributes.
         /// </param>
         /// <param name="protocolBinding">
         /// The <see cref="IProtocolBinding"/> used to map <see cref="IReceiverMessage"/> headers to
@@ -103,11 +103,11 @@
         /// is used instead.
         /// </param>
         /// <returns>
-        /// A new instance of <see cref="SequenceEvent"/> with its sequence event attributes set.
+        /// A new instance of <see cref="SequentialEvent"/> with its sequential event attributes set.
         /// </returns>
-        public static SequenceEvent Create(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)
+        public static SequentialEvent Create(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)
         {
-            var cloudEvent = CreateCore<SequenceEvent>(receiverMessage, ref protocolBinding);
+            var cloudEvent = CreateCore<SequentialEvent>(receiverMessage, ref protocolBinding);
 
             var sequenceHeader = protocolBinding.GetHeaderName(SequenceAttribute);
             if (receiverMessage.Headers.TryGetValue(sequenceHeader, out string sequence))

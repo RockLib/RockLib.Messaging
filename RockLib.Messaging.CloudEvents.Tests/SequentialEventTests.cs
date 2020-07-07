@@ -7,12 +7,12 @@ using Xunit;
 
 namespace RockLib.Messaging.CloudEvents.Tests
 {
-    public class SequenceEventTests
+    public class SequentialEventTests
     {
         [Fact]
         public void Constructor1HappyPath()
         {
-            var cloudEvent = new SequenceEvent();
+            var cloudEvent = new SequentialEvent();
 
             cloudEvent.Data.Should().BeNull();
         }
@@ -20,7 +20,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact]
         public void Constructor2HappyPath()
         {
-            var cloudEvent = new SequenceEvent("Hello, world!");
+            var cloudEvent = new SequentialEvent("Hello, world!");
 
             cloudEvent.Data.Should().Be("Hello, world!");
         }
@@ -30,7 +30,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var data = new byte[] { 1, 2, 3, 4 };
 
-            var cloudEvent = new SequenceEvent(data);
+            var cloudEvent = new SequentialEvent(data);
 
             cloudEvent.Data.Should().BeSameAs(data);
         }
@@ -50,7 +50,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var time = DateTime.UtcNow;
             var type = "MyType";
 
-            var cloudEvent = new SequenceEvent
+            var cloudEvent = new SequentialEvent
             {
                 Sequence = sequence,
                 SequenceType = sequenceType,
@@ -65,8 +65,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
-            senderMessage.Headers[SequenceEvent.SequenceAttribute].Should().BeSameAs(sequence);
-            senderMessage.Headers[SequenceEvent.SequenceTypeAttribute].Should().BeSameAs(sequenceType);
+            senderMessage.Headers[SequentialEvent.SequenceAttribute].Should().BeSameAs(sequence);
+            senderMessage.Headers[SequentialEvent.SequenceTypeAttribute].Should().BeSameAs(sequenceType);
 
             senderMessage.Headers[CloudEvent.DataContentTypeAttribute].Should().Be(dataContentType.ToString());
             senderMessage.Headers[CloudEvent.DataSchemaAttribute].Should().Be(dataSchema.ToString());
@@ -83,12 +83,12 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // No attributes provided
 
-            var cloudEvent = new SequenceEvent();
+            var cloudEvent = new SequentialEvent();
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
-            senderMessage.Headers.Should().NotContainKey(SequenceEvent.SequenceAttribute);
-            senderMessage.Headers.Should().NotContainKey(SequenceEvent.SequenceTypeAttribute);
+            senderMessage.Headers.Should().NotContainKey(SequentialEvent.SequenceAttribute);
+            senderMessage.Headers.Should().NotContainKey(SequentialEvent.SequenceTypeAttribute);
 
             senderMessage.Headers.Should().NotContainKey(CloudEvent.DataContentTypeAttribute);
             senderMessage.Headers.Should().NotContainKey(CloudEvent.DataSchemaAttribute);
@@ -111,7 +111,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var senderMessage = new SenderMessage("Hello, world!");
             
-            senderMessage.Headers.Add(SequenceEvent.SequenceAttribute, "1");
+            senderMessage.Headers.Add(SequentialEvent.SequenceAttribute, "1");
 
             senderMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "1.0");
             senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
@@ -119,7 +119,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
             senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
 
-            Action act = () => SequenceEvent.Validate(senderMessage);
+            Action act = () => SequentialEvent.Validate(senderMessage);
 
             act.Should().NotThrow();
         }
@@ -131,7 +131,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var senderMessage = new SenderMessage("Hello, world!");
 
-            senderMessage.Headers.Add("test-" + SequenceEvent.SequenceAttribute, "1");
+            senderMessage.Headers.Add("test-" + SequentialEvent.SequenceAttribute, "1");
 
             senderMessage.Headers.Add("test-" + CloudEvent.SpecVersionAttribute, "1.0");
             senderMessage.Headers.Add("test-" + CloudEvent.IdAttribute, "MyId");
@@ -142,7 +142,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var mockProtocolBinding = new Mock<IProtocolBinding>();
             mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
 
-            Action act = () => SequenceEvent.Validate(senderMessage, mockProtocolBinding.Object);
+            Action act = () => SequentialEvent.Validate(senderMessage, mockProtocolBinding.Object);
 
             act.Should().NotThrow();
         }
@@ -159,7 +159,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
             senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
 
-            Action act = () => SequenceEvent.Validate(senderMessage);
+            Action act = () => SequentialEvent.Validate(senderMessage);
 
             act.Should().ThrowExactly<CloudEventValidationException>();
         }
@@ -176,8 +176,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var dataSchema = new Uri("http://MySource");
             var time = DateTime.UtcNow;
 
-            receiverMessage.Headers.Add(SequenceEvent.SequenceAttribute, "1");
-            receiverMessage.Headers.Add(SequenceEvent.SequenceTypeAttribute, SequenceTypes.Integer);
+            receiverMessage.Headers.Add(SequentialEvent.SequenceAttribute, "1");
+            receiverMessage.Headers.Add(SequentialEvent.SequenceTypeAttribute, SequenceTypes.Integer);
 
             receiverMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
             receiverMessage.Headers.Add(CloudEvent.SourceAttribute, source);
@@ -187,7 +187,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             receiverMessage.Headers.Add(CloudEvent.SubjectAttribute, "MySubject");
             receiverMessage.Headers.Add(CloudEvent.TimeAttribute, time);
 
-            var sequenceEvent = SequenceEvent.Create(receiverMessage);
+            var sequenceEvent = SequentialEvent.Create(receiverMessage);
 
             sequenceEvent.Sequence.Should().Be("1");
             sequenceEvent.SequenceType.Should().Be(SequenceTypes.Integer);
@@ -209,7 +209,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var receiverMessage = new FakeReceiverMessage("Hello, world!");
 
-            var sequenceEvent = SequenceEvent.Create(receiverMessage);
+            var sequenceEvent = SequentialEvent.Create(receiverMessage);
 
             sequenceEvent.Sequence.Should().BeNull();
             sequenceEvent.SequenceType.Should().BeNull();
