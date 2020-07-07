@@ -505,10 +505,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
         private class TestCloudEvent : CloudEvent
         {
             public static void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null) =>
-                ValidateCore(senderMessage, protocolBinding);
+                ValidateCore(senderMessage, ref protocolBinding);
 
             public static TestCloudEvent Create(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null) =>
-                CreateCore<TestCloudEvent>(receiverMessage, protocolBinding);
+                CreateCore<TestCloudEvent>(receiverMessage, ref protocolBinding);
         }
     }
 }
