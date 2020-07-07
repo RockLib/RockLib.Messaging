@@ -9,6 +9,63 @@ namespace RockLib.Messaging.CloudEvents.Tests
 {
     public class CloudEventTests
     {
+        #region Constructor
+
+        [Fact(DisplayName = "Constructor 1 does not initialize anything")]
+        public void Constructor1HappyPath()
+        {
+            var cloudEvent = new CloudEvent();
+
+            cloudEvent.Data.Should().BeNull();
+            cloudEvent.AdditionalAttributes.Should().BeEmpty();
+            cloudEvent.DataContentType.Should().BeNull();
+            cloudEvent.DataSchema.Should().BeNull();
+            cloudEvent.Id.Should().BeNull();
+            cloudEvent.Source.Should().BeNull();
+            cloudEvent.SpecVersion.Should().Be("1.0");
+            cloudEvent.Subject.Should().BeNull();
+            cloudEvent.Time.Should().BeNull();
+            cloudEvent.Type.Should().BeNull();
+        }
+
+        [Fact(DisplayName = "Constructor 2 initializes Data property")]
+        public void Constructor2HappyPath()
+        {
+            var cloudEvent = new CloudEvent("Hello, world!");
+
+            cloudEvent.Data.Should().Be("Hello, world!");
+            cloudEvent.AdditionalAttributes.Should().BeEmpty();
+            cloudEvent.DataContentType.Should().BeNull();
+            cloudEvent.DataSchema.Should().BeNull();
+            cloudEvent.Id.Should().BeNull();
+            cloudEvent.Source.Should().BeNull();
+            cloudEvent.SpecVersion.Should().Be("1.0");
+            cloudEvent.Subject.Should().BeNull();
+            cloudEvent.Time.Should().BeNull();
+            cloudEvent.Type.Should().BeNull();
+        }
+
+        [Fact(DisplayName = "Constructor 3 initializes Data property")]
+        public void Constructor3HappyPath()
+        {
+            var data = new byte[] { 1, 2, 3, 4 };
+
+            var cloudEvent = new CloudEvent(data);
+
+            cloudEvent.Data.Should().BeSameAs(data);
+            cloudEvent.AdditionalAttributes.Should().BeEmpty();
+            cloudEvent.DataContentType.Should().BeNull();
+            cloudEvent.DataSchema.Should().BeNull();
+            cloudEvent.Id.Should().BeNull();
+            cloudEvent.Source.Should().BeNull();
+            cloudEvent.SpecVersion.Should().Be("1.0");
+            cloudEvent.Subject.Should().BeNull();
+            cloudEvent.Time.Should().BeNull();
+            cloudEvent.Type.Should().BeNull();
+        }
+
+        #endregion
+
         #region SetData
 
         [Fact(DisplayName = "SetData method 1 sets the Data property")]
