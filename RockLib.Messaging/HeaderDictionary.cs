@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 
 namespace RockLib.Messaging
 {
@@ -42,11 +43,20 @@ namespace RockLib.Messaging
                 switch (objectValue)
                 {
                     case null:
-                        value = default(T);
+                        value = default;
                         return false;
                     case T variable:
                         value = variable;
                         return true;
+                }
+
+                if (typeof(T) == typeof(DateTime) && objectValue is string stringValue)
+                {
+                    if (DateTime.TryParse(stringValue, null, DateTimeStyles.RoundtripKind, out var dateTimeValue))
+                    {
+                        value = (T)(object)dateTimeValue;
+                        return true;
+                    }
                 }
 
                 var converter = TypeDescriptor.GetConverter(typeof(T));
@@ -76,7 +86,7 @@ namespace RockLib.Messaging
                 }
             }
 
-            value = default(T);
+            value = default;
             return false;
         }
 
