@@ -14,8 +14,26 @@
     {
         /// <summary>The name of the <see cref="Sequence"/> attribute.</summary>
         public const string SequenceAttribute = "sequence";
+
         /// <summary>The name of the <see cref="SequenceType"/> attribute.</summary>
         public const string SequenceTypeAttribute = "sequencetype";
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SequenceEvent"/> class.
+        /// </summary>
+        public SequenceEvent() { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SequenceEvent"/> class.
+        /// </summary>
+        /// <param name="data">The data (payload) of the sequence event.</param>
+        public SequenceEvent(string data) : base(data) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SequenceEvent"/> class.
+        /// </summary>
+        /// <param name="data">The data (payload) of the sequence event.</param>
+        public SequenceEvent(byte[] data) : base(data) { }
 
         /// <summary>
         /// REQUIRED. Value expressing the relative order of the event. This enables interpretation of
@@ -24,8 +42,8 @@
         public string Sequence { get; set; }
 
         /// <summary>
-        /// Specifies the semantics of the sequence attribute. See <see cref="SequenceTypes"/> for known
-        /// values of this attribute.
+        /// Specifies the semantics of the sequence attribute. See the <see cref="SequenceTypes"/> class
+        /// for known values of this attribute.
         /// </summary>
         public string SequenceType { get; set; }
 
@@ -40,6 +58,9 @@
         /// <returns>The mapped <see cref="SenderMessage"/>.</returns>
         public override SenderMessage ToSenderMessage(IProtocolBinding protocolBinding = null)
         {
+            if (protocolBinding is null)
+                protocolBinding = ProtocolBinding.Default;
+
             var senderMessage = base.ToSenderMessage(protocolBinding);
 
             if (Sequence != null)
