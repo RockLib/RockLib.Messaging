@@ -80,7 +80,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "ToSenderMessage method maps cloud event attributes to sender message headers")]
         public void ToSenderMessageMethodHappyPath4()
         {
-            // All properties provided
+            // All attributes provided
 
             var dataContentType = new ContentType("application/xml");
             var dataSchema = new Uri("http://dataschema");
@@ -116,7 +116,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "ToSenderMessage method does not map null cloud event attributes to sender message headers")]
         public void ToSenderMessageMethodHappyPath5()
         {
-            // No properties provided
+            // No attributes provided
 
             var cloudEvent = new TestCloudEvent();
 
@@ -182,6 +182,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var senderMessage = new SenderMessage("Hello, world!");
 
+            senderMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "1.0");
             senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
             senderMessage.Headers.Add(CloudEvent.SourceAttribute, new Uri("http://MySource"));
             senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
@@ -197,6 +198,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var senderMessage = new SenderMessage("Hello, world!");
 
+            senderMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "1.0");
             senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
             senderMessage.Headers.Add(CloudEvent.SourceAttribute, "http://MySource");
             senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
@@ -214,6 +216,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var senderMessage = new SenderMessage("Hello, world!");
 
+            senderMessage.Headers.Add("test-" + CloudEvent.SpecVersionAttribute, "1.0");
             senderMessage.Headers.Add("test-" + CloudEvent.IdAttribute, "MyId");
             senderMessage.Headers.Add("test-" + CloudEvent.SourceAttribute, new Uri("http://MySource"));
             senderMessage.Headers.Add("test-" + CloudEvent.TypeAttribute, "MyType");
@@ -237,13 +240,32 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*senderMessage*");
         }
 
-        [Fact(DisplayName = "ValidateCore method adds Id header if missing")]
+        [Fact(DisplayName = "ValidateCore method throws given missing SpecVersion header")]
         public void ValidateCoreMethodSadPath2()
+        {
+            // Invalid SpecVersion
+
+            var senderMessage = new SenderMessage("Hello, world!");
+
+            senderMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "0.0");
+            senderMessage.Headers.Add(CloudEvent.SourceAttribute, new Uri("http://MySource"));
+            senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
+            senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
+            senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
+
+            Action act = () => TestCloudEvent.Validate(senderMessage);
+
+            act.Should().ThrowExactly<CloudEventValidationException>();
+        }
+
+        [Fact(DisplayName = "ValidateCore method adds Id header if missing")]
+        public void ValidateCoreMethodSadPath3()
         {
             // Missing Id
 
             var senderMessage = new SenderMessage("Hello, world!");
 
+            senderMessage.Headers.Add("test-" + CloudEvent.SpecVersionAttribute, "1.0");
             senderMessage.Headers.Add("test-" + CloudEvent.SourceAttribute, new Uri("http://MySource"));
             senderMessage.Headers.Add("test-" + CloudEvent.TypeAttribute, "MyType");
             senderMessage.Headers.Add("test-" + CloudEvent.TimeAttribute, DateTime.UtcNow);
@@ -259,12 +281,13 @@ namespace RockLib.Messaging.CloudEvents.Tests
         }
 
         [Fact(DisplayName = "ValidateCore method throws given missing Source header")]
-        public void ValidateCoreMethodSadPath3()
+        public void ValidateCoreMethodSadPath4()
         {
             // Missing Source
 
             var senderMessage = new SenderMessage("Hello, world!");
 
+            senderMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "1.0");
             senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
             senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
             senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
@@ -275,12 +298,13 @@ namespace RockLib.Messaging.CloudEvents.Tests
         }
 
         [Fact(DisplayName = "ValidateCore method throws given missing Type header")]
-        public void ValidateCoreMethodSadPath4()
+        public void ValidateCoreMethodSadPath5()
         {
             // Missing Type
 
             var senderMessage = new SenderMessage("Hello, world!");
 
+            senderMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "1.0");
             senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
             senderMessage.Headers.Add(CloudEvent.SourceAttribute, new Uri("http://MySource"));
             senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
@@ -291,12 +315,13 @@ namespace RockLib.Messaging.CloudEvents.Tests
         }
 
         [Fact(DisplayName = "ValidateCore method adds Time header if missing")]
-        public void ValidateCoreMethodSadPath5()
+        public void ValidateCoreMethodSadPath6()
         {
             // Missing Time
 
             var senderMessage = new SenderMessage("Hello, world!");
 
+            senderMessage.Headers.Add("test-" + CloudEvent.SpecVersionAttribute, "1.0");
             senderMessage.Headers.Add("test-" + CloudEvent.IdAttribute, "MyId");
             senderMessage.Headers.Add("test-" + CloudEvent.SourceAttribute, new Uri("http://MySource"));
             senderMessage.Headers.Add("test-" + CloudEvent.TypeAttribute, "MyType");
@@ -342,7 +367,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "CreateCore method maps cloud event attributes from receiver message headers")]
         public void CreateCoreMethodHappyPath3()
         {
-            // All properties provided
+            // All attributes provided
 
             var receiverMessage = new FakeReceiverMessage("Hello, world!");
 
@@ -351,6 +376,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var dataSchema = new Uri("http://MySource");
             var time = DateTime.UtcNow;
 
+            receiverMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "1.0");
             receiverMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
             receiverMessage.Headers.Add(CloudEvent.SourceAttribute, source);
             receiverMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
@@ -361,6 +387,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var cloudEvent = TestCloudEvent.Create(receiverMessage);
 
+            cloudEvent.SpecVersion.Should().Be("1.0");
             cloudEvent.Id.Should().Be("MyId");
             cloudEvent.Source.Should().BeSameAs(source);
             cloudEvent.Type.Should().Be("MyType");
@@ -374,12 +401,13 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "CreateCore method does not require any cloud event attributes to be mapped")]
         public void CreateCoreMethodHappyPath4()
         {
-            // No properties provided
+            // No attributes provided
 
             var receiverMessage = new FakeReceiverMessage("Hello, world!");
 
             var cloudEvent = TestCloudEvent.Create(receiverMessage);
 
+            cloudEvent.SpecVersion.Should().Be("1.0");
             cloudEvent.Id.Should().BeNull();
             cloudEvent.Source.Should().BeNull();
             cloudEvent.Type.Should().BeNull();
@@ -455,13 +483,26 @@ namespace RockLib.Messaging.CloudEvents.Tests
         }
 
         [Fact(DisplayName = "CreateCore method throws when receiverMessage parameter is null")]
-        public void CreateCoreMethodSadPath()
+        public void CreateCoreMethodSadPath1()
         {
             // Null receiverMessage
 
             Action act = () => TestCloudEvent.Create(null);
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*receiverMessage*");
+        }
+
+        [Fact(DisplayName = "CreateCore method throws when specversion header is not '1.0'")]
+        public void CreateCoreMethodSadPath2()
+        {
+            // Invalid specversion
+
+            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+            receiverMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "0.0");
+
+            Action act = () => TestCloudEvent.Create(receiverMessage);
+
+            act.Should().ThrowExactly<CloudEventValidationException>();
         }
 
         #endregion

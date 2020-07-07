@@ -33,6 +33,8 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>The name of the <see cref="Time"/> attribute.</summary>
         public const string TimeAttribute = "time";
 
+        private const string _specVersion1_0 = "1.0";
+
         private static IProtocolBinding _defaultProtocolBinding;
 
         /// <summary>
@@ -80,10 +82,10 @@ namespace RockLib.Messaging.CloudEvents
 
         /// <summary>
         /// The version of the CloudEvents specification which the event uses. This enables
-        /// the interpretation of the context. Compliant event producers MUST use a value of 1.x-wip
+        /// the interpretation of the context. Compliant event producers MUST use a value of '1.0'
         /// when referring to this version of the specification.
         /// </summary>
-        public string SpecVersion => "1.0";
+        public string SpecVersion => _specVersion1_0;
 
         /// <summary>
         /// REQUIRED. This attribute contains a value describing the type of event related to the
@@ -222,6 +224,12 @@ namespace RockLib.Messaging.CloudEvents
             if (protocolBinding is null)
                 protocolBinding = DefaultProtocolBinding;
 
+            var specVersionHeader = protocolBinding.GetHeaderName(SpecVersionAttribute);
+            if (!TryGetHeaderValue<string>(senderMessage, specVersionHeader, out var specVersion))
+                throw new CloudEventValidationException($"The '{specVersionHeader}' header is missing from the SenderMessage.");
+            else if (specVersion != _specVersion1_0)
+                throw new CloudEventValidationException($"The '{specVersionHeader}' header must have a value of '{_specVersion1_0}'.");
+
             var idHeader = protocolBinding.GetHeaderName(IdAttribute);
             if (!TryGetHeaderValue<string>(senderMessage, idHeader, out _))
                 senderMessage.Headers[idHeader] = Guid.NewGuid().ToString();
@@ -272,6 +280,15 @@ namespace RockLib.Messaging.CloudEvents
             foreach (var header in receiverMessage.Headers)
                 additionalAttributes.Add(header);
 
+            var specVersionHeader = protocolBinding.GetHeaderName(SpecVersionAttribute);
+            if (receiverMessage.Headers.TryGetValue(specVersionHeader, out string specVersion))
+            {
+                if (specVersion != _specVersion1_0)
+                    throw new CloudEventValidationException(
+                        $"Invalid value found in '{specVersionHeader}' header. Expected '{_specVersion1_0}', but was '{specVersion}'.");
+                additionalAttributes.Remove(specVersionHeader);
+            }
+
             if (receiverMessage.IsBinary())
                 cloudEvent.SetData(receiverMessage.BinaryPayload);
             else
@@ -290,8 +307,6 @@ namespace RockLib.Messaging.CloudEvents
                 cloudEvent.Source = source;
                 additionalAttributes.Remove(sourceHeader);
             }
-
-            // SpecVersion?
 
             var typeHeader = protocolBinding.GetHeaderName(TypeAttribute);
             if (receiverMessage.Headers.TryGetValue(typeHeader, out string type))
@@ -330,11 +345,6 @@ namespace RockLib.Messaging.CloudEvents
             if (receiverMessage.Headers.TryGetValue(timeHeader, out DateTime time))
             {
                 cloudEvent.Time = time;
-                additionalAttributes.Remove(timeHeader);
-            }
-            else if (receiverMessage.Headers.TryGetValue(timeHeader, out string timeString))
-            {
-                cloudEvent.Time = DateTime.Parse(timeString);
                 additionalAttributes.Remove(timeHeader);
             }
 
