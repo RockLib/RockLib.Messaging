@@ -72,6 +72,15 @@
             return senderMessage;
         }
 
+        /// <inheritdoc/>
+        public override void Validate()
+        {
+            base.Validate();
+
+            if (string.IsNullOrEmpty(Sequence))
+                throw new CloudEventValidationException("Sequence cannot be null or empty.");
+        }
+
         /// <summary>
         /// Ensures that the attributes for the sequential event are present.
         /// </summary>

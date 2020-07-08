@@ -156,8 +156,11 @@ namespace RockLib.Messaging.CloudEvents
         /// headers. If <see langword="null"/>, then <see cref="DefaultProtocolBinding"/> is used instead.
         /// </param>
         /// <returns>The mapped <see cref="SenderMessage"/>.</returns>
+        /// <exception cref="CloudEventValidationException">If the cloud event is invalid.</exception>
         public virtual SenderMessage ToSenderMessage(IProtocolBinding protocolBinding = null)
         {
+            Validate();
+
             if (protocolBinding is null)
                 protocolBinding = DefaultProtocolBinding;
 
@@ -170,16 +173,10 @@ namespace RockLib.Messaging.CloudEvents
             else
                 senderMessage = new SenderMessage("");
 
-            if (Id != null)
-                senderMessage.Headers[protocolBinding.GetHeaderName(IdAttribute)] = Id;
-
-            if (Source != null)
-                senderMessage.Headers[protocolBinding.GetHeaderName(SourceAttribute)] = Source;
-
+            senderMessage.Headers[protocolBinding.GetHeaderName(IdAttribute)] = Id;
+            senderMessage.Headers[protocolBinding.GetHeaderName(SourceAttribute)] = Source;
             senderMessage.Headers[protocolBinding.GetHeaderName(SpecVersionAttribute)] = SpecVersion;
-
-            if (Type != null)
-                senderMessage.Headers[protocolBinding.GetHeaderName(TypeAttribute)] = Type;
+            senderMessage.Headers[protocolBinding.GetHeaderName(TypeAttribute)] = Type;
 
             if (DataContentType != null)
                 senderMessage.Headers[protocolBinding.GetHeaderName(DataContentTypeAttribute)] = DataContentType;
@@ -190,8 +187,7 @@ namespace RockLib.Messaging.CloudEvents
             if (Subject != null)
                 senderMessage.Headers[protocolBinding.GetHeaderName(SubjectAttribute)] = Subject;
 
-            if (Time != null)
-                senderMessage.Headers[protocolBinding.GetHeaderName(TimeAttribute)] = Time.Value;
+            senderMessage.Headers[protocolBinding.GetHeaderName(TimeAttribute)] = Time.Value;
 
             foreach (var attribute in AdditionalAttributes)
                 senderMessage.Headers[attribute.Key] = attribute.Value;
@@ -200,12 +196,31 @@ namespace RockLib.Messaging.CloudEvents
         }
 
         /// <summary>
-        /// Converts the <see cref="CloudEvent"/> to a <see cref="SenderMessage"/> by calling
-        /// <see cref="ToSenderMessage"/>.
+        /// Converts the <see cref="CloudEvent"/> to a <see cref="SenderMessage"/>.
         /// </summary>
         /// <param name="cloudEvent">The <see cref="CloudEvent"/> to convert to a <see cref="SenderMessage"/>.</param>
         public static implicit operator SenderMessage(CloudEvent cloudEvent) =>
             cloudEvent?.ToSenderMessage(DefaultProtocolBinding);
+
+        /// <summary>
+        /// Ensures that the cloud event is valid - throws a <see cref="CloudEventValidationException"/>
+        /// if it is not. May also set missing property values that can be determined at runtime.
+        /// </summary>
+        /// <exception cref="CloudEventValidationException">If the cloud event is invalid.</exception>
+        public virtual void Validate()
+        {
+            if (string.IsNullOrEmpty(Id))
+                throw new CloudEventValidationException("Id cannot be null or empty.");
+
+            if (Source is null)
+                throw new CloudEventValidationException("Source cannot be null.");
+
+            if (string.IsNullOrEmpty(Type))
+                throw new CloudEventValidationException("Type cannot be null or empty.");
+
+            if (!Time.HasValue)
+                Time = DateTime.UtcNow;
+        }
 
         /// <summary>
         /// Ensures that the required base cloud event attributes are present.
