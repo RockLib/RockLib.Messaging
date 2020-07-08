@@ -101,6 +101,5 @@ namespace RockLib.Messaging.Kafka
 
         private void OnError(IProducer<Null, string> producer, Error error) 
             => Error?.Invoke(this, new ErrorEventArgs(error.Reason, new KafkaException(error)));
-
     }
 }
