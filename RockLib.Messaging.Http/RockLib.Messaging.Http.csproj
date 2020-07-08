@@ -31,4 +31,6 @@
     <PackageReference Include="RockLib.Messaging" Version="2.0.4" />
   </ItemGroup>
 
+  <Import Project="..\RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.projitems" Label="Shared" />
+
 </Project>

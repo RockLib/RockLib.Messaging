@@ -73,9 +73,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.Kafka.Tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.CloudEvents", "RockLib.Messaging.CloudEvents\RockLib.Messaging.CloudEvents.csproj", "{FFC6155D-02D8-49F1-8943-A079BD8BFF26}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockLib.Messaging.CloudEvents.Tests", "RockLib.Messaging.CloudEvents.Tests\RockLib.Messaging.CloudEvents.Tests.csproj", "{B7B9E920-3251-4AE6-AA83-5147EC3403E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.CloudEvents.Tests", "RockLib.Messaging.CloudEvents.Tests\RockLib.Messaging.CloudEvents.Tests.csproj", "{B7B9E920-3251-4AE6-AA83-5147EC3403E6}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RockLib.Messaging.HttpUtils", "RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.shproj", "{93800DE0-2CC4-454D-BD9C-4C7058DFD276}"
 EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.projitems*{93800de0-2cc4-454d-bd9c-4c7058dfd276}*SharedItemsImports = 13
+		RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.projitems*{a84fce16-e330-498f-a4a2-b4467153d731}*SharedItemsImports = 5
+		RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.projitems*{ffc6155d-02d8-49f1-8943-a079bd8bff26}*SharedItemsImports = 5
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
