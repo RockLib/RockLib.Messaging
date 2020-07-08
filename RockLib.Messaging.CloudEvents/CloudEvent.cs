@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Mime;
+using static RockLib.Messaging.HttpUtils;
 
 namespace RockLib.Messaging.CloudEvents
 {
@@ -196,11 +199,48 @@ namespace RockLib.Messaging.CloudEvents
         }
 
         /// <summary>
+        /// Creates an <see cref="HttpRequestMessage"/> with headers mapped from the attributes of this cloud event.
+        /// </summary>
+        /// <param name="protocolBinding">
+        /// The <see cref="IProtocolBinding"/> used to map CloudEvent attributes to <see cref="HttpRequestMessage"/>
+        /// headers. If <see langword="null"/>, then <see cref="DefaultProtocolBinding"/> is used instead.
+        /// </param>
+        /// <returns>The mapped <see cref="HttpRequestMessage"/>.</returns>
+        public HttpRequestMessage ToHttpRequestMessage(IProtocolBinding protocolBinding = null)
+        {
+            var message = ToSenderMessage(protocolBinding);
+            var request = new HttpRequestMessage();
+
+            if (message.IsBinary)
+                request.Content = new ByteArrayContent(message.BinaryPayload);
+            else
+                request.Content = new StringContent(message.StringPayload);
+
+            foreach (var header in message.Headers)
+            {
+                var headers = IsContentHeader(header.Key)
+                    ? request.Content.Headers
+                    : (HttpHeaders)request.Headers;
+
+                AddHeader(headers, header.Key, header.Value?.ToString());
+            }
+
+            return request;
+        }
+
+        /// <summary>
         /// Converts the <see cref="CloudEvent"/> to a <see cref="SenderMessage"/>.
         /// </summary>
         /// <param name="cloudEvent">The <see cref="CloudEvent"/> to convert to a <see cref="SenderMessage"/>.</param>
         public static implicit operator SenderMessage(CloudEvent cloudEvent) =>
             cloudEvent?.ToSenderMessage(DefaultProtocolBinding);
+
+        /// <summary>
+        /// Converts the <see cref="CloudEvent"/> to an <see cref="HttpRequestMessage"/>.
+        /// </summary>
+        /// <param name="cloudEvent">The <see cref="CloudEvent"/> to convert to an <see cref="HttpRequestMessage"/>.</param>
+        public static implicit operator HttpRequestMessage(CloudEvent cloudEvent) =>
+            cloudEvent?.ToHttpRequestMessage(DefaultProtocolBinding);
 
         /// <summary>
         /// Ensures that the cloud event is valid - throws a <see cref="CloudEventValidationException"/>

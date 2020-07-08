@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
@@ -30,5 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\RockLib.Messaging\RockLib.Messaging.csproj" />
   </ItemGroup>
+
+  <Import Project="..\RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.projitems" Label="Shared" />
 
 </Project>
