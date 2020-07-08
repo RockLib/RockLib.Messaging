@@ -201,15 +201,32 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>
         /// Creates an <see cref="HttpRequestMessage"/> with headers mapped from the attributes of this cloud event.
         /// </summary>
+        /// <param name="requestUri">A string that represents the request <see cref="Uri"/>.</param>
         /// <param name="protocolBinding">
         /// The <see cref="IProtocolBinding"/> used to map CloudEvent attributes to <see cref="HttpRequestMessage"/>
         /// headers. If <see langword="null"/>, then <see cref="DefaultProtocolBinding"/> is used instead.
         /// </param>
         /// <returns>The mapped <see cref="HttpRequestMessage"/>.</returns>
-        public HttpRequestMessage ToHttpRequestMessage(IProtocolBinding protocolBinding = null)
+        public HttpRequestMessage ToHttpRequestMessage(string requestUri = null, IProtocolBinding protocolBinding = null) =>
+            ToHttpRequestMessage(HttpMethod.Get, requestUri, protocolBinding);
+
+        /// <summary>
+        /// Creates an <see cref="HttpRequestMessage"/> with headers mapped from the attributes of this cloud event.
+        /// </summary>
+        /// <param name="method">The HTTP method of the request.</param>
+        /// <param name="requestUri">A string that represents the request <see cref="Uri"/>.</param>
+        /// <param name="protocolBinding">
+        /// The <see cref="IProtocolBinding"/> used to map CloudEvent attributes to <see cref="HttpRequestMessage"/>
+        /// headers. If <see langword="null"/>, then <see cref="DefaultProtocolBinding"/> is used instead.
+        /// </param>
+        /// <returns>The mapped <see cref="HttpRequestMessage"/>.</returns>
+        public HttpRequestMessage ToHttpRequestMessage(HttpMethod method, string requestUri = null, IProtocolBinding protocolBinding = null)
         {
+            if (method is null)
+                throw new ArgumentNullException(nameof(method));
+
             var message = ToSenderMessage(protocolBinding);
-            var request = new HttpRequestMessage();
+            var request = new HttpRequestMessage(method, requestUri);
 
             if (message.IsBinary)
                 request.Content = new ByteArrayContent(message.BinaryPayload);
@@ -240,7 +257,7 @@ namespace RockLib.Messaging.CloudEvents
         /// </summary>
         /// <param name="cloudEvent">The <see cref="CloudEvent"/> to convert to an <see cref="HttpRequestMessage"/>.</param>
         public static implicit operator HttpRequestMessage(CloudEvent cloudEvent) =>
-            cloudEvent?.ToHttpRequestMessage(DefaultProtocolBinding);
+            cloudEvent?.ToHttpRequestMessage(protocolBinding: DefaultProtocolBinding);
 
         /// <summary>
         /// Ensures that the cloud event is valid - throws a <see cref="CloudEventValidationException"/>
