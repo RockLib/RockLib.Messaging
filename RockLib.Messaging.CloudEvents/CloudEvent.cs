@@ -233,6 +233,15 @@ namespace RockLib.Messaging.CloudEvents
             else
                 request.Content = new StringContent(message.StringPayload);
 
+            if (DataContentType != null)
+            {
+                request.Content.Headers.ContentType =
+                    new MediaTypeHeaderValue(DataContentType.MediaType)
+                    {
+                        CharSet = DataContentType.CharSet
+                    };
+            }
+
             foreach (var header in message.Headers)
             {
                 var headers = IsContentHeader(header.Key)
