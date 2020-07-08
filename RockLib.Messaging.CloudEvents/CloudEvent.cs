@@ -253,13 +253,6 @@ namespace RockLib.Messaging.CloudEvents
             cloudEvent?.ToSenderMessage(DefaultProtocolBinding);
 
         /// <summary>
-        /// Converts the <see cref="CloudEvent"/> to an <see cref="HttpRequestMessage"/>.
-        /// </summary>
-        /// <param name="cloudEvent">The <see cref="CloudEvent"/> to convert to an <see cref="HttpRequestMessage"/>.</param>
-        public static implicit operator HttpRequestMessage(CloudEvent cloudEvent) =>
-            cloudEvent?.ToHttpRequestMessage(protocolBinding: DefaultProtocolBinding);
-
-        /// <summary>
         /// Ensures that the cloud event is valid - throws a <see cref="CloudEventValidationException"/>
         /// if it is not. May also set missing property values that can be determined at runtime.
         /// </summary>
