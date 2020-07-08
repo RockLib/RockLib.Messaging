@@ -101,7 +101,12 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var stringData = "Hello, world!";
 
-            var cloudEvent = new TestCloudEvent();
+            var cloudEvent = new TestCloudEvent
+            {
+                Id = "MyId",
+                Source = new Uri("http://mysource/"),
+                Type = "MyType"
+            };
             cloudEvent.SetData(stringData);
 
             var senderMessage = cloudEvent.ToSenderMessage();
@@ -114,7 +119,12 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var binaryData = new byte[] { 1, 2, 3, 4 };
 
-            var cloudEvent = new TestCloudEvent();
+            var cloudEvent = new TestCloudEvent
+            {
+                Id = "MyId",
+                Source = new Uri("http://mysource/"),
+                Type = "MyType"
+            };
             cloudEvent.SetData(binaryData);
 
             var senderMessage = cloudEvent.ToSenderMessage();
@@ -127,7 +137,12 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // null Data
 
-            var cloudEvent = new TestCloudEvent();
+            var cloudEvent = new TestCloudEvent
+            {
+                Id = "MyId",
+                Source = new Uri("http://mysource/"),
+                Type = "MyType"
+            };
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
@@ -173,20 +188,21 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "ToSenderMessage method does not map null cloud event attributes to sender message headers")]
         public void ToSenderMessageMethodHappyPath5()
         {
-            // No attributes provided
+            // No optional attributes provided
 
-            var cloudEvent = new TestCloudEvent();
+            var cloudEvent = new TestCloudEvent
+            {
+                Id = "MyId",
+                Source = new Uri("http://MySource"),
+                Type = "MyType"
+            };
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
             senderMessage.Headers.Should().NotContainKey(CloudEvent.DataContentTypeAttribute);
             senderMessage.Headers.Should().NotContainKey(CloudEvent.DataSchemaAttribute);
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.IdAttribute);
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.SourceAttribute);
             senderMessage.Headers[CloudEvent.SpecVersionAttribute].Should().Be("1.0");
             senderMessage.Headers.Should().NotContainKey(CloudEvent.SubjectAttribute);
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.TimeAttribute);
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.TypeAttribute);
         }
 
         [Fact(DisplayName = "ToSenderMessage method adds additional attributes to sender message headers")]
@@ -195,6 +211,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
             // Additional attributes provided
 
             var cloudEvent = new TestCloudEvent();
+            cloudEvent.Id = "MyId";
+            cloudEvent.Source = new Uri("http://mysource/");
+            cloudEvent.Type = "MyType";
             cloudEvent.AdditionalAttributes.Add("foo", "abc");
             cloudEvent.AdditionalAttributes.Add("bar", 123);
 
@@ -218,6 +237,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var cloudEvent = new TestCloudEvent
             {
                 Id = id,
+                Source = new Uri("http://mysource/"),
+                Type = "MyType",
                 AdditionalAttributes = { { "foo", "abc" } }
             };
 
@@ -570,7 +591,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
         public void ImplicitConversionOperatorHappyPath1()
         {
             var mockCloudEvent = new Mock<CloudEvent>();
-            mockCloudEvent.Setup(m => m.ToSenderMessage(It.IsAny<IProtocolBinding>())).CallBase().Verifiable();
+            mockCloudEvent.Setup(m => m.ToSenderMessage(It.IsAny<IProtocolBinding>())).CallBase();
+            mockCloudEvent.Setup(m => m.Validate()).CallBase();
             mockCloudEvent.Object.SetData("Hello, world!");
             mockCloudEvent.Object.Id = "MyId";
             mockCloudEvent.Object.Source = new Uri("http://mysource/");

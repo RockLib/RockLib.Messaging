@@ -114,23 +114,24 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "ToSenderMessage method does not map null sequential cloud event attributes to sender message headers")]
         public void ToSenderMessageMethodHappyPath2()
         {
-            // No attributes provided
+            // No optional attributes provided
 
-            var cloudEvent = new SequentialEvent();
+            var cloudEvent = new SequentialEvent
+            {
+                Sequence = "MySequence",
+                Id = "MyId",
+                Source = new Uri("http://MySource"),
+                Type = "MyType"
+            };
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
-            senderMessage.Headers.Should().NotContainKey(SequentialEvent.SequenceAttribute);
             senderMessage.Headers.Should().NotContainKey(SequentialEvent.SequenceTypeAttribute);
 
             senderMessage.Headers.Should().NotContainKey(CloudEvent.DataContentTypeAttribute);
             senderMessage.Headers.Should().NotContainKey(CloudEvent.DataSchemaAttribute);
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.IdAttribute);
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.SourceAttribute);
             senderMessage.Headers[CloudEvent.SpecVersionAttribute].Should().Be("1.0");
             senderMessage.Headers.Should().NotContainKey(CloudEvent.SubjectAttribute);
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.TimeAttribute);
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.TypeAttribute);
         }
 
         [Fact(DisplayName = "ToSenderMessage method applies specified protocol binding to each attribute")]
