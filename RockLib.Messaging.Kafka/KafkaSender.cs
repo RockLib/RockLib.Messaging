@@ -56,7 +56,7 @@ namespace RockLib.Messaging.Kafka
         public string Topic { get; }
 
         /// <summary>
-        /// Gets the configuration that is used to create the <see cref="Producer{TKey, TValue}"/> for this receiver.
+        /// Gets the configuration that is used to create the <see cref="Producer{TKey, TValue}"/> for this sender.
         /// </summary>
         public ProducerConfig Config { get; }
 

@@ -84,7 +84,6 @@ namespace RockLib.Messaging.Kafka.Tests
             consumerMock.Verify(cm => cm.Dispose(), Times.Once);
         }
 
-
         [Fact(DisplayName = "KafkaReceiver receives message from consumer")]
         public void KafkaReceiverHappyPath()
         {
