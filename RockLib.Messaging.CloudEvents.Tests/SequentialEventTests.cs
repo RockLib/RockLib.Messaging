@@ -68,6 +68,107 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.Type.Should().BeNull();
         }
 
+        [Fact(DisplayName = "Constructor 4 maps sequential event attributes from receiver message headers")]
+        public void Constructor4HappyPath1()
+        {
+            // All attributes provided
+
+            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+
+            var source = new Uri("http://MySource");
+            var dataContentType = new ContentType("application/mycontenttype");
+            var dataSchema = new Uri("http://MySource");
+            var time = DateTime.UtcNow;
+
+            receiverMessage.Headers.Add(SequentialEvent.SequenceAttribute, "1");
+            receiverMessage.Headers.Add(SequentialEvent.SequenceTypeAttribute, SequenceTypes.Integer);
+
+            receiverMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
+            receiverMessage.Headers.Add(CloudEvent.SourceAttribute, source);
+            receiverMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
+            receiverMessage.Headers.Add(CloudEvent.DataContentTypeAttribute, dataContentType);
+            receiverMessage.Headers.Add(CloudEvent.DataSchemaAttribute, dataSchema);
+            receiverMessage.Headers.Add(CloudEvent.SubjectAttribute, "MySubject");
+            receiverMessage.Headers.Add(CloudEvent.TimeAttribute, time);
+
+            var sequentialEvent = new SequentialEvent(receiverMessage);
+
+            sequentialEvent.Sequence.Should().Be("1");
+            sequentialEvent.SequenceType.Should().Be(SequenceTypes.Integer);
+
+            sequentialEvent.Id.Should().Be("MyId");
+            sequentialEvent.Source.Should().BeSameAs(source);
+            sequentialEvent.Type.Should().Be("MyType");
+            sequentialEvent.DataContentType.Should().BeSameAs(dataContentType);
+            sequentialEvent.DataSchema.Should().BeSameAs(dataSchema);
+            sequentialEvent.Subject.Should().Be("MySubject");
+            sequentialEvent.Time.Should().Be(time);
+            sequentialEvent.AdditionalAttributes.Should().BeEmpty();
+        }
+
+        [Fact(DisplayName = "Constructor 4 does not require any sequential event attributes to be mapped")]
+        public void Constructor4HappyPath2()
+        {
+            // No attributes provided
+
+            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+
+            var sequentialEvent = new SequentialEvent(receiverMessage);
+
+            sequentialEvent.Sequence.Should().BeNull();
+            sequentialEvent.SequenceType.Should().BeNull();
+
+            sequentialEvent.Id.Should().BeNull();
+            sequentialEvent.Source.Should().BeNull();
+            sequentialEvent.Type.Should().BeNull();
+            sequentialEvent.DataContentType.Should().BeNull();
+            sequentialEvent.DataSchema.Should().BeNull();
+            sequentialEvent.Subject.Should().BeNull();
+            sequentialEvent.Time.Should().BeNull();
+            sequentialEvent.AdditionalAttributes.Should().BeEmpty();
+        }
+
+        [Fact(DisplayName = "Constructor 4 maps with the specified protocol binding")]
+        public void Constructor4HappyPath3()
+        {
+            // Non-default protocol binding
+
+            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+
+            var source = new Uri("http://MySource");
+            var dataContentType = new ContentType("application/mycontenttype");
+            var dataSchema = new Uri("http://MySource");
+            var time = DateTime.UtcNow;
+
+            receiverMessage.Headers.Add("test-" + SequentialEvent.SequenceAttribute, "1");
+            receiverMessage.Headers.Add("test-" + SequentialEvent.SequenceTypeAttribute, SequenceTypes.Integer);
+
+            receiverMessage.Headers.Add("test-" + CloudEvent.IdAttribute, "MyId");
+            receiverMessage.Headers.Add("test-" + CloudEvent.SourceAttribute, source);
+            receiverMessage.Headers.Add("test-" + CloudEvent.TypeAttribute, "MyType");
+            receiverMessage.Headers.Add("test-" + CloudEvent.DataContentTypeAttribute, dataContentType);
+            receiverMessage.Headers.Add("test-" + CloudEvent.DataSchemaAttribute, dataSchema);
+            receiverMessage.Headers.Add("test-" + CloudEvent.SubjectAttribute, "MySubject");
+            receiverMessage.Headers.Add("test-" + CloudEvent.TimeAttribute, time);
+
+            var mockProtocolBinding = new Mock<IProtocolBinding>();
+            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
+
+            var sequentialEvent = new SequentialEvent(receiverMessage, mockProtocolBinding.Object);
+
+            sequentialEvent.Sequence.Should().Be("1");
+            sequentialEvent.SequenceType.Should().Be(SequenceTypes.Integer);
+
+            sequentialEvent.Id.Should().Be("MyId");
+            sequentialEvent.Source.Should().BeSameAs(source);
+            sequentialEvent.Type.Should().Be("MyType");
+            sequentialEvent.DataContentType.Should().BeSameAs(dataContentType);
+            sequentialEvent.DataSchema.Should().BeSameAs(dataSchema);
+            sequentialEvent.Subject.Should().Be("MySubject");
+            sequentialEvent.Time.Should().Be(time);
+            sequentialEvent.AdditionalAttributes.Should().BeEmpty();
+        }
+
         [Fact(DisplayName = "ToSenderMessage method maps sequential event attributes to sender message headers")]
         public void ToSenderMessageMethodHappyPath1()
         {
@@ -236,107 +337,6 @@ namespace RockLib.Messaging.CloudEvents.Tests
             Action act = () => SequentialEvent.Validate(senderMessage);
 
             act.Should().ThrowExactly<CloudEventValidationException>();
-        }
-
-        [Fact(DisplayName = "Create method maps sequential event attributes from receiver message headers")]
-        public void CreateMethodHappyPath1()
-        {
-            // All attributes provided
-
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
-
-            var source = new Uri("http://MySource");
-            var dataContentType = new ContentType("application/mycontenttype");
-            var dataSchema = new Uri("http://MySource");
-            var time = DateTime.UtcNow;
-
-            receiverMessage.Headers.Add(SequentialEvent.SequenceAttribute, "1");
-            receiverMessage.Headers.Add(SequentialEvent.SequenceTypeAttribute, SequenceTypes.Integer);
-
-            receiverMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
-            receiverMessage.Headers.Add(CloudEvent.SourceAttribute, source);
-            receiverMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
-            receiverMessage.Headers.Add(CloudEvent.DataContentTypeAttribute, dataContentType);
-            receiverMessage.Headers.Add(CloudEvent.DataSchemaAttribute, dataSchema);
-            receiverMessage.Headers.Add(CloudEvent.SubjectAttribute, "MySubject");
-            receiverMessage.Headers.Add(CloudEvent.TimeAttribute, time);
-
-            var sequentialEvent = SequentialEvent.Create(receiverMessage);
-
-            sequentialEvent.Sequence.Should().Be("1");
-            sequentialEvent.SequenceType.Should().Be(SequenceTypes.Integer);
-
-            sequentialEvent.Id.Should().Be("MyId");
-            sequentialEvent.Source.Should().BeSameAs(source);
-            sequentialEvent.Type.Should().Be("MyType");
-            sequentialEvent.DataContentType.Should().BeSameAs(dataContentType);
-            sequentialEvent.DataSchema.Should().BeSameAs(dataSchema);
-            sequentialEvent.Subject.Should().Be("MySubject");
-            sequentialEvent.Time.Should().Be(time);
-            sequentialEvent.AdditionalAttributes.Should().BeEmpty();
-        }
-
-        [Fact(DisplayName = "Create method does not require any sequential event attributes to be mapped")]
-        public void CreateMethodHappyPath2()
-        {
-            // No attributes provided
-
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
-
-            var sequentialEvent = SequentialEvent.Create(receiverMessage);
-
-            sequentialEvent.Sequence.Should().BeNull();
-            sequentialEvent.SequenceType.Should().BeNull();
-
-            sequentialEvent.Id.Should().BeNull();
-            sequentialEvent.Source.Should().BeNull();
-            sequentialEvent.Type.Should().BeNull();
-            sequentialEvent.DataContentType.Should().BeNull();
-            sequentialEvent.DataSchema.Should().BeNull();
-            sequentialEvent.Subject.Should().BeNull();
-            sequentialEvent.Time.Should().BeNull();
-            sequentialEvent.AdditionalAttributes.Should().BeEmpty();
-        }
-
-        [Fact(DisplayName = "Create method maps with the specified protocol binding")]
-        public void CreateMethodHappyPath3()
-        {
-            // Non-default protocol binding
-
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
-
-            var source = new Uri("http://MySource");
-            var dataContentType = new ContentType("application/mycontenttype");
-            var dataSchema = new Uri("http://MySource");
-            var time = DateTime.UtcNow;
-
-            receiverMessage.Headers.Add("test-" + SequentialEvent.SequenceAttribute, "1");
-            receiverMessage.Headers.Add("test-" + SequentialEvent.SequenceTypeAttribute, SequenceTypes.Integer);
-
-            receiverMessage.Headers.Add("test-" + CloudEvent.IdAttribute, "MyId");
-            receiverMessage.Headers.Add("test-" + CloudEvent.SourceAttribute, source);
-            receiverMessage.Headers.Add("test-" + CloudEvent.TypeAttribute, "MyType");
-            receiverMessage.Headers.Add("test-" + CloudEvent.DataContentTypeAttribute, dataContentType);
-            receiverMessage.Headers.Add("test-" + CloudEvent.DataSchemaAttribute, dataSchema);
-            receiverMessage.Headers.Add("test-" + CloudEvent.SubjectAttribute, "MySubject");
-            receiverMessage.Headers.Add("test-" + CloudEvent.TimeAttribute, time);
-
-            var mockProtocolBinding = new Mock<IProtocolBinding>();
-            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
-
-            var sequentialEvent = SequentialEvent.Create(receiverMessage, mockProtocolBinding.Object);
-
-            sequentialEvent.Sequence.Should().Be("1");
-            sequentialEvent.SequenceType.Should().Be(SequenceTypes.Integer);
-
-            sequentialEvent.Id.Should().Be("MyId");
-            sequentialEvent.Source.Should().BeSameAs(source);
-            sequentialEvent.Type.Should().Be("MyType");
-            sequentialEvent.DataContentType.Should().BeSameAs(dataContentType);
-            sequentialEvent.DataSchema.Should().BeSameAs(dataSchema);
-            sequentialEvent.Subject.Should().Be("MySubject");
-            sequentialEvent.Time.Should().Be(time);
-            sequentialEvent.AdditionalAttributes.Should().BeEmpty();
         }
     }
 }

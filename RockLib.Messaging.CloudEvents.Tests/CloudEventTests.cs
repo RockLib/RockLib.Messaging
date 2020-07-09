@@ -9,7 +9,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 {
     public class CloudEventTests
     {
-        #region Constructor
+        #region Constructors
 
         [Fact(DisplayName = "Constructor 1 does not initialize anything")]
         public void Constructor1HappyPath()
@@ -64,6 +64,171 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.Type.Should().BeNull();
         }
 
+        [Fact(DisplayName = "Constructor 4 creates cloud event with binary data")]
+        public void Constructor4HappyPath1()
+        {
+            var binaryData = new byte[] { 1, 2, 3, 4 };
+
+            var receiverMessage = new FakeReceiverMessage(binaryData);
+
+            var cloudEvent = new CloudEvent(receiverMessage);
+
+            cloudEvent.Data.Should().BeSameAs(binaryData);
+        }
+
+        [Fact(DisplayName = "Constructor 4 creates cloud event with binary data")]
+        public void Constructor4HappyPath2()
+        {
+            var stringData = "Hello, world!";
+
+            var receiverMessage = new FakeReceiverMessage(stringData);
+
+            var cloudEvent = new CloudEvent(receiverMessage);
+
+            cloudEvent.Data.Should().BeSameAs(stringData);
+        }
+
+        [Fact(DisplayName = "Constructor 4 maps cloud event attributes from receiver message headers")]
+        public void Constructor4HappyPath3()
+        {
+            // All attributes provided
+
+            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+
+            var source = new Uri("http://MySource");
+            var dataContentType = new ContentType("application/mycontenttype");
+            var dataSchema = new Uri("http://MySource");
+            var time = DateTime.UtcNow;
+
+            receiverMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "1.0");
+            receiverMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
+            receiverMessage.Headers.Add(CloudEvent.SourceAttribute, source);
+            receiverMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
+            receiverMessage.Headers.Add(CloudEvent.DataContentTypeAttribute, dataContentType);
+            receiverMessage.Headers.Add(CloudEvent.DataSchemaAttribute, dataSchema);
+            receiverMessage.Headers.Add(CloudEvent.SubjectAttribute, "MySubject");
+            receiverMessage.Headers.Add(CloudEvent.TimeAttribute, time);
+
+            var cloudEvent = new CloudEvent(receiverMessage);
+
+            cloudEvent.SpecVersion.Should().Be("1.0");
+            cloudEvent.Id.Should().Be("MyId");
+            cloudEvent.Source.Should().BeSameAs(source);
+            cloudEvent.Type.Should().Be("MyType");
+            cloudEvent.DataContentType.Should().BeSameAs(dataContentType);
+            cloudEvent.DataSchema.Should().BeSameAs(dataSchema);
+            cloudEvent.Subject.Should().Be("MySubject");
+            cloudEvent.Time.Should().Be(time);
+            cloudEvent.AdditionalAttributes.Should().BeEmpty();
+        }
+
+        [Fact(DisplayName = "Constructor 4 does not require any cloud event attributes to be mapped")]
+        public void Constructor4HappyPath4()
+        {
+            // No attributes provided
+
+            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+
+            var cloudEvent = new CloudEvent(receiverMessage);
+
+            cloudEvent.SpecVersion.Should().Be("1.0");
+            cloudEvent.Id.Should().BeNull();
+            cloudEvent.Source.Should().BeNull();
+            cloudEvent.Type.Should().BeNull();
+            cloudEvent.DataContentType.Should().BeNull();
+            cloudEvent.DataSchema.Should().BeNull();
+            cloudEvent.Subject.Should().BeNull();
+            cloudEvent.Time.Should().BeNull();
+            cloudEvent.AdditionalAttributes.Should().BeEmpty();
+        }
+
+        [Fact(DisplayName = "Constructor 4 maps from stringly typed receiver message headers")]
+        public void Constructor4HappyPath5()
+        {
+            // Alternate property types provided
+
+            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+
+            var source = new Uri("http://MySource").ToString();
+            var dataContentType = new ContentType("application/mycontenttype").ToString();
+            var dataSchema = new Uri("http://MySource").ToString();
+            var time = DateTime.UtcNow.ToString("O");
+
+            receiverMessage.Headers.Add(CloudEvent.SourceAttribute, source);
+            receiverMessage.Headers.Add(CloudEvent.DataContentTypeAttribute, dataContentType);
+            receiverMessage.Headers.Add(CloudEvent.DataSchemaAttribute, dataSchema);
+            receiverMessage.Headers.Add(CloudEvent.TimeAttribute, time);
+
+            var cloudEvent = new CloudEvent(receiverMessage);
+
+            cloudEvent.Source.ToString().Should().Be(source);
+            cloudEvent.DataContentType.ToString().Should().Be(dataContentType);
+            cloudEvent.DataSchema.ToString().Should().Be(dataSchema);
+            cloudEvent.Time.GetValueOrDefault().ToString("O").Should().Be(time);
+            cloudEvent.AdditionalAttributes.Should().BeEmpty();
+        }
+
+        [Fact(DisplayName = "Constructor 4 maps additional attributes verbatim")]
+        public void Constructor4HappyPath6()
+        {
+            // Additional attributes provided
+
+            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+            receiverMessage.Headers.Add("foo", "abc");
+            receiverMessage.Headers.Add("bar", 123);
+
+            var mockProtocolBinding = new Mock<IProtocolBinding>();
+            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
+
+            var cloudEvent = new CloudEvent(receiverMessage, mockProtocolBinding.Object);
+
+            cloudEvent.AdditionalAttributes.Should().HaveCount(2);
+            cloudEvent.AdditionalAttributes.Should().ContainKey("foo").WhichValue.Should().Be("abc");
+            cloudEvent.AdditionalAttributes.Should().ContainKey("bar").WhichValue.Should().Be(123);
+        }
+
+
+        [Fact(DisplayName = "Constructor 4 maps with the specified protocol binding")]
+        public void Constructor4HappyPath7()
+        {
+            // Non-default protocol binding
+
+            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+            receiverMessage.Headers.Add("foo", "abc");
+            receiverMessage.Headers.Add("test-" + CloudEvent.IdAttribute, "MyId");
+
+            var mockProtocolBinding = new Mock<IProtocolBinding>();
+            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
+
+            var cloudEvent = new CloudEvent(receiverMessage, mockProtocolBinding.Object);
+
+            cloudEvent.Id.Should().Be("MyId");
+            cloudEvent.AdditionalAttributes.Should().ContainKey("foo").WhichValue.Should().Be("abc");
+        }
+
+        [Fact(DisplayName = "Constructor 4 throws when receiverMessage parameter is null")]
+        public void Constructor4SadPath1()
+        {
+            // Null receiverMessage
+
+            Action act = () => new CloudEvent((IReceiverMessage)null);
+
+            act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*receiverMessage*");
+        }
+
+        [Fact(DisplayName = "Constructor 4 throws when specversion header is not '1.0'")]
+        public void Constructor4SadPath2()
+        {
+            // Invalid specversion
+
+            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+            receiverMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "0.0");
+
+            Action act = () => new CloudEvent(receiverMessage);
+
+            act.Should().ThrowExactly<CloudEventValidationException>();
+        }
+
         #endregion
 
         #region SetData
@@ -73,7 +238,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var stringData = "Hello, world!";
 
-            var cloudEvent = new TestCloudEvent();
+            var cloudEvent = new CloudEvent();
 
             cloudEvent.SetData(stringData);
 
@@ -85,7 +250,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var binaryData = new byte[] { 1, 2, 3, 4 };
 
-            var cloudEvent = new TestCloudEvent();
+            var cloudEvent = new CloudEvent();
 
             cloudEvent.SetData(binaryData);
 
@@ -101,7 +266,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var stringData = "Hello, world!";
 
-            var cloudEvent = new TestCloudEvent
+            var cloudEvent = new CloudEvent
             {
                 Id = "MyId",
                 Source = new Uri("http://mysource/"),
@@ -119,7 +284,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var binaryData = new byte[] { 1, 2, 3, 4 };
 
-            var cloudEvent = new TestCloudEvent
+            var cloudEvent = new CloudEvent
             {
                 Id = "MyId",
                 Source = new Uri("http://mysource/"),
@@ -137,7 +302,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // null Data
 
-            var cloudEvent = new TestCloudEvent
+            var cloudEvent = new CloudEvent
             {
                 Id = "MyId",
                 Source = new Uri("http://mysource/"),
@@ -162,7 +327,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var time = DateTime.UtcNow;
             var type = "MyType";
 
-            var cloudEvent = new TestCloudEvent
+            var cloudEvent = new CloudEvent
             {
                 DataContentType = dataContentType,
                 DataSchema = dataSchema,
@@ -190,7 +355,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // No optional attributes provided
 
-            var cloudEvent = new TestCloudEvent
+            var cloudEvent = new CloudEvent
             {
                 Id = "MyId",
                 Source = new Uri("http://MySource"),
@@ -210,7 +375,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // Additional attributes provided
 
-            var cloudEvent = new TestCloudEvent();
+            var cloudEvent = new CloudEvent();
             cloudEvent.Id = "MyId";
             cloudEvent.Source = new Uri("http://mysource/");
             cloudEvent.Type = "MyType";
@@ -234,7 +399,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var id = "MyId";
 
-            var cloudEvent = new TestCloudEvent
+            var cloudEvent = new CloudEvent
             {
                 Id = id,
                 Source = new Uri("http://mysource/"),
@@ -416,175 +581,6 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
         #endregion
 
-        #region CreateCore
-
-        [Fact(DisplayName = "CreateCore method creates cloud event with binary data")]
-        public void CreateCoreMethodHappyPath1()
-        {
-            var binaryData = new byte[] { 1, 2, 3, 4 };
-
-            var receiverMessage = new FakeReceiverMessage(binaryData);
-
-            var cloudEvent = TestCloudEvent.Create(receiverMessage);
-
-            cloudEvent.Data.Should().BeSameAs(binaryData);
-        }
-
-        [Fact(DisplayName = "CreateCore method creates cloud event with binary data")]
-        public void CreateCoreMethodHappyPath2()
-        {
-            var stringData = "Hello, world!";
-
-            var receiverMessage = new FakeReceiverMessage(stringData);
-
-            var cloudEvent = TestCloudEvent.Create(receiverMessage);
-
-            cloudEvent.Data.Should().BeSameAs(stringData);
-        }
-
-        [Fact(DisplayName = "CreateCore method maps cloud event attributes from receiver message headers")]
-        public void CreateCoreMethodHappyPath3()
-        {
-            // All attributes provided
-
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
-
-            var source = new Uri("http://MySource");
-            var dataContentType = new ContentType("application/mycontenttype");
-            var dataSchema = new Uri("http://MySource");
-            var time = DateTime.UtcNow;
-
-            receiverMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "1.0");
-            receiverMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
-            receiverMessage.Headers.Add(CloudEvent.SourceAttribute, source);
-            receiverMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
-            receiverMessage.Headers.Add(CloudEvent.DataContentTypeAttribute, dataContentType);
-            receiverMessage.Headers.Add(CloudEvent.DataSchemaAttribute, dataSchema);
-            receiverMessage.Headers.Add(CloudEvent.SubjectAttribute, "MySubject");
-            receiverMessage.Headers.Add(CloudEvent.TimeAttribute, time);
-
-            var cloudEvent = TestCloudEvent.Create(receiverMessage);
-
-            cloudEvent.SpecVersion.Should().Be("1.0");
-            cloudEvent.Id.Should().Be("MyId");
-            cloudEvent.Source.Should().BeSameAs(source);
-            cloudEvent.Type.Should().Be("MyType");
-            cloudEvent.DataContentType.Should().BeSameAs(dataContentType);
-            cloudEvent.DataSchema.Should().BeSameAs(dataSchema);
-            cloudEvent.Subject.Should().Be("MySubject");
-            cloudEvent.Time.Should().Be(time);
-            cloudEvent.AdditionalAttributes.Should().BeEmpty();
-        }
-
-        [Fact(DisplayName = "CreateCore method does not require any cloud event attributes to be mapped")]
-        public void CreateCoreMethodHappyPath4()
-        {
-            // No attributes provided
-
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
-
-            var cloudEvent = TestCloudEvent.Create(receiverMessage);
-
-            cloudEvent.SpecVersion.Should().Be("1.0");
-            cloudEvent.Id.Should().BeNull();
-            cloudEvent.Source.Should().BeNull();
-            cloudEvent.Type.Should().BeNull();
-            cloudEvent.DataContentType.Should().BeNull();
-            cloudEvent.DataSchema.Should().BeNull();
-            cloudEvent.Subject.Should().BeNull();
-            cloudEvent.Time.Should().BeNull();
-            cloudEvent.AdditionalAttributes.Should().BeEmpty();
-        }
-
-        [Fact(DisplayName = "CreateCore method maps from stringly typed receiver message headers")]
-        public void CreateCoreMethodHappyPath5()
-        {
-            // Alternate property types provided
-
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
-
-            var source = new Uri("http://MySource").ToString();
-            var dataContentType = new ContentType("application/mycontenttype").ToString();
-            var dataSchema = new Uri("http://MySource").ToString();
-            var time = DateTime.UtcNow.ToString("O");
-
-            receiverMessage.Headers.Add(CloudEvent.SourceAttribute, source);
-            receiverMessage.Headers.Add(CloudEvent.DataContentTypeAttribute, dataContentType);
-            receiverMessage.Headers.Add(CloudEvent.DataSchemaAttribute, dataSchema);
-            receiverMessage.Headers.Add(CloudEvent.TimeAttribute, time);
-
-            var cloudEvent = TestCloudEvent.Create(receiverMessage);
-
-            cloudEvent.Source.ToString().Should().Be(source);
-            cloudEvent.DataContentType.ToString().Should().Be(dataContentType);
-            cloudEvent.DataSchema.ToString().Should().Be(dataSchema);
-            cloudEvent.Time.GetValueOrDefault().ToString("O").Should().Be(time);
-            cloudEvent.AdditionalAttributes.Should().BeEmpty();
-        }
-
-        [Fact(DisplayName = "CreateCore method maps additional attributes verbatim")]
-        public void CreateCoreMethodHappyPath6()
-        {
-            // Additional attributes provided
-
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
-            receiverMessage.Headers.Add("foo", "abc");
-            receiverMessage.Headers.Add("bar", 123);
-
-            var mockProtocolBinding = new Mock<IProtocolBinding>();
-            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
-
-            var cloudEvent = TestCloudEvent.Create(receiverMessage, mockProtocolBinding.Object);
-
-            cloudEvent.AdditionalAttributes.Should().HaveCount(2);
-            cloudEvent.AdditionalAttributes.Should().ContainKey("foo").WhichValue.Should().Be("abc");
-            cloudEvent.AdditionalAttributes.Should().ContainKey("bar").WhichValue.Should().Be(123);
-        }
-
-
-        [Fact(DisplayName = "CreateCore method maps with the specified protocol binding")]
-        public void CreateCoreMethodHappyPath7()
-        {
-            // Non-default protocol binding
-
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
-            receiverMessage.Headers.Add("foo", "abc");
-            receiverMessage.Headers.Add("test-" + CloudEvent.IdAttribute, "MyId");
-
-            var mockProtocolBinding = new Mock<IProtocolBinding>();
-            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
-
-            var cloudEvent = TestCloudEvent.Create(receiverMessage, mockProtocolBinding.Object);
-
-            cloudEvent.Id.Should().Be("MyId");
-            cloudEvent.AdditionalAttributes.Should().ContainKey("foo").WhichValue.Should().Be("abc");
-        }
-
-        [Fact(DisplayName = "CreateCore method throws when receiverMessage parameter is null")]
-        public void CreateCoreMethodSadPath1()
-        {
-            // Null receiverMessage
-
-            Action act = () => TestCloudEvent.Create(null);
-
-            act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*receiverMessage*");
-        }
-
-        [Fact(DisplayName = "CreateCore method throws when specversion header is not '1.0'")]
-        public void CreateCoreMethodSadPath2()
-        {
-            // Invalid specversion
-
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
-            receiverMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "0.0");
-
-            Action act = () => TestCloudEvent.Create(receiverMessage);
-
-            act.Should().ThrowExactly<CloudEventValidationException>();
-        }
-
-        #endregion
-
         #region Implicit conversion operator
 
         [Fact(DisplayName = "Implicit conversion operator works by calling ToSenderMessage")]
@@ -625,10 +621,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         private class TestCloudEvent : CloudEvent
         {
             public static void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null) =>
-                ValidateCore(senderMessage, ref protocolBinding);
-
-            public static TestCloudEvent Create(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null) =>
-                CreateCore<TestCloudEvent>(receiverMessage, ref protocolBinding);
+                ValidateCore(senderMessage, protocolBinding);
         }
     }
 }
