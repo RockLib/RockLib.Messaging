@@ -17,6 +17,45 @@ The KafkaSender class can be directly instantiated and has the following paramet
 - config (optional, defaults to null)
   - A collection of librdkafka configuration parameters (refer to https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) and parameters specific to this client (refer to: Confluent.Kafka.ConfigPropertyNames).
 
+---
+
+To add an KafkaSender to a service collection for dependency injection, use the `AddKafkaSender` method, optionally passing in a `configureOptions` callback:
+
+```c#
+services.AddKafkaSender("MySender", options =>
+{
+    options.Topic = "test";
+    options.BootstrapServers = "localhost:9092";
+    options.MessageTimeoutMs = 10000;
+    options.Config = new ProducerConfig() { SocketNagleDisable = true };
+});
+```
+
+To bind `KafkaSenderOptions` to a configuration section, use the name of the sender when calling the `Configure` method:
+
+```c#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.Configure<KafkaSenderOptions>("MySender", Configuration.GetSection("MyKafkaSender"));
+    services.AddKafkaSender("MySender");
+}
+
+/* appsettings.json:
+{
+    "MyKafkaSender": {
+        "Topic": "test",
+        "BootstrapServers": "localhost:9092",
+        "MessageTimeoutMs": 10000,
+        "Config": {
+            "SocketNagleDisable": true
+        }
+    }
+}
+*/
+```
+
+---
+
 MessagingScenarioFactory can be configured with an `KafkaSender` named "commands" as follows:
 
 ```json
@@ -71,6 +110,45 @@ The KafkaReceiver class can be directly instantiated and has the following param
   - List of brokers as a CSV list of broker host or host:port.
 - config
   - A collection of librdkafka configuration parameters (refer to https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) and parameters specific to this client (refer to: Confluent.Kafka.ConfigPropertyNames).
+
+---
+
+To add an KafkaReceiver to a service collection for dependency injection, use the `AddKafkaReceiver` method, optionally passing in a `configureOptions` callback:
+
+```c#
+services.AddKafkaReceiver("MyReceiver", options =>
+{
+    options.Topic = "test";
+    options.BootstrapServers = "localhost:9092";
+    options.GroupId = "test-consumer-group";
+    options.Config = new ConsumerConfig() { SocketNagleDisable = true };
+});
+```
+
+To bind `KafkaReceiverOptions` to a configuration section, use the name of the receiver when calling the `Configure` method:
+
+```c#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.Configure<KafkaReceiverOptions>("MyReceiver", Configuration.GetSection("MyKafkaReceiver"));
+    services.AddKafkaReceiver("MyReceiver");
+}
+
+/* appsettings.json:
+{
+    "MyKafkaReceiver": {
+        "Topic": "test",
+        "BootstrapServers": "localhost:9092",
+        "GroupId": "test-consumer-group",
+        "Config": {
+            "SocketNagleDisable": true
+        }
+    }
+}
+*/
+```
+
+---
 
 MessagingScenarioFactory can be configured with an `KafkaReceiver` named "commands" as follows:
 
