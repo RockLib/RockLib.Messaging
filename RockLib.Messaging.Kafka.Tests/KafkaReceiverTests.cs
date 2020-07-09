@@ -4,6 +4,7 @@ using System;
 using Confluent.Kafka;
 using Moq;
 using RockLib.Dynamic;
+using System.Threading;
 
 namespace RockLib.Messaging.Kafka.Tests
 {
@@ -81,6 +82,40 @@ namespace RockLib.Messaging.Kafka.Tests
 
             consumerMock.Verify(cm => cm.Close(), Times.Once);
             consumerMock.Verify(cm => cm.Dispose(), Times.Once);
+        }
+
+
+        [Fact(DisplayName = "KafkaReceiver receives message from consumer")]
+        public void KafkaReceiverHappyPath()
+        {
+            var message = new Message<Ignore, string>() { Value = "This is the expected message!" };
+            var result = new ConsumeResult<Ignore, string>() { Message = message };
+
+            var consumerMock = new Mock<IConsumer<Ignore, string>>();
+            consumerMock.Setup(c => c.Subscribe(It.IsAny<string>()));
+            consumerMock.Setup(c => c.Consume(It.IsAny<CancellationToken>())).Returns(result);
+
+            var waitHandle = new AutoResetEvent(false);
+
+            string receivedMessage = null;
+
+            using (var receiver = new KafkaReceiver("NAME", "TOPIC", "GROUPID", "SERVER"))
+            {
+                var unlockedReceiver = receiver.Unlock();
+                unlockedReceiver._consumer = new Lazy<IConsumer<Ignore, string>>(() => consumerMock.Object);
+
+                receiver.Start(async m =>
+                {
+                    receivedMessage = m.StringPayload;
+                    waitHandle.Set();
+                });
+
+                waitHandle.WaitOne();
+            }
+
+            consumerMock.Verify(m => m.Consume(It.IsAny<CancellationToken>()));
+
+            receivedMessage.Should().Be("This is the expected message!");
         }
     }
 }
