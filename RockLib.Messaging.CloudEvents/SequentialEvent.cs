@@ -36,6 +36,30 @@
         public SequentialEvent(byte[] data) : base(data) { }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="SequentialEvent"/> class based on the
+        /// source sequential event. All cloud and sequential event attributes except <see cref=
+        /// "CloudEvent.Id"/> and <see cref="CloudEvent.Time"/> are copied to the new instance. If
+        /// <see cref="SequenceType"/> is <see cref="SequenceTypes.Integer"/>, then the value of
+        /// <see cref="Sequence"/> is incremented for the new instance. Note that neither the
+        /// source's <see cref="CloudEvent.Data"/> nor any of its <see cref=
+        /// "CloudEvent.AdditionalAttributes"/> are copied to the new instance.
+        /// </summary>
+        /// <param name="source">
+        /// The source for cloud and sequential event attribute values.
+        /// </param>
+        public SequentialEvent(SequentialEvent source)
+            : base(source)
+        {
+            SequenceType = source.SequenceType;
+
+            if (SequenceType == SequenceTypes.Integer
+                && int.TryParse(source.Sequence, out int sequence))
+            {
+                Sequence = unchecked(sequence + 1).ToString();
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SequentialEvent"/> class and sets its properties
         /// according to the payload and headers of the <paramref name="receiverMessage"/>.
         /// </summary>

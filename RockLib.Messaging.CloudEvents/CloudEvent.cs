@@ -63,6 +63,27 @@ namespace RockLib.Messaging.CloudEvents
         public CloudEvent(byte[] data) => Data = data;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="CloudEvent"/> class based on the source
+        /// cloud event. All cloud event attributes except <see cref="Id"/> and <see cref="Time"/>
+        /// are copied to the new instance. Note that neither the source's <see cref="Data"/> nor
+        /// any of its <see cref="AdditionalAttributes"/> are copied to the new instance.
+        /// </summary>
+        /// <param name="source">
+        /// The source for cloud event attribute values.
+        /// </param>
+        public CloudEvent(CloudEvent source)
+        {
+            if (source is null)
+                throw new ArgumentNullException(nameof(source));
+
+            Source = source.Source;
+            Type = source.Type;
+            DataContentType = source.DataContentType;
+            DataSchema = source.DataSchema;
+            Subject = source.Subject;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CloudEvent"/> class and sets its properties
         /// according to the payload and headers of the <paramref name="receiverMessage"/>.
         /// </summary>
