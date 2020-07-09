@@ -18,13 +18,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.AdditionalAttributes.Should().BeEmpty();
             cloudEvent.DataContentType.Should().BeNull();
             cloudEvent.DataSchema.Should().BeNull();
-            cloudEvent.Id.Should().BeNull();
             cloudEvent.Sequence.Should().BeNull();
             cloudEvent.SequenceType.Should().BeNull();
             cloudEvent.Source.Should().BeNull();
             cloudEvent.SpecVersion.Should().Be("1.0");
             cloudEvent.Subject.Should().BeNull();
-            cloudEvent.Time.Should().BeNull();
             cloudEvent.Type.Should().BeNull();
         }
 
@@ -37,13 +35,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.AdditionalAttributes.Should().BeEmpty();
             cloudEvent.DataContentType.Should().BeNull();
             cloudEvent.DataSchema.Should().BeNull();
-            cloudEvent.Id.Should().BeNull();
             cloudEvent.Sequence.Should().BeNull();
             cloudEvent.SequenceType.Should().BeNull();
             cloudEvent.Source.Should().BeNull();
             cloudEvent.SpecVersion.Should().Be("1.0");
             cloudEvent.Subject.Should().BeNull();
-            cloudEvent.Time.Should().BeNull();
             cloudEvent.Type.Should().BeNull();
         }
 
@@ -58,13 +54,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.AdditionalAttributes.Should().BeEmpty();
             cloudEvent.DataContentType.Should().BeNull();
             cloudEvent.DataSchema.Should().BeNull();
-            cloudEvent.Id.Should().BeNull();
             cloudEvent.Sequence.Should().BeNull();
             cloudEvent.SequenceType.Should().BeNull();
             cloudEvent.Source.Should().BeNull();
             cloudEvent.SpecVersion.Should().Be("1.0");
             cloudEvent.Subject.Should().BeNull();
-            cloudEvent.Time.Should().BeNull();
             cloudEvent.Type.Should().BeNull();
         }
 
@@ -118,13 +112,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
             sequentialEvent.Sequence.Should().BeNull();
             sequentialEvent.SequenceType.Should().BeNull();
 
-            sequentialEvent.Id.Should().BeNull();
             sequentialEvent.Source.Should().BeNull();
             sequentialEvent.Type.Should().BeNull();
             sequentialEvent.DataContentType.Should().BeNull();
             sequentialEvent.DataSchema.Should().BeNull();
             sequentialEvent.Subject.Should().BeNull();
-            sequentialEvent.Time.Should().BeNull();
             sequentialEvent.AdditionalAttributes.Should().BeEmpty();
         }
 

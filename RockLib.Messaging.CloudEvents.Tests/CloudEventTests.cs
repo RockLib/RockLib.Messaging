@@ -20,11 +20,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.AdditionalAttributes.Should().BeEmpty();
             cloudEvent.DataContentType.Should().BeNull();
             cloudEvent.DataSchema.Should().BeNull();
-            cloudEvent.Id.Should().BeNull();
             cloudEvent.Source.Should().BeNull();
             cloudEvent.SpecVersion.Should().Be("1.0");
             cloudEvent.Subject.Should().BeNull();
-            cloudEvent.Time.Should().BeNull();
             cloudEvent.Type.Should().BeNull();
         }
 
@@ -37,11 +35,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.AdditionalAttributes.Should().BeEmpty();
             cloudEvent.DataContentType.Should().BeNull();
             cloudEvent.DataSchema.Should().BeNull();
-            cloudEvent.Id.Should().BeNull();
             cloudEvent.Source.Should().BeNull();
             cloudEvent.SpecVersion.Should().Be("1.0");
             cloudEvent.Subject.Should().BeNull();
-            cloudEvent.Time.Should().BeNull();
             cloudEvent.Type.Should().BeNull();
         }
 
@@ -56,11 +52,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.AdditionalAttributes.Should().BeEmpty();
             cloudEvent.DataContentType.Should().BeNull();
             cloudEvent.DataSchema.Should().BeNull();
-            cloudEvent.Id.Should().BeNull();
             cloudEvent.Source.Should().BeNull();
             cloudEvent.SpecVersion.Should().Be("1.0");
             cloudEvent.Subject.Should().BeNull();
-            cloudEvent.Time.Should().BeNull();
             cloudEvent.Type.Should().BeNull();
         }
 
@@ -132,13 +126,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var cloudEvent = new CloudEvent(receiverMessage);
 
             cloudEvent.SpecVersion.Should().Be("1.0");
-            cloudEvent.Id.Should().BeNull();
             cloudEvent.Source.Should().BeNull();
             cloudEvent.Type.Should().BeNull();
             cloudEvent.DataContentType.Should().BeNull();
             cloudEvent.DataSchema.Should().BeNull();
             cloudEvent.Subject.Should().BeNull();
-            cloudEvent.Time.Should().BeNull();
             cloudEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
@@ -164,7 +156,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.Source.ToString().Should().Be(source);
             cloudEvent.DataContentType.ToString().Should().Be(dataContentType);
             cloudEvent.DataSchema.ToString().Should().Be(dataSchema);
-            cloudEvent.Time.GetValueOrDefault().ToString("O").Should().Be(time);
+            cloudEvent.Time.ToString("O").Should().Be(time);
             cloudEvent.AdditionalAttributes.Should().BeEmpty();
         }
 

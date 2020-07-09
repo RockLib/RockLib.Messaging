@@ -42,6 +42,9 @@ namespace RockLib.Messaging.CloudEvents
 
         private static IProtocolBinding _defaultProtocolBinding;
 
+        private string _id;
+        private DateTime? _time;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CloudEvent"/> class.
         /// </summary>
@@ -167,7 +170,16 @@ namespace RockLib.Messaging.CloudEvents
         /// distinct event. If a duplicate event is re-sent (e.g. due to a network error) it MAY have
         /// the same id. Consumers MAY assume that Events with identical source and id are duplicates.
         /// </summary>
-        public string Id { get; set; }
+        public string Id
+        {
+            get => _id ?? (_id = NewId());
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                    throw new ArgumentNullException(nameof(value));
+                _id = value;
+            }
+        }
 
         /// <summary>
         /// REQUIRED. Identifies the context in which an event happened. Often this will include
@@ -211,7 +223,7 @@ namespace RockLib.Messaging.CloudEvents
         /// 
         /// <para>Identifying the subject of the event in context metadata (opposed to only in the data
         /// payload) is particularly helpful in generic subscription filtering scenarios where middleware
-        /// is unable to interpret the data content.In the above example, the subscriber might only be
+        /// is unable to interpret the data content. In the above example, the subscriber might only be
         /// interested in blobs with names ending with '.jpg' or '.jpeg' and the subject attribute allows
         /// for constructing a simple and efficient string-suffix filter for that subset of events.</para>
         /// </summary>
@@ -220,7 +232,11 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>
         /// Timestamp of when the occurrence happened.
         /// </summary>
-        public DateTime? Time { get; set; }
+        public DateTime Time
+        {
+            get => _time ?? (_time = CurrentTime()).Value;
+            set => _time = value;
+        }
 
         /// <summary>
         /// Any additional attributes not specific to this CloudEvent type.
@@ -284,7 +300,7 @@ namespace RockLib.Messaging.CloudEvents
             if (Subject != null)
                 senderMessage.Headers[protocolBinding.GetHeaderName(SubjectAttribute)] = Subject;
 
-            senderMessage.Headers[protocolBinding.GetHeaderName(TimeAttribute)] = Time.Value;
+            senderMessage.Headers[protocolBinding.GetHeaderName(TimeAttribute)] = Time;
 
             foreach (var attribute in AdditionalAttributes)
                 senderMessage.Headers[attribute.Key] = attribute.Value;
@@ -362,17 +378,11 @@ namespace RockLib.Messaging.CloudEvents
         /// <exception cref="CloudEventValidationException">If the cloud event is invalid.</exception>
         public virtual void Validate()
         {
-            if (string.IsNullOrEmpty(Id))
-                Id = NewId();
-
             if (Source is null)
                 throw new CloudEventValidationException("Source cannot be null.");
 
             if (string.IsNullOrEmpty(Type))
                 throw new CloudEventValidationException("Type cannot be null or empty.");
-
-            if (!Time.HasValue)
-                Time = CurrentTime();
         }
 
         /// <summary>
