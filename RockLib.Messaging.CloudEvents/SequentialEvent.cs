@@ -131,7 +131,7 @@
             ValidateCore(senderMessage, protocolBinding);
 
             var sequenceHeader = protocolBinding.GetHeaderName(SequenceAttribute);
-            if (!TryGetHeaderValue<string>(senderMessage, sequenceHeader, out _))
+            if (!ContainsHeader<string>(senderMessage, sequenceHeader))
                 throw new CloudEventValidationException($"The '{sequenceHeader}' header is missing from the SenderMessage.");
         }
     }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
@@ -397,21 +399,68 @@ namespace RockLib.Messaging.CloudEvents
                 throw new CloudEventValidationException($"The '{specVersionHeader}' header must have a value of '{_specVersion1_0}'.");
 
             var idHeader = protocolBinding.GetHeaderName(IdAttribute);
-            if (!TryGetHeaderValue<string>(senderMessage, idHeader, out _))
+            if (!ContainsHeader<string>(senderMessage, idHeader))
                 senderMessage.Headers[idHeader] = Guid.NewGuid().ToString();
 
             var sourceHeader = protocolBinding.GetHeaderName(SourceAttribute);
-            if (!TryGetHeaderValue<Uri>(senderMessage, sourceHeader, out _)
-                && !TryGetHeaderValue<string>(senderMessage, sourceHeader, out _))
+            if (!ContainsHeader<Uri>(senderMessage, sourceHeader))
                 throw new CloudEventValidationException($"The '{sourceHeader}' header is missing from the SenderMessage.");
 
             var typeHeader = protocolBinding.GetHeaderName(TypeAttribute);
-            if (!TryGetHeaderValue<string>(senderMessage, typeHeader, out _))
+            if (!ContainsHeader<string>(senderMessage, typeHeader))
                 throw new CloudEventValidationException($"The '{typeHeader}' header is missing from the SenderMessage.");
 
             var timeHeader = protocolBinding.GetHeaderName(TimeAttribute);
-            if (!TryGetHeaderValue<DateTime>(senderMessage, timeHeader, out _))
+            if (!ContainsHeader<DateTime>(senderMessage, timeHeader))
                 senderMessage.Headers[timeHeader] = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Returns whether the <paramref name="senderMessage"/> has a header with a name matching
+        /// the <paramref name="headerName"/> and a value of either type <typeparamref name="T"/>
+        /// or a type convertible to <typeparamref name="T"/>.
+        /// </summary>
+        /// <param name="senderMessage">The sender message to check</param>
+        /// <param name="headerName">The name of the header.</param>
+        /// <typeparam name="T">The type of the header value.</typeparam>
+        /// <returns>
+        /// <see langword="true"/> if the the <paramref name="senderMessage"/> has a header with a
+        /// name matching the <paramref name="headerName"/> and a value of either type
+        /// <typeparamref name="T"/> or a type convertible to <typeparamref name="T"/>; otherwise,
+        /// <see langword="false"/>.
+        /// </returns>
+        protected static bool ContainsHeader<T>(SenderMessage senderMessage, string headerName)
+        {
+            if (senderMessage.Headers.TryGetValue(headerName, out var objectValue))
+            {
+                switch (objectValue)
+                {
+                    case T _:
+                        return true;
+                    case null:
+                        return false;
+                }
+
+                var converter = TypeDescriptor.GetConverter(typeof(T));
+                if (converter.CanConvertFrom(objectValue.GetType()))
+                    try
+                    {
+                        converter.ConvertFrom(objectValue);
+                        return true;
+                    }
+                    catch { }
+
+                converter = TypeDescriptor.GetConverter(objectValue);
+                if (converter.CanConvertTo(typeof(T)))
+                    try
+                    {
+                        converter.ConvertTo(objectValue, typeof(T));
+                        return true;
+                    }
+                    catch { }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -422,21 +471,65 @@ namespace RockLib.Messaging.CloudEvents
         /// <param name="headerName">The name of the header.</param>
         /// <param name="value">
         /// When this method returns, the value of the header with the specified name, if the
-        /// header is found; otherwise, the default value for the type of the <paramref name="value"/>
-        /// parameter. This parameter is passed uninitialized.
+        /// header is found; otherwise, the default value for the type of the <paramref name="
+        /// value"/> parameter. This parameter is passed uninitialized.
         /// </param>
         /// <returns>
-        /// <see langword="true"/> if the message contains a header with the specified name; otherwise,
+        /// <see langword="true"/> if the the <paramref name="senderMessage"/> has a header with a
+        /// name matching the <paramref name="headerName"/> and a value of either type
+        /// <typeparamref name="T"/> or a type convertible to <typeparamref name="T"/>; otherwise,
         /// <see langword="false"/>.
         /// </returns>
         protected static bool TryGetHeaderValue<T>(SenderMessage senderMessage, string headerName, out T value)
         {
-            if (senderMessage.Headers.TryGetValue(headerName, out var obj) && obj is T)
+            if (senderMessage.Headers.TryGetValue(headerName, out var objectValue))
             {
-                // TODO: If obj is not of type T, try to convert it to T.
-                value = (T)obj;
-                return true;
+                switch (objectValue)
+                {
+                    case T variable:
+                        value = variable;
+                        return true;
+                    case null:
+                        value = default;
+                        return false;
+                }
+
+                if (typeof(T) == typeof(DateTime) && objectValue is string stringValue)
+                {
+                    if (DateTime.TryParse(stringValue, null, DateTimeStyles.RoundtripKind, out var dateTimeValue))
+                    {
+                        value = (T)(object)dateTimeValue;
+                        return true;
+                    }
+                }
+
+                var converter = TypeDescriptor.GetConverter(typeof(T));
+                if (converter.CanConvertFrom(objectValue.GetType()))
+                {
+                    try
+                    {
+                        value = (T)converter.ConvertFrom(objectValue);
+                        return true;
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                converter = TypeDescriptor.GetConverter(objectValue);
+                if (converter.CanConvertTo(typeof(T)))
+                {
+                    try
+                    {
+                        value = (T)converter.ConvertTo(objectValue, typeof(T));
+                        return true;
+                    }
+                    catch
+                    {
+                    }
+                }
             }
+
             value = default;
             return false;
         }
