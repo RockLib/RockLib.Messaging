@@ -363,7 +363,7 @@ namespace RockLib.Messaging.CloudEvents
         public virtual void Validate()
         {
             if (string.IsNullOrEmpty(Id))
-                throw new CloudEventValidationException("Id cannot be null or empty.");
+                Id = NewId();
 
             if (Source is null)
                 throw new CloudEventValidationException("Source cannot be null.");
@@ -372,7 +372,7 @@ namespace RockLib.Messaging.CloudEvents
                 throw new CloudEventValidationException("Type cannot be null or empty.");
 
             if (!Time.HasValue)
-                Time = DateTime.UtcNow;
+                Time = CurrentTime();
         }
 
         /// <summary>
@@ -400,7 +400,7 @@ namespace RockLib.Messaging.CloudEvents
 
             var idHeader = protocolBinding.GetHeaderName(IdAttribute);
             if (!ContainsHeader<string>(senderMessage, idHeader))
-                senderMessage.Headers[idHeader] = Guid.NewGuid().ToString();
+                senderMessage.Headers[idHeader] = NewId();
 
             var sourceHeader = protocolBinding.GetHeaderName(SourceAttribute);
             if (!ContainsHeader<Uri>(senderMessage, sourceHeader))
@@ -412,7 +412,7 @@ namespace RockLib.Messaging.CloudEvents
 
             var timeHeader = protocolBinding.GetHeaderName(TimeAttribute);
             if (!ContainsHeader<DateTime>(senderMessage, timeHeader))
-                senderMessage.Headers[timeHeader] = DateTime.UtcNow;
+                senderMessage.Headers[timeHeader] = CurrentTime();
         }
 
         /// <summary>
@@ -533,5 +533,9 @@ namespace RockLib.Messaging.CloudEvents
             value = default;
             return false;
         }
+
+        private static string NewId() => Guid.NewGuid().ToString();
+
+        private static DateTime CurrentTime() => DateTime.UtcNow;
     }
 }
