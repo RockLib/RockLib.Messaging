@@ -103,8 +103,8 @@ namespace RockLib.Messaging.CloudEvents
                 senderMessage.Headers[correlationIdHeader] = NewCorrelationId();
         }
 
-        private static string NewCorrelationId() => Guid.NewGuid().ToString();
-
         private string CorrelationIdHeader => ProtocolBinding.GetHeaderName(CorrelationIdAttribute);
+
+        private static string NewCorrelationId() => Guid.NewGuid().ToString();
     }
 }

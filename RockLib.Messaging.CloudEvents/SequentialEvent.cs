@@ -95,10 +95,9 @@
         {
             var senderMessage = base.ToSenderMessage();
 
-            if (Sequence != null)
-                senderMessage.Headers[SequenceHeader] = Sequence;
+            senderMessage.Headers[SequenceHeader] = Sequence;
 
-            if (SequenceType != null)
+            if (!string.IsNullOrEmpty(SequenceType))
                 senderMessage.Headers[SequenceTypeHeader] = SequenceType;
 
             return senderMessage;
@@ -111,6 +110,10 @@
 
             if (string.IsNullOrEmpty(Sequence))
                 throw new CloudEventValidationException("Sequence cannot be null or empty.");
+
+            if (SequenceType == SequenceTypes.Integer
+                && !int.TryParse(Sequence, out _))
+                throw new CloudEventValidationException($"Invalid valid for Sequence: '{Sequence}'. Because SequenceType is '{SequenceTypes.Integer}', the Sequence property must be a valid string encoded 32-bit signed integer");
         }
 
         /// <summary>
@@ -130,8 +133,20 @@
             ValidateCore(senderMessage, protocolBinding);
 
             var sequenceHeader = protocolBinding.GetHeaderName(SequenceAttribute);
-            if (!ContainsHeader<string>(senderMessage, sequenceHeader))
+            if (TryGetHeaderValue(senderMessage, sequenceHeader, out string sequence))
+            {
+                var sequenceTypeHeader = protocolBinding.GetHeaderName(SequenceTypeAttribute);
+                if (TryGetHeaderValue(senderMessage, sequenceTypeHeader, out string sequenceType)
+                    && sequenceType == SequenceTypes.Integer
+                    && !int.TryParse(sequence, out _))
+                {
+                    throw new CloudEventValidationException($"Invalid value for '{sequenceHeader} header': '{sequence}'. Because '{sequenceTypeHeader}' header is '{SequenceTypes.Integer}', the value must be a valid string encoded 32-bit signed integer.");
+                }
+            }
+            else
+            { 
                 throw new CloudEventValidationException($"The '{sequenceHeader}' header is missing from the SenderMessage.");
+            }
         }
 
         private string SequenceHeader => ProtocolBinding.GetHeaderName(SequenceAttribute);

@@ -134,8 +134,12 @@ namespace RockLib.Messaging.CloudEvents
             }
             else if (receiverMessage.Headers.TryGetValue(DataContentTypeHeader, out string dataContentTypeString))
             {
-                DataContentType = new ContentType(dataContentTypeString);
-                AdditionalAttributes.Remove(DataContentTypeHeader);
+                try
+                {
+                    DataContentType = new ContentType(dataContentTypeString);
+                    AdditionalAttributes.Remove(DataContentTypeHeader);
+                }
+                catch (FormatException) { }
             }
 
             if (receiverMessage.Headers.TryGetValue(DataSchemaHeader, out Uri dataSchema))
@@ -204,9 +208,9 @@ namespace RockLib.Messaging.CloudEvents
         public Uri Source { get; set; }
 
         /// <summary>
-        /// The version of the CloudEvents specification which the event uses. This enables
-        /// the interpretation of the context. Compliant event producers MUST use a value of '1.0'
-        /// when referring to this version of the specification.
+        /// REQUIRED. The version of the CloudEvents specification which the event uses. This
+        /// enables the interpretation of the context. Compliant event producers MUST use a value
+        /// of '1.0' when referring to this version of the specification.
         /// </summary>
         public string SpecVersion => _specVersion1_0;
 
@@ -316,7 +320,7 @@ namespace RockLib.Messaging.CloudEvents
             if (DataSchema != null)
                 senderMessage.Headers[DataSchemaHeader] = DataSchema;
 
-            if (Subject != null)
+            if (!string.IsNullOrEmpty(Subject))
                 senderMessage.Headers[SubjectHeader] = Subject;
 
             senderMessage.Headers[TimeHeader] = Time;
