@@ -24,18 +24,6 @@
         public SequentialEvent() { }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SequentialEvent"/> class.
-        /// </summary>
-        /// <param name="data">The data (payload) of the sequential event.</param>
-        public SequentialEvent(string data) : base(data) { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SequentialEvent"/> class.
-        /// </summary>
-        /// <param name="data">The data (payload) of the sequential event.</param>
-        public SequentialEvent(byte[] data) : base(data) { }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="SequentialEvent"/> class based on the
         /// source sequential event. All cloud and sequential event attributes except <see cref=
         /// "CloudEvent.Id"/> and <see cref="CloudEvent.Time"/> are copied to the new instance. If

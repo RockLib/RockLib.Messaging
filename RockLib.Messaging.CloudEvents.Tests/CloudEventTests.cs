@@ -21,45 +21,48 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.DataContentType.Should().BeNull();
             cloudEvent.DataSchema.Should().BeNull();
             cloudEvent.Source.Should().BeNull();
-            cloudEvent.SpecVersion.Should().Be("1.0");
             cloudEvent.Subject.Should().BeNull();
             cloudEvent.Type.Should().BeNull();
         }
 
-        [Fact(DisplayName = "Constructor 2 initializes Data property")]
+        [Fact(DisplayName = "Constructor 2 sets expected properties")]
         public void Constructor2HappyPath()
         {
-            var cloudEvent = new CloudEvent("Hello, world!");
+            var source = new CloudEvent
+            {
+                Id = "MyId",
+                Time = new DateTime(2020, 7, 9, 22, 21, 37, DateTimeKind.Local),
+                Source = new Uri("http://mysource/"),
+                Type = "MyType",
+                DataContentType = new ContentType("application/json") { CharSet = "utf-8" },
+                DataSchema = new Uri("http://mydataschema/"),
+                Subject = "MySubject"
+            };
 
-            cloudEvent.Data.Should().Be("Hello, world!");
-            cloudEvent.AdditionalAttributes.Should().BeEmpty();
-            cloudEvent.DataContentType.Should().BeNull();
-            cloudEvent.DataSchema.Should().BeNull();
-            cloudEvent.Source.Should().BeNull();
-            cloudEvent.SpecVersion.Should().Be("1.0");
-            cloudEvent.Subject.Should().BeNull();
-            cloudEvent.Type.Should().BeNull();
+            var cloudEvent = new CloudEvent(source);
+
+            cloudEvent.Source.Should().BeSameAs(source.Source);
+            cloudEvent.Type.Should().BeSameAs(source.Type);
+            cloudEvent.DataContentType.Should().BeSameAs(source.DataContentType);
+            cloudEvent.DataSchema.Should().BeSameAs(source.DataSchema);
+            cloudEvent.Subject.Should().BeSameAs(source.Subject);
+
+            cloudEvent.Id.Should().NotBe(source.Id);
+            cloudEvent.Time.Should().NotBe(source.Time);
         }
 
-        [Fact(DisplayName = "Constructor 3 initializes Data property")]
-        public void Constructor3HappyPath()
+        [Fact(DisplayName = "Constructor 2 throws is source parameter is null")]
+        public void Constructor2SadPath()
         {
-            var data = new byte[] { 1, 2, 3, 4 };
+            CloudEvent source = null;
 
-            var cloudEvent = new CloudEvent(data);
+            Action act = () => new CloudEvent(source);
 
-            cloudEvent.Data.Should().BeSameAs(data);
-            cloudEvent.AdditionalAttributes.Should().BeEmpty();
-            cloudEvent.DataContentType.Should().BeNull();
-            cloudEvent.DataSchema.Should().BeNull();
-            cloudEvent.Source.Should().BeNull();
-            cloudEvent.SpecVersion.Should().Be("1.0");
-            cloudEvent.Subject.Should().BeNull();
-            cloudEvent.Type.Should().BeNull();
+            act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*source*");
         }
 
-        [Fact(DisplayName = "Constructor 4 creates cloud event with binary data")]
-        public void Constructor4HappyPath1()
+        [Fact(DisplayName = "Constructor 3 creates cloud event with binary data")]
+        public void Constructor3HappyPath1()
         {
             var binaryData = new byte[] { 1, 2, 3, 4 };
 
@@ -70,8 +73,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.Data.Should().BeSameAs(binaryData);
         }
 
-        [Fact(DisplayName = "Constructor 4 creates cloud event with binary data")]
-        public void Constructor4HappyPath2()
+        [Fact(DisplayName = "Constructor 3 creates cloud event with binary data")]
+        public void Constructor3HappyPath2()
         {
             var stringData = "Hello, world!";
 
@@ -82,8 +85,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.Data.Should().BeSameAs(stringData);
         }
 
-        [Fact(DisplayName = "Constructor 4 maps cloud event attributes from receiver message headers")]
-        public void Constructor4HappyPath3()
+        [Fact(DisplayName = "Constructor 3 maps cloud event attributes from receiver message headers")]
+        public void Constructor3HappyPath3()
         {
             // All attributes provided
 
@@ -116,8 +119,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
-        [Fact(DisplayName = "Constructor 4 does not require any cloud event attributes to be mapped")]
-        public void Constructor4HappyPath4()
+        [Fact(DisplayName = "Constructor 3 does not require any cloud event attributes to be mapped")]
+        public void Constructor3HappyPath4()
         {
             // No attributes provided
 
@@ -134,8 +137,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
-        [Fact(DisplayName = "Constructor 4 maps from stringly typed receiver message headers")]
-        public void Constructor4HappyPath5()
+        [Fact(DisplayName = "Constructor 3 maps from stringly typed receiver message headers")]
+        public void Constructor3HappyPath5()
         {
             // Alternate property types provided
 
@@ -160,8 +163,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
-        [Fact(DisplayName = "Constructor 4 maps additional attributes verbatim")]
-        public void Constructor4HappyPath6()
+        [Fact(DisplayName = "Constructor 3 maps additional attributes verbatim")]
+        public void Constructor3HappyPath6()
         {
             // Additional attributes provided
 
@@ -180,8 +183,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
         }
 
 
-        [Fact(DisplayName = "Constructor 4 maps with the specified protocol binding")]
-        public void Constructor4HappyPath7()
+        [Fact(DisplayName = "Constructor 3 maps with the specified protocol binding")]
+        public void Constructor3HappyPath7()
         {
             // Non-default protocol binding
 
@@ -198,8 +201,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.AdditionalAttributes.Should().ContainKey("foo").WhichValue.Should().Be("abc");
         }
 
-        [Fact(DisplayName = "Constructor 4 throws when receiverMessage parameter is null")]
-        public void Constructor4SadPath1()
+        [Fact(DisplayName = "Constructor 3 throws when receiverMessage parameter is null")]
+        public void Constructor3SadPath1()
         {
             // Null receiverMessage
 
@@ -208,8 +211,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*receiverMessage*");
         }
 
-        [Fact(DisplayName = "Constructor 4 throws when specversion header is not '1.0'")]
-        public void Constructor4SadPath2()
+        [Fact(DisplayName = "Constructor 3 throws when specversion header is not '1.0'")]
+        public void Constructor3SadPath2()
         {
             // Invalid specversion
 
@@ -223,30 +226,104 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
         #endregion
 
-        #region SetData
+        #region Properties
 
-        [Fact(DisplayName = "SetData method 1 sets the Data property")]
-        public void SetDataMethod1HappyPath()
+        [Fact(DisplayName = "Id property setter and getter work as expected")]
+        public void IdPropertyHappyPath1()
         {
-            var stringData = "Hello, world!";
-
             var cloudEvent = new CloudEvent();
 
-            cloudEvent.SetData(stringData);
+            cloudEvent.Id = "123";
 
-            cloudEvent.Data.Should().BeSameAs(stringData);
+            cloudEvent.Id.Should().Be("123");
         }
 
-        [Fact(DisplayName = "SetData method 2 sets the Data property")]
-        public void SetDataMethod2HappyPath()
+        [Fact(DisplayName = "Id property getter returns new GUID if setter has not been called")]
+        public void IdPropertyHappyPath2()
         {
-            var binaryData = new byte[] { 1, 2, 3, 4 };
-
             var cloudEvent = new CloudEvent();
 
-            cloudEvent.SetData(binaryData);
+            cloudEvent.Id.Should().NotBeNullOrEmpty();
+            Guid.TryParse(cloudEvent.Id, out _).Should().BeTrue();
+        }
 
-            cloudEvent.Data.Should().BeSameAs(binaryData);
+        [Fact(DisplayName = "Id property setter throws if value is null")]
+        public void IdPropertySadPath()
+        {
+            var cloudEvent = new CloudEvent();
+
+            cloudEvent.Invoking(evt => evt.Id = null).Should()
+                .ThrowExactly<ArgumentNullException>()
+                .WithMessage("*value*");
+        }
+
+        [Fact(DisplayName = "Time property setter and getter work as expected")]
+        public void TimePropertyHappyPath1()
+        {
+            var cloudEvent = new CloudEvent();
+
+            var time = new DateTime(2020, 7, 9, 22, 21, 37, DateTimeKind.Local);
+
+            cloudEvent.Time = time;
+
+            cloudEvent.Time.Should().Be(time);
+        }
+
+        [Fact(DisplayName = "Time property getter returns UtcNow if setter has not been called")]
+        public void TimePropertyHappyPath2()
+        {
+            var cloudEvent = new CloudEvent();
+
+            var before = DateTime.UtcNow;
+            var time = cloudEvent.Time;
+            var after = DateTime.UtcNow;
+
+            time.Should().BeOnOrAfter(before);
+            time.Should().BeOnOrBefore(after);
+        }
+
+        [Fact(DisplayName = "Data property setter and getter work as expected with string")]
+        public void DataPropertyHappyPath1()
+        {
+            var cloudEvent = new CloudEvent();
+
+            var data = "Hello, world!";
+
+            cloudEvent.Data = data;
+
+            cloudEvent.Data.Should().Be(data);
+        }
+
+        [Fact(DisplayName = "Data property setter and getter work as expected with byte array")]
+        public void DataPropertyHappyPath2()
+        {
+            var cloudEvent = new CloudEvent();
+
+            var data = new byte[] { 1, 2, 3, 4 };
+
+            cloudEvent.Data = data;
+
+            cloudEvent.Data.Should().Be(data);
+        }
+
+        [Fact(DisplayName = "Data property setter and getter work as expected with null")]
+        public void DataPropertyHappyPath3()
+        {
+            var cloudEvent = new CloudEvent() { Data = "Hello, world!" };
+
+            cloudEvent.Data = null;
+
+            cloudEvent.Data.Should().BeNull();
+        }
+
+        [Fact(DisplayName = "Data property setter throws given invalid type")]
+        public void DataPropertySadPath()
+        {
+            var cloudEvent = new CloudEvent();
+
+            Action act = () => cloudEvent.Data = 123;
+
+            act.Should().ThrowExactly<ArgumentException>().WithMessage("Data property must be a string, byte array, or null.*value*");
         }
 
         #endregion
@@ -260,11 +337,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var cloudEvent = new CloudEvent
             {
+                Data = stringData,
                 Id = "MyId",
                 Source = new Uri("http://mysource/"),
                 Type = "MyType"
             };
-            cloudEvent.SetData(stringData);
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
@@ -278,11 +355,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var cloudEvent = new CloudEvent
             {
+                Data = binaryData,
                 Id = "MyId",
                 Source = new Uri("http://mysource/"),
                 Type = "MyType"
             };
-            cloudEvent.SetData(binaryData);
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
@@ -581,7 +658,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var mockCloudEvent = new Mock<CloudEvent>();
             mockCloudEvent.Setup(m => m.ToSenderMessage(It.IsAny<IProtocolBinding>())).CallBase();
             mockCloudEvent.Setup(m => m.Validate()).CallBase();
-            mockCloudEvent.Object.SetData("Hello, world!");
+            mockCloudEvent.Object.Data = "Hello, world!";
             mockCloudEvent.Object.Id = "MyId";
             mockCloudEvent.Object.Source = new Uri("http://mysource/");
             mockCloudEvent.Object.Type = "test";

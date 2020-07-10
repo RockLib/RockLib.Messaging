@@ -44,23 +44,12 @@ namespace RockLib.Messaging.CloudEvents
 
         private string _id;
         private DateTime? _time;
+        private object _data;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CloudEvent"/> class.
         /// </summary>
         public CloudEvent() { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CloudEvent"/> class.
-        /// </summary>
-        /// <param name="data">The data (payload) of the cloud event.</param>
-        public CloudEvent(string data) => Data = data;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CloudEvent"/> class.
-        /// </summary>
-        /// <param name="data">The data (payload) of the cloud event.</param>
-        public CloudEvent(byte[] data) => Data = data;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CloudEvent"/> class based on the source
@@ -116,9 +105,9 @@ namespace RockLib.Messaging.CloudEvents
             }
 
             if (receiverMessage.IsBinary())
-                SetData(receiverMessage.BinaryPayload);
+                _data = receiverMessage.BinaryPayload;
             else
-                SetData(receiverMessage.StringPayload);
+                _data = receiverMessage.StringPayload;
 
             var idHeader = protocolBinding.GetHeaderName(IdAttribute);
             if (receiverMessage.Headers.TryGetValue(idHeader, out string id))
@@ -260,27 +249,39 @@ namespace RockLib.Messaging.CloudEvents
         }
 
         /// <summary>
+        /// Domain-specific information about the occurrence (i.e. the payload). This might include
+        /// information about the occurrence, details about the data that was changed, or more.
+        /// <para>
+        /// When setting this property, the value must be a string, byte array, or <see langword=
+        /// "null"/>.
+        /// </para>
+        /// </summary>
+        /// <exception cref="ArgumentException">
+        /// When setting this property, if the value is not a string, byte array, or <see langword=
+        /// "null"/>.
+        /// </exception>
+        public object Data
+        {
+            get => _data;
+            set
+            {
+                switch (value)
+                {
+                    case string _:
+                    case byte[] _:
+                    case null:
+                        _data = value;
+                        break;
+                    default:
+                        throw new ArgumentException("Data property must be a string, byte array, or null.", nameof(value));
+                }
+            }
+        }
+
+        /// <summary>
         /// Any additional attributes not specific to this CloudEvent type.
         /// </summary>
         public IDictionary<string, object> AdditionalAttributes { get; } = new Dictionary<string, object>();
-
-        /// <summary>
-        /// Domain-specific information about the occurrence (i.e. the payload). This might include
-        /// information about the occurrence, details about the data that was changed, or more.
-        /// </summary>
-        public object Data { get; private set; }
-
-        /// <summary>
-        /// Sets the data of the cloud event.
-        /// </summary>
-        /// <param name="data">The data of the cloud event.</param>
-        public void SetData(string data) => Data = data;
-
-        /// <summary>
-        /// Sets the data of the cloud event.
-        /// </summary>
-        /// <param name="data">The data of the cloud event.</param>
-        public void SetData(byte[] data) => Data = data;
 
         /// <summary>
         /// Creates a <see cref="SenderMessage"/> with headers mapped from the attributes of this cloud event.
@@ -300,9 +301,9 @@ namespace RockLib.Messaging.CloudEvents
 
             SenderMessage senderMessage;
 
-            if (Data is string stringData)
+            if (_data is string stringData)
                 senderMessage = new SenderMessage(stringData);
-            else if (Data is byte[] binaryData)
+            else if (_data is byte[] binaryData)
                 senderMessage = new SenderMessage(binaryData);
             else
                 senderMessage = new SenderMessage("");

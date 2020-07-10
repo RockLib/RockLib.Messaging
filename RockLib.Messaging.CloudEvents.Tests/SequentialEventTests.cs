@@ -26,44 +26,49 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.Type.Should().BeNull();
         }
 
-        [Fact(DisplayName = "Constructor 2 initializes Data property")]
+        [Fact(DisplayName = "Constructor 2 sets expected properties")]
         public void Constructor2HappyPath()
         {
-            var cloudEvent = new SequentialEvent("Hello, world!");
+            var source = new SequentialEvent
+            {
+                Sequence = "1",
+                SequenceType = SequenceTypes.Integer,
+                Id = "MyId",
+                Time = new DateTime(2020, 7, 9, 22, 21, 37, DateTimeKind.Local),
+                Source = new Uri("http://mysource/"),
+                Type = "MyType",
+                DataContentType = new ContentType("application/json") { CharSet = "utf-8" },
+                DataSchema = new Uri("http://mydataschema/"),
+                Subject = "MySubject"
+            };
 
-            cloudEvent.Data.Should().Be("Hello, world!");
-            cloudEvent.AdditionalAttributes.Should().BeEmpty();
-            cloudEvent.DataContentType.Should().BeNull();
-            cloudEvent.DataSchema.Should().BeNull();
-            cloudEvent.Sequence.Should().BeNull();
-            cloudEvent.SequenceType.Should().BeNull();
-            cloudEvent.Source.Should().BeNull();
-            cloudEvent.SpecVersion.Should().Be("1.0");
-            cloudEvent.Subject.Should().BeNull();
-            cloudEvent.Type.Should().BeNull();
+            var cloudEvent = new SequentialEvent(source);
+
+            cloudEvent.Sequence.Should().Be("2");
+            cloudEvent.SequenceType.Should().Be(SequenceTypes.Integer);
+
+            cloudEvent.Source.Should().BeSameAs(source.Source);
+            cloudEvent.Type.Should().BeSameAs(source.Type);
+            cloudEvent.DataContentType.Should().BeSameAs(source.DataContentType);
+            cloudEvent.DataSchema.Should().BeSameAs(source.DataSchema);
+            cloudEvent.Subject.Should().BeSameAs(source.Subject);
+
+            cloudEvent.Id.Should().NotBe(source.Id);
+            cloudEvent.Time.Should().NotBe(source.Time);
         }
 
-        [Fact(DisplayName = "Constructor 3 initializes Data property")]
-        public void Constructor3HappyPath()
+        [Fact(DisplayName = "Constructor 2 throws is source parameter is null")]
+        public void Constructor2SadPath()
         {
-            var data = new byte[] { 1, 2, 3, 4 };
+            SequentialEvent source = null;
 
-            var cloudEvent = new SequentialEvent(data);
+            Action act = () => new SequentialEvent(source);
 
-            cloudEvent.Data.Should().BeSameAs(data);
-            cloudEvent.AdditionalAttributes.Should().BeEmpty();
-            cloudEvent.DataContentType.Should().BeNull();
-            cloudEvent.DataSchema.Should().BeNull();
-            cloudEvent.Sequence.Should().BeNull();
-            cloudEvent.SequenceType.Should().BeNull();
-            cloudEvent.Source.Should().BeNull();
-            cloudEvent.SpecVersion.Should().Be("1.0");
-            cloudEvent.Subject.Should().BeNull();
-            cloudEvent.Type.Should().BeNull();
+            act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*source*");
         }
 
-        [Fact(DisplayName = "Constructor 4 maps sequential event attributes from receiver message headers")]
-        public void Constructor4HappyPath1()
+        [Fact(DisplayName = "Constructor 3 maps sequential event attributes from receiver message headers")]
+        public void Constructor3HappyPath1()
         {
             // All attributes provided
 
@@ -100,8 +105,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             sequentialEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
-        [Fact(DisplayName = "Constructor 4 does not require any sequential event attributes to be mapped")]
-        public void Constructor4HappyPath2()
+        [Fact(DisplayName = "Constructor 3 does not require any sequential event attributes to be mapped")]
+        public void Constructor3HappyPath2()
         {
             // No attributes provided
 
@@ -120,8 +125,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             sequentialEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
-        [Fact(DisplayName = "Constructor 4 maps with the specified protocol binding")]
-        public void Constructor4HappyPath3()
+        [Fact(DisplayName = "Constructor 3 maps with the specified protocol binding")]
+        public void Constructor3HappyPath3()
         {
             // Non-default protocol binding
 
