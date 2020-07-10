@@ -72,5 +72,38 @@ namespace RockLib.Messaging.CloudEvents
             builder.AddValidation(message => SequentialEvent.Validate(message, protocolBinding));
 
         #endregion
+
+        #region CorrelatedEvent
+
+        /// <summary>
+        /// Creates an instance of <see cref="CorrelatedEvent"/> with properties mapped from the headers of
+        /// <paramref name="receiverMessage"/>.
+        /// </summary>
+        /// <param name="receiverMessage">
+        /// The <see cref="IReceiverMessage"/> to be mapped to the new <see cref="CorrelatedEvent"/>.
+        /// </param>
+        /// <param name="protocolBinding">
+        /// The <see cref="IProtocolBinding"/> used to map <see cref="IReceiverMessage"/> headers to
+        /// CorrelatedEvent attributes.
+        /// </param>
+        /// <returns>
+        /// A new <see cref="CorrelatedEvent"/> with properties mapped from the headers of the <see cref="IReceiverMessage"/>.
+        /// </returns>
+        public static CorrelatedEvent ToCorrelatedEvent(this IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null) =>
+            new CorrelatedEvent(receiverMessage, protocolBinding);
+
+        /// <summary>
+        /// Adds a <see cref="ValidatingSender"/> decorator that ensures messages are valid CorrelatedEvents.
+        /// </summary>
+        /// <param name="builder">The <see cref="ISenderBuilder"/>.</param>
+        /// <param name="protocolBinding">
+        /// The <see cref="IProtocolBinding"/> used to map CorrelatedEvent attributes to <see cref="SenderMessage"/>
+        /// headers.
+        /// </param>
+        /// <returns>The same <see cref="ISenderBuilder"/>.</returns>
+        public static ISenderBuilder AddCorrelatedEventValidation(this ISenderBuilder builder, IProtocolBinding protocolBinding = null) =>
+            builder.AddValidation(message => CorrelatedEvent.Validate(message, protocolBinding));
+
+        #endregion
     }
 }
