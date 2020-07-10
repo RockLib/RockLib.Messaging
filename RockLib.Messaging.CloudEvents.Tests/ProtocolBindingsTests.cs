@@ -3,14 +3,14 @@ using Xunit;
 
 namespace RockLib.Messaging.CloudEvents.Tests
 {
-    public class ProtocolBindingTests
+    public class ProtocolBindingsTests
     {
         [Fact(DisplayName = "Default field's GetHeaderName method returns attribute name unmodified")]
         public void DefaultFieldHappyPath()
         {
             var attributeName = "MyAttribute";
 
-            var headerName = ProtocolBinding.Default.GetHeaderName(attributeName);
+            var headerName = ProtocolBindings.Default.GetHeaderName(attributeName);
 
             headerName.Should().BeSameAs(attributeName);
         }
@@ -20,7 +20,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var attributeName = "MyAttribute";
 
-            var headerName = ProtocolBinding.Amqp.GetHeaderName(attributeName);
+            var headerName = ProtocolBindings.Amqp.GetHeaderName(attributeName);
 
             headerName.Should().Be("cloudEvents:" + attributeName);
         }
@@ -30,7 +30,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var attributeName = "MyAttribute";
 
-            var headerName = ProtocolBinding.Http.GetHeaderName(attributeName);
+            var headerName = ProtocolBindings.Http.GetHeaderName(attributeName);
 
             headerName.Should().Be("ce_" + attributeName);
         }
@@ -40,7 +40,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var attributeName = "MyAttribute";
 
-            var headerName = ProtocolBinding.Kafka.GetHeaderName(attributeName);
+            var headerName = ProtocolBindings.Kafka.GetHeaderName(attributeName);
 
             headerName.Should().Be("ce_" + attributeName);
         }
@@ -50,7 +50,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var attributeName = "MyAttribute";
 
-            var headerName = ProtocolBinding.Mqtt.GetHeaderName(attributeName);
+            var headerName = ProtocolBindings.Mqtt.GetHeaderName(attributeName);
 
             headerName.Should().BeSameAs(attributeName);
         }

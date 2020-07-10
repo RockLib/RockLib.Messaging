@@ -247,6 +247,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var time = DateTime.UtcNow;
             var type = "MyType";
 
+            var mockProtocolBinding = new Mock<IProtocolBinding>();
+            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
+
             var cloudEvent = new SequentialEvent
             {
                 Sequence = sequence,
@@ -257,13 +260,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
                 Source = source,
                 Subject = subject,
                 Time = time,
-                Type = type
+                Type = type,
+                ProtocolBinding = mockProtocolBinding.Object
             };
 
-            var mockProtocolBinding = new Mock<IProtocolBinding>();
-            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
-
-            var senderMessage = cloudEvent.ToSenderMessage(mockProtocolBinding.Object);
+            var senderMessage = cloudEvent.ToSenderMessage();
 
             senderMessage.Headers["test-" + SequentialEvent.SequenceAttribute].Should().BeSameAs(sequence);
             senderMessage.Headers["test-" + SequentialEvent.SequenceTypeAttribute].Should().BeSameAs(sequenceType);

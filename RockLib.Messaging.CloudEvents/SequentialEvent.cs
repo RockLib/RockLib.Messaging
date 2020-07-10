@@ -21,7 +21,7 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="SequentialEvent"/> class.
         /// </summary>
-        public SequentialEvent() { }
+        public SequentialEvent() : base() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SequentialEvent"/> class based on the
@@ -57,26 +57,21 @@
         /// <param name="protocolBinding">
         /// The <see cref="IProtocolBinding"/> used to map <see cref="IReceiverMessage"/> headers to
         /// CloudEvent attributes. If <see langword="null"/>, then <see cref="CloudEvent.DefaultProtocolBinding"/>
-        /// is used instead (and replaces the value of the <c>ref</c> parameter).
+        /// is used instead.
         /// </param>
         public SequentialEvent(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)
             : base(receiverMessage, protocolBinding)
         {
-            if (protocolBinding is null)
-                protocolBinding = DefaultProtocolBinding;
-
-            var sequenceHeader = protocolBinding.GetHeaderName(SequenceAttribute);
-            if (receiverMessage.Headers.TryGetValue(sequenceHeader, out string sequence))
+            if (receiverMessage.Headers.TryGetValue(SequenceHeader, out string sequence))
             {
                 Sequence = sequence;
-                AdditionalAttributes.Remove(sequenceHeader);
+                AdditionalAttributes.Remove(SequenceHeader);
             }
 
-            var sequenceTypeHeader = protocolBinding.GetHeaderName(SequenceTypeAttribute);
-            if (receiverMessage.Headers.TryGetValue(sequenceTypeHeader, out string sequenceType))
+            if (receiverMessage.Headers.TryGetValue(SequenceTypeHeader, out string sequenceType))
             {
                 SequenceType = sequenceType;
-                AdditionalAttributes.Remove(sequenceTypeHeader);
+                AdditionalAttributes.Remove(SequenceTypeHeader);
             }
         }
 
@@ -95,24 +90,16 @@
         /// <summary>
         /// Creates a <see cref="SenderMessage"/> with headers mapped from the attributes of this sequential event.
         /// </summary>
-        /// <param name="protocolBinding">
-        /// The <see cref="IProtocolBinding"/> used to map SequentialEvent attributes to <see cref="SenderMessage"/>
-        /// headers. If <see langword="null"/>, then <see cref="CloudEvent.DefaultProtocolBinding"/> is used
-        /// instead.
-        /// </param>
         /// <returns>The mapped <see cref="SenderMessage"/>.</returns>
-        public override SenderMessage ToSenderMessage(IProtocolBinding protocolBinding = null)
+        public override SenderMessage ToSenderMessage()
         {
-            if (protocolBinding is null)
-                protocolBinding = DefaultProtocolBinding;
-
-            var senderMessage = base.ToSenderMessage(protocolBinding);
+            var senderMessage = base.ToSenderMessage();
 
             if (Sequence != null)
-                senderMessage.Headers[protocolBinding.GetHeaderName(SequenceAttribute)] = Sequence;
+                senderMessage.Headers[SequenceHeader] = Sequence;
 
             if (SequenceType != null)
-                senderMessage.Headers[protocolBinding.GetHeaderName(SequenceTypeAttribute)] = SequenceType;
+                senderMessage.Headers[SequenceTypeHeader] = SequenceType;
 
             return senderMessage;
         }
@@ -146,5 +133,9 @@
             if (!ContainsHeader<string>(senderMessage, sequenceHeader))
                 throw new CloudEventValidationException($"The '{sequenceHeader}' header is missing from the SenderMessage.");
         }
+
+        private string SequenceHeader => ProtocolBinding.GetHeaderName(SequenceAttribute);
+        
+        private string SequenceTypeHeader => ProtocolBinding.GetHeaderName(SequenceTypeAttribute);
     }
 }

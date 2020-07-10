@@ -3,7 +3,7 @@
     /// <summary>
     /// Defines various protocol bindings.
     /// </summary>
-    public static class ProtocolBinding
+    public static class ProtocolBindings
     {
         /// <summary>
         /// The default protocol binding.

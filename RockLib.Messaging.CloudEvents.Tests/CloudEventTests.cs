@@ -34,7 +34,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
                 Time = new DateTime(2020, 7, 9, 22, 21, 37, DateTimeKind.Local),
                 Source = new Uri("http://mysource/"),
                 Type = "MyType",
-                DataContentType = new ContentType("application/json") { CharSet = "utf-8" },
+                DataContentType = new ContentType("application/json; charset=utf-8"),
                 DataSchema = new Uri("http://mydataschema/"),
                 Subject = "MySubject"
             };
@@ -473,10 +473,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
                 Id = id,
                 Source = new Uri("http://mysource/"),
                 Type = "MyType",
-                AdditionalAttributes = { { "foo", "abc" } }
+                AdditionalAttributes = { { "foo", "abc" } },
+                ProtocolBinding = mockProtocolBinding.Object
             };
 
-            var senderMessage = cloudEvent.ToSenderMessage(mockProtocolBinding.Object);
+            var senderMessage = cloudEvent.ToSenderMessage();
 
             senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.IdAttribute).WhichValue.Should().BeSameAs(id);
             senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.SpecVersionAttribute).WhichValue.Should().Be("1.0");
@@ -656,7 +657,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         public void ImplicitConversionOperatorHappyPath1()
         {
             var mockCloudEvent = new Mock<CloudEvent>();
-            mockCloudEvent.Setup(m => m.ToSenderMessage(It.IsAny<IProtocolBinding>())).CallBase();
+            mockCloudEvent.Setup(m => m.ToSenderMessage()).CallBase();
             mockCloudEvent.Setup(m => m.Validate()).CallBase();
             mockCloudEvent.Object.Data = "Hello, world!";
             mockCloudEvent.Object.Id = "MyId";
@@ -672,7 +673,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Should().ContainKey(CloudEvent.TypeAttribute).WhichValue.Should().Be("test");
             senderMessage.Headers.Should().ContainKey("foo").WhichValue.Should().Be("abc");
 
-            mockCloudEvent.Verify(m => m.ToSenderMessage(CloudEvent.DefaultProtocolBinding), Times.Once());
+            mockCloudEvent.Verify(m => m.ToSenderMessage(), Times.Once());
         }
 
         [Fact(DisplayName = "Implicit conversion operator returns null given null cloud event")]
