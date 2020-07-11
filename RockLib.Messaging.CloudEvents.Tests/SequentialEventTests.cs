@@ -14,7 +14,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var cloudEvent = new SequentialEvent();
 
-            cloudEvent.Data.Should().BeNull();
+            cloudEvent.StringData.Should().BeNull();
+            cloudEvent.BinaryData.Should().BeNull();
             cloudEvent.AdditionalAttributes.Should().BeEmpty();
             cloudEvent.DataContentType.Should().BeNull();
             cloudEvent.DataSchema.Should().BeNull();

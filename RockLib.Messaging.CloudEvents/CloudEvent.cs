@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
+using System.Text;
 using static RockLib.Messaging.HttpUtils;
 
 namespace RockLib.Messaging.CloudEvents
@@ -55,8 +56,9 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>
         /// Initializes a new instance of the <see cref="CloudEvent"/> class based on the source
         /// cloud event. All cloud event attributes except <see cref="Id"/> and <see cref="Time"/>
-        /// are copied to the new instance. Note that neither the source's <see cref="Data"/> nor
-        /// any of its <see cref="AdditionalAttributes"/> are copied to the new instance.
+        /// are copied to the new instance. Note that neither the source's <see cref="StringData"/>
+        /// nor its <see cref="BinaryData"/> nor any of its <see cref="AdditionalAttributes"/> are
+        /// copied to the new instance.
         /// </summary>
         /// <param name="source">
         /// The source for cloud event attribute values.
@@ -257,33 +259,56 @@ namespace RockLib.Messaging.CloudEvents
         }
 
         /// <summary>
-        /// Domain-specific information about the occurrence (i.e. the payload). This might include
-        /// information about the occurrence, details about the data that was changed, or more.
+        /// Domain-specific information about the occurrence (i.e. the payload) as a string. This
+        /// might include information about the occurrence, details about the data that was
+        /// changed, or more.
         /// <para>
-        /// When setting this property, the value must be a string, byte array, or <see langword=
-        /// "null"/>.
+        /// Note that if the data of this cloud event was set using the <see cref="BinaryData"/>
+        /// property, then the value of <em>this</em> property is that binary value, base-64
+        /// encoded.
         /// </para>
         /// </summary>
-        /// <exception cref="ArgumentException">
-        /// When setting this property, if the value is not a string, byte array, or <see langword=
-        /// "null"/>.
-        /// </exception>
-        public object Data
+        public string StringData
         {
-            get => _data;
-            set
+            get
             {
-                switch (value)
+                switch (_data)
                 {
-                    case string _:
-                    case byte[] _:
+                    case string stringData:
+                        return stringData;
                     case null:
-                        _data = value;
-                        break;
+                        return null;
                     default:
-                        throw new ArgumentException("Data property must be a string, byte array, or null.", nameof(value));
+                        return Convert.ToBase64String((byte[])_data);
                 }
             }
+            set => _data = value;
+        }
+
+        /// <summary>
+        /// Domain-specific information about the occurrence (i.e. the payload) as a byte array.
+        /// This might include information about the occurrence, details about the data that was
+        /// changed, or more.
+        /// <para>
+        /// Note that if the data of this cloud event was set using the <see cref="StringData"/>
+        /// property, then the value of <em>this</em> property is that string value, utf-8 encoded.
+        /// </para>
+        /// </summary>
+        public byte[] BinaryData
+        {
+            get
+            {
+                switch (_data)
+                {
+                    case byte[] binaryData:
+                        return binaryData;
+                    case null:
+                        return null;
+                    default:
+                        return Encoding.UTF8.GetBytes((string)_data);
+                }
+            }
+            set => _data = value;
         }
 
         /// <summary>
@@ -388,7 +413,7 @@ namespace RockLib.Messaging.CloudEvents
 
         /// <summary>
         /// Ensures that the cloud event is valid - throws a <see cref="CloudEventValidationException"/>
-        /// if it is not. May also set missing property values that can be determined at runtime.
+        /// if it is not.
         /// </summary>
         /// <exception cref="CloudEventValidationException">If the cloud event is invalid.</exception>
         public virtual void Validate()
