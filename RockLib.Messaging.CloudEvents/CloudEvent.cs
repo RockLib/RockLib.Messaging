@@ -426,14 +426,14 @@ namespace RockLib.Messaging.CloudEvents
         }
 
         /// <summary>
-        /// Ensures that the required base cloud event attributes are present.
+        /// Ensures that the required CloudEvent attributes are present.
         /// </summary>
         /// <param name="senderMessage">The <see cref="SenderMessage"/> to validate.</param>
         /// <param name="protocolBinding">
         /// The <see cref="IProtocolBinding"/> used to map CloudEvent attributes to <see cref="SenderMessage"/>
         /// headers. If <see langword="null"/>, then <see cref="DefaultProtocolBinding"/> is used instead.
         /// </param>
-        protected internal static void ValidateCore(SenderMessage senderMessage, IProtocolBinding protocolBinding)
+        public static void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding)
         {
             if (senderMessage is null)
                 throw new ArgumentNullException(nameof(senderMessage));

@@ -36,7 +36,7 @@ namespace RockLib.Messaging.CloudEvents
         /// </param>
         /// <returns>The same <see cref="ISenderBuilder"/>.</returns>
         public static ISenderBuilder AddCloudEventValidation(this ISenderBuilder builder, IProtocolBinding protocolBinding = null) =>
-            builder.AddValidation(message => CloudEvent.ValidateCore(message, protocolBinding));
+            builder.AddValidation(message => CloudEvent.Validate(message, protocolBinding));
 
         #endregion
 

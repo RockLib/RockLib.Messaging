@@ -92,12 +92,12 @@ namespace RockLib.Messaging.CloudEvents
         /// headers. If <see langword="null"/>, then <see cref="CloudEvent.DefaultProtocolBinding"/> is used
         /// instead.
         /// </param>
-        public static void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null)
+        public static new void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null)
         {
             if (protocolBinding is null)
                 protocolBinding = DefaultProtocolBinding;
 
-            ValidateCore(senderMessage, protocolBinding);
+            CloudEvent.Validate(senderMessage, protocolBinding);
 
             var correlationIdHeader = protocolBinding.GetHeaderName(CorrelationIdAttribute);
             if (!ContainsHeader<string>(senderMessage, correlationIdHeader))
