@@ -21,8 +21,9 @@ namespace RockLib.Messaging.CloudEvents
         /// Initializes a new instance of the <see cref="SequentialEvent"/> class based on the
         /// source sequential event. All cloud and correlated event attributes except <see cref=
         /// "CloudEvent.Id"/> and <see cref="CloudEvent.Time"/> are copied to the new instance.
-        /// Note that neither the source's <see cref="CloudEvent.Data"/> nor any of its <see
-        /// cref="CloudEvent.AdditionalAttributes"/> are copied to the new instance.
+        /// Note that neither the source's <see cref="CloudEvent.StringData"/>, nor its <see cref=
+        /// "CloudEvent.BinaryData"/>, nor any of its <see cref="CloudEvent.AdditionalAttributes"/>
+        /// are copied to the new instance.
         /// </summary>
         /// <param name="source">
         /// The source for cloud and correlated event attribute values.

@@ -56,9 +56,9 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>
         /// Initializes a new instance of the <see cref="CloudEvent"/> class based on the source
         /// cloud event. All cloud event attributes except <see cref="Id"/> and <see cref="Time"/>
-        /// are copied to the new instance. Note that neither the source's <see cref="StringData"/>
-        /// nor its <see cref="BinaryData"/> nor any of its <see cref="AdditionalAttributes"/> are
-        /// copied to the new instance.
+        /// are copied to the new instance. Note that neither the source's <see cref=
+        /// "StringData"/>, nor its <see cref="BinaryData"/>, nor any of its <see cref=
+        /// "AdditionalAttributes"/> are copied to the new instance.
         /// </summary>
         /// <param name="source">
         /// The source for cloud event attribute values.
