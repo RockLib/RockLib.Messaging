@@ -45,6 +45,20 @@ namespace RockLib.Messaging.CloudEvents
         }
 
         /// <summary>
+        /// Start listening for CloudEvents and handle them using the specified callback function.
+        /// </summary>
+        /// <param name="receiver">The receiver to start.</param>
+        /// <param name="onEventReceivedAsync">A function that is invoked when a CloudEvent is received.</param>
+        public static void Start<TCloudEvent>(this IReceiver receiver, Func<TCloudEvent, IReceiverMessage, Task> onEventReceivedAsync, IProtocolBinding protocolBinding = null)
+            where TCloudEvent : CloudEvent
+        {
+            if (!Constructor.Exists(typeof(TCloudEvent)))
+                throw MissingCloudEventConstructor(typeof(TCloudEvent));
+
+            receiver.Start(message => onEventReceivedAsync(message.To<TCloudEvent>(protocolBinding), message));
+        }
+
+        /// <summary>
         /// Adds a <see cref="ValidatingSender"/> decorator that ensures messages are valid CloudEvents.
         /// </summary>
         /// <param name="builder">The <see cref="ISenderBuilder"/>.</param>
