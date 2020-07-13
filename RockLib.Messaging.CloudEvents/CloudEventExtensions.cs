@@ -11,13 +11,17 @@ namespace RockLib.Messaging.CloudEvents
     public static partial class CloudEventExtensions
     {
         private static readonly ConcurrentDictionary<Type, Constructor> _constructors = new ConcurrentDictionary<Type, Constructor>();
+        private static readonly ConcurrentDictionary<Type, ValidateMethod> _validateMethods = new ConcurrentDictionary<Type, ValidateMethod>();
 
         /// <summary>
         /// Creates an instance of <typeparamref name="TCloudEvent"/> with properties mapped from
         /// the headers of <paramref name="receiverMessage"/>.
-        /// <para>The <typeparamref name="TCloudEvent"/> type <em>must</em> have a constructor with
-        /// the exact parameters: <see cref="IReceiverMessage"/>, <see cref="IProtocolBinding"/>.
-        ///  A <see cref="MissingMemberException"/> is thrown if it does not.</para>
+        /// <para>
+        /// The <typeparamref name="TCloudEvent"/> type <em>must</em> define a constructor with the
+        /// exact parameters: <see cref="IReceiverMessage"/>, <see cref="IProtocolBinding"/>. A
+        /// <see cref="MissingMemberException"/> is immediately thrown if the class does not define
+        /// such a constructor.
+        /// </para>
         /// </summary>
         /// <typeparam name="TCloudEvent">The type of <see cref="CloudEvent"/> to create.</typeparam>
         /// <param name="receiverMessage">
@@ -30,7 +34,9 @@ namespace RockLib.Messaging.CloudEvents
         /// <returns>
         /// A new <typeparamref name="TCloudEvent"/> with properties mapped from the headers of the <see cref="IReceiverMessage"/>.
         /// </returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="receiverMessage"/> is <see langword="null"/>.
+        /// </exception>
         /// <exception cref="MissingMemberException"></exception>
         public static TCloudEvent To<TCloudEvent>(this IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)
             where TCloudEvent : CloudEvent
@@ -46,12 +52,39 @@ namespace RockLib.Messaging.CloudEvents
 
         /// <summary>
         /// Start listening for CloudEvents and handle them using the specified callback function.
+        /// <para>
+        /// The <typeparamref name="TCloudEvent"/> type <em>must</em> define a constructor with the
+        /// exact parameters: <see cref="IReceiverMessage"/>, <see cref="IProtocolBinding"/>. A
+        /// <see cref="MissingMemberException"/> is immediately thrown if the class does not define
+        /// such a constructor.
+        /// </para>
         /// </summary>
         /// <param name="receiver">The receiver to start.</param>
-        /// <param name="onEventReceivedAsync">A function that is invoked when a CloudEvent is received.</param>
-        public static void Start<TCloudEvent>(this IReceiver receiver, Func<TCloudEvent, IReceiverMessage, Task> onEventReceivedAsync, IProtocolBinding protocolBinding = null)
+        /// <param name="onEventReceivedAsync">
+        /// A function that is invoked when a CloudEvent is received.
+        /// </param>
+        /// <param name="protocolBinding">
+        /// The <see cref="IProtocolBinding"/> used to map <see cref="IReceiverMessage"/> headers to
+        /// CloudEvent attributes.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="receiver"/> or <paramref name="onEventReceivedAsync"/> is <see
+        /// langword="null"/>.
+        /// </exception>
+        /// <exception cref="MissingMemberException">
+        /// If the <typeparamref name="TCloudEvent"/> class does not define a public constructor
+        /// with the exact parameters: <see cref="IReceiverMessage"/>, <see cref=
+        /// "IProtocolBinding"/>.
+        /// </exception>
+        public static void Start<TCloudEvent>(this IReceiver receiver,
+            Func<TCloudEvent, IReceiverMessage, Task> onEventReceivedAsync, IProtocolBinding protocolBinding = null)
             where TCloudEvent : CloudEvent
         {
+            if (receiver is null)
+                throw new ArgumentNullException(nameof(receiver));
+            if (onEventReceivedAsync is null)
+                throw new ArgumentNullException(nameof(onEventReceivedAsync));
+
             if (!Constructor.Exists(typeof(TCloudEvent)))
                 throw MissingCloudEventConstructor(typeof(TCloudEvent));
 
@@ -59,43 +92,48 @@ namespace RockLib.Messaging.CloudEvents
         }
 
         /// <summary>
-        /// Adds a <see cref="ValidatingSender"/> decorator that ensures messages are valid CloudEvents.
+        /// Adds a <see cref="ValidatingSender"/> decorator that ensures messages are valid
+        /// CloudEvents.
+        /// <para>
+        /// The <typeparamref name="TCloudEvent"/> type <em>must</em> define a public static method
+        /// named "Validate" with the exact parameters: <see cref="SenderMessage"/>, <see cref=
+        /// "IProtocolBinding"/>. A <see cref="MissingMemberException"/> is immediately thrown if
+        /// the class does not define such a method.
+        ///  </para>
         /// </summary>
+        /// <typeparam name="TCloudEvent">The type of CloudEvent used to apply validation.</typeparam>
         /// <param name="builder">The <see cref="ISenderBuilder"/>.</param>
         /// <param name="protocolBinding">
         /// The <see cref="IProtocolBinding"/> used to map CloudEvent attributes to <see cref="SenderMessage"/>
         /// headers.
         /// </param>
         /// <returns>The same <see cref="ISenderBuilder"/>.</returns>
-        public static ISenderBuilder AddCloudEventValidation(this ISenderBuilder builder, IProtocolBinding protocolBinding = null) =>
-            builder.AddValidation(message => CloudEvent.Validate(message, protocolBinding));
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="builder"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="MissingMemberException">
+        /// If the <typeparamref name="TCloudEvent"/> class does not define a public static method
+        /// named "Validate" with the exact parameters: <see cref="SenderMessage"/>, <see cref=
+        /// "IProtocolBinding"/>.
+        /// </exception>
+        public static ISenderBuilder AddValidation<TCloudEvent>(this ISenderBuilder builder, IProtocolBinding protocolBinding = null)
+            where TCloudEvent : CloudEvent
+        {
+            if (builder is null)
+                throw new ArgumentNullException(nameof(builder));
 
-        /// <summary>
-        /// Adds a <see cref="ValidatingSender"/> decorator that ensures messages are valid SequentialEvents.
-        /// </summary>
-        /// <param name="builder">The <see cref="ISenderBuilder"/>.</param>
-        /// <param name="protocolBinding">
-        /// The <see cref="IProtocolBinding"/> used to map SequentialEvent attributes to <see cref="SenderMessage"/>
-        /// headers.
-        /// </param>
-        /// <returns>The same <see cref="ISenderBuilder"/>.</returns>
-        public static ISenderBuilder AddSequentialEventValidation(this ISenderBuilder builder, IProtocolBinding protocolBinding = null) =>
-            builder.AddValidation(message => SequentialEvent.Validate(message, protocolBinding));
+            var validateMethod = _validateMethods.GetOrAdd(typeof(TCloudEvent), ValidateMethod.Create)
+                ?? throw MissingValidateMethod(typeof(TCloudEvent));
 
-        /// <summary>
-        /// Adds a <see cref="ValidatingSender"/> decorator that ensures messages are valid CorrelatedEvents.
-        /// </summary>
-        /// <param name="builder">The <see cref="ISenderBuilder"/>.</param>
-        /// <param name="protocolBinding">
-        /// The <see cref="IProtocolBinding"/> used to map CorrelatedEvent attributes to <see cref="SenderMessage"/>
-        /// headers.
-        /// </param>
-        /// <returns>The same <see cref="ISenderBuilder"/>.</returns>
-        public static ISenderBuilder AddCorrelatedEventValidation(this ISenderBuilder builder, IProtocolBinding protocolBinding = null) =>
-            builder.AddValidation(message => CorrelatedEvent.Validate(message, protocolBinding));
+            return builder.AddValidation(message => validateMethod.Invoke(message, protocolBinding));
+        }
 
         private static MissingMemberException MissingCloudEventConstructor(Type cloudEventType) =>
             new MissingMemberException($"CloudEvent type '{cloudEventType.Name}' must have a public constructor"
                 + $" with the exact parameters: '{nameof(IReceiverMessage)}', '{nameof(IProtocolBinding)}'.");
+
+        private static MissingMemberException MissingValidateMethod(Type cloudEventType) =>
+            new MissingMemberException($"CloudEvent type '{cloudEventType.Name}' must have a public static method" +
+                $" named '{nameof(CloudEvent.Validate)}' with the exact parameters: '{nameof(SenderMessage)}', '{nameof(IProtocolBinding)}'.");
     }
 }
