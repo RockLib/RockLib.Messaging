@@ -676,8 +676,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
         private class TestCloudEvent : CloudEvent
         {
-            public static void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null) =>
-                ValidateCore(senderMessage, protocolBinding);
+            public static new void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null) =>
+                CloudEvent.Validate(senderMessage, protocolBinding);
         }
     }
 }
