@@ -27,7 +27,6 @@ services.AddKafkaSender("MySender", options =>
     options.Topic = "test";
     options.BootstrapServers = "localhost:9092";
     options.MessageTimeoutMs = 10000;
-    options.Config = new ProducerConfig() { SocketNagleDisable = true };
 });
 ```
 
@@ -45,10 +44,7 @@ public void ConfigureServices(IServiceCollection services)
     "MyKafkaSender": {
         "Topic": "test",
         "BootstrapServers": "localhost:9092",
-        "MessageTimeoutMs": 10000,
-        "Config": {
-            "SocketNagleDisable": true
-        }
+        "MessageTimeoutMs": 10000
     }
 }
 */
@@ -121,7 +117,6 @@ services.AddKafkaReceiver("MyReceiver", options =>
     options.Topic = "test";
     options.BootstrapServers = "localhost:9092";
     options.GroupId = "test-consumer-group";
-    options.Config = new ConsumerConfig() { SocketNagleDisable = true };
 });
 ```
 
@@ -139,10 +134,7 @@ public void ConfigureServices(IServiceCollection services)
     "MyKafkaReceiver": {
         "Topic": "test",
         "BootstrapServers": "localhost:9092",
-        "GroupId": "test-consumer-group",
-        "Config": {
-            "SocketNagleDisable": true
-        }
+        "GroupId": "test-consumer-group"
     }
 }
 */
