@@ -26,23 +26,38 @@ namespace RockLib.Messaging.Kafka
         /// Delivery error occurs when either the retry count or the message timeout are
         /// exceeded.
         /// </param>
-        /// <param name="config">
-        /// A collection of librdkafka configuration parameters (refer to
-        /// https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) and parameters
-        /// specific to this client (refer to: Confluent.Kafka.ConfigPropertyNames).
-        /// </param>
-        public KafkaSender(string name, string topic, string bootstrapServers, int messageTimeoutMs = 10000, ProducerConfig config = null)
+        public KafkaSender(string name, string topic, string bootstrapServers, int messageTimeoutMs = 10000)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
-            Config = config ?? new ProducerConfig();
-            Config.BootstrapServers = bootstrapServers ?? throw new ArgumentNullException(nameof(bootstrapServers));
-            Config.MessageTimeoutMs = Config.MessageTimeoutMs ?? messageTimeoutMs;
 
-            var producerBuilder = new ProducerBuilder<Null, string>(Config);
+            var config = new ProducerConfig()
+            {
+                BootstrapServers = bootstrapServers ?? throw new ArgumentNullException(nameof(bootstrapServers)),
+                MessageTimeoutMs = messageTimeoutMs
+            };
+
+            var producerBuilder = new ProducerBuilder<Null, string>(config);
             producerBuilder.SetErrorHandler(OnError);
 
             _producer = new Lazy<IProducer<Null, string>>(() => producerBuilder.Build());
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KafkaSender"/> class.
+        /// </summary>
+        /// <param name="name">The name of the sender.</param>
+        /// <param name="topic">The topic to produce messages to.</param>
+        /// <param name="producer">The Kafka <see cref="IProducer{TKey, TValue}" /> to use for sending messages.</param>
+        public KafkaSender(string name, string topic, IProducer<Null, string> producer)
+        {
+            if (producer == null)
+                throw new ArgumentNullException(nameof(producer));
+
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Topic = topic ?? throw new ArgumentNullException(nameof(topic));
+
+            _producer = new Lazy<IProducer<Null, string>>(() => producer);
         }
 
         /// <summary>
@@ -56,9 +71,9 @@ namespace RockLib.Messaging.Kafka
         public string Topic { get; }
 
         /// <summary>
-        /// Gets the configuration that is used to create the <see cref="Producer{TKey, TValue}"/> for this sender.
+        /// Gets the <see cref="IProducer{TKey, TValue}" /> for this instance of <see cref="KafkaSender"/>.
         /// </summary>
-        public ProducerConfig Config { get; }
+        public IProducer<Null, string> Producer { get { return _producer.Value; } }
 
         /// <summary>
         /// Occurs when an error happens on a background thread.

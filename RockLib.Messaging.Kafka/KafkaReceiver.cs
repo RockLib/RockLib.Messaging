@@ -32,25 +32,46 @@ namespace RockLib.Messaging.Kafka
         /// </param>
         /// <param name="groupId">Client group id string. All clients sharing the same group.id belong to the same group.</param>
         /// <param name="bootstrapServers">List of brokers as a CSV list of broker host or host:port.</param>
-        /// <param name="config">
-        /// A collection of librdkafka configuration parameters (refer to
-        /// https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) and parameters
-        /// specific to this client (refer to: Confluent.Kafka.ConfigPropertyNames).
-        /// </param>
-        public KafkaReceiver(string name, string topic, string groupId, string bootstrapServers, ConsumerConfig config = null)
+        public KafkaReceiver(string name, string topic, string groupId, string bootstrapServers)
             : base(name)
         {
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
-            Config = config ?? new ConsumerConfig();
 
-            Config.GroupId = groupId ?? throw new ArgumentNullException(nameof(groupId));
-            Config.BootstrapServers = bootstrapServers ?? throw new ArgumentNullException(nameof(bootstrapServers));
-            Config.EnableAutoCommit = Config.EnableAutoCommit ?? false;
+            var config = new ConsumerConfig()
+            {
+                GroupId = groupId ?? throw new ArgumentNullException(nameof(groupId)),
+                BootstrapServers = bootstrapServers ?? throw new ArgumentNullException(nameof(bootstrapServers)),
+                EnableAutoCommit = false
+            };
 
-            var consumerBuilder = new ConsumerBuilder<Ignore, string>(Config);
+            var consumerBuilder = new ConsumerBuilder<Ignore, string>(config);
             consumerBuilder.SetErrorHandler(OnError);
 
             _consumer = new Lazy<IConsumer<Ignore, string>>(() => consumerBuilder.Build());
+
+            _pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
+            _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KafkaReceiver"/> class.
+        /// </summary>
+        /// <param name="name">The name of the receiver.</param>
+        /// <param name="topic">
+        /// The topic to subscribe to. A regex can be specified to subscribe to the set of
+        /// all matching topics (which is updated as topics are added / removed from the
+        /// cluster). A regex must be front anchored to be recognized as a regex. e.g. ^myregex
+        /// </param>
+        /// <param name="consumer">The Kafka <see cref="IConsumer{TKey, TValue}" /> to use for receiving messages.</param>
+        public KafkaReceiver(string name, string topic, IConsumer<Ignore, string> consumer)
+            : base(name)
+        {
+            if (consumer == null)
+                throw new ArgumentNullException(nameof(consumer));
+
+            Topic = topic ?? throw new ArgumentNullException(nameof(topic));
+
+            _consumer = new Lazy<IConsumer<Ignore, string>>(() => consumer);
 
             _pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
             _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
@@ -62,9 +83,9 @@ namespace RockLib.Messaging.Kafka
         public string Topic { get; }
 
         /// <summary>
-        /// Gets the configuration that is used to create the <see cref="Consumer{TKey, TValue}"/> for this receiver.
+        /// Gets the <see cref="IConsumer{TKey, TValue}" /> for this instance of <see cref="KafkaReceiver"/>.
         /// </summary>
-        public ConsumerConfig Config { get; }
+        public IConsumer<Ignore, string> Consumer { get { return _consumer.Value; } }
 
         /// <summary>
         /// Starts the background threads and subscribes to the topic.
