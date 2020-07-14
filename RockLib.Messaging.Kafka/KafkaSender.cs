@@ -17,12 +17,8 @@ namespace RockLib.Messaging.Kafka
         /// Initializes a new instance of the <see cref="KafkaSender"/> class.
         /// </summary>
         /// <param name="name">The name of the sender.</param>
-        /// <param name="topic">
-        /// The topic to produce messages to.
-        /// </param>
-        /// <param name="bootstrapServers">
-        /// List of brokers as a CSV list of broker host or host:port.
-        /// </param>
+        /// <param name="topic">The topic to produce messages to.</param>
+        /// <param name="bootstrapServers">List of brokers as a CSV list of broker host or host:port.</param>
         /// <param name="messageTimeoutMs">
         /// Local message timeout. This value is only enforced locally and limits the time
         /// a produced message waits for successful delivery. A time of 0 is infinite. This
@@ -30,24 +26,38 @@ namespace RockLib.Messaging.Kafka
         /// Delivery error occurs when either the retry count or the message timeout are
         /// exceeded.
         /// </param>
-        /// <param name="config">
-        /// A collection of librdkafka configuration parameters (refer to
-        /// https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) and parameters
-        /// specific to this client (refer to: Confluent.Kafka.ConfigPropertyNames).
-        /// </param>
-        public KafkaSender(string name, string topic, string bootstrapServers, int messageTimeoutMs = 10000, ProducerConfig config = null)
+        public KafkaSender(string name, string topic, string bootstrapServers, int messageTimeoutMs = 10000)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
-            Config = config ?? new ProducerConfig();
-            Config.BootstrapServers = bootstrapServers ?? throw new ArgumentNullException(nameof(bootstrapServers));
-            Config.MessageTimeoutMs = Config.MessageTimeoutMs ?? messageTimeoutMs;
 
-            var producerBuilder = new ProducerBuilder<Null, string>(Config);
+            var config = new ProducerConfig()
+            {
+                BootstrapServers = bootstrapServers ?? throw new ArgumentNullException(nameof(bootstrapServers)),
+                MessageTimeoutMs = messageTimeoutMs
+            };
 
+            var producerBuilder = new ProducerBuilder<Null, string>(config);
             producerBuilder.SetErrorHandler(OnError);
 
             _producer = new Lazy<IProducer<Null, string>>(() => producerBuilder.Build());
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KafkaSender"/> class.
+        /// </summary>
+        /// <param name="name">The name of the sender.</param>
+        /// <param name="topic">The topic to produce messages to.</param>
+        /// <param name="producer">The Kafka <see cref="IProducer{TKey, TValue}" /> to use for sending messages.</param>
+        public KafkaSender(string name, string topic, IProducer<Null, string> producer)
+        {
+            if (producer == null)
+                throw new ArgumentNullException(nameof(producer));
+
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Topic = topic ?? throw new ArgumentNullException(nameof(topic));
+
+            _producer = new Lazy<IProducer<Null, string>>(() => producer);
         }
 
         /// <summary>
@@ -61,14 +71,36 @@ namespace RockLib.Messaging.Kafka
         public string Topic { get; }
 
         /// <summary>
-        /// Gets the configuration that is used to create the <see cref="Producer{TKey, TValue}"/> for this receiver.
+        /// Gets the <see cref="IProducer{TKey, TValue}" /> for this instance of <see cref="KafkaSender"/>.
         /// </summary>
-        public ProducerConfig Config { get; }
+        public IProducer<Null, string> Producer { get { return _producer.Value; } }
 
         /// <summary>
         /// Occurs when an error happens on a background thread.
         /// </summary>
         public event EventHandler<ErrorEventArgs> Error;
+
+        /// <summary>
+        /// Asynchronously sends the specified message.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
+        {
+            if (message.OriginatingSystem == null)
+                message.OriginatingSystem = "Kafka";
+
+            var kafkaMessage = new Message<Null, string> { Value = message.StringPayload };
+
+            if (message.Headers.Count > 0)
+            {
+                kafkaMessage.Headers = kafkaMessage.Headers ?? new Headers();
+                foreach (var header in message.Headers)
+                    kafkaMessage.Headers.Add(header.Key, Encoding.UTF8.GetBytes(header.Value.ToString()));
+            }
+
+            return _producer.Value.ProduceAsync(Topic, kafkaMessage);
+        }
 
         /// <summary>
         /// Flushes the producer and disposes it.
@@ -82,52 +114,7 @@ namespace RockLib.Messaging.Kafka
             }
         }
 
-        /// <summary>
-        /// Asynchronously sends the specified message.
-        /// </summary>
-        /// <param name="message">The message to send.</param>
-        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-        public Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
-        {
-            var producer = _producer.Value;
-
-            if (message.OriginatingSystem == null)
-                message.OriginatingSystem = "Kafka";
-
-            var kafkaMessage = new Message<Null, string> { Value = message.StringPayload };
-
-            if (message.Headers.Count > 0)
-            {
-                kafkaMessage.Headers = kafkaMessage.Headers ?? new Headers();
-                foreach (var header in message.Headers)
-                    kafkaMessage.Headers.Add(header.Key, Encoding.UTF8.GetBytes(header.Value.ToString()));
-            }
-
-            var taskSource = new TaskCompletionSource<int>();
-
-            void OnDelivery(DeliveryReport<Null, string> deliveryReport)
-            {
-                if (deliveryReport?.Error.IsError == true)
-                    taskSource.SetException(new KafkaException(deliveryReport.Error));
-                else
-                    taskSource.SetResult(0);
-            }
-
-            try
-            {
-                producer.BeginProduce(Topic, kafkaMessage, OnDelivery);
-            }
-            catch (Exception ex)
-            {
-                taskSource.SetException(ex);
-            }
-
-            return taskSource.Task;
-        }
-
-        private void OnError(Producer<Null, string> producer, Error error)
-        {
-            Error?.Invoke(this, new ErrorEventArgs(error.Reason, new KafkaException(error)));
-        }
+        private void OnError(IProducer<Null, string> producer, Error error) 
+            => Error?.Invoke(this, new ErrorEventArgs(error.Reason, new KafkaException(error)));
     }
 }
