@@ -53,6 +53,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Common.Tests", "Exa
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{2533BA4A-E1D7-414F-84A2-EA2FDB1FE3B3}"
 	ProjectSection(SolutionItems) = preProject
+		docs\CloudEvents.md = docs\CloudEvents.md
 		docs\Compressed.md = docs\Compressed.md
 		docs\DIContainer.md = docs\DIContainer.md
 		docs\ForwardingReceiver.md = docs\ForwardingReceiver.md
