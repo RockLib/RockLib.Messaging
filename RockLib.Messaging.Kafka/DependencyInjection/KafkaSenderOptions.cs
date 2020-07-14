@@ -25,11 +25,6 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         /// Delivery error occurs when either the retry count or the message timeout are exceeded.
         /// </summary>
         public int MessageTimeoutMs { get; set; } = 10000;
-
-        /// <summary>
-        /// Gets or sets the configuration that is used to create the <see cref="Producer{TKey, TValue}"/> for this receiver.
-        /// </summary>
-        public ProducerConfig Config { get; set; }
     }
 }
 #endif

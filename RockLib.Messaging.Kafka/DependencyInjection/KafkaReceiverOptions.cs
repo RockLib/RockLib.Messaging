@@ -22,11 +22,6 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         /// Gets or sets the client group id string. All clients sharing the same group.id belong to the same group.
         /// </summary>
         public string GroupId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the configuration that is used to create the <see cref="Consumer{TKey, TValue}"/> for this receiver.
-        /// </summary>
-        public ConsumerConfig Config { get; set; }
     }
 }
 #endif
