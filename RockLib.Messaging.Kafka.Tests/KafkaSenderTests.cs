@@ -12,36 +12,31 @@ namespace RockLib.Messaging.Kafka.Tests
 {
     public class KafkaSenderTests
     {
-        [Fact(DisplayName = "KafkaSender constructor sets appropriate properties")]
-        public void KafkaSenderConstructorHappyPath1()
+        [Fact(DisplayName = "KafkaSender constructor 1 sets appropriate properties")]
+        public void KafkaSenderConstructor1HappyPath()
         {
             var name = "name";
             var topic = "topic";
             var servers = "bootstrapServers";
             var timeout = 100;
-            var config = new ProducerConfig();
-            var sender = new KafkaSender(name, topic, servers, timeout, config);
+            var sender = new KafkaSender(name, topic, servers, timeout);
 
             sender.Name.Should().Be(name);
             sender.Topic.Should().Be(topic);
-            sender.Config.Should().BeSameAs(config);
-            sender.Config.BootstrapServers.Should().Be(servers);
-            sender.Config.MessageTimeoutMs.Should().Be(timeout);
+            sender.Producer.Should().NotBeNull();
         }
 
-        [Fact(DisplayName = "KafkaSender constructor sets correct defaults")]
-        public void KafkaSenderConstructorHappyPath2()
+        [Fact(DisplayName = "KafkaSender constructor 2 sets appropriate properties")]
+        public void KafkaSenderConstructor2HappyPath()
         {
             var name = "name";
             var topic = "topic";
-            var servers = "bootstrapServers";
-            var sender = new KafkaSender(name, topic, servers);
+            var producer = new Mock<IProducer<Null, string>>().Object;
+            var sender = new KafkaSender(name, topic, producer);
 
             sender.Name.Should().Be(name);
             sender.Topic.Should().Be(topic);
-            sender.Config.Should().NotBeNull();
-            sender.Config.BootstrapServers.Should().Be(servers);
-            sender.Config.MessageTimeoutMs.Should().Be(10000);
+            sender.Producer.Should().BeSameAs(producer);
         }
 
         [Fact(DisplayName = "KafkaSender constructor throws on null name")]
@@ -60,6 +55,27 @@ namespace RockLib.Messaging.Kafka.Tests
 
         [Fact(DisplayName = "KafkaSender constructor throws on null bootstrapServers")]
         public void KafkaSenderConstructorSadPath3()
+        {
+            Action action = () => new KafkaSender("name", "topic", null);
+            action.Should().Throw<ArgumentNullException>();
+        }
+
+        [Fact(DisplayName = "KafkaSender constructor 2 throws on null name")]
+        public void KafkaSenderConstructor2SadPath1()
+        {
+            Action action = () => new KafkaSender(null, "topic", new Mock<IProducer<Null, string>>().Object);
+            action.Should().Throw<ArgumentNullException>();
+        }
+
+        [Fact(DisplayName = "KafkaSender constructor 2 throws on null topic")]
+        public void KafkaSenderConstructor2SadPath2()
+        {
+            Action action = () => new KafkaSender("name", null, new Mock<IProducer<Null, string>>().Object);
+            action.Should().Throw<ArgumentNullException>();
+        }
+
+        [Fact(DisplayName = "KafkaSender constructor 2 throws on null producer")]
+        public void KafkaSenderConstructor2SadPath3()
         {
             Action action = () => new KafkaSender("name", "topic", null);
             action.Should().Throw<ArgumentNullException>();

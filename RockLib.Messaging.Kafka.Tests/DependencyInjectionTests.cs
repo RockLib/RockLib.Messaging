@@ -18,7 +18,6 @@ namespace RockLib.Messaging.Kafka.Tests
                 options.Topic= "SenderTopic";
                 options.BootstrapServers = "SenderServer";
                 options.MessageTimeoutMs = 555;
-                options.Config = new ProducerConfig() { ClientId = "Just something random" };
             });
 
             var serviceProvider = services.BuildServiceProvider();
@@ -29,9 +28,7 @@ namespace RockLib.Messaging.Kafka.Tests
 
             kafkaSender.Name.Should().Be("mySender");
             kafkaSender.Topic.Should().Be("SenderTopic");
-            kafkaSender.Config.ClientId.Should().Be("Just something random");
-            kafkaSender.Config.BootstrapServers.Should().Be("SenderServer");
-            kafkaSender.Config.MessageTimeoutMs.Should().Be(555);
+            kafkaSender.Producer.Should().NotBeNull();
         }
 
         [Fact]
@@ -44,7 +41,6 @@ namespace RockLib.Messaging.Kafka.Tests
                 options.Topic = "ReceiverTopic";
                 options.BootstrapServers = "ReceiverServer";
                 options.GroupId = "ReceiverGroupId";
-                options.Config = new ConsumerConfig() { ClientId = "Just something random" };
             });
 
             var serviceProvider = services.BuildServiceProvider();
@@ -55,9 +51,7 @@ namespace RockLib.Messaging.Kafka.Tests
 
             kafkaReceiver.Name.Should().Be("myReceiver");
             kafkaReceiver.Topic.Should().Be("ReceiverTopic");
-            kafkaReceiver.Config.ClientId.Should().Be("Just something random");
-            kafkaReceiver.Config.BootstrapServers.Should().Be("ReceiverServer");
-            kafkaReceiver.Config.GroupId.Should().Be("ReceiverGroupId");
+            kafkaReceiver.Consumer.Should().NotBeNull();
         }
     }
 }
