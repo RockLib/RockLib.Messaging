@@ -17,10 +17,10 @@ namespace RockLib.Messaging.CloudEvents
         /// Creates an instance of <typeparamref name="TCloudEvent"/> with properties mapped from
         /// the headers of <paramref name="receiverMessage"/>.
         /// <para>
-        /// The <typeparamref name="TCloudEvent"/> type <em>must</em> define a constructor with the
-        /// exact parameters: <see cref="IReceiverMessage"/>, <see cref="IProtocolBinding"/>. A
-        /// <see cref="MissingMemberException"/> is immediately thrown if the class does not define
-        /// such a constructor.
+        /// The <typeparamref name="TCloudEvent"/> type <em>must</em> define a public constructor
+        /// with the exact parameters <c>(<see cref="IReceiverMessage"/>, <see cref=
+        /// "IProtocolBinding"/>)</c>. A <see cref="MissingMemberException"/> is immediately
+        /// thrown if the class does not define such a constructor.
         /// </para>
         /// </summary>
         /// <typeparam name="TCloudEvent">The type of <see cref="CloudEvent"/> to create.</typeparam>
@@ -54,9 +54,9 @@ namespace RockLib.Messaging.CloudEvents
         /// Start listening for CloudEvents and handle them using the specified callback function.
         /// <para>
         /// The <typeparamref name="TCloudEvent"/> type <em>must</em> define a constructor with the
-        /// exact parameters: <see cref="IReceiverMessage"/>, <see cref="IProtocolBinding"/>. A
-        /// <see cref="MissingMemberException"/> is immediately thrown if the class does not define
-        /// such a constructor.
+        /// exact parameters <c>(<see cref="IReceiverMessage"/>, <see cref="IProtocolBinding"/>)
+        /// </c>. A <see cref="MissingMemberException"/> is immediately thrown if the class does
+        /// not define such a constructor.
         /// </para>
         /// </summary>
         /// <param name="receiver">The receiver to start.</param>
@@ -73,8 +73,8 @@ namespace RockLib.Messaging.CloudEvents
         /// </exception>
         /// <exception cref="MissingMemberException">
         /// If the <typeparamref name="TCloudEvent"/> class does not define a public constructor
-        /// with the exact parameters: <see cref="IReceiverMessage"/>, <see cref=
-        /// "IProtocolBinding"/>.
+        /// with the exact parameters <c>(<see cref="IReceiverMessage"/>, <see cref=
+        /// "IProtocolBinding"/>)</c>.
         /// </exception>
         public static void Start<TCloudEvent>(this IReceiver receiver,
             Func<TCloudEvent, IReceiverMessage, Task> onEventReceivedAsync, IProtocolBinding protocolBinding = null)
@@ -96,8 +96,8 @@ namespace RockLib.Messaging.CloudEvents
         /// CloudEvents.
         /// <para>
         /// The <typeparamref name="TCloudEvent"/> type <em>must</em> define a public static method
-        /// named "Validate" with the exact parameters: <see cref="SenderMessage"/>, <see cref=
-        /// "IProtocolBinding"/>. A <see cref="MissingMemberException"/> is immediately thrown if
+        /// named "Validate" with the exact parameters <c>(<see cref="SenderMessage"/>, <see cref=
+        /// "IProtocolBinding"/>)</c>. A <see cref="MissingMemberException"/> is immediately thrown if
         /// the class does not define such a method.
         ///  </para>
         /// </summary>
@@ -113,8 +113,8 @@ namespace RockLib.Messaging.CloudEvents
         /// </exception>
         /// <exception cref="MissingMemberException">
         /// If the <typeparamref name="TCloudEvent"/> class does not define a public static method
-        /// named "Validate" with the exact parameters: <see cref="SenderMessage"/>, <see cref=
-        /// "IProtocolBinding"/>.
+        /// named "Validate" with the exact parameters <c>(<see cref="SenderMessage"/>, <see cref=
+        /// "IProtocolBinding"/>)</c>.
         /// </exception>
         public static ISenderBuilder AddValidation<TCloudEvent>(this ISenderBuilder builder, IProtocolBinding protocolBinding = null)
             where TCloudEvent : CloudEvent
@@ -130,10 +130,10 @@ namespace RockLib.Messaging.CloudEvents
 
         private static MissingMemberException MissingCloudEventConstructor(Type cloudEventType) =>
             new MissingMemberException($"CloudEvent type '{cloudEventType.Name}' must have a public constructor"
-                + $" with the exact parameters: '{nameof(IReceiverMessage)}', '{nameof(IProtocolBinding)}'.");
+                + $" with the exact parameters ({nameof(IReceiverMessage)}, {nameof(IProtocolBinding)}).");
 
         private static MissingMemberException MissingValidateMethod(Type cloudEventType) =>
             new MissingMemberException($"CloudEvent type '{cloudEventType.Name}' must have a public static method" +
-                $" named '{nameof(CloudEvent.Validate)}' with the exact parameters: '{nameof(SenderMessage)}', '{nameof(IProtocolBinding)}'.");
+                $" named '{nameof(CloudEvent.Validate)}' with the exact parameters ({nameof(SenderMessage)}, {nameof(IProtocolBinding)}).");
     }
 }
