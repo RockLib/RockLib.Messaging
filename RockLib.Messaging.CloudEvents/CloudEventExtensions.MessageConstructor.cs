@@ -7,13 +7,13 @@ namespace RockLib.Messaging.CloudEvents
 {
     partial class CloudEventExtensions
     {
-        private class Constructor
+        private class MessageConstructor
         {
             private static readonly Type[] _constructorParameters = new[] { typeof(IReceiverMessage), typeof(IProtocolBinding) };
 
             private Func<IReceiverMessage, IProtocolBinding, object> _invokeConstructor;
 
-            private Constructor(ConstructorInfo constructor)
+            private MessageConstructor(ConstructorInfo constructor)
             {
                 // The initial function uses regular reflection.
                 _invokeConstructor = (receiverMessage, protocolBinding) =>
@@ -35,14 +35,14 @@ namespace RockLib.Messaging.CloudEvents
                 });
             }
 
-            public static Constructor Create(Type type)
+            public static MessageConstructor Create(Type type)
             {
                 var constructor = GetConstructor(type);
                 
                 if (constructor is null)
                     return null;
 
-                return new Constructor(constructor);
+                return new MessageConstructor(constructor);
             }
 
             public static bool Exists(Type type) =>

@@ -10,8 +10,48 @@ namespace RockLib.Messaging.CloudEvents
     /// </summary>
     public static partial class CloudEventExtensions
     {
-        private static readonly ConcurrentDictionary<Type, Constructor> _constructors = new ConcurrentDictionary<Type, Constructor>();
+        private static readonly ConcurrentDictionary<Type, CopyConstructor> _copyConstructors = new ConcurrentDictionary<Type, CopyConstructor>();
+        private static readonly ConcurrentDictionary<Type, MessageConstructor> _messageConstructors = new ConcurrentDictionary<Type, MessageConstructor>();
         private static readonly ConcurrentDictionary<Type, ValidateMethod> _validateMethods = new ConcurrentDictionary<Type, ValidateMethod>();
+
+        /// <summary>
+        /// Creates a new instance of the <typeparamref name="TCloudEvent"/> type and copies all
+        /// cloud event attributes except for <see cref="CloudEvent.Id"/> and <see cref=
+        /// "CloudEvent.Time"/> to the new instance. Note that neither the source's <see cref=
+        /// "CloudEvent.StringData"/>, nor its <see cref="CloudEvent.BinaryData"/>, nor any of its
+        /// <see cref="CloudEvent.AdditionalAttributes"/> are copied to the new instance.
+        /// <para>
+        /// The <typeparamref name="TCloudEvent"/> type <em>must</em> define a public copy
+        /// constructor - one with a single parameter of type <typeparamref name="TCloudEvent"/>.
+        /// A <see cref="MissingMemberException"/> is immediately thrown if the class does not
+        /// define such a constructor.
+        /// </para>
+        /// </summary>
+        /// <typeparam name="TCloudEvent">
+        /// The type of <see cref="CloudEvent"/> to create a copy of.
+        /// </typeparam>
+        /// <param name="cloudEvent">The <see cref="CloudEvent"/> to create a copy of.</param>
+        /// <returns>A copy of the <paramref name="cloudEvent"/> parameter.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="cloudEvent"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="MissingMemberException">
+        /// If the <typeparamref name="TCloudEvent"/> class does not define a public copy
+        /// constructor - one with a single parameter of type <typeparamref name="TCloudEvent"/>.
+        /// with the exact parameters <c>(<see cref="IReceiverMessage"/>, <see cref=
+        /// "IProtocolBinding"/>)</c>.
+        /// </exception>
+        public static TCloudEvent Copy<TCloudEvent>(this TCloudEvent cloudEvent)
+            where TCloudEvent : CloudEvent
+        {
+            if (cloudEvent is null)
+                throw new ArgumentNullException(nameof(cloudEvent));
+
+            var copyConstructor = _copyConstructors.GetOrAdd(typeof(TCloudEvent), CopyConstructor.Create)
+                ?? throw MissingCopyConstructor(typeof(TCloudEvent));
+
+            return (TCloudEvent)copyConstructor.Invoke(cloudEvent);
+        }
 
         /// <summary>
         /// Creates an instance of <typeparamref name="TCloudEvent"/> with properties mapped from
@@ -37,17 +77,21 @@ namespace RockLib.Messaging.CloudEvents
         /// <exception cref="ArgumentNullException">
         /// If <paramref name="receiverMessage"/> is <see langword="null"/>.
         /// </exception>
-        /// <exception cref="MissingMemberException"></exception>
+        /// <exception cref="MissingMemberException">
+        /// If the <typeparamref name="TCloudEvent"/> class does not define a public constructor
+        /// with the exact parameters <c>(<see cref="IReceiverMessage"/>, <see cref=
+        /// "IProtocolBinding"/>)</c>.
+        /// </exception>
         public static TCloudEvent To<TCloudEvent>(this IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)
             where TCloudEvent : CloudEvent
         {
             if (receiverMessage is null)
                 throw new ArgumentNullException(nameof(receiverMessage));
 
-            var constructor = _constructors.GetOrAdd(typeof(TCloudEvent), Constructor.Create)
-                ?? throw MissingCloudEventConstructor(typeof(TCloudEvent));
+            var messageConstructor = _messageConstructors.GetOrAdd(typeof(TCloudEvent), MessageConstructor.Create)
+                ?? throw MissingReceiverConstructor(typeof(TCloudEvent));
 
-            return (TCloudEvent)constructor.Invoke(receiverMessage, protocolBinding);
+            return (TCloudEvent)messageConstructor.Invoke(receiverMessage, protocolBinding);
         }
 
         /// <summary>
@@ -85,8 +129,8 @@ namespace RockLib.Messaging.CloudEvents
             if (onEventReceivedAsync is null)
                 throw new ArgumentNullException(nameof(onEventReceivedAsync));
 
-            if (!Constructor.Exists(typeof(TCloudEvent)))
-                throw MissingCloudEventConstructor(typeof(TCloudEvent));
+            if (!MessageConstructor.Exists(typeof(TCloudEvent)))
+                throw MissingReceiverConstructor(typeof(TCloudEvent));
 
             receiver.Start(message => onEventReceivedAsync(message.To<TCloudEvent>(protocolBinding), message));
         }
@@ -128,9 +172,13 @@ namespace RockLib.Messaging.CloudEvents
             return builder.AddValidation(message => validateMethod.Invoke(message, protocolBinding));
         }
 
-        private static MissingMemberException MissingCloudEventConstructor(Type cloudEventType) =>
+        private static MissingMemberException MissingReceiverConstructor(Type cloudEventType) =>
             new MissingMemberException($"CloudEvent type '{cloudEventType.Name}' must have a public constructor"
                 + $" with the exact parameters ({nameof(IReceiverMessage)}, {nameof(IProtocolBinding)}).");
+
+        private static MissingMemberException MissingCopyConstructor(Type cloudEventType) =>
+            new MissingMemberException($"CloudEvent type '{cloudEventType.Name}' must have a public copy constructor" +
+                $" (a constructor with a single parameter of type '{cloudEventType.Name}').");
 
         private static MissingMemberException MissingValidateMethod(Type cloudEventType) =>
             new MissingMemberException($"CloudEvent type '{cloudEventType.Name}' must have a public static method" +
