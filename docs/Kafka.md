@@ -14,8 +14,6 @@ The KafkaSender class can be directly instantiated and has the following paramet
   - List of brokers as a CSV list of broker host or host:port.
 - messageTimeoutMs (optional, defaults to 10000)
   - Local message timeout. This value is only enforced locally and limits the time a produced message waits for successful delivery. A time of 0 is infinite. This is the maximum time librdkafka may use to deliver a message (including retries). Delivery error occurs when either the retry count or the message timeout are exceeded.
-- config (optional, defaults to null)
-  - A collection of librdkafka configuration parameters (refer to https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) and parameters specific to this client (refer to: Confluent.Kafka.ConfigPropertyNames).
 
 ---
 
@@ -63,10 +61,7 @@ MessagingScenarioFactory can be configured with an `KafkaSender` named "commands
                 "Name": "commands",
                 "Topic": "test",
                 "BootstrapServers": "localhost:9092",
-                "MessageTimeoutMs": 10000,
-                "Config": {
-                    "SocketNagleDisable": true
-                }
+                "MessageTimeoutMs": 10000
             }
         }
     }
@@ -104,8 +99,6 @@ The KafkaReceiver class can be directly instantiated and has the following param
   - Client group id string. All clients sharing the same group.id belong to the same group.
 - bootstrapServers
   - List of brokers as a CSV list of broker host or host:port.
-- config
-  - A collection of librdkafka configuration parameters (refer to https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) and parameters specific to this client (refer to: Confluent.Kafka.ConfigPropertyNames).
 
 ---
 
@@ -153,10 +146,7 @@ MessagingScenarioFactory can be configured with an `KafkaReceiver` named "comman
                 "Name": "commands",
                 "Topic": "test",
                 "GroupId": "test-consumer-group",
-                "BootstrapServers": "localhost:9092",
-                "Config": {
-                    "SocketNagleDisable": true
-                }
+                "BootstrapServers": "localhost:9092"
             }
         }
     }
