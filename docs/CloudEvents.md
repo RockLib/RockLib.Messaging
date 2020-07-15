@@ -4,10 +4,23 @@ The RockLib.Messaging.CloudEvents package allows messages to be sent, received, 
 
 ---
 - [Sending CloudEvents with an ISender](#sending-cloudevents-with-an-isender)
+- [Validating messages and events](#validating-messages-and-events)
 - [Receiving CloudEvents from an IReceiver](#receiving-cloudevents-from-an-ireceiver)
 - [CloudEvent class](#cloudevent-class)
+  - [CloudEvent attributes](#cloudevent-attributes)
+  - [CloudEvent Data](#cloudevent-data)
+  - [AdditionalAttributes property](#additionalattributes-property)
+  - [ProtocolBinding property](#protocolbinding-property)
+  - [DefaultProtocolBinding static property](#defaultprotocolbinding-static-property)
+  - [ToSenderMessage method](#tosendermessage-method)
+  - [ToHttpRequestMessage method](#tohttprequestmessage-method)
+  - [Validate instance method](#validate-instance-method)
+  - [Validate static method](#validate-static-method)
+  - [Protected methods](#protected-methods)
 - [SequentialEvent class](#sequentialevent-class)
+  - [SequentialEvent Constructors](#sequentialevent-constructors)
 - [CorrelatedEvent class](#correlatedevent-class)
+  - [CorrelatedEvent Constructors](#correlatedevent-constructors)
 - [Protocol Bindings](#protocol-bindings)
 ---
 
@@ -32,6 +45,22 @@ Alternatively, explicitly convert a `CloudEvent` by calling its `ToSenderMessage
 
 ```c#
 await sender.SendAsync(cloudEvent.ToSenderMessage());
+```
+
+## Validating messages and events
+
+To ensure that a cloud event is valid, call its `Validate()` method - it will throw a `CloudEventValidationException` if the event has missing or invalid attribute values.
+
+To ensure that a `SenderMessage` is valid for a given `IProtocolBinding`, call the static `Validate` method on the specified cloud event type - it will throw a `CloudEventValidationException` if the sender message has missing or invalid headers given the specified protocol binding.
+
+To ensure that all messages sent by an `ISender` are in the correct format for a given `IProtocolBinding`, wrap it in a `ValidatingSender` and call a static `Validate(SenderMessage, IProtocolBinding)` method in the callback. There is also a `AddValidation<TCloudEvent>()` extension method for `ISenderBuilder` that calls the static `Validate` method of type `TCloudEvent`:
+
+```c#
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddNamedPipeSender("exampleSender")
+        .AddValidation<SequentialEvent>(ProtocolBindings.Default);
+}
 ```
 
 ## Receiving CloudEvents from an IReceiver
@@ -77,6 +106,8 @@ The `CloudEvent` class is the base class for all cloud events. Two additional im
 
 #### CloudEvent Attributes
 
+The following cloud event attributes are defined by the `CloudEvent` class:
+
 | Property (`CloudEvent attribute`)   | Type          | Required? | Default Value               |
 |:------------------------------------|:--------------|:----------|:----------------------------|
 | Id (`id`)                           | `string`      | Yes       | `Guid.NewGuid().ToString()` |
@@ -90,19 +121,25 @@ The `CloudEvent` class is the base class for all cloud events. Two additional im
 
 #### CloudEvent Data
 
-abc
+The data (or payload) of an event is stored in the `StringData` and `BinaryData` properties. These two properties are linked - setting the value of one changes the value of the other. When `StringData` is set, then `BinaryData` will be the new string value, utf-8 encoded. When `BinaryData` is set, then `StringData` will be the new binary value, base-64 encoded. If either is set to null, the other will be null also.
 
 #### AdditionalAttributes property
 
-abc
+This `IDictionary<string, string>` contains any attributes that do not correspond to a property of `CloudEvent` (or a subclass).
 
 #### ProtocolBinding property
 
-abc
+This property is used to determine the header name of a sender or receiver message in order to map it to/from a `CloudEvent`.
 
 #### DefaultProtocolBinding static property
 
-abc
+The `DefaultProtocolBinding` property determines which `IProtocolBinding` to use when not otherwise specified.
+
+Its value is used...
+
+- ...by the *default* constructor as the initial value of the `ProtocolBinding` property.
+- ...by the *message*  constructor - but only if its `protocolBinding` parameter is null - as the initial value of the `ProtocolBinding` property, and also to map the receiver message headers to CloudEvent attributes.
+- ...by the static `Validate` method (and methods that hide it) - but only if its `protocolBinding` parameter is null - to map the CloudEvent attributes to sender message headers.
 
 #### CloudEvent Constructors
 
@@ -116,18 +153,20 @@ The `CloudEvent` class defines three constructors:
   -  Creates a new instance of `CloudEvent` based on an existing instance of `CloudEvent`.
   - Copies all cloud event attributes except `Id` and `Time` from the `source` parameter to the new instance.
   - Does not copy the event data (`StringData` or `BinaryData` properties).
-  - Alternative: Instead of invoking this constructor directly, call the `.Copy()` extension method on an instance of `CloudEvent`, e.g. `cloudEvent.Copy()`.
+  - Alternative: Instead of invoking this constructor directly, call the `.Copy()` extension method on an instance of `CloudEvent`. For example, `cloudEvent.Copy()`.
 - `public CloudEvent(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)`
   - The *message* constructor.
   - Creates an instance of `CloudEvent` that is equivalent to the specified `IReceiverMessage`.
   - Uses the specified `IProtocolBinding` (or `DefaultProtocolBinding` if null) to map message headers to event attributes.
-  - Alternative: Instead of invoking this constructor directly, call the `.To<CloudEvent>()` extension method on an instance of `IReceiverMessage`, e.g. `receiverMessage.To<CloudEvent>()`.
+  - Alternative: Instead of invoking this constructor directly, call the `.To<CloudEvent>()` extension method on an instance of `IReceiverMessage`. For example, `receiverMessage.To<CloudEvent>()`.
+
+*Inheritors of the `CloudEvent` class (and inheritors of those classes) are expected to have a default constructor, a copy constructor, and a message constructor that each call their base constructor.*
 
 #### ToSenderMessage method
 
-The `CloudEvent` class defines a virtual `ToSenderMessage` that creates a new `SenderMessage` based on the event's data and attributes, using the event's `ProtocolBinding` to map those attributes to sender message headers.
+The `CloudEvent` class defines a virtual `ToSenderMessage` that creates a new `SenderMessage` based on the event's data and attributes, using the event's `ProtocolBinding` to map those attributes to sender message headers. Note that before this method creates the `SenderMessage`, it first calls the [`Validate` instance method](#validate-instance-method).
 
-Inheritors of the `CloudEvent` class are expected to override the `ToSenderMessage` and map additional attributes to their corresponding sender message headers.
+*Inheritors of the `CloudEvent` class (and inheritors of those classes) are expected to **override** this method, call `base.ToSenderMessage()` to create the sender message, and map additional attributes to the new sender message's headers according to the cloud event subclass.*
 
 #### ToHttpRequestMessage method
 
@@ -135,11 +174,15 @@ To  convert any `CloudEvent` to an `HttpRequestMessage` (to be used by `HttpClie
 
 #### Validate instance method
 
-abc
+This virtual method ensures that the `CloudEvent` instance is valid - throws a `CloudEventValidationException` if invalid. This method is called at the beginning of the `ToSenderMessage()` method.
+
+*Inheritors of the `CloudEvent` class (and inheritors of those classes) are expected to __override__ this method, call `base.Validate()`, and add additional validation according to the cloud event subclass type.*
 
 #### Validate static method
 
-abc
+This static method ensures that the `SenderMessage` instance is valid according to the `IProtocolBinding` - throws a `CloudEventValidationException` if invalid.
+
+*Inheritors of the `CloudEvent` class (and inheritors of those classes) are expected to **hide** this method, call `CloudEvent.Validate(senderMessage, protocolBinding)`, and add additional validation according to the cloud event subclass type.*
 
 #### Protected methods
 
@@ -150,77 +193,90 @@ In order to implement custom validation logic, subclasses of `CloudEvent` will n
 - `protected static bool TryGetHeaderValue<T>(SenderMessage senderMessage, string headerName, out T value)`
   - Gets the value of the header with the specified name as type `T`.
 
-<!--
-
-TODO: Add more about CloudEvent class:
-- CloudEvent attributes:
-  - Id (required, auto-set)
-  - Source (required)
-  - SpecVersion (required, readonly, always "1.0")
-  - Type (required)
-  - DataContentType
-  - DataSchema
-  - Subject
-  - Time (auto-set)
-- StringData / BinaryData properties
-- AdditionalAttributes property
-- ProtocolBinding property
-- DefaultProtocolBinding property
-- Default constructor
-- Copy constructor
-  - Alternative: `.Copy()` extension method
-- Message constructor
-  - Alternative: `.As<CloudEvent>()` extension method
-- ToSenderMessage method
-- Implicit conversion operator
-- ToHttpRequestMessage methods
-- Validate instance method
-- Validate static method
-- ContainsHeader method
-- TryGetHeaderValue method
-    
--->
-
 ## SequentialEvent class
 
 The `SequentialEvent` class defines two additional cloud event attributes, `Sequence`, and `SequenceType`.
 
-<!--
+| Property (`CloudEvent attribute`) | Type     | Required? | Default Value |
+|:----------------------------------|:---------|:----------|:--------------|
+| Sequence (`sequence`)             | `string` | Yes       | N/A           |
+| SequenceType (`sequencetype`)     | `string` | No        | N/A           |
 
-TODO: Add more about SequentialEvent class:
-- SequenceEvent attributes:
-  - Sequence (required)
-  - SequenceType (defined value: "Integer")
-- Default constructor
-- Copy constructor
-  - Alternative: `.Copy()` extension method
-- Message constructor
-  - Alternative: `.As<SequentialEvent>()` extension method
-- ToSenderMessage method (overrides base method)
-- Validate instance method (overrides base method)
-- Validate static method (hides base method)
+If the `SequenceType` attribute is set to `"Integer"`, the `Sequence` attribute has the following semantics:
+- The values of sequence are string-encoded signed 32-bit Integers.
+- The sequence MUST start with a value of 1 and increase by 1 for each subsequent value (i.e. be contiguous and monotonically increasing).
+- The sequence wraps around from 2,147,483,647 (2^31 - 1) to -2,147,483,648 (-2^31).
 
--->
+The `SequenceTypes` static class defines a string constant, `Integer`, with the value `"Integer"`.
+
+#### SequentialEvent Constructors
+
+The `SequentialEvent` class defines three constructors:
+
+- `public SequentialEvent()`
+  - The *default* constructor.
+  - This constructor does not set any properties.
+- `public SequentialEvent(SequentialEvent source)`
+  - The *copy* constructor.
+  -  Creates a new instance of `SequentialEvent` based on an existing instance of `SequentialEvent`.
+  - Copies all cloud event attributes except `Id` and `Time` from the `source` parameter to the new instance.
+  - If the value of the `source` parameter's `SequenceType` is `"Integer"` and its `Sequence` is a numeric string, then the new instance will have a `Sequence` equal to the source's `Sequence`, plus one.
+  - Does not copy the event data (`StringData` or `BinaryData` properties).
+  - Alternative: Instead of invoking this constructor directly, call the `.Copy()` extension method on an instance of `SequentialEvent`. For example, `sequentialEvent.Copy()`.
+- `public SequentialEvent(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)`
+  - The *message* constructor.
+  - Creates an instance of `SequentialEvent` that is equivalent to the specified `IReceiverMessage`.
+  - Uses the specified `IProtocolBinding` (or `DefaultProtocolBinding` if null) to map message headers to event attributes.
+  - Alternative: Instead of invoking this constructor directly, call the `.To<SequentialEvent>()` extension method on an instance of `IReceiverMessage`. For example, `receiverMessage.To<SequentialEvent>()`.
+
+*Inheritors of the `SequentialEvent` class are expected to have a default constructor, a copy constructor, and a message constructor that each call their base constructor.*
 
 ## CorrelatedEvent class
 
 The `CorrelatedEvent` class defines one additional cloud event attribute, `CorrelationId`.
 
-<!--
+| Property (`CloudEvent attribute`) | Type     | Required? | Default Value               |
+|:----------------------------------|:---------|:----------|:----------------------------|
+| CorrelationId (`correlationid`)   | `string` | Yes       | `Guid.NewGuid().ToString()` |
 
-TODO: Add more about CorrelatedEvent class:
-- CorrelatedEvent attributes:
-  - CorrelationId (required, auto-set)
-- Default constructor
-- Copy constructor
-  - Alternative: `.Copy()` extension method
-- Message constructor
-  - Alternative: `.As<CorrelatedEvent>()` extension method
-- ToSenderMessage method (overrides base method)
-- Validate static method (hides base method)
+#### CorrelatedEvent Constructors
 
--->
+The `CorrelatedEvent` class defines three constructors:
+
+- `public CorrelatedEvent()`
+  - The *default* constructor.
+  - This constructor does not set any properties.
+- `public CorrelatedEvent(CorrelatedEvent source)`
+  - The *copy* constructor.
+  -  Creates a new instance of `CorrelatedEvent` based on an existing instance of `CorrelatedEvent`.
+  - Copies all cloud event attributes except `Id` and `Time` from the `source` parameter to the new instance.
+  - Does not copy the event data (`StringData` or `BinaryData` properties).
+  - Alternative: Instead of invoking this constructor directly, call the `.Copy()` extension method on an instance of `CorrelatedEvent`. For example, `correlatedEvent.Copy()`.
+- `public CorrelatedEvent(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)`
+  - The *message* constructor.
+  - Creates an instance of `CorrelatedEvent` that is equivalent to the specified `IReceiverMessage`.
+  - Uses the specified `IProtocolBinding` (or `DefaultProtocolBinding` if null) to map message headers to event attributes.
+  - Alternative: Instead of invoking this constructor directly, call the `.To<CorrelatedEvent>()` extension method on an instance of `IReceiverMessage`. For example, `receiverMessage.To<CorrelatedEvent>()`.
+
+*Inheritors of the `CorrelatedEvent` class (and inheritors of those classes) are expected to have a default constructor, a copy constructor, and a message constructor that each call their base constructor.*
 
 ## Protocol Bindings
 
-<!-- TODO: Add docs for IProtocolBinding interface and ProtocolBindings static class -->
+The `IProtocolBinding` interface contains a single method that gets the header name to access for the given attribute name:
+
+```c#
+string GetHeaderName(string attributeName);
+```
+
+The `ProtocolBindings` static class defines the following bindings (corresponding to the [CloudEvents spec](https://github.com/cloudevents/spec#cloudevents-documents)):
+
+- Default
+  - Returns `attributeName`.
+- Amqp
+  - Returns `"cloudEvents:" + attributeName`.
+- Http
+  - Returns `"ce_" + attributeName`.
+- Kafka
+  - Returns `"ce_" + attributeName`.
+- Mqtt
+  - Returns `attributeName`.
