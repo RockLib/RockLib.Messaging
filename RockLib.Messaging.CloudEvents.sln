@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.CloudEven
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.CloudEvents.Tests", "RockLib.Messaging.CloudEvents.Tests\RockLib.Messaging.CloudEvents.Tests.csproj", "{57E86379-F6E9-4F83-93E5-F4CF68B51049}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging", "RockLib.Messaging\RockLib.Messaging.csproj", "{5650FE50-45CA-4F84-8D40-F0AE988F76FA}"
-EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.projitems*{a40564dd-9c71-444d-b8e9-2098a6aa3445}*SharedItemsImports = 5
@@ -26,10 +24,6 @@ Global
 		{57E86379-F6E9-4F83-93E5-F4CF68B51049}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57E86379-F6E9-4F83-93E5-F4CF68B51049}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57E86379-F6E9-4F83-93E5-F4CF68B51049}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5650FE50-45CA-4F84-8D40-F0AE988F76FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5650FE50-45CA-4F84-8D40-F0AE988F76FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5650FE50-45CA-4F84-8D40-F0AE988F76FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5650FE50-45CA-4F84-8D40-F0AE988F76FA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RockLib.Messaging\RockLib.Messaging.csproj" />
+    <PackageReference Include="RockLib.Messaging" Version="2.4.0" />
   </ItemGroup>
 
   <Import Project="..\RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.projitems" Label="Shared" />
