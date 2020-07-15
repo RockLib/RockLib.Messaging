@@ -75,6 +75,81 @@ public class MyService : IHostedService
 
 The `CloudEvent` class is the base class for all cloud events. Two additional implementations, [SequentialEvent](#sequentialevent-class) and [CorrelatedEvent](#correlatedevent-class), are included in this package.
 
+#### CloudEvent Attributes
+
+| Property (`CloudEvent attribute`)   | Type          | Required? | Default Value               |
+|:------------------------------------|:--------------|:----------|:----------------------------|
+| Id (`id`)                           | `string`      | Yes       | `Guid.NewGuid().ToString()` |
+| Source (`source`)                   | `Uri`         | Yes       | N/A                         |
+| SpecVersion (`specversion`)         | `string`      | Yes       | `"1.0"`                     |
+| Type (`type`)                       | `string`      | Yes       | N/A                         |
+| DataContentType (`datacontenttype`) | `ContentType` | No        | N/A                         |
+| DataSchema (`dataschema`)           | `Uri`         | No        | N/A                         |
+| Subject (`subject`)                 | `string`      | No        | N/A                         |
+| Time (`time`)                       | `DateTime`    | No        | `DateTime.UtcNow`           |
+
+#### CloudEvent Data
+
+abc
+
+#### AdditionalAttributes property
+
+abc
+
+#### ProtocolBinding property
+
+abc
+
+#### DefaultProtocolBinding static property
+
+abc
+
+#### CloudEvent Constructors
+
+The `CloudEvent` class defines three constructors:
+
+- `public CloudEvent()`
+  - The *default* constructor.
+  - This constructor does not set any properties.
+- `public CloudEvent(CloudEvent source)`
+  - The *copy* constructor.
+  -  Creates a new instance of `CloudEvent` based on an existing instance of `CloudEvent`.
+  - Copies all cloud event attributes except `Id` and `Time` from the `source` parameter to the new instance.
+  - Does not copy the event data (`StringData` or `BinaryData` properties).
+  - Alternative: Instead of invoking this constructor directly, call the `.Copy()` extension method on an instance of `CloudEvent`, e.g. `cloudEvent.Copy()`.
+- `public CloudEvent(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)`
+  - The *message* constructor.
+  - Creates an instance of `CloudEvent` that is equivalent to the specified `IReceiverMessage`.
+  - Uses the specified `IProtocolBinding` (or `DefaultProtocolBinding` if null) to map message headers to event attributes.
+  - Alternative: Instead of invoking this constructor directly, call the `.To<CloudEvent>()` extension method on an instance of `IReceiverMessage`, e.g. `receiverMessage.To<CloudEvent>()`.
+
+#### ToSenderMessage method
+
+The `CloudEvent` class defines a virtual `ToSenderMessage` that creates a new `SenderMessage` based on the event's data and attributes, using the event's `ProtocolBinding` to map those attributes to sender message headers.
+
+Inheritors of the `CloudEvent` class are expected to override the `ToSenderMessage` and map additional attributes to their corresponding sender message headers.
+
+#### ToHttpRequestMessage method
+
+To  convert any `CloudEvent` to an `HttpRequestMessage` (to be used by `HttpClient`), call one of the `ToHttpRequestMessage` overloads, optionally passing an `HttpMethod` or request URI.
+
+#### Validate instance method
+
+abc
+
+#### Validate static method
+
+abc
+
+#### Protected methods
+
+In order to implement custom validation logic, subclasses of `CloudEvent` will need to query the headers of outgoing sender messages. However, the `SenderMessage` class wasn't really designed to have its headers queried, so accessing its headers can be cumbersome. To make it easier for subclasses, the `CloudEvent` class contains two protected helper methods:
+
+- `protected static bool ContainsHeader<T>(SenderMessage senderMessage, string headerName)`
+  - Returns whether the `senderMessage` has a header with a name matching the `headerName` and a value of either type `T` or a type convertible to type `T`.
+- `protected static bool TryGetHeaderValue<T>(SenderMessage senderMessage, string headerName, out T value)`
+  - Gets the value of the header with the specified name as type `T`.
+
 <!--
 
 TODO: Add more about CloudEvent class:
