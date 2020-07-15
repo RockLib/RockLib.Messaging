@@ -1,26 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net451;net462</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageId>RockLib.Messaging.Http</PackageId>
-    <PackageVersion>1.0.2</PackageVersion>
+    <PackageId>RockLib.Messaging.CloudEvents</PackageId>
+    <PackageVersion>0.0.0</PackageVersion>
     <Authors>Brian Friesen</Authors>
-    <Description>An implementation of RockLib.Messaging that sends and receives messages via HTTP.</Description>
+    <Description>Send and receive messages using the CloudEvents format.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReleaseNotes></PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Copyright>Copyright 2018-2019 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
-    <PackageTags>rocklib messaging http</PackageTags>
+    <Copyright>Copyright 2020 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
+    <PackageTags>rocklib messaging cloudevents</PackageTags>
     <Version>1.0.0</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\RockLib.Messaging.Http.xml</DocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\RockLib.Messaging.CloudEvents.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RockLib.Messaging" Version="2.0.4" />
+    <PackageReference Include="RockLib.Messaging" Version="2.4.0" />
   </ItemGroup>
 
   <Import Project="..\RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.projitems" Label="Shared" />
