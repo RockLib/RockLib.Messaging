@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
@@ -283,7 +284,11 @@ namespace RockLib.Messaging.CloudEvents
                         return Convert.ToBase64String((byte[])_data);
                 }
             }
-            set => _data = value;
+            set
+            {
+                if (value != StringData)
+                    _data = value;
+            }
         }
 
         /// <summary>
@@ -309,7 +314,18 @@ namespace RockLib.Messaging.CloudEvents
                         return Encoding.UTF8.GetBytes((string)_data);
                 }
             }
-            set => _data = value;
+            set
+            {
+                if (ReferenceEquals(_data, value))
+                    return;
+                
+                var binaryData = BinaryData;
+
+                if (binaryData != null && value != null && binaryData.SequenceEqual(value))
+                    return;
+
+                _data = value;
+            }
         }
 
         /// <summary>
