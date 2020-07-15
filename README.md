@@ -16,7 +16,7 @@
 
 ### RockLib.Messaging.RabbitMQ [![Build status](https://ci.appveyor.com/api/projects/status/hx4f5pnq7k08xksg?svg=true)](https://ci.appveyor.com/project/RockLib/rocklib-messaging-2aoa3) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.RabbitMQ.svg)](https://www.nuget.org/packages/RockLib.Messaging.RabbitMQ)
 
-### RockLib.Messaging.CloudEvents<!-- TODO: Add badges -->
+### RockLib.Messaging.CloudEvents [![Build status](https://ci.appveyor.com/api/projects/status/jdy3sfyshv3g1xq4?svg=true)](https://ci.appveyor.com/project/RockLib/rocklib-messaging-cloudevents) [![NuGet](https://img.shields.io/nuget/vpre/RockLib.Messaging.CloudEvents.svg)](https://www.nuget.org/packages/RockLib.Messaging.CloudEvents)
 
 -----
 
