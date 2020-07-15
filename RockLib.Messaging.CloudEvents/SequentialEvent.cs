@@ -28,10 +28,9 @@
         /// source sequential event. All cloud and sequential event attributes except <see cref=
         /// "CloudEvent.Id"/> and <see cref="CloudEvent.Time"/> are copied to the new instance. If
         /// <see cref="SequenceType"/> is <see cref="SequenceTypes.Integer"/>, then the value of
-        /// <see cref="Sequence"/> is incremented for the new instance. Note that neither the
-        /// source's <see cref="CloudEvent.StringData"/>, nor its <see cref=
-        /// "CloudEvent.BinaryData"/>, nor any of its <see cref="CloudEvent.AdditionalAttributes"/>
-        /// are copied to the new instance.
+        /// <see cref="Sequence"/> is incremented for the new instance. Otherwise, <see cref=
+        /// "Sequence"/> is not set. Note that the source event's data is <em>not</em> copied to
+        /// the new instance.
         /// </summary>
         /// <param name="source">
         /// The source for cloud and sequential event attribute values.

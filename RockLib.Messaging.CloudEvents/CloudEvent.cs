@@ -56,9 +56,8 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>
         /// Initializes a new instance of the <see cref="CloudEvent"/> class based on the source
         /// cloud event. All cloud event attributes except <see cref="Id"/> and <see cref="Time"/>
-        /// are copied to the new instance. Note that neither the source's <see cref=
-        /// "StringData"/>, nor its <see cref="BinaryData"/>, nor any of its <see cref=
-        /// "AdditionalAttributes"/> are copied to the new instance.
+        /// are copied to the new instance. Note that the source event's data is <em>not</em>
+        /// copied to the new instance.
         /// </summary>
         /// <param name="source">
         /// The source for cloud event attribute values.
@@ -75,6 +74,9 @@ namespace RockLib.Messaging.CloudEvents
             DataContentType = source.DataContentType;
             DataSchema = source.DataSchema;
             Subject = source.Subject;
+
+            foreach (var additionalAttribute in source.AdditionalAttributes)
+                AdditionalAttributes.Add(additionalAttribute);
         }
 
         /// <summary>
@@ -211,8 +213,7 @@ namespace RockLib.Messaging.CloudEvents
 
         /// <summary>
         /// REQUIRED. The version of the CloudEvents specification which the event uses. This
-        /// enables the interpretation of the context. Compliant event producers MUST use a value
-        /// of '1.0' when referring to this version of the specification.
+        /// enables the interpretation of the context. Always returns '1.0'.
         /// </summary>
         public string SpecVersion => _specVersion1_0;
 
@@ -433,7 +434,7 @@ namespace RockLib.Messaging.CloudEvents
         /// The <see cref="IProtocolBinding"/> used to map CloudEvent attributes to <see cref="SenderMessage"/>
         /// headers. If <see langword="null"/>, then <see cref="DefaultProtocolBinding"/> is used instead.
         /// </param>
-        public static void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding)
+        public static void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null)
         {
             if (senderMessage is null)
                 throw new ArgumentNullException(nameof(senderMessage));
