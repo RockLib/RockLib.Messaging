@@ -6,14 +6,14 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging.Kafka</PackageId>
-    <PackageVersion>1.0.0-alpha03</PackageVersion>
+    <PackageVersion>1.0.0-alpha04</PackageVersion>
     <Authors>Brian Friesen</Authors>
     <Description>Implementation of RockLib.Messaging API that sends and receives messages using Kafka.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReleaseNotes></PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Copyright>Copyright 2019 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
+    <Copyright>Copyright 2019-2020 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
     <PackageTags>rocklib messaging kafka</PackageTags>
     <Version>1.0.0</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="Confluent.Kafka" Version="1.4.4" />
-    <PackageReference Include="RockLib.Messaging" Version="2.3.1" />
+    <PackageReference Include="RockLib.Messaging" Version="2.4.0" />
   </ItemGroup>
 
 </Project>
