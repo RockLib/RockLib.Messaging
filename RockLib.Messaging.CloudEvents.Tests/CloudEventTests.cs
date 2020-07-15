@@ -474,10 +474,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
         #endregion
 
-        #region ValidateCore
+        #region Validate
 
-        [Fact(DisplayName = "ValidateCore method does not throw when given valid sender message")]
-        public void ValidateCoreMethodHappyPath1()
+        [Fact(DisplayName = "Validate method does not throw when given valid sender message")]
+        public void ValidateMethodHappyPath1()
         {
             var senderMessage = new SenderMessage("Hello, world!");
 
@@ -492,8 +492,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().NotThrow();
         }
 
-        [Fact(DisplayName = "ValidateCore method does not throw when given valid sender message with stringly typed attributes")]
-        public void ValidateCoreMethodHappyPath2()
+        [Fact(DisplayName = "Validate method does not throw when given valid sender message with stringly typed attributes")]
+        public void ValidateMethodHappyPath2()
         {
             var senderMessage = new SenderMessage("Hello, world!");
 
@@ -508,8 +508,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().NotThrow();
         }
 
-        [Fact(DisplayName = "ValidateCore method does not throw when given valid sender message for specified protocol binding")]
-        public void ValidateCoreMethodHappyPath3()
+        [Fact(DisplayName = "Validate method does not throw when given valid sender message for specified protocol binding")]
+        public void ValidateMethodHappyPath3()
         {
             // Non-default protocol binding
 
@@ -529,8 +529,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().NotThrow();
         }
 
-        [Fact(DisplayName = "ValidateCore method throws given null senderMessage parameter")]
-        public void ValidateCoreMethodSadPath1()
+        [Fact(DisplayName = "Validate method throws given null senderMessage parameter")]
+        public void ValidateMethodSadPath1()
         {
             // Null senderMessage
 
@@ -539,8 +539,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*senderMessage*");
         }
 
-        [Fact(DisplayName = "ValidateCore method throws given missing SpecVersion header")]
-        public void ValidateCoreMethodSadPath2()
+        [Fact(DisplayName = "Validate method throws given missing SpecVersion header")]
+        public void ValidateMethodSadPath2()
         {
             // Invalid SpecVersion
 
@@ -557,8 +557,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().ThrowExactly<CloudEventValidationException>();
         }
 
-        [Fact(DisplayName = "ValidateCore method adds Id header if missing")]
-        public void ValidateCoreMethodSadPath3()
+        [Fact(DisplayName = "Validate method adds Id header if missing")]
+        public void ValidateMethodSadPath3()
         {
             // Missing Id
 
@@ -579,8 +579,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.IdAttribute).WhichValue.Should().NotBeNull();
         }
 
-        [Fact(DisplayName = "ValidateCore method throws given missing Source header")]
-        public void ValidateCoreMethodSadPath4()
+        [Fact(DisplayName = "Validate method throws given missing Source header")]
+        public void ValidateMethodSadPath4()
         {
             // Missing Source
 
@@ -596,8 +596,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().ThrowExactly<CloudEventValidationException>();
         }
 
-        [Fact(DisplayName = "ValidateCore method throws given missing Type header")]
-        public void ValidateCoreMethodSadPath5()
+        [Fact(DisplayName = "Validate method throws given missing Type header")]
+        public void ValidateMethodSadPath5()
         {
             // Missing Type
 
@@ -613,8 +613,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().ThrowExactly<CloudEventValidationException>();
         }
 
-        [Fact(DisplayName = "ValidateCore method adds Time header if missing")]
-        public void ValidateCoreMethodSadPath6()
+        [Fact(DisplayName = "Validate method adds Time header if missing")]
+        public void ValidateMethodSadPath6()
         {
             // Missing Time
 
