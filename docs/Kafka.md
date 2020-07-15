@@ -4,7 +4,9 @@ See the [.NET Core example] or [.NET Framework example] for a complete demo appl
 
 ## KafkaSender
 
-The KafkaSender class can be directly instantiated and has the following parameters:
+The KafkaSender class can be directly instantiated one of two ways.
+
+The first has the following parameters:
 
 - name
   - The name of the instance of KafkaSender.
@@ -14,6 +16,15 @@ The KafkaSender class can be directly instantiated and has the following paramet
   - List of brokers as a CSV list of broker host or host:port.
 - messageTimeoutMs (optional, defaults to 10000)
   - Local message timeout. This value is only enforced locally and limits the time a produced message waits for successful delivery. A time of 0 is infinite. This is the maximum time librdkafka may use to deliver a message (including retries). Delivery error occurs when either the retry count or the message timeout are exceeded.
+
+And the second has the following parameters:
+
+- name
+  - The name of the instance of KafkaSender.
+- topic
+  - The topic to produce messages to.
+- producer
+  - The Kafka IProducer to use for sending messages.
 
 ---
 
@@ -77,8 +88,7 @@ MessagingScenarioFactory can be configured with an `KafkaSender` named "commands
 ISender sender = MessagingScenarioFactory.CreateSender("commands");
 
 // KafkaSender can also be instantiated directly:
-// ISender sender = new KafkaSender("commands", "test", "localhost:9092",
-//     messageTimeoutMs: 10000, config: new ProducerConfig { SocketNagleDisable = true });
+// ISender sender = new KafkaSender("commands", "test", "localhost:9092", messageTimeoutMs: 10000);
 
 // Use the sender (for good, not evil):
 sender.Send("DROP DATABASE Production;");
@@ -89,7 +99,9 @@ sender.Dispose();
 
 ## KafkaReceiver
 
-The KafkaReceiver class can be directly instantiated and has the following parameters:
+The KafkaReceiver class can be directly instantiated in one of the two ways.
+
+The first has the following parameters:
 
 - name
   - The name of the instance of KafkaReceiver.
@@ -99,6 +111,15 @@ The KafkaReceiver class can be directly instantiated and has the following param
   - Client group id string. All clients sharing the same group.id belong to the same group.
 - bootstrapServers
   - List of brokers as a CSV list of broker host or host:port.
+
+And the second has the following parameters:
+
+- name
+  - The name of the instance of KafkaReceiver.
+- topic
+  - The topic to subscribe to. A regex can be specified to subscribe to the set of all matching topics (which is updated as topics are added / removed from the cluster). A regex must be front anchored to be recognized as a regex. e.g. `^myregex`
+- consumer
+  - The Kafka IConsumer to use for receiving messages.
 
 ---
 
@@ -158,8 +179,7 @@ MessagingScenarioFactory can be configured with an `KafkaReceiver` named "comman
 IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
 
 // KafkaReceiver can also be instantiated directly:
-// IReceiver receiver = new KafkaReceiver("commands", "test", "test-consumer-group", "localhost:9092",
-//     config: new ConsumerConfig { SocketNagleDisable = true });
+// IReceiver receiver = new KafkaReceiver("commands", "test", "test-consumer-group", "localhost:9092");
 
 // Start the receiver, passing in a lambda function callback to be invoked when a message is received.
 receiver.Start(async message =>
