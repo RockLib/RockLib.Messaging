@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
@@ -264,11 +263,6 @@ namespace RockLib.Messaging.CloudEvents
         /// Domain-specific information about the occurrence (i.e. the payload) as a string. This
         /// might include information about the occurrence, details about the data that was
         /// changed, or more.
-        /// <para>
-        /// Note that if the data of this cloud event was set using the <see cref="BinaryData"/>
-        /// property, then the value of <em>this</em> property is that binary value, base-64
-        /// encoded.
-        /// </para>
         /// </summary>
         public string StringData
         {
@@ -284,21 +278,12 @@ namespace RockLib.Messaging.CloudEvents
                         return Convert.ToBase64String((byte[])_data);
                 }
             }
-            set
-            {
-                if (value != StringData)
-                    _data = value;
-            }
         }
 
         /// <summary>
         /// Domain-specific information about the occurrence (i.e. the payload) as a byte array.
         /// This might include information about the occurrence, details about the data that was
         /// changed, or more.
-        /// <para>
-        /// Note that if the data of this cloud event was set using the <see cref="StringData"/>
-        /// property, then the value of <em>this</em> property is that string value, utf-8 encoded.
-        /// </para>
         /// </summary>
         public byte[] BinaryData
         {
@@ -313,18 +298,6 @@ namespace RockLib.Messaging.CloudEvents
                     default:
                         return Encoding.UTF8.GetBytes((string)_data);
                 }
-            }
-            set
-            {
-                if (ReferenceEquals(_data, value))
-                    return;
-                
-                var binaryData = BinaryData;
-
-                if (binaryData != null && value != null && binaryData.SequenceEqual(value))
-                    return;
-
-                _data = value;
             }
         }
 
@@ -599,6 +572,10 @@ namespace RockLib.Messaging.CloudEvents
             value = default;
             return false;
         }
+
+        internal void SetDataField(string data) => _data = data;
+
+        internal void SetDataField(byte[] data) => _data = data;
 
         private string IdHeader => ProtocolBinding.GetHeaderName(IdAttribute);
 

@@ -1,6 +1,7 @@
 ﻿using RockLib.Messaging.DependencyInjection;
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RockLib.Messaging.CloudEvents
@@ -13,6 +14,29 @@ namespace RockLib.Messaging.CloudEvents
         private static readonly ConcurrentDictionary<Type, CopyConstructor> _copyConstructors = new ConcurrentDictionary<Type, CopyConstructor>();
         private static readonly ConcurrentDictionary<Type, MessageConstructor> _messageConstructors = new ConcurrentDictionary<Type, MessageConstructor>();
         private static readonly ConcurrentDictionary<Type, ValidateMethod> _validateMethods = new ConcurrentDictionary<Type, ValidateMethod>();
+
+        public static TCloudEvent SetData<TCloudEvent>(this TCloudEvent cloudEvent, string data)
+            where TCloudEvent : CloudEvent
+        {
+            if (data != cloudEvent.StringData)
+                cloudEvent.SetDataField(data);
+
+            return cloudEvent;
+        }
+
+        public static TCloudEvent SetData<TCloudEvent>(this TCloudEvent cloudEvent, byte[] data)
+            where TCloudEvent : CloudEvent
+        {
+            var binaryData = cloudEvent.BinaryData;
+
+            if (!ReferenceEquals(binaryData, data)
+                && (binaryData == null || data == null || !binaryData.SequenceEqual(data)))
+            {
+                cloudEvent.SetDataField(data);
+            }
+
+            return cloudEvent;
+        }
 
         /// <summary>
         /// Creates a new instance of the <typeparamref name="TCloudEvent"/> type and copies all

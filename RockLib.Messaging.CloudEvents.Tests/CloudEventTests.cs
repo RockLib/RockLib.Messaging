@@ -293,7 +293,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var stringData = "Hello, world!";
 
-            cloudEvent.StringData = stringData;
+            cloudEvent.SetData(stringData);
 
             cloudEvent.StringData.Should().Be(stringData);
             cloudEvent.BinaryData.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(stringData));
@@ -306,7 +306,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var binaryData = new byte[] { 1, 2, 3, 4 };
 
-            cloudEvent.BinaryData = binaryData;
+            cloudEvent.SetData(binaryData);
 
             cloudEvent.BinaryData.Should().BeEquivalentTo(binaryData);
             cloudEvent.StringData.Should().Be(Convert.ToBase64String(binaryData));
@@ -323,11 +323,12 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var cloudEvent = new CloudEvent
             {
-                StringData = stringData,
                 Id = "MyId",
                 Source = new Uri("http://mysource/"),
                 Type = "MyType"
             };
+
+            cloudEvent.SetData(stringData);
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
@@ -341,11 +342,12 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var cloudEvent = new CloudEvent
             {
-                BinaryData = binaryData,
                 Id = "MyId",
                 Source = new Uri("http://mysource/"),
                 Type = "MyType"
             };
+
+            cloudEvent.SetData(binaryData);
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
@@ -645,7 +647,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var mockCloudEvent = new Mock<CloudEvent>();
             mockCloudEvent.Setup(m => m.ToSenderMessage()).CallBase();
             mockCloudEvent.Setup(m => m.Validate()).CallBase();
-            mockCloudEvent.Object.StringData = "Hello, world!";
+            mockCloudEvent.Object.SetData("Hello, world!");
             mockCloudEvent.Object.Id = "MyId";
             mockCloudEvent.Object.Source = new Uri("http://mysource/");
             mockCloudEvent.Object.Type = "test";
