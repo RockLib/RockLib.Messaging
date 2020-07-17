@@ -25,8 +25,14 @@ namespace RockLib.Messaging.CloudEvents
         public static TCloudEvent SetData<TCloudEvent>(this TCloudEvent cloudEvent, string data)
             where TCloudEvent : CloudEvent
         {
+            if (cloudEvent is null)
+                throw new ArgumentNullException(nameof(cloudEvent));
+
             if (data != cloudEvent.StringData)
+            {
                 cloudEvent.SetDataField(data);
+                cloudEvent.ClearDataObject();
+            }
 
             return cloudEvent;
         }
@@ -34,12 +40,16 @@ namespace RockLib.Messaging.CloudEvents
         public static TCloudEvent SetData<TCloudEvent>(this TCloudEvent cloudEvent, byte[] data)
             where TCloudEvent : CloudEvent
         {
+            if (cloudEvent is null)
+                throw new ArgumentNullException(nameof(cloudEvent));
+
             var binaryData = cloudEvent.BinaryData;
 
             if (!ReferenceEquals(binaryData, data)
                 && (binaryData == null || data == null || !binaryData.SequenceEqual(data)))
             {
                 cloudEvent.SetDataField(data);
+                cloudEvent.ClearDataObject();
             }
 
             return cloudEvent;
@@ -50,24 +60,29 @@ namespace RockLib.Messaging.CloudEvents
             where TCloudEvent : CloudEvent
             where T : class
         {
-            if (data == null)
-                throw new ArgumentNullException(nameof(data));
+            if (cloudEvent is null)
+                throw new ArgumentNullException(nameof(cloudEvent));
 
-            switch (serialization)
+            if (data is null)
             {
-                case DataSerialization.Json:
-                    cloudEvent.SetDataField(JsonSerialize(data));
-                    break;
-                case DataSerialization.Xml:
-                    cloudEvent.SetDataField(XmlSerialize(data));
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(serialization));
+                cloudEvent.ClearDataField();
+                cloudEvent.ClearDataObject();
             }
-
-            if (_dataObjects.TryGetValue(cloudEvent, out _))
-                _dataObjects.Remove(cloudEvent);
-            _dataObjects.Add(cloudEvent, data);
+            else
+            {
+                switch (serialization)
+                {
+                    case DataSerialization.Json:
+                        cloudEvent.SetDataField(JsonSerialize(data));
+                        break;
+                    case DataSerialization.Xml:
+                        cloudEvent.SetDataField(XmlSerialize(data));
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(serialization));
+                }
+                cloudEvent.SetDataObject(data); 
+            }
 
             return cloudEvent;
         }
@@ -76,23 +91,39 @@ namespace RockLib.Messaging.CloudEvents
             DataSerialization serialization = DataSerialization.Json)
             where T : class
         {
-            var dataObject = _dataObjects.GetValue(cloudEvent, evt =>
-            {
-                switch (serialization)
-                {
-                    case DataSerialization.Json:
-                        return JsonDeserialize<T>(evt.StringData);
-                    case DataSerialization.Xml:
-                        return XmlDeserialize<T>(evt.StringData);
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(serialization));
-                }
-            });
+            if (cloudEvent is null)
+                throw new ArgumentNullException(nameof(cloudEvent));
 
+            var dataObject = cloudEvent.GetDataObject<T>(serialization);
+            
             if (dataObject is T data)
                 return data;
 
-            throw new InvalidCastException($"Unable to cast the CloudEvent data of type '{dataObject.GetType().FullName}' to type '{typeof(T).FullName}'.");
+            throw new InvalidCastException(
+                $"Unable to cast the CloudEvent's data, of type '{dataObject.GetType().FullName}', to type '{typeof(T).FullName}'.");
+        }
+
+        public static bool TryGetData<T>(this CloudEvent cloudEvent, out T data,
+            DataSerialization serialization = DataSerialization.Json)
+            where T : class
+        {
+            if (cloudEvent is null)
+                throw new ArgumentNullException(nameof(cloudEvent));
+
+            try
+            {
+                var dataObject = cloudEvent.GetDataObject<T>(serialization);
+
+                if (dataObject is T)
+                {
+                    data = (T)dataObject;
+                    return true;
+                }
+            }
+            catch { }
+
+            data = default;
+            return false;
         }
 
         /// <summary>
@@ -264,6 +295,41 @@ namespace RockLib.Messaging.CloudEvents
         private static MissingMemberException MissingValidateMethod(Type cloudEventType) =>
             new MissingMemberException($"CloudEvent type '{cloudEventType.Name}' must have a public static method" +
                 $" named '{nameof(CloudEvent.Validate)}' with the exact parameters ({nameof(SenderMessage)}, {nameof(IProtocolBinding)}).");
+
+        private static void SetDataObject<T>(this CloudEvent cloudEvent, T data)
+            where T : class
+        {
+            cloudEvent.ClearDataObject();
+            _dataObjects.Add(cloudEvent, data);
+        }
+
+        private static void ClearDataObject(this CloudEvent cloudEvent)
+        {
+            if (_dataObjects.TryGetValue(cloudEvent, out _))
+                _dataObjects.Remove(cloudEvent);
+        }
+
+        private static object GetDataObject<T>(this CloudEvent cloudEvent, DataSerialization serialization)
+            where T : class
+        {
+            return _dataObjects.GetValue(cloudEvent, evt =>
+            {
+                var stringData = evt.StringData;
+
+                if (string.IsNullOrEmpty(stringData))
+                    return null;
+
+                switch (serialization)
+                {
+                    case DataSerialization.Json:
+                        return JsonDeserialize<T>(stringData);
+                    case DataSerialization.Xml:
+                        return XmlDeserialize<T>(stringData);
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(serialization));
+                }
+            });
+        }
 
         private static string JsonSerialize(object data) =>
             JsonConvert.SerializeObject(data);

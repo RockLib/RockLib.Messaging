@@ -577,6 +577,8 @@ namespace RockLib.Messaging.CloudEvents
 
         internal void SetDataField(byte[] data) => _data = data;
 
+        internal void ClearDataField() => _data = null;
+
         private string IdHeader => ProtocolBinding.GetHeaderName(IdAttribute);
 
         private string SourceHeader => ProtocolBinding.GetHeaderName(SourceAttribute);
