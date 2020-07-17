@@ -1,8 +1,13 @@
-﻿using RockLib.Messaging.DependencyInjection;
+﻿using Newtonsoft.Json;
+using RockLib.Messaging.DependencyInjection;
 using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace RockLib.Messaging.CloudEvents
 {
@@ -14,6 +19,8 @@ namespace RockLib.Messaging.CloudEvents
         private static readonly ConcurrentDictionary<Type, CopyConstructor> _copyConstructors = new ConcurrentDictionary<Type, CopyConstructor>();
         private static readonly ConcurrentDictionary<Type, MessageConstructor> _messageConstructors = new ConcurrentDictionary<Type, MessageConstructor>();
         private static readonly ConcurrentDictionary<Type, ValidateMethod> _validateMethods = new ConcurrentDictionary<Type, ValidateMethod>();
+
+        private static readonly ConditionalWeakTable<CloudEvent, object> _dataObjects = new ConditionalWeakTable<CloudEvent, object>();
 
         public static TCloudEvent SetData<TCloudEvent>(this TCloudEvent cloudEvent, string data)
             where TCloudEvent : CloudEvent
@@ -36,6 +43,56 @@ namespace RockLib.Messaging.CloudEvents
             }
 
             return cloudEvent;
+        }
+
+        public static TCloudEvent SetData<TCloudEvent, T>(this TCloudEvent cloudEvent, T data,
+            DataSerialization serialization = DataSerialization.Json)
+            where TCloudEvent : CloudEvent
+            where T : class
+        {
+            if (data == null)
+                throw new ArgumentNullException(nameof(data));
+
+            switch (serialization)
+            {
+                case DataSerialization.Json:
+                    cloudEvent.SetDataField(JsonSerialize(data));
+                    break;
+                case DataSerialization.Xml:
+                    cloudEvent.SetDataField(XmlSerialize(data));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(serialization));
+            }
+
+            if (_dataObjects.TryGetValue(cloudEvent, out _))
+                _dataObjects.Remove(cloudEvent);
+            _dataObjects.Add(cloudEvent, data);
+
+            return cloudEvent;
+        }
+
+        public static T GetData<T>(this CloudEvent cloudEvent,
+            DataSerialization serialization = DataSerialization.Json)
+            where T : class
+        {
+            var dataObject = _dataObjects.GetValue(cloudEvent, evt =>
+            {
+                switch (serialization)
+                {
+                    case DataSerialization.Json:
+                        return JsonDeserialize<T>(evt.StringData);
+                    case DataSerialization.Xml:
+                        return XmlDeserialize<T>(evt.StringData);
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(serialization));
+                }
+            });
+
+            if (dataObject is T data)
+                return data;
+
+            throw new InvalidCastException($"Unable to cast the CloudEvent data of type '{dataObject.GetType().FullName}' to type '{typeof(T).FullName}'.");
         }
 
         /// <summary>
@@ -207,5 +264,34 @@ namespace RockLib.Messaging.CloudEvents
         private static MissingMemberException MissingValidateMethod(Type cloudEventType) =>
             new MissingMemberException($"CloudEvent type '{cloudEventType.Name}' must have a public static method" +
                 $" named '{nameof(CloudEvent.Validate)}' with the exact parameters ({nameof(SenderMessage)}, {nameof(IProtocolBinding)}).");
+
+        private static string JsonSerialize(object data) =>
+            JsonConvert.SerializeObject(data);
+
+        private static T JsonDeserialize<T>(string data) =>
+            JsonConvert.DeserializeObject<T>(data);
+
+        private static string XmlSerialize(object data)
+        {
+            if (data == null)
+                return null;
+
+            var sb = new StringBuilder();
+            var serializer = new XmlSerializer(data.GetType());
+            using (var writer = new StringWriter(sb))
+                serializer.Serialize(writer, data);
+            return sb.ToString();
+        }
+
+        private static T XmlDeserialize<T>(string data)
+            where T : class
+        {
+            if (data == null)
+                return null;
+
+            var serializer = new XmlSerializer(typeof(T));
+            using (var reader = new StringReader(data))
+                return (T)serializer.Deserialize(reader);
+        }
     }
 }
