@@ -119,11 +119,9 @@ namespace RockLib.Messaging.CloudEvents
                     case DataSerialization.Json:
                         cloudEvent.SetDataField(JsonSerialize(data));
                         break;
-                    case DataSerialization.Xml:
+                    default:
                         cloudEvent.SetDataField(XmlSerialize(data));
                         break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(serialization));
                 }
                 cloudEvent.SetDataObject(data);
             }

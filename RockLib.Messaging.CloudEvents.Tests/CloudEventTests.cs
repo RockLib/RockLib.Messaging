@@ -286,8 +286,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             time.Should().BeOnOrBefore(after);
         }
 
-        [Fact(DisplayName = "StringData property setter and getter work as expected")]
-        public void DataPropertyHappyPath1()
+        [Fact(DisplayName = "StringData returns the string data passed to SetData")]
+        public void StringDataPropertyHappyPath1()
         {
             var cloudEvent = new CloudEvent();
 
@@ -296,11 +296,30 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.SetData(stringData);
 
             cloudEvent.StringData.Should().Be(stringData);
-            cloudEvent.BinaryData.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(stringData));
         }
 
-        [Fact(DisplayName = "BinaryData property setter and getter work as expected")]
-        public void DataPropertyHappyPath2()
+        [Fact(DisplayName = "StringData returns the binary data passed to SetData, base-64 encoded")]
+        public void StringDataPropertyHappyPath2()
+        {
+            var cloudEvent = new CloudEvent();
+
+            var binaryData = new byte[] { 1, 2, 3, 4 };
+
+            cloudEvent.SetData(binaryData);
+
+            cloudEvent.StringData.Should().Be(Convert.ToBase64String(binaryData));
+        }
+
+        [Fact(DisplayName = "StringData returns null if uninitialized")]
+        public void StringDataPropertyHappyPath3()
+        {
+            var cloudEvent = new CloudEvent();
+
+            cloudEvent.StringData.Should().BeNull();
+        }
+
+        [Fact(DisplayName = "BinaryData returns the binary data passed to SetData")]
+        public void BinaryDataPropertyHappyPath1()
         {
             var cloudEvent = new CloudEvent();
 
@@ -309,7 +328,26 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.SetData(binaryData);
 
             cloudEvent.BinaryData.Should().BeEquivalentTo(binaryData);
-            cloudEvent.StringData.Should().Be(Convert.ToBase64String(binaryData));
+        }
+
+        [Fact(DisplayName = "BinaryData returns the string data passed to SetData, utf-8 encoded")]
+        public void BinaryDataPropertyHappyPath2()
+        {
+            var cloudEvent = new CloudEvent();
+
+            var stringData = "Hello, world!";
+
+            cloudEvent.SetData(stringData);
+
+            cloudEvent.BinaryData.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(stringData));
+        }
+
+        [Fact(DisplayName = "BinaryData returns null if uninitialized")]
+        public void BinaryDataPropertyHappyPath3()
+        {
+            var cloudEvent = new CloudEvent();
+
+            cloudEvent.BinaryData.Should().BeNull();
         }
 
         #endregion
@@ -326,9 +364,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
                 Id = "MyId",
                 Source = new Uri("http://mysource/"),
                 Type = "MyType"
-            };
-
-            cloudEvent.SetData(stringData);
+            }.SetData(stringData);
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
@@ -345,9 +381,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
                 Id = "MyId",
                 Source = new Uri("http://mysource/"),
                 Type = "MyType"
-            };
-
-            cloudEvent.SetData(binaryData);
+            }.SetData(binaryData);
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
