@@ -25,9 +25,9 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>
         /// Sets the data (payload) of the <see cref="CloudEvent"/> as type <see cref="string"/>.
         /// <para>
-        /// After calling this method, the <see cref="CloudEvent.StringData"/> property will return
-        /// the value of <paramref name="data"/>, and the <see cref="CloudEvent.BinaryData"/>
-        /// property will return the utf-8 encoded value of <paramref name="data"/>.
+        /// After calling this method, the <see cref="CloudEvent.StringData"/> property returns
+        /// <paramref name="data"/>, and the <see cref="CloudEvent.BinaryData"/> property returns
+        /// <see langword="null"/>.
         /// </para>
         /// </summary>
         /// <typeparam name="TCloudEvent">The type of <see cref="CloudEvent"/>.</typeparam>
@@ -57,9 +57,9 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>
         /// Sets the data (payload) of the <see cref="CloudEvent"/> as a <see cref="byte"/> array.
         /// <para>
-        /// After calling this method, the <see cref="CloudEvent.BinaryData"/> property will return
-        /// the value of <paramref name="data"/>, and the <see cref="CloudEvent.StringData"/>
-        /// property will return the base-64 encoded value of <paramref name="data"/>.
+        /// After calling this method, the <see cref="CloudEvent.BinaryData"/> property returns
+        /// <paramref name="data"/>, and the <see cref="CloudEvent.StringData"/> property returns
+        /// <see langword="null"/>.
         /// </para>
         /// </summary>
         /// <typeparam name="TCloudEvent">The type of <see cref="CloudEvent"/>.</typeparam>
@@ -93,9 +93,9 @@ namespace RockLib.Messaging.CloudEvents
         /// Sets the data (payload) of the <see cref="CloudEvent"/> as type <typeparamref name=
         /// "T"/>.
         /// <para>
-        /// After calling this method, the <see cref="CloudEvent.StringData"/> property will return
-        /// the serialized value of <paramref name="data"/>, and the <see cref="CloudEvent.BinaryData"/>
-        /// property will return that serialized value, utf-8 encoded.
+        /// After calling this method, the <see cref="CloudEvent.StringData"/> property returns
+        /// the JSON or XML serialized <paramref name="data"/>, and the <see cref=
+        /// "CloudEvent.BinaryData"/> property returns <see langword="null"/>.
         /// </para>
         /// <para>
         /// The same instance of <typeparamref name="T"/> can be retrieved by calling the <see cref

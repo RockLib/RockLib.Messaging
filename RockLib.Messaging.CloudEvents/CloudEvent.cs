@@ -201,6 +201,7 @@ namespace RockLib.Messaging.CloudEvents
         /// information such as the type of the event source, the organization publishing the event
         /// or the process that produced the event. The exact syntax and semantics behind the data
         /// encoded in the URI is defined by the event producer.
+        /// <para>Must be a valid relative or absolute URI.</para>
         /// </summary>
         public string Source
         {
@@ -229,6 +230,7 @@ namespace RockLib.Messaging.CloudEvents
 
         /// <summary>
         /// Content type of data value.
+        /// <para>Must be a valid Content-Type value according to RFC 2616.</para>
         /// </summary>
         public string DataContentType
         {
@@ -244,6 +246,7 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>
         /// Identifies the schema that data adheres to. Incompatible changes to the schema SHOULD be
         /// reflected by a different URI.
+        /// <para>Must be a valid relative or absolute URI.</para>
         /// </summary>
         public string DataSchema
         {
@@ -280,51 +283,28 @@ namespace RockLib.Messaging.CloudEvents
         }
 
         /// <summary>
+        /// Any additional attributes not specific to this CloudEvent type.
+        /// </summary>
+        public IDictionary<string, object> AdditionalAttributes { get; } = new Dictionary<string, object>();
+
+        /// <summary>
         /// Domain-specific information about the occurrence (i.e. the payload) as a string. This
         /// might include information about the occurrence, details about the data that was
         /// changed, or more.
+        /// <para>To set this value, call either the <see cref="CloudEventExtensions
+        /// .SetData{TCloudEvent}(TCloudEvent, string)"/> or <see cref="CloudEventExtensions
+        /// .SetData{TCloudEvent, T}(TCloudEvent, T, DataSerialization)"/> extension method.</para>
         /// </summary>
-        public string StringData
-        {
-            get
-            {
-                switch (_data)
-                {
-                    case string stringData:
-                        return stringData;
-                    case null:
-                        return null;
-                    default:
-                        return Convert.ToBase64String((byte[])_data);
-                }
-            }
-        }
+        public string StringData => _data as string;
 
         /// <summary>
         /// Domain-specific information about the occurrence (i.e. the payload) as a byte array.
         /// This might include information about the occurrence, details about the data that was
         /// changed, or more.
+        /// <para>To set this value, call the <see cref="CloudEventExtensions.SetData{TCloudEvent}(
+        /// TCloudEvent, byte[])"/> extension method.</para>
         /// </summary>
-        public byte[] BinaryData
-        {
-            get
-            {
-                switch (_data)
-                {
-                    case byte[] binaryData:
-                        return binaryData;
-                    case null:
-                        return null;
-                    default:
-                        return Encoding.UTF8.GetBytes((string)_data);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Any additional attributes not specific to this CloudEvent type.
-        /// </summary>
-        public IDictionary<string, object> AdditionalAttributes { get; } = new Dictionary<string, object>();
+        public byte[] BinaryData => _data as byte[];
 
         /// <summary>
         /// Creates a <see cref="SenderMessage"/> with headers mapped from the attributes of this cloud event.

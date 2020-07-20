@@ -73,7 +73,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var cloudEvent = new CloudEvent(receiverMessage);
 
             cloudEvent.BinaryData.Should().BeSameAs(binaryData);
-            cloudEvent.StringData.Should().Be(Convert.ToBase64String(binaryData));
+            cloudEvent.StringData.Should().BeNull();
         }
 
         [Fact(DisplayName = "Constructor 3 creates cloud event with string data")]
@@ -86,7 +86,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var cloudEvent = new CloudEvent(receiverMessage);
 
             cloudEvent.StringData.Should().BeSameAs(stringData);
-            cloudEvent.BinaryData.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(stringData));
+            cloudEvent.BinaryData.Should().BeNull();
         }
 
         [Fact(DisplayName = "Constructor 3 maps cloud event attributes from receiver message headers")]
@@ -298,7 +298,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.StringData.Should().Be(stringData);
         }
 
-        [Fact(DisplayName = "StringData returns the binary data passed to SetData, base-64 encoded")]
+        [Fact(DisplayName = "StringData returns null if data is binary")]
         public void StringDataPropertyHappyPath2()
         {
             var cloudEvent = new CloudEvent();
@@ -307,7 +307,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             cloudEvent.SetData(binaryData);
 
-            cloudEvent.StringData.Should().Be(Convert.ToBase64String(binaryData));
+            cloudEvent.StringData.Should().BeNull();
         }
 
         [Fact(DisplayName = "StringData returns null if uninitialized")]
@@ -330,7 +330,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.BinaryData.Should().BeEquivalentTo(binaryData);
         }
 
-        [Fact(DisplayName = "BinaryData returns the string data passed to SetData, utf-8 encoded")]
+        [Fact(DisplayName = "BinaryData returns null if the data is string")]
         public void BinaryDataPropertyHappyPath2()
         {
             var cloudEvent = new CloudEvent();
@@ -339,7 +339,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             cloudEvent.SetData(stringData);
 
-            cloudEvent.BinaryData.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(stringData));
+            cloudEvent.BinaryData.Should().BeNull();
         }
 
         [Fact(DisplayName = "BinaryData returns null if uninitialized")]
