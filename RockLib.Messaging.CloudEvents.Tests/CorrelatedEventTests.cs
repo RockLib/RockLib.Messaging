@@ -34,10 +34,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
                 CorrelationId = "MyCorrelationId",
                 Id = "MyId",
                 Time = new DateTime(2020, 7, 9, 22, 21, 37, DateTimeKind.Local),
-                Source = new Uri("http://mysource/"),
+                Source = "http://mysource/",
                 Type = "MyType",
-                DataContentType = new ContentType("application/json") { CharSet = "utf-8" },
-                DataSchema = new Uri("http://mydataschema/"),
+                DataContentType = "application/json; charset=utf-8",
+                DataSchema = "http://mydataschema/",
                 Subject = "MySubject"
             };
 
@@ -72,9 +72,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var receiverMessage = new FakeReceiverMessage("Hello, world!");
 
-            var source = new Uri("http://MySource");
-            var dataContentType = new ContentType("application/mycontenttype");
-            var dataSchema = new Uri("http://MySource");
+            var source = "http://MySource";
+            var dataContentType = "application/mycontenttype";
+            var dataSchema = "http://MySource";
             var time = DateTime.UtcNow;
 
             receiverMessage.Headers.Add(CorrelatedEvent.CorrelationIdAttribute, "MyCorrelationId");
@@ -125,9 +125,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var receiverMessage = new FakeReceiverMessage("Hello, world!");
 
-            var source = new Uri("http://MySource");
-            var dataContentType = new ContentType("application/mycontenttype");
-            var dataSchema = new Uri("http://MySource");
+            var source = "http://MySource";
+            var dataContentType = "application/mycontenttype";
+            var dataSchema = "http://MySource";
             var time = DateTime.UtcNow;
 
             receiverMessage.Headers.Add("test-" + CorrelatedEvent.CorrelationIdAttribute, "MyCorrelationId");
@@ -192,10 +192,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
             // All attributes provided
 
             var correlationId = "MyCorrelationId";
-            var dataContentType = new ContentType("application/xml");
-            var dataSchema = new Uri("http://dataschema");
+            var dataContentType = "application/xml";
+            var dataSchema = "http://dataschema";
             var id = "MyId";
-            Uri source = new Uri("http://source");
+            var source = "http://source";
             var subject = "MySubject";
             var time = DateTime.UtcNow;
             var type = "MyType";
@@ -234,7 +234,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var cloudEvent = new CorrelatedEvent
             {
                 Id = "MyId",
-                Source = new Uri("http://MySource"),
+                Source = "http://MySource",
                 Type = "MyType"
             };
 
@@ -254,10 +254,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
             // Non-default protocol binding
 
             var correlationId = "MyCorrelationId";
-            var dataContentType = new ContentType("application/xml");
-            var dataSchema = new Uri("http://dataschema");
+            var dataContentType = "application/xml";
+            var dataSchema = "http://dataschema";
             var id = "MyId";
-            Uri source = new Uri("http://source");
+            var source = "http://source";
             var subject = "MySubject";
             var time = DateTime.UtcNow;
             var type = "MyType";

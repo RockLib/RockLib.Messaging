@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Mime;
 using System.Text;
 using static RockLib.Messaging.HttpUtils;
 
@@ -45,6 +44,9 @@ namespace RockLib.Messaging.CloudEvents
         private IProtocolBinding _protocolBinding;
 
         private string _id;
+        private string _source;
+        private string _dataContentType;
+        private string _dataSchema;
         private DateTime? _time;
         private object _data;
 
@@ -119,7 +121,7 @@ namespace RockLib.Messaging.CloudEvents
                 AdditionalAttributes.Remove(IdHeader);
             }
 
-            if (receiverMessage.Headers.TryGetValue(SourceHeader, out Uri source))
+            if (receiverMessage.Headers.TryGetValue(SourceHeader, out string source))
             {
                 Source = source;
                 AdditionalAttributes.Remove(SourceHeader);
@@ -131,22 +133,13 @@ namespace RockLib.Messaging.CloudEvents
                 AdditionalAttributes.Remove(TypeHeader);
             }
 
-            if (receiverMessage.Headers.TryGetValue(DataContentTypeHeader, out ContentType dataContentType))
+            if (receiverMessage.Headers.TryGetValue(DataContentTypeHeader, out string dataContentType))
             {
                 DataContentType = dataContentType;
                 AdditionalAttributes.Remove(DataContentTypeHeader);
             }
-            else if (receiverMessage.Headers.TryGetValue(DataContentTypeHeader, out string dataContentTypeString))
-            {
-                try
-                {
-                    DataContentType = new ContentType(dataContentTypeString);
-                    AdditionalAttributes.Remove(DataContentTypeHeader);
-                }
-                catch (FormatException) { }
-            }
 
-            if (receiverMessage.Headers.TryGetValue(DataSchemaHeader, out Uri dataSchema))
+            if (receiverMessage.Headers.TryGetValue(DataSchemaHeader, out string dataSchema))
             {
                 DataSchema = dataSchema;
                 AdditionalAttributes.Remove(DataSchemaHeader);
@@ -209,7 +202,16 @@ namespace RockLib.Messaging.CloudEvents
         /// or the process that produced the event. The exact syntax and semantics behind the data
         /// encoded in the URI is defined by the event producer.
         /// </summary>
-        public Uri Source { get; set; }
+        public string Source
+        {
+            get => _source;
+            set
+            {
+                if (value != null)
+                    new Uri(value, UriKind.RelativeOrAbsolute);
+                _source = value;
+            }
+        }
 
         /// <summary>
         /// REQUIRED. The version of the CloudEvents specification which the event uses. This
@@ -228,13 +230,31 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>
         /// Content type of data value.
         /// </summary>
-        public ContentType DataContentType { get; set; }
+        public string DataContentType
+        {
+            get => _dataContentType;
+            set
+            {
+                if (value != null)
+                    MediaTypeHeaderValue.Parse(value);
+                _dataContentType = value;
+            }
+        }
 
         /// <summary>
         /// Identifies the schema that data adheres to. Incompatible changes to the schema SHOULD be
         /// reflected by a different URI.
         /// </summary>
-        public Uri DataSchema { get; set; }
+        public string DataSchema
+        {
+            get => _dataSchema;
+            set
+            {
+                if (value != null)
+                    new Uri(value, UriKind.RelativeOrAbsolute);
+                _dataSchema = value;
+            }
+        }
 
         /// <summary>
         /// This describes the subject of the event in the context of the event producer (identified
@@ -374,13 +394,7 @@ namespace RockLib.Messaging.CloudEvents
                 request.Content = new StringContent(message.StringPayload);
 
             if (DataContentType != null)
-            {
-                request.Content.Headers.ContentType =
-                    new MediaTypeHeaderValue(DataContentType.MediaType)
-                    {
-                        CharSet = DataContentType.CharSet
-                    };
-            }
+                request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(DataContentType);
 
             foreach (var header in message.Headers)
             {
