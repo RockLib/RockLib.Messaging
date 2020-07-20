@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using static RockLib.Messaging.HttpUtils;
 
 namespace RockLib.Messaging.CloudEvents
@@ -98,64 +97,7 @@ namespace RockLib.Messaging.CloudEvents
             if (receiverMessage is null)
                 throw new ArgumentNullException(nameof(receiverMessage));
 
-            ProtocolBinding = protocolBinding ?? DefaultProtocolBinding;
-
-            _data = receiverMessage.IsBinary()
-                ? (object)receiverMessage.BinaryPayload
-                : receiverMessage.StringPayload;
-
-            foreach (var header in receiverMessage.Headers)
-                AdditionalAttributes.Add(header);
-
-            if (receiverMessage.Headers.TryGetValue(SpecVersionHeader, out string specVersion))
-            {
-                if (specVersion != _specVersion1_0)
-                    throw new CloudEventValidationException(
-                        $"Invalid value found in '{SpecVersionHeader}' header. Expected '{_specVersion1_0}', but was '{specVersion}'.");
-                AdditionalAttributes.Remove(SpecVersionHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(IdHeader, out string id))
-            {
-                Id = id;
-                AdditionalAttributes.Remove(IdHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(SourceHeader, out string source))
-            {
-                Source = source;
-                AdditionalAttributes.Remove(SourceHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(TypeHeader, out string type))
-            {
-                Type = type;
-                AdditionalAttributes.Remove(TypeHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(DataContentTypeHeader, out string dataContentType))
-            {
-                DataContentType = dataContentType;
-                AdditionalAttributes.Remove(DataContentTypeHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(DataSchemaHeader, out string dataSchema))
-            {
-                DataSchema = dataSchema;
-                AdditionalAttributes.Remove(DataSchemaHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(SubjectHeader, out string subject))
-            {
-                Subject = subject;
-                AdditionalAttributes.Remove(SubjectHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(TimeHeader, out DateTime time))
-            {
-                Time = time;
-                AdditionalAttributes.Remove(TimeHeader);
-            }
+            FromReceiverMessage(receiverMessage, protocolBinding);
         }
 
         /// <summary>
@@ -344,6 +286,68 @@ namespace RockLib.Messaging.CloudEvents
                 senderMessage.Headers[attribute.Key] = attribute.Value;
 
             return senderMessage;
+        }
+
+        private void FromReceiverMessage(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding)
+        {
+            ProtocolBinding = protocolBinding ?? DefaultProtocolBinding;
+
+            _data = receiverMessage.IsBinary()
+                ? (object)receiverMessage.BinaryPayload
+                : receiverMessage.StringPayload;
+
+            foreach (var header in receiverMessage.Headers)
+                AdditionalAttributes.Add(header);
+
+            if (receiverMessage.Headers.TryGetValue(SpecVersionHeader, out string specVersion))
+            {
+                if (specVersion != _specVersion1_0)
+                    throw new CloudEventValidationException(
+                        $"Invalid value found in '{SpecVersionHeader}' header. Expected '{_specVersion1_0}', but was '{specVersion}'.");
+                AdditionalAttributes.Remove(SpecVersionHeader);
+            }
+
+            if (receiverMessage.Headers.TryGetValue(IdHeader, out string id))
+            {
+                Id = id;
+                AdditionalAttributes.Remove(IdHeader);
+            }
+
+            if (receiverMessage.Headers.TryGetValue(SourceHeader, out string source))
+            {
+                Source = source;
+                AdditionalAttributes.Remove(SourceHeader);
+            }
+
+            if (receiverMessage.Headers.TryGetValue(TypeHeader, out string type))
+            {
+                Type = type;
+                AdditionalAttributes.Remove(TypeHeader);
+            }
+
+            if (receiverMessage.Headers.TryGetValue(DataContentTypeHeader, out string dataContentType))
+            {
+                DataContentType = dataContentType;
+                AdditionalAttributes.Remove(DataContentTypeHeader);
+            }
+
+            if (receiverMessage.Headers.TryGetValue(DataSchemaHeader, out string dataSchema))
+            {
+                DataSchema = dataSchema;
+                AdditionalAttributes.Remove(DataSchemaHeader);
+            }
+
+            if (receiverMessage.Headers.TryGetValue(SubjectHeader, out string subject))
+            {
+                Subject = subject;
+                AdditionalAttributes.Remove(SubjectHeader);
+            }
+
+            if (receiverMessage.Headers.TryGetValue(TimeHeader, out DateTime time))
+            {
+                Time = time;
+                AdditionalAttributes.Remove(TimeHeader);
+            }
         }
 
         /// <summary>
