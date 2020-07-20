@@ -24,6 +24,11 @@ namespace RockLib.Messaging.CloudEvents
 
         /// <summary>
         /// Sets the data (payload) of the <see cref="CloudEvent"/> as type <see cref="string"/>.
+        /// <para>
+        /// After calling this method, the <see cref="CloudEvent.StringData"/> property will return
+        /// the value of <paramref name="data"/>, and the <see cref="CloudEvent.BinaryData"/>
+        /// property will return the utf-8 encoded value of <paramref name="data"/>.
+        /// </para>
         /// </summary>
         /// <typeparam name="TCloudEvent">The type of <see cref="CloudEvent"/>.</typeparam>
         /// <param name="cloudEvent">The <see cref="CloudEvent"/> to set the data to.</param>
@@ -51,6 +56,11 @@ namespace RockLib.Messaging.CloudEvents
 
         /// <summary>
         /// Sets the data (payload) of the <see cref="CloudEvent"/> as a <see cref="byte"/> array.
+        /// <para>
+        /// After calling this method, the <see cref="CloudEvent.BinaryData"/> property will return
+        /// the value of <paramref name="data"/>, and the <see cref="CloudEvent.StringData"/>
+        /// property will return the base-64 encoded value of <paramref name="data"/>.
+        /// </para>
         /// </summary>
         /// <typeparam name="TCloudEvent">The type of <see cref="CloudEvent"/>.</typeparam>
         /// <param name="cloudEvent">The <see cref="CloudEvent"/> to set the data to.</param>
@@ -82,6 +92,16 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>
         /// Sets the data (payload) of the <see cref="CloudEvent"/> as type <typeparamref name=
         /// "T"/>.
+        /// <para>
+        /// After calling this method, the <see cref="CloudEvent.StringData"/> property will return
+        /// the serialized value of <paramref name="data"/>, and the <see cref="CloudEvent.BinaryData"/>
+        /// property will return that serialized value, utf-8 encoded.
+        /// </para>
+        /// <para>
+        /// The same instance of <typeparamref name="T"/> can be retrieved by calling the <see cref
+        /// ="GetData"/> and <see cref="TryGetData"/> methods with the same instance of <see cref=
+        /// "CloudEvent"/> and the same type parameter <typeparamref name="T"/>.
+        /// </para>
         /// </summary>
         /// <typeparam name="TCloudEvent">The type of <see cref="CloudEvent"/>.</typeparam>
         /// <typeparam name="T">The type of the <see cref="CloudEvent"/> data.</typeparam>
@@ -138,6 +158,13 @@ namespace RockLib.Messaging.CloudEvents
         /// cref="CloudEvent"/> and the <em>same type</em> <typeparamref name="T"/> will return the
         /// <em>same instance</em> of type <typeparamref name="T"/>.
         /// </para>
+        /// <para>
+        /// If the data object of this cloud event was set using the <see cref=
+        /// "SetData{TCloudEvent, T}(TCloudEvent, T, DataSerialization)"/> method, then the same
+        /// instance of <typeparamref name="T"/> that was passed to that method will be returned by
+        /// this method. Otherwise, the value of <see cref="CloudEvent.StringData"/> is used to
+        /// deserialize the instance of <typeparamref name="T"/>.
+        /// </para>
         /// </summary>
         /// <typeparam name="T">The type of the <see cref="CloudEvent"/> data.</typeparam>
         /// <param name="cloudEvent">The <see cref="CloudEvent"/> to get data from.</param>
@@ -191,6 +218,13 @@ namespace RockLib.Messaging.CloudEvents
         /// other words, every call to either of these methods with <em>same instance</em> of <see
         /// cref="CloudEvent"/> and the <em>same type</em> <typeparamref name="T"/> will return the
         /// <em>same instance</em> of type <typeparamref name="T"/>.
+        /// </para>
+        /// <para>
+        /// If the data object of this cloud event was set using the <see cref=
+        /// "SetData{TCloudEvent, T}(TCloudEvent, T, DataSerialization)"/> method, then the same
+        /// instance of <typeparamref name="T"/> that was passed to that method will be returned by
+        /// this method. Otherwise, the value of <see cref="CloudEvent.StringData"/> is used to
+        /// deserialize the instance of <typeparamref name="T"/>.
         /// </para>
         /// </summary>
         /// <typeparam name="T">The type of the <see cref="CloudEvent"/> data.</typeparam>
