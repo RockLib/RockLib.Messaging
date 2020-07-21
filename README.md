@@ -44,3 +44,4 @@
   - [RockLib.Messaging.Http](https://www.fuget.org/packages/RockLib.Messaging.Http)
   - [RockLib.Messaging.Kafka](https://www.fuget.org/packages/RockLib.Messaging.Kafka)
   - [RockLib.Messaging.RabbitMQ](https://www.fuget.org/packages/RockLib.Messaging.RabbitMQ)
+  - [RockLib.Messaging.CloudEvents](https://www.fuget.org/packages/RockLib.Messaging.CloudEvents)
