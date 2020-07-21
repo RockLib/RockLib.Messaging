@@ -111,7 +111,7 @@ deploy:
     appveyor_repo_tag_name: $(csproj_build_version)
 - provider: NuGet
   api_key:
-    secure: 3MWSG8qTCWR3Ffiau9hNQ8EDkQzNoiNFsrPOUYCaZqctgEXUlSuwcbqTnFEYzyMy
+    secure: ZtmyZ0czf4E+HXHjBYPkUxZgCPhOclOH7q7j7J0HawhvepNQR/L64x8eGdsJbo2n
   on:
     appveyor_repo_tag: true
     appveyor_repo_tag_name: $(csproj_build_version)
