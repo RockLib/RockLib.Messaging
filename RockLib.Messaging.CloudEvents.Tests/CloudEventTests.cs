@@ -3,7 +3,6 @@ using Moq;
 using RockLib.Messaging.Testing;
 using System;
 using System.Net.Mime;
-using System.Text;
 using Xunit;
 
 namespace RockLib.Messaging.CloudEvents.Tests
