@@ -34,7 +34,7 @@ ISender sender = // TODO: Initialize
 // Source and Type must be provided.
 CloudEvent cloudEvent = new CloudEvent
 {
-    Source = new Uri("example.org/sample/123456", UriKind.RelativeOrAbsolute),
+    Source = "example.org/sample/123456",
     Type = "example"
 };
 
@@ -108,20 +108,103 @@ The `CloudEvent` class is the base class for all cloud events. Two additional im
 
 The following cloud event attributes are defined by the `CloudEvent` class:
 
-| Property (`CloudEvent attribute`)   | Type          | Required? | Default Value               |
-|:------------------------------------|:--------------|:----------|:----------------------------|
-| Id (`id`)                           | `string`      | Yes       | `Guid.NewGuid().ToString()` |
-| Source (`source`)                   | `Uri`         | Yes       | N/A                         |
-| SpecVersion (`specversion`)         | `string`      | Yes       | `"1.0"`                     |
-| Type (`type`)                       | `string`      | Yes       | N/A                         |
-| DataContentType (`datacontenttype`) | `ContentType` | No        | N/A                         |
-| DataSchema (`dataschema`)           | `Uri`         | No        | N/A                         |
-| Subject (`subject`)                 | `string`      | No        | N/A                         |
-| Time (`time`)                       | `DateTime`    | No        | `DateTime.UtcNow`           |
+| Property (`CloudEvent attribute`)   | Type       | Required? | Default Value               | Notes                                             |
+|:------------------------------------|:-----------|:----------|:----------------------------|:--------------------------------------------------|
+| Id (`id`)                           | `string`   | Yes       | `Guid.NewGuid().ToString()` |                                                   |
+| Source (`source`)                   | `string`   | Yes       | N/A                         | Must be valid relative or absolute URI.           |
+| SpecVersion (`specversion`)         | `string`   | Yes       | `"1.0"`                     |                                                   |
+| Type (`type`)                       | `string`   | Yes       | N/A                         |                                                   |
+| DataContentType (`datacontenttype`) | `string`   | No        | N/A                         | Must be valid Content-type according to RFC 2616. |
+| DataSchema (`dataschema`)           | `string`   | No        | N/A                         | Must be valid relative or absolute URI.           |
+| Subject (`subject`)                 | `string`   | No        | N/A                         |                                                   |
+| Time (`time`)                       | `DateTime` | No        | `DateTime.UtcNow`           |                                                   |
 
 #### CloudEvent Data
 
-The data (or payload) of an event is stored in the `StringData` and `BinaryData` properties. These two properties are linked - setting the value of one changes the value of the other. When `StringData` is set, then `BinaryData` will be the new string value, utf-8 encoded. When `BinaryData` is set, then `StringData` will be the new binary value, base-64 encoded. If either is set to null, the other will be null also.
+<!--*TODO: Update this with SetData, GetData, and TryGetData*-->
+
+The raw data (or payload) of an event is available from the `StringData` and `BinaryData` properties, as well as from the `GetData<T>` and `TryGetData<T>` extension methods. The data of a `CloudEvent`, can be set by calling one of the `SetData` extension method overloads.
+
+The following example demonstrates usage of these properties and extension methods:
+
+```c#
+// Note that all of the SetData extension method overloads return the same
+// cloud event, allowing for an event to be initialized on a single line.
+
+// Setting the event's data as a string:
+CorrelatedEvent cloudEvent = new CorrelatedEvent()
+    .SetData("Hello, world!");
+
+Console.WriteLine(cloudEvent.StringData ?? "<null>"); // Prints "Hello, world!"
+Console.WriteLine(ToHexString(cloudEvent.BinaryData) ?? "<null>"); // Prints "<null>"
+
+// Setting the event's data as a byte object:
+cloudEvent.SetData(new byte[] { 0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0xFF });
+
+Console.WriteLine(cloudEvent.StringData ?? "<null>"); // Prints "<null>"
+Console.WriteLine(ToHexString(cloudEvent.BinaryData) ?? "<null>"); // Prints "01-02-04-08-10-20-40-80"
+
+// Setting the event's data as type T:
+Client client = new Client { FirstName = "Brian", LastName = "Friesen" };
+cloudEvent.SetData(client, DataSerialization.Json);
+
+// Prints "{'FirstName':'Brian','LastName':'Friesen'}":
+Console.WriteLine(cloudEvent.StringData ?? "<null>");
+
+// Prints "<null>":
+Console.WriteLine(ToHexString(cloudEvent.BinaryData) ?? "<null>");
+
+// The same instance of T can be retrieved with GetData:
+Client retrievedClient = cloudEvent.GetData<Client>(DataSerialization.Json);
+
+// Prints "same"
+Console.WriteLine(ReferenceEquals(client, retrievedClient) ? "same" : "different");
+
+// TryGetData also retrieves the same instance of T:
+if (cloudEvent.TryGetData(out Client anotherClient, DataSerialization.Json))
+    // Prints "retrieved, same"
+    Console.Write("retrieved, "
+        + (ReferenceEquals(client, anotherClient) ? "same" : "different"));
+else
+    // Not executed
+    Console.WriteLine("not found");
+
+// To clear the event data, pass null to any of the SetData extension methods:
+string nullData = null;
+cloudEvent.SetData(nullData);
+
+// Prints "<null>":
+Console.WriteLine(cloudEvent.StringData ?? "<null>");
+
+// Prints "<null>":
+Console.WriteLine(ToHexString(cloudEvent.BinaryData) ?? "<null>");
+
+if (cloudEvent.TryGetData(out Client notFoundClient, DataSerialization.Json))
+    // Not executed
+    Console.Write("retrieved "
+        + (ReferenceEquals(client, notFoundClient) ? "same" : "different"));
+else
+    // Prints "not found"
+    Console.WriteLine("not found");
+
+// If the StringData is set to a serialized object...
+cloudEvent.SetData("{'FirstName':'Brian','LastName':'Friesen'}");
+
+// ...then an object of that type can be retrieved with GetData or TryGetData:
+Client deserializedClient = cloudEvent.GetData<Client>(DataSerialization.Json);
+
+// Prints "different"
+Console.WriteLine(ReferenceEquals(client, deserializedClient) ? "same" : "different");
+
+static string ToHexString(byte[] binaryData) =>
+    binaryData is null ? null : BitConverter.ToString(binaryData);
+
+class Client
+{
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+}
+```
 
 #### AdditionalAttributes property
 

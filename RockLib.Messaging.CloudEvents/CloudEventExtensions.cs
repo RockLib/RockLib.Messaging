@@ -1,7 +1,13 @@
-﻿using RockLib.Messaging.DependencyInjection;
+﻿using Newtonsoft.Json;
+using RockLib.Messaging.DependencyInjection;
 using System;
 using System.Collections.Concurrent;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace RockLib.Messaging.CloudEvents
 {
@@ -13,6 +19,260 @@ namespace RockLib.Messaging.CloudEvents
         private static readonly ConcurrentDictionary<Type, CopyConstructor> _copyConstructors = new ConcurrentDictionary<Type, CopyConstructor>();
         private static readonly ConcurrentDictionary<Type, MessageConstructor> _messageConstructors = new ConcurrentDictionary<Type, MessageConstructor>();
         private static readonly ConcurrentDictionary<Type, ValidateMethod> _validateMethods = new ConcurrentDictionary<Type, ValidateMethod>();
+
+        private static readonly ConditionalWeakTable<CloudEvent, object> _dataObjects = new ConditionalWeakTable<CloudEvent, object>();
+
+        /// <summary>
+        /// Sets the data (payload) of the <see cref="CloudEvent"/> as type <see cref="string"/>.
+        /// <para>
+        /// After calling this method, the <see cref="CloudEvent.StringData"/> property returns
+        /// <paramref name="data"/>, and the <see cref="CloudEvent.BinaryData"/> property returns
+        /// <see langword="null"/>.
+        /// </para>
+        /// </summary>
+        /// <typeparam name="TCloudEvent">The type of <see cref="CloudEvent"/>.</typeparam>
+        /// <param name="cloudEvent">The <see cref="CloudEvent"/> to set the data to.</param>
+        /// <param name="data">
+        /// The data of the <see cref="CloudEvent"/> as a <see cref="string"/>.
+        /// </param>
+        /// <returns>The same <typeparamref name="TCloudEvent"/> for method chaining.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="cloudEvent"/> is <see langword="null"/>.
+        /// </exception>
+        public static TCloudEvent SetData<TCloudEvent>(this TCloudEvent cloudEvent, string data)
+            where TCloudEvent : CloudEvent
+        {
+            if (cloudEvent is null)
+                throw new ArgumentNullException(nameof(cloudEvent));
+
+            if (data != cloudEvent.StringData)
+            {
+                cloudEvent.SetDataField(data);
+                cloudEvent.ClearDataObject();
+            }
+
+            return cloudEvent;
+        }
+
+        /// <summary>
+        /// Sets the data (payload) of the <see cref="CloudEvent"/> as a <see cref="byte"/> array.
+        /// <para>
+        /// After calling this method, the <see cref="CloudEvent.BinaryData"/> property returns
+        /// <paramref name="data"/>, and the <see cref="CloudEvent.StringData"/> property returns
+        /// <see langword="null"/>.
+        /// </para>
+        /// </summary>
+        /// <typeparam name="TCloudEvent">The type of <see cref="CloudEvent"/>.</typeparam>
+        /// <param name="cloudEvent">The <see cref="CloudEvent"/> to set the data to.</param>
+        /// <param name="data">
+        /// The data of the <see cref="CloudEvent"/> as a <see cref="byte"/> array.
+        /// </param>
+        /// <returns>The same <typeparamref name="TCloudEvent"/> for method chaining.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="cloudEvent"/> is <see langword="null"/>.
+        /// </exception>
+        public static TCloudEvent SetData<TCloudEvent>(this TCloudEvent cloudEvent, byte[] data)
+            where TCloudEvent : CloudEvent
+        {
+            if (cloudEvent is null)
+                throw new ArgumentNullException(nameof(cloudEvent));
+
+            var binaryData = cloudEvent.BinaryData;
+
+            if (!ReferenceEquals(binaryData, data)
+                && (binaryData == null || data == null || !binaryData.SequenceEqual(data)))
+            {
+                cloudEvent.SetDataField(data);
+                cloudEvent.ClearDataObject();
+            }
+
+            return cloudEvent;
+        }
+
+        /// <summary>
+        /// Sets the data (payload) of the <see cref="CloudEvent"/> as type <typeparamref name=
+        /// "T"/>.
+        /// <para>
+        /// After calling this method, the <see cref="CloudEvent.StringData"/> property returns
+        /// the JSON or XML serialized <paramref name="data"/>, and the <see cref=
+        /// "CloudEvent.BinaryData"/> property returns <see langword="null"/>.
+        /// </para>
+        /// <para>
+        /// The same instance of <typeparamref name="T"/> can be retrieved by calling the <see cref
+        /// ="GetData"/> and <see cref="TryGetData"/> methods with the same instance of <see cref=
+        /// "CloudEvent"/> and the same type parameter <typeparamref name="T"/>.
+        /// </para>
+        /// </summary>
+        /// <typeparam name="TCloudEvent">The type of <see cref="CloudEvent"/>.</typeparam>
+        /// <typeparam name="T">The type of the <see cref="CloudEvent"/> data.</typeparam>
+        /// <param name="cloudEvent">The <see cref="CloudEvent"/> to set the data to.</param>
+        /// <param name="data">
+        /// The data of the <see cref="CloudEvent"/> as type <typeparamref name="T"/>.
+        /// </param>
+        /// <param name="serialization"></param>
+        /// <returns>The same <typeparamref name="TCloudEvent"/> for method chaining.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="cloudEvent"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// If <paramref name="serialization"/> is not defined.
+        /// </exception>
+        public static TCloudEvent SetData<TCloudEvent, T>(this TCloudEvent cloudEvent, T data,
+            DataSerialization serialization = DataSerialization.Json)
+            where TCloudEvent : CloudEvent
+            where T : class
+        {
+            if (cloudEvent is null)
+                throw new ArgumentNullException(nameof(cloudEvent));
+            if (!Enum.IsDefined(typeof(DataSerialization), serialization))
+                throw new ArgumentOutOfRangeException(nameof(serialization));
+
+            if (data is null)
+            {
+                cloudEvent.ClearDataField();
+                cloudEvent.ClearDataObject();
+            }
+            else
+            {
+                switch (serialization)
+                {
+                    case DataSerialization.Json:
+                        cloudEvent.SetDataField(JsonSerialize(data));
+                        break;
+                    default:
+                        cloudEvent.SetDataField(XmlSerialize(data));
+                        break;
+                }
+                cloudEvent.SetDataObject(data);
+            }
+
+            return cloudEvent;
+        }
+
+        /// <summary>
+        /// Gets the data (payload) of the <see cref="CloudEvent"/> as type <typeparamref name=
+        /// "T"/>.
+        /// <para>
+        /// This method, along with the <see cref="TryGetData"/> method, is <em>idempotent</em>. In
+        /// other words, every call to either of these methods with <em>same instance</em> of <see
+        /// cref="CloudEvent"/> and the <em>same type</em> <typeparamref name="T"/> will return the
+        /// <em>same instance</em> of type <typeparamref name="T"/>.
+        /// </para>
+        /// <para>
+        /// If the data object of this cloud event was set using the <see cref=
+        /// "SetData{TCloudEvent, T}(TCloudEvent, T, DataSerialization)"/> method, then the same
+        /// instance of <typeparamref name="T"/> that was passed to that method will be returned by
+        /// this method. Otherwise, the value of <see cref="CloudEvent.StringData"/> is used to
+        /// deserialize the instance of <typeparamref name="T"/>.
+        /// </para>
+        /// </summary>
+        /// <typeparam name="T">The type of the <see cref="CloudEvent"/> data.</typeparam>
+        /// <param name="cloudEvent">The <see cref="CloudEvent"/> to get data from.</param>
+        /// <param name="serialization">
+        /// If <paramref name="cloudEvent"/> does not already has a data object associated with it,
+        /// the kind of serialization that will be used to convert its <see cref=
+        /// "CloudEvent.StringData"/> to type <typeparamref name="T"/>.
+        /// </param>
+        /// <returns>
+        /// The data of the <see cref="CloudEvent"/> as type <typeparamref name="T"/>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="cloudEvent"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// If <paramref name="serialization"/> is not defined.
+        /// </exception>
+        /// <exception cref="InvalidCastException">
+        /// If <paramref name="cloudEvent"/> already has a data object associated with it, but that
+        /// data object cannot be converted to type <typeparamref name="T"/>.
+        /// </exception>
+        /// <exception cref="JsonException">
+        /// If an error occurs during JSON deserialization.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">
+        /// If an error occurs during XML deserialization.
+        /// </exception>
+        public static T GetData<T>(this CloudEvent cloudEvent,
+            DataSerialization serialization = DataSerialization.Json)
+            where T : class
+        {
+            if (cloudEvent is null)
+                throw new ArgumentNullException(nameof(cloudEvent));
+            if (!Enum.IsDefined(typeof(DataSerialization), serialization))
+                throw new ArgumentOutOfRangeException(nameof(serialization));
+
+            var dataObject = cloudEvent.GetDataObject<T>(serialization);
+
+            if (dataObject is T data)
+                return data;
+
+            throw new InvalidCastException(
+                $"Unable to cast the CloudEvent's data, of type '{dataObject.GetType().FullName}', to type '{typeof(T).FullName}'.");
+        }
+
+        /// <summary>
+        /// Gets the data (payload) of the <see cref="CloudEvent"/> as type <typeparamref name=
+        /// "T"/>.
+        /// <para>
+        /// This method, along with the <see cref="GetData"/> method, is <em>idempotent</em>. In
+        /// other words, every call to either of these methods with <em>same instance</em> of <see
+        /// cref="CloudEvent"/> and the <em>same type</em> <typeparamref name="T"/> will return the
+        /// <em>same instance</em> of type <typeparamref name="T"/>.
+        /// </para>
+        /// <para>
+        /// If the data object of this cloud event was set using the <see cref=
+        /// "SetData{TCloudEvent, T}(TCloudEvent, T, DataSerialization)"/> method, then the same
+        /// instance of <typeparamref name="T"/> that was passed to that method will be returned by
+        /// this method. Otherwise, the value of <see cref="CloudEvent.StringData"/> is used to
+        /// deserialize the instance of <typeparamref name="T"/>.
+        /// </para>
+        /// </summary>
+        /// <typeparam name="T">The type of the <see cref="CloudEvent"/> data.</typeparam>
+        /// <param name="cloudEvent">The <see cref="CloudEvent"/> to get data from.</param>
+        /// <param name="data">
+        /// When this method returns, the data of the <paramref name="cloudEvent"/> if it exists
+        /// as (or can be serialized to) type <typeparamref name="T"/>; otherwise, <see langword=
+        /// "null"/>. This parameter is passed uninitialized.
+        /// </param>
+        /// <param name="serialization">
+        /// If <paramref name="cloudEvent"/> does not already has a data object associated with it,
+        /// the kind of serialization that will be used to convert its <see cref=
+        /// "CloudEvent.StringData"/> to type <typeparamref name="T"/>.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if the data of the <paramref name="cloudEvent"/> exists as (or
+        /// can be serialized to) type <typeparamref name="T"/>; otherwise <see langword="false"/>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="cloudEvent"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// If <paramref name="serialization"/> is not defined.
+        /// </exception>
+        public static bool TryGetData<T>(this CloudEvent cloudEvent, out T data,
+            DataSerialization serialization = DataSerialization.Json)
+            where T : class
+        {
+            if (cloudEvent is null)
+                throw new ArgumentNullException(nameof(cloudEvent));
+            if (!Enum.IsDefined(typeof(DataSerialization), serialization))
+                throw new ArgumentOutOfRangeException(nameof(serialization));
+
+            try
+            {
+                var dataObject = cloudEvent.GetDataObject<T>(serialization);
+
+                if (dataObject is T)
+                {
+                    data = (T)dataObject;
+                    return true;
+                }
+            }
+            catch { }
+
+            data = default;
+            return false;
+        }
 
         /// <summary>
         /// Creates a new instance of the <typeparamref name="TCloudEvent"/> type and copies all
@@ -183,5 +443,63 @@ namespace RockLib.Messaging.CloudEvents
         private static MissingMemberException MissingValidateMethod(Type cloudEventType) =>
             new MissingMemberException($"CloudEvent type '{cloudEventType.Name}' must have a public static method" +
                 $" named '{nameof(CloudEvent.Validate)}' with the exact parameters ({nameof(SenderMessage)}, {nameof(IProtocolBinding)}).");
+
+        private static void SetDataObject<T>(this CloudEvent cloudEvent, T data)
+            where T : class
+        {
+            cloudEvent.ClearDataObject();
+            _dataObjects.Add(cloudEvent, data);
+        }
+
+        private static void ClearDataObject(this CloudEvent cloudEvent)
+        {
+            if (_dataObjects.TryGetValue(cloudEvent, out _))
+                _dataObjects.Remove(cloudEvent);
+        }
+
+        private static object GetDataObject<T>(this CloudEvent cloudEvent, DataSerialization serialization)
+            where T : class
+        {
+            return _dataObjects.GetValue(cloudEvent, evt =>
+            {
+                var stringData = evt.StringData;
+
+                if (string.IsNullOrEmpty(stringData))
+                    return null;
+
+                return serialization == DataSerialization.Json
+                    ? JsonDeserialize<T>(stringData)
+                    : XmlDeserialize<T>(stringData);
+            });
+        }
+
+        private static string JsonSerialize(object data) =>
+            JsonConvert.SerializeObject(data);
+
+        private static T JsonDeserialize<T>(string data) =>
+            JsonConvert.DeserializeObject<T>(data);
+
+        private static string XmlSerialize(object data)
+        {
+            if (data == null)
+                return null;
+
+            var sb = new StringBuilder();
+            var serializer = new XmlSerializer(data.GetType());
+            using (var writer = new StringWriter(sb))
+                serializer.Serialize(writer, data);
+            return sb.ToString();
+        }
+
+        private static T XmlDeserialize<T>(string data)
+            where T : class
+        {
+            if (data == null)
+                return null;
+
+            var serializer = new XmlSerializer(typeof(T));
+            using (var reader = new StringReader(data))
+                return (T)serializer.Deserialize(reader);
+        }
     }
 }

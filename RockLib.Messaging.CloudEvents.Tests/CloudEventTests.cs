@@ -3,7 +3,6 @@ using Moq;
 using RockLib.Messaging.Testing;
 using System;
 using System.Net.Mime;
-using System.Text;
 using Xunit;
 
 namespace RockLib.Messaging.CloudEvents.Tests
@@ -34,10 +33,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
             {
                 Id = "MyId",
                 Time = new DateTime(2020, 7, 9, 22, 21, 37, DateTimeKind.Local),
-                Source = new Uri("http://mysource/"),
+                Source = "http://mysource/",
                 Type = "MyType",
-                DataContentType = new ContentType("application/json; charset=utf-8"),
-                DataSchema = new Uri("http://mydataschema/"),
+                DataContentType = "application/json; charset=utf-8",
+                DataSchema = "http://mydataschema/",
                 Subject = "MySubject"
             };
 
@@ -73,7 +72,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var cloudEvent = new CloudEvent(receiverMessage);
 
             cloudEvent.BinaryData.Should().BeSameAs(binaryData);
-            cloudEvent.StringData.Should().Be(Convert.ToBase64String(binaryData));
+            cloudEvent.StringData.Should().BeNull();
         }
 
         [Fact(DisplayName = "Constructor 3 creates cloud event with string data")]
@@ -86,7 +85,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var cloudEvent = new CloudEvent(receiverMessage);
 
             cloudEvent.StringData.Should().BeSameAs(stringData);
-            cloudEvent.BinaryData.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(stringData));
+            cloudEvent.BinaryData.Should().BeNull();
         }
 
         [Fact(DisplayName = "Constructor 3 maps cloud event attributes from receiver message headers")]
@@ -96,9 +95,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var receiverMessage = new FakeReceiverMessage("Hello, world!");
 
-            var source = new Uri("http://MySource");
-            var dataContentType = new ContentType("application/mycontenttype");
-            var dataSchema = new Uri("http://MySource");
+            var source = "http://MySource";
+            var dataContentType = "application/mycontenttype";
+            var dataSchema = "http://MySource";
             var time = DateTime.UtcNow;
 
             receiverMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "1.0");
@@ -286,30 +285,68 @@ namespace RockLib.Messaging.CloudEvents.Tests
             time.Should().BeOnOrBefore(after);
         }
 
-        [Fact(DisplayName = "StringData property setter and getter work as expected")]
-        public void DataPropertyHappyPath1()
+        [Fact(DisplayName = "StringData returns the string data passed to SetData")]
+        public void StringDataPropertyHappyPath1()
         {
             var cloudEvent = new CloudEvent();
 
             var stringData = "Hello, world!";
 
-            cloudEvent.StringData = stringData;
+            cloudEvent.SetData(stringData);
 
             cloudEvent.StringData.Should().Be(stringData);
-            cloudEvent.BinaryData.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(stringData));
         }
 
-        [Fact(DisplayName = "BinaryData property setter and getter work as expected")]
-        public void DataPropertyHappyPath2()
+        [Fact(DisplayName = "StringData returns null if data is binary")]
+        public void StringDataPropertyHappyPath2()
         {
             var cloudEvent = new CloudEvent();
 
             var binaryData = new byte[] { 1, 2, 3, 4 };
 
-            cloudEvent.BinaryData = binaryData;
+            cloudEvent.SetData(binaryData);
+
+            cloudEvent.StringData.Should().BeNull();
+        }
+
+        [Fact(DisplayName = "StringData returns null if uninitialized")]
+        public void StringDataPropertyHappyPath3()
+        {
+            var cloudEvent = new CloudEvent();
+
+            cloudEvent.StringData.Should().BeNull();
+        }
+
+        [Fact(DisplayName = "BinaryData returns the binary data passed to SetData")]
+        public void BinaryDataPropertyHappyPath1()
+        {
+            var cloudEvent = new CloudEvent();
+
+            var binaryData = new byte[] { 1, 2, 3, 4 };
+
+            cloudEvent.SetData(binaryData);
 
             cloudEvent.BinaryData.Should().BeEquivalentTo(binaryData);
-            cloudEvent.StringData.Should().Be(Convert.ToBase64String(binaryData));
+        }
+
+        [Fact(DisplayName = "BinaryData returns null if the data is string")]
+        public void BinaryDataPropertyHappyPath2()
+        {
+            var cloudEvent = new CloudEvent();
+
+            var stringData = "Hello, world!";
+
+            cloudEvent.SetData(stringData);
+
+            cloudEvent.BinaryData.Should().BeNull();
+        }
+
+        [Fact(DisplayName = "BinaryData returns null if uninitialized")]
+        public void BinaryDataPropertyHappyPath3()
+        {
+            var cloudEvent = new CloudEvent();
+
+            cloudEvent.BinaryData.Should().BeNull();
         }
 
         #endregion
@@ -323,11 +360,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var cloudEvent = new CloudEvent
             {
-                StringData = stringData,
                 Id = "MyId",
-                Source = new Uri("http://mysource/"),
+                Source = "http://mysource/",
                 Type = "MyType"
-            };
+            }.SetData(stringData);
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
@@ -341,11 +377,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var cloudEvent = new CloudEvent
             {
-                BinaryData = binaryData,
                 Id = "MyId",
-                Source = new Uri("http://mysource/"),
+                Source = "http://mysource/",
                 Type = "MyType"
-            };
+            }.SetData(binaryData);
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
@@ -360,7 +395,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var cloudEvent = new CloudEvent
             {
                 Id = "MyId",
-                Source = new Uri("http://mysource/"),
+                Source = "http://mysource/",
                 Type = "MyType"
             };
 
@@ -374,10 +409,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // All attributes provided
 
-            var dataContentType = new ContentType("application/xml");
-            var dataSchema = new Uri("http://dataschema");
+            var dataContentType = "application/xml";
+            var dataSchema = "http://dataschema";
             var id = "MyId";
-            Uri source = new Uri("http://source");
+            var source = "http://source";
             var subject = "MySubject";
             var time = DateTime.UtcNow;
             var type = "MyType";
@@ -413,7 +448,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var cloudEvent = new CloudEvent
             {
                 Id = "MyId",
-                Source = new Uri("http://MySource"),
+                Source = "http://MySource",
                 Type = "MyType"
             };
 
@@ -432,7 +467,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var cloudEvent = new CloudEvent();
             cloudEvent.Id = "MyId";
-            cloudEvent.Source = new Uri("http://mysource/");
+            cloudEvent.Source = "http://mysource/";
             cloudEvent.Type = "MyType";
             cloudEvent.AdditionalAttributes.Add("foo", "abc");
             cloudEvent.AdditionalAttributes.Add("bar", 123);
@@ -457,7 +492,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var cloudEvent = new CloudEvent
             {
                 Id = id,
-                Source = new Uri("http://mysource/"),
+                Source = "http://mysource/",
                 Type = "MyType",
                 AdditionalAttributes = { { "foo", "abc" } },
                 ProtocolBinding = mockProtocolBinding.Object
@@ -645,9 +680,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var mockCloudEvent = new Mock<CloudEvent>();
             mockCloudEvent.Setup(m => m.ToSenderMessage()).CallBase();
             mockCloudEvent.Setup(m => m.Validate()).CallBase();
-            mockCloudEvent.Object.StringData = "Hello, world!";
+            mockCloudEvent.Object.SetData("Hello, world!");
             mockCloudEvent.Object.Id = "MyId";
-            mockCloudEvent.Object.Source = new Uri("http://mysource/");
+            mockCloudEvent.Object.Source = "http://mysource/";
             mockCloudEvent.Object.Type = "test";
             mockCloudEvent.Object.AdditionalAttributes.Add("foo", "abc");
 

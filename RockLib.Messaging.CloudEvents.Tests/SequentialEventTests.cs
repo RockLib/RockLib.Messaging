@@ -36,10 +36,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
                 SequenceType = SequenceTypes.Integer,
                 Id = "MyId",
                 Time = new DateTime(2020, 7, 9, 22, 21, 37, DateTimeKind.Local),
-                Source = new Uri("http://mysource/"),
+                Source = "http://mysource/",
                 Type = "MyType",
-                DataContentType = new ContentType("application/json") { CharSet = "utf-8" },
-                DataSchema = new Uri("http://mydataschema/"),
+                DataContentType = "application/json; charset=utf-8",
+                DataSchema = "http://mydataschema/",
                 Subject = "MySubject"
             };
 
@@ -75,9 +75,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var receiverMessage = new FakeReceiverMessage("Hello, world!");
 
-            var source = new Uri("http://MySource");
-            var dataContentType = new ContentType("application/mycontenttype");
-            var dataSchema = new Uri("http://MySource");
+            var source = "http://MySource";
+            var dataContentType = "application/mycontenttype";
+            var dataSchema = "http://MySource";
             var time = DateTime.UtcNow;
 
             receiverMessage.Headers.Add(SequentialEvent.SequenceAttribute, "1");
@@ -133,9 +133,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var receiverMessage = new FakeReceiverMessage("Hello, world!");
 
-            var source = new Uri("http://MySource");
-            var dataContentType = new ContentType("application/mycontenttype");
-            var dataSchema = new Uri("http://MySource");
+            var source = "http://MySource";
+            var dataContentType = "application/mycontenttype";
+            var dataSchema = "http://MySource";
             var time = DateTime.UtcNow;
 
             receiverMessage.Headers.Add("test-" + SequentialEvent.SequenceAttribute, "1");
@@ -174,10 +174,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var sequential = "1";
             var sequentialType = SequenceTypes.Integer;
-            var dataContentType = new ContentType("application/xml");
-            var dataSchema = new Uri("http://dataschema");
+            var dataContentType = "application/xml";
+            var dataSchema = "http://dataschema";
             var id = "MyId";
-            Uri source = new Uri("http://source");
+            var source = "http://source";
             var subject = "MySubject";
             var time = DateTime.UtcNow;
             var type = "MyType";
@@ -219,7 +219,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             {
                 Sequence = "MySequence",
                 Id = "MyId",
-                Source = new Uri("http://MySource"),
+                Source = "http://MySource",
                 Type = "MyType"
             };
 
@@ -240,10 +240,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var sequence = "1";
             var sequenceType = SequenceTypes.Integer;
-            var dataContentType = new ContentType("application/xml");
-            var dataSchema = new Uri("http://dataschema");
+            var dataContentType = "application/xml";
+            var dataSchema = "http://dataschema";
             var id = "MyId";
-            Uri source = new Uri("http://source");
+            var source = "http://source";
             var subject = "MySubject";
             var time = DateTime.UtcNow;
             var type = "MyType";

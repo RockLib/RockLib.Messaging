@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Mime;
-using System.Text;
 using static RockLib.Messaging.HttpUtils;
 
 namespace RockLib.Messaging.CloudEvents
@@ -46,6 +43,9 @@ namespace RockLib.Messaging.CloudEvents
         private IProtocolBinding _protocolBinding;
 
         private string _id;
+        private string _source;
+        private string _dataContentType;
+        private string _dataSchema;
         private DateTime? _time;
         private object _data;
 
@@ -97,73 +97,7 @@ namespace RockLib.Messaging.CloudEvents
             if (receiverMessage is null)
                 throw new ArgumentNullException(nameof(receiverMessage));
 
-            ProtocolBinding = protocolBinding ?? DefaultProtocolBinding;
-
-            _data = receiverMessage.IsBinary()
-                ? (object)receiverMessage.BinaryPayload
-                : receiverMessage.StringPayload;
-
-            foreach (var header in receiverMessage.Headers)
-                AdditionalAttributes.Add(header);
-
-            if (receiverMessage.Headers.TryGetValue(SpecVersionHeader, out string specVersion))
-            {
-                if (specVersion != _specVersion1_0)
-                    throw new CloudEventValidationException(
-                        $"Invalid value found in '{SpecVersionHeader}' header. Expected '{_specVersion1_0}', but was '{specVersion}'.");
-                AdditionalAttributes.Remove(SpecVersionHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(IdHeader, out string id))
-            {
-                Id = id;
-                AdditionalAttributes.Remove(IdHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(SourceHeader, out Uri source))
-            {
-                Source = source;
-                AdditionalAttributes.Remove(SourceHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(TypeHeader, out string type))
-            {
-                Type = type;
-                AdditionalAttributes.Remove(TypeHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(DataContentTypeHeader, out ContentType dataContentType))
-            {
-                DataContentType = dataContentType;
-                AdditionalAttributes.Remove(DataContentTypeHeader);
-            }
-            else if (receiverMessage.Headers.TryGetValue(DataContentTypeHeader, out string dataContentTypeString))
-            {
-                try
-                {
-                    DataContentType = new ContentType(dataContentTypeString);
-                    AdditionalAttributes.Remove(DataContentTypeHeader);
-                }
-                catch (FormatException) { }
-            }
-
-            if (receiverMessage.Headers.TryGetValue(DataSchemaHeader, out Uri dataSchema))
-            {
-                DataSchema = dataSchema;
-                AdditionalAttributes.Remove(DataSchemaHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(SubjectHeader, out string subject))
-            {
-                Subject = subject;
-                AdditionalAttributes.Remove(SubjectHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(TimeHeader, out DateTime time))
-            {
-                Time = time;
-                AdditionalAttributes.Remove(TimeHeader);
-            }
+            FromReceiverMessage(receiverMessage, protocolBinding);
         }
 
         /// <summary>
@@ -209,8 +143,18 @@ namespace RockLib.Messaging.CloudEvents
         /// information such as the type of the event source, the organization publishing the event
         /// or the process that produced the event. The exact syntax and semantics behind the data
         /// encoded in the URI is defined by the event producer.
+        /// <para>Must be a valid relative or absolute URI.</para>
         /// </summary>
-        public Uri Source { get; set; }
+        public string Source
+        {
+            get => _source;
+            set
+            {
+                if (value != null)
+                    new Uri(value, UriKind.RelativeOrAbsolute);
+                _source = value;
+            }
+        }
 
         /// <summary>
         /// REQUIRED. The version of the CloudEvents specification which the event uses. This
@@ -228,14 +172,34 @@ namespace RockLib.Messaging.CloudEvents
 
         /// <summary>
         /// Content type of data value.
+        /// <para>Must be a valid Content-Type value according to RFC 2616.</para>
         /// </summary>
-        public ContentType DataContentType { get; set; }
+        public string DataContentType
+        {
+            get => _dataContentType;
+            set
+            {
+                if (value != null)
+                    MediaTypeHeaderValue.Parse(value);
+                _dataContentType = value;
+            }
+        }
 
         /// <summary>
         /// Identifies the schema that data adheres to. Incompatible changes to the schema SHOULD be
         /// reflected by a different URI.
+        /// <para>Must be a valid relative or absolute URI.</para>
         /// </summary>
-        public Uri DataSchema { get; set; }
+        public string DataSchema
+        {
+            get => _dataSchema;
+            set
+            {
+                if (value != null)
+                    new Uri(value, UriKind.RelativeOrAbsolute);
+                _dataSchema = value;
+            }
+        }
 
         /// <summary>
         /// This describes the subject of the event in the context of the event producer (identified
@@ -261,77 +225,28 @@ namespace RockLib.Messaging.CloudEvents
         }
 
         /// <summary>
+        /// Any additional attributes not specific to this CloudEvent type.
+        /// </summary>
+        public IDictionary<string, object> AdditionalAttributes { get; } = new Dictionary<string, object>();
+
+        /// <summary>
         /// Domain-specific information about the occurrence (i.e. the payload) as a string. This
         /// might include information about the occurrence, details about the data that was
         /// changed, or more.
-        /// <para>
-        /// Note that if the data of this cloud event was set using the <see cref="BinaryData"/>
-        /// property, then the value of <em>this</em> property is that binary value, base-64
-        /// encoded.
-        /// </para>
+        /// <para>To set this value, call either the <see cref="CloudEventExtensions
+        /// .SetData{TCloudEvent}(TCloudEvent, string)"/> or <see cref="CloudEventExtensions
+        /// .SetData{TCloudEvent, T}(TCloudEvent, T, DataSerialization)"/> extension method.</para>
         /// </summary>
-        public string StringData
-        {
-            get
-            {
-                switch (_data)
-                {
-                    case string stringData:
-                        return stringData;
-                    case null:
-                        return null;
-                    default:
-                        return Convert.ToBase64String((byte[])_data);
-                }
-            }
-            set
-            {
-                if (value != StringData)
-                    _data = value;
-            }
-        }
+        public string StringData => _data as string;
 
         /// <summary>
         /// Domain-specific information about the occurrence (i.e. the payload) as a byte array.
         /// This might include information about the occurrence, details about the data that was
         /// changed, or more.
-        /// <para>
-        /// Note that if the data of this cloud event was set using the <see cref="StringData"/>
-        /// property, then the value of <em>this</em> property is that string value, utf-8 encoded.
-        /// </para>
+        /// <para>To set this value, call the <see cref="CloudEventExtensions.SetData{TCloudEvent}(
+        /// TCloudEvent, byte[])"/> extension method.</para>
         /// </summary>
-        public byte[] BinaryData
-        {
-            get
-            {
-                switch (_data)
-                {
-                    case byte[] binaryData:
-                        return binaryData;
-                    case null:
-                        return null;
-                    default:
-                        return Encoding.UTF8.GetBytes((string)_data);
-                }
-            }
-            set
-            {
-                if (ReferenceEquals(_data, value))
-                    return;
-                
-                var binaryData = BinaryData;
-
-                if (binaryData != null && value != null && binaryData.SequenceEqual(value))
-                    return;
-
-                _data = value;
-            }
-        }
-
-        /// <summary>
-        /// Any additional attributes not specific to this CloudEvent type.
-        /// </summary>
-        public IDictionary<string, object> AdditionalAttributes { get; } = new Dictionary<string, object>();
+        public byte[] BinaryData => _data as byte[];
 
         /// <summary>
         /// Creates a <see cref="SenderMessage"/> with headers mapped from the attributes of this cloud event.
@@ -373,6 +288,68 @@ namespace RockLib.Messaging.CloudEvents
             return senderMessage;
         }
 
+        private void FromReceiverMessage(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding)
+        {
+            ProtocolBinding = protocolBinding ?? DefaultProtocolBinding;
+
+            _data = receiverMessage.IsBinary()
+                ? (object)receiverMessage.BinaryPayload
+                : receiverMessage.StringPayload;
+
+            foreach (var header in receiverMessage.Headers)
+                AdditionalAttributes.Add(header);
+
+            if (receiverMessage.Headers.TryGetValue(SpecVersionHeader, out string specVersion))
+            {
+                if (specVersion != _specVersion1_0)
+                    throw new CloudEventValidationException(
+                        $"Invalid value found in '{SpecVersionHeader}' header. Expected '{_specVersion1_0}', but was '{specVersion}'.");
+                AdditionalAttributes.Remove(SpecVersionHeader);
+            }
+
+            if (receiverMessage.Headers.TryGetValue(IdHeader, out string id))
+            {
+                Id = id;
+                AdditionalAttributes.Remove(IdHeader);
+            }
+
+            if (receiverMessage.Headers.TryGetValue(SourceHeader, out string source))
+            {
+                Source = source;
+                AdditionalAttributes.Remove(SourceHeader);
+            }
+
+            if (receiverMessage.Headers.TryGetValue(TypeHeader, out string type))
+            {
+                Type = type;
+                AdditionalAttributes.Remove(TypeHeader);
+            }
+
+            if (receiverMessage.Headers.TryGetValue(DataContentTypeHeader, out string dataContentType))
+            {
+                DataContentType = dataContentType;
+                AdditionalAttributes.Remove(DataContentTypeHeader);
+            }
+
+            if (receiverMessage.Headers.TryGetValue(DataSchemaHeader, out string dataSchema))
+            {
+                DataSchema = dataSchema;
+                AdditionalAttributes.Remove(DataSchemaHeader);
+            }
+
+            if (receiverMessage.Headers.TryGetValue(SubjectHeader, out string subject))
+            {
+                Subject = subject;
+                AdditionalAttributes.Remove(SubjectHeader);
+            }
+
+            if (receiverMessage.Headers.TryGetValue(TimeHeader, out DateTime time))
+            {
+                Time = time;
+                AdditionalAttributes.Remove(TimeHeader);
+            }
+        }
+
         /// <summary>
         /// Creates an <see cref="HttpRequestMessage"/> with headers mapped from the attributes of this cloud event.
         /// </summary>
@@ -401,13 +378,7 @@ namespace RockLib.Messaging.CloudEvents
                 request.Content = new StringContent(message.StringPayload);
 
             if (DataContentType != null)
-            {
-                request.Content.Headers.ContentType =
-                    new MediaTypeHeaderValue(DataContentType.MediaType)
-                    {
-                        CharSet = DataContentType.CharSet
-                    };
-            }
+                request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(DataContentType);
 
             foreach (var header in message.Headers)
             {
@@ -599,6 +570,12 @@ namespace RockLib.Messaging.CloudEvents
             value = default;
             return false;
         }
+
+        internal void SetDataField(string data) => _data = data;
+
+        internal void SetDataField(byte[] data) => _data = data;
+
+        internal void ClearDataField() => _data = null;
 
         private string IdHeader => ProtocolBinding.GetHeaderName(IdAttribute);
 
