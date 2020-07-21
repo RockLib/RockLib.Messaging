@@ -121,8 +121,6 @@ The following cloud event attributes are defined by the `CloudEvent` class:
 
 #### CloudEvent Data
 
-<!--*TODO: Update this with SetData, GetData, and TryGetData*-->
-
 The raw data (or payload) of an event is available from the `StringData` and `BinaryData` properties, as well as from the `GetData<T>` and `TryGetData<T>` extension methods. The data of a `CloudEvent`, can be set by calling one of the `SetData` extension method overloads.
 
 The following example demonstrates usage of these properties and extension methods:
