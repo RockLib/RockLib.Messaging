@@ -6,8 +6,8 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging</PackageId>
-    <PackageVersion>2.4.0</PackageVersion>
-    <Authors>Brian Friesen, Justin Moss</Authors>
+    <PackageVersion>2.4.1</PackageVersion>
+    <Authors>RockLib</Authors>
     <Description>A simple API for sending and receiving messages.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReleaseNotes></PackageReleaseNotes>

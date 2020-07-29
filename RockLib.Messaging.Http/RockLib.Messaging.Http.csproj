@@ -6,14 +6,14 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging.Http</PackageId>
-    <PackageVersion>1.0.2</PackageVersion>
-    <Authors>Brian Friesen</Authors>
+    <PackageVersion>1.0.3</PackageVersion>
+    <Authors>RockLib</Authors>
     <Description>An implementation of RockLib.Messaging that sends and receives messages via HTTP.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReleaseNotes></PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <Copyright>Copyright 2018-2019 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
+    <Copyright>Copyright 2018-2020 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
     <PackageTags>rocklib messaging http</PackageTags>
     <Version>1.0.0</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>

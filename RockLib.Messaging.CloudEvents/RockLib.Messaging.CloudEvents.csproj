@@ -7,7 +7,7 @@
   <PropertyGroup>
     <PackageId>RockLib.Messaging.CloudEvents</PackageId>
     <PackageVersion>1.0.0-alpha02</PackageVersion>
-    <Authors>Brian Friesen</Authors>
+    <Authors>RockLib</Authors>
     <Description>Send and receive messages using the CloudEvents format.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReleaseNotes></PackageReleaseNotes>
