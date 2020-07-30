@@ -19,8 +19,14 @@
         /// "IReceiverMessage"/> header name.
         /// </summary>
         /// <param name="headerName">The <see cref="IReceiverMessage"/> header name.</param>
+        /// <param name="isCloudEventAttribute">
+        /// When this method returns, a value indicating whether <paramref name="headerName"/>
+        /// represents a CloudEvent attribute according to this protocol binding. A value of <see
+        /// langword="false"/> indicates that <paramref name="headerName"/> represents some
+        /// non-CloudEvent attribute.
+        /// </param>
         /// <returns>The CloudEvent attribute name.</returns>
-        string GetAttributeName(string headerName);
+        string GetAttributeName(string headerName, out bool isCloudEventAttribute);
 
         /// <summary>
         /// Binds the attributes of the <see cref="CloudEvent"/> to the headers of the <see cref=
@@ -33,14 +39,9 @@
 
         /// <summary>
         /// Binds the headers of the <see cref="IReceiverMessage"/> to the attributes of the <see
-        /// cref="CloudEvent"/>. Called <em>after</em> all of the headers of the <see cref=
+        /// cref="CloudEvent"/>. Called after all of the headers of the <see cref=
         /// "IReceiverMessage"/> have been added to <see cref="CloudEvent.Attributes"/>,
-        /// but <em>before</em> the mapping of first-class attributes (e.g. <see cref=
-        /// "CloudEvent.Id"/>) removes the first-class attributes from 
-        /// 
-        /// 
-        /// any of the first-class attributes (e.g. <see cref="CloudEvent.Id"/>
-        /// or <see cref="CloudEvent.Subject"/>) have been mapped.
+        /// or <see cref="CloudEvent.Headers"/>.
         /// </summary>
         /// <param name="fromReceiverMessage">The source <see cref="IReceiverMessage"/>.</param>
         /// <param name="toCloudEvent">The target <see cref="CloudEvent"/>.</param>

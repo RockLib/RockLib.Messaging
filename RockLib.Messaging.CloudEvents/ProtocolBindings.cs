@@ -1,4 +1,5 @@
 ﻿using RockLib.Messaging.CloudEvents.Partitioning;
+using System;
 using System.Text.RegularExpressions;
 
 namespace RockLib.Messaging.CloudEvents
@@ -36,48 +37,120 @@ namespace RockLib.Messaging.CloudEvents
         private class DefaultProtocolBinding : IProtocolBinding
         {
             string IProtocolBinding.GetHeaderName(string attributeName) => attributeName;
-            string IProtocolBinding.GetAttributeName(string headerName) => headerName;
+            string IProtocolBinding.GetAttributeName(string headerName, out bool isCloudEventAttribute)
+            {
+                isCloudEventAttribute = true;
+                return headerName;
+            }
             void IProtocolBinding.Bind(CloudEvent fromCloudEvent, SenderMessage toSenderMessage) { }
             void IProtocolBinding.Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent) { }
         }
 
         private class AmqpProtocolBinding : IProtocolBinding
         {
-            public const string Prefix = "cloudEvents:";
-            public static readonly Regex AttributeNameRegex = new Regex("^" + Prefix);
+            public const string HeaderPrefix = "cloudEvents:";
+            public static readonly Regex AttributeNameRegex = new Regex("^" + HeaderPrefix);
 
-            string IProtocolBinding.GetHeaderName(string attributeName) => Prefix + attributeName;
-            string IProtocolBinding.GetAttributeName(string headerName) => AttributeNameRegex.Replace(headerName, "");
+            string IProtocolBinding.GetHeaderName(string attributeName) => HeaderPrefix + attributeName;
+            string IProtocolBinding.GetAttributeName(string headerName, out bool isCloudEventAttribute)
+            {
+                var attributeName = AttributeNameRegex.Replace(headerName, "");
+                isCloudEventAttribute = attributeName != headerName;
+                return attributeName;
+            }
             void IProtocolBinding.Bind(CloudEvent fromCloudEvent, SenderMessage toSenderMessage) { }
             void IProtocolBinding.Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent) { }
         }
 
         private class HttpProtocolBinding : IProtocolBinding
         {
-            public const string Prefix = "ce_";
-            public static readonly Regex AttributeNameRegex = new Regex("^" + Prefix);
+            public const string HeaderPrefix = "ce_";
+            public static readonly Regex AttributeNameRegex = new Regex("^" + HeaderPrefix);
 
-            string IProtocolBinding.GetHeaderName(string attributeName) => Prefix + attributeName;
-            string IProtocolBinding.GetAttributeName(string headerName) => AttributeNameRegex.Replace(headerName, "");
+            string IProtocolBinding.GetHeaderName(string attributeName) => HeaderPrefix + attributeName;
+            string IProtocolBinding.GetAttributeName(string headerName, out bool isCloudEventAttribute)
+            {
+                var attributeName = AttributeNameRegex.Replace(headerName, "");
+                isCloudEventAttribute = attributeName != headerName;
+                return attributeName;
+            }
             void IProtocolBinding.Bind(CloudEvent fromCloudEvent, SenderMessage toSenderMessage) { }
             void IProtocolBinding.Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent) { }
         }
 
         private class KafkaProtocolBinding : IProtocolBinding
         {
-            public const string Prefix = "ce_";
-            public static readonly Regex AttributeNameRegex = new Regex("^" + Prefix);
+            public const string ContentTypeAttribute = "content-type";
+            public const string CloudEventsMediaTypePrefix = "application/cloudevents";
+            public const string JsonMediaTypeSuffix = "+json";
+            public const string KafkaKeyHeader = "Kafka.Key";
+            public const string HeaderPrefix = "ce_";
+            public static readonly Regex AttributeNameRegex = new Regex("^" + HeaderPrefix);
 
-            string IProtocolBinding.GetHeaderName(string attributeName) => Prefix + attributeName;
-            string IProtocolBinding.GetAttributeName(string headerName) => AttributeNameRegex.Replace(headerName, "");
-            void IProtocolBinding.Bind(CloudEvent fromCloudEvent, SenderMessage toSenderMessage) { }
-            void IProtocolBinding.Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent) { }
+            private string GetHeaderName(string attributeName) => HeaderPrefix + attributeName;
+
+            string IProtocolBinding.GetHeaderName(string attributeName) => GetHeaderName(attributeName);
+
+            string IProtocolBinding.GetAttributeName(string headerName, out bool isCloudEventAttribute)
+            {
+                var attributeName = AttributeNameRegex.Replace(headerName, "");
+                isCloudEventAttribute = attributeName != headerName;
+                return attributeName;
+            }
+
+            void IProtocolBinding.Bind(CloudEvent fromCloudEvent, SenderMessage toSenderMessage)
+            {
+                if (fromCloudEvent.GetPartitionKey() is string kafkaKey)
+                {
+                    toSenderMessage.Headers.Remove(GetHeaderName(PartitionedEvent.PartitionKeyAttribute));
+                    toSenderMessage.Headers[KafkaKeyHeader] = kafkaKey;
+                }
+
+                if (!string.IsNullOrEmpty(fromCloudEvent.DataContentType))
+                {
+                    toSenderMessage.Headers.Remove(GetHeaderName(CloudEvent.DataContentTypeAttribute));
+                    toSenderMessage.Headers[ContentTypeAttribute] = fromCloudEvent.DataContentType;
+                }
+            }
+
+            void IProtocolBinding.Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent)
+            {
+                if (fromReceiverMessage.Headers.TryGetValue(KafkaKeyHeader, out string kafkaKey))
+                {
+                    toCloudEvent.Attributes.Remove(KafkaKeyHeader);
+                    toCloudEvent.SetPartitionKey(kafkaKey);
+                }
+
+                var structuredMode = false;
+
+                if (fromReceiverMessage.Headers.TryGetValue(ContentTypeAttribute, out string contentType))
+                {
+                    if (contentType.StartsWith(CloudEventsMediaTypePrefix, StringComparison.OrdinalIgnoreCase))
+                        structuredMode = true;
+
+                    toCloudEvent.Attributes.Remove(ContentTypeAttribute);
+                    toCloudEvent.DataContentType = contentType;
+                }
+
+                if (structuredMode)
+                {
+                    if (!toCloudEvent.ContentType.MediaType.EndsWith(JsonMediaTypeSuffix))
+                        throw new InvalidOperationException($"Unsupported media type. Expected value ending in '{JsonMediaTypeSuffix}', but was '{toCloudEvent.ContentType.MediaType}'.");
+
+                    // TODO: Implement structured mode.
+                    throw new NotImplementedException("Structured mode is not implemented.");
+                }
+            }
         }
 
         private class MqttProtocolBinding : IProtocolBinding
         {
             public string GetHeaderName(string attributeName) => attributeName;
-            public string GetAttributeName(string headerName) => headerName;
+            public string GetAttributeName(string headerName, out bool isCloudEventAttribute)
+            {
+                isCloudEventAttribute = true;
+                return headerName;
+            }
             public void Bind(CloudEvent fromCloudEvent, SenderMessage toSenderMessage) { }
             public void Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent) { }
         }

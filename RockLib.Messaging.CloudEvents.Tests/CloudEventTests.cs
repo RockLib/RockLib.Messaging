@@ -174,9 +174,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             receiverMessage.Headers.Add("test-foo", "abc");
             receiverMessage.Headers.Add("test-bar", 123);
 
-            var mockProtocolBinding = new Mock<IProtocolBinding>();
-            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
-            mockProtocolBinding.Setup(m => m.GetAttributeName(It.IsAny<string>())).Returns<string>(header => Regex.Replace(header, "^test-", ""));
+            var mockProtocolBinding = new Mock<IProtocolBinding>().SetupTestProtocolBinding();
 
             var cloudEvent = new CloudEvent(receiverMessage, mockProtocolBinding.Object);
 
@@ -195,14 +193,12 @@ namespace RockLib.Messaging.CloudEvents.Tests
             receiverMessage.Headers.Add("foo", "abc");
             receiverMessage.Headers.Add("test-" + CloudEvent.IdAttribute, "MyId");
 
-            var mockProtocolBinding = new Mock<IProtocolBinding>();
-            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
-            mockProtocolBinding.Setup(m => m.GetAttributeName(It.IsAny<string>())).Returns<string>(header => Regex.Replace(header, "^test-", ""));
+            var mockProtocolBinding = new Mock<IProtocolBinding>().SetupTestProtocolBinding();
 
             var cloudEvent = new CloudEvent(receiverMessage, mockProtocolBinding.Object);
 
             cloudEvent.Id.Should().Be("MyId");
-            cloudEvent.Attributes.Should().ContainKey("foo").WhichValue.Should().Be("abc");
+            cloudEvent.Headers.Should().ContainKey("foo").WhichValue.Should().Be("abc");
         }
 
         [Fact(DisplayName = "Constructor 3 throws when receiverMessage parameter is null")]

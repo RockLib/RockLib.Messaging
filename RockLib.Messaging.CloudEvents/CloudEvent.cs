@@ -204,13 +204,21 @@ namespace RockLib.Messaging.CloudEvents
             {
                 if (value != null)
                 {
-                    MediaTypeHeaderValue.Parse(value);
+                    ContentType = MediaTypeHeaderValue.Parse(value);
                     Attributes[DataContentTypeAttribute] = value;
                 }
                 else
+                {
+                    ContentType = null;
                     Attributes.Remove(DataContentTypeAttribute);
+                }
             }
         }
+
+        /// <summary>
+        /// Content type of data value as a <see cref="MediaTypeHeaderValue"/>.
+        /// </summary>
+        public MediaTypeHeaderValue ContentType { get; private set; }
 
         /// <summary>
         /// Identifies the schema that data adheres to. Incompatible changes to the schema SHOULD be
@@ -286,6 +294,11 @@ namespace RockLib.Messaging.CloudEvents
         }
 
         /// <summary>
+        /// Message headers not related to CloudEvents.
+        /// </summary>
+        public IDictionary<string, object> Headers { get; } = new Dictionary<string, object>();
+
+        /// <summary>
         /// Domain-specific information about the occurrence (i.e. the payload) as a string. This
         /// might include information about the occurrence, details about the data that was
         /// changed, or more.
@@ -327,6 +340,9 @@ namespace RockLib.Messaging.CloudEvents
             foreach (var attribute in Attributes)
                 senderMessage.Headers[ProtocolBinding.GetHeaderName(attribute.Key)] = attribute.Value;
 
+            foreach (var header in Headers)
+                senderMessage.Headers[header.Key] = header.Value;
+
             ProtocolBinding.Bind(this, senderMessage);
 
             return senderMessage;
@@ -341,7 +357,14 @@ namespace RockLib.Messaging.CloudEvents
                 : receiverMessage.StringPayload;
 
             foreach (var header in receiverMessage.Headers)
-                Attributes.Add(ProtocolBinding.GetAttributeName(header.Key), header.Value);
+            {
+                var attributeName = ProtocolBinding.GetAttributeName(header.Key, out bool isCloudEventAttribute);
+
+                if (isCloudEventAttribute)
+                    Attributes.Add(attributeName, header.Value);
+                else
+                    Headers.Add(attributeName, header.Value);
+            }
 
             if (Attributes.TryGetValue(SpecVersionAttribute, out var value) && value is string specVersion)
             {

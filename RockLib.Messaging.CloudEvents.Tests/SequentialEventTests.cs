@@ -2,8 +2,6 @@
 using Moq;
 using RockLib.Messaging.Testing;
 using System;
-using System.Net.Mime;
-using System.Text.RegularExpressions;
 using Xunit;
 
 namespace RockLib.Messaging.CloudEvents.Tests
@@ -149,9 +147,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             receiverMessage.Headers.Add("test-" + CloudEvent.SubjectAttribute, "MySubject");
             receiverMessage.Headers.Add("test-" + CloudEvent.TimeAttribute, time);
 
-            var mockProtocolBinding = new Mock<IProtocolBinding>();
-            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
-            mockProtocolBinding.Setup(m => m.GetAttributeName(It.IsAny<string>())).Returns<string>(header => Regex.Replace(header, "^test-", ""));
+            var mockProtocolBinding = new Mock<IProtocolBinding>().SetupTestProtocolBinding();
 
             var sequentialEvent = new SequentialEvent(receiverMessage, mockProtocolBinding.Object);
 
