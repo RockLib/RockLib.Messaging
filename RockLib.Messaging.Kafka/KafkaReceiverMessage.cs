@@ -13,11 +13,14 @@ namespace RockLib.Messaging.Kafka
     /// </summary>
     public class KafkaReceiverMessage : ReceiverMessage
     {
-        internal KafkaReceiverMessage(IConsumer<string, byte[]> consumer, ConsumeResult<string, byte[]> result)
+        private readonly bool _enableAutoOffsetStore;
+
+        internal KafkaReceiverMessage(IConsumer<string, byte[]> consumer, ConsumeResult<string, byte[]> result, bool enableAutoOffsetStore)
             : base(() => result.Message.Value)
         {
             Consumer = consumer;
             Result = result;
+            _enableAutoOffsetStore = enableAutoOffsetStore;
         }
 
         /// <summary>
@@ -52,6 +55,10 @@ namespace RockLib.Messaging.Kafka
             try
             {
                 Consumer.Commit(Result);
+
+                if (_enableAutoOffsetStore is false)
+                    Consumer.StoreOffset(Result);
+
                 return Tasks.CompletedTask;
             }
             catch (Exception ex)

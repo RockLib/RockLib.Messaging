@@ -17,6 +17,8 @@ namespace RockLib.Messaging.Kafka
         private readonly BlockingCollection<Task> _trackingCollection = new BlockingCollection<Task>();
         private readonly Lazy<Thread> _trackingThread;
 
+        private readonly bool _enableAutoOffsetStore;
+
         private bool _stopped;
         private bool _disposed;
         private bool? _connected;
@@ -32,7 +34,22 @@ namespace RockLib.Messaging.Kafka
         /// </param>
         /// <param name="groupId">Client group id string. All clients sharing the same group.id belong to the same group.</param>
         /// <param name="bootstrapServers">List of brokers as a CSV list of broker host or host:port.</param>
-        public KafkaReceiver(string name, string topic, string groupId, string bootstrapServers)
+        /// <param name="enableAutoCommit">
+        /// Whether to automatically and periodically commit offsets in the background.
+        /// </param>
+        /// <param name="enableAutoOffsetStore">
+        /// Whether to automatically store offset of last message provided to application.
+        /// </param>
+        /// <param name="autoOffsetReset">
+        /// Action to take when there is no initial offset in offset store or the desired
+        /// offset is out of range: 'smallest','earliest' - automatically reset the offset
+        /// to the smallest offset, 'largest','latest' - automatically reset the offset to
+        /// the largest offset, 'error' - trigger an error which is retrieved by consuming
+        /// messages and checking 'message->err'.
+        /// </param>
+        public KafkaReceiver(string name, string topic, string groupId, string bootstrapServers,
+            bool enableAutoCommit = true, bool enableAutoOffsetStore = false,
+            AutoOffsetReset autoOffsetReset = AutoOffsetReset.Latest)
             : base(name)
         {
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
@@ -41,7 +58,9 @@ namespace RockLib.Messaging.Kafka
             {
                 GroupId = groupId ?? throw new ArgumentNullException(nameof(groupId)),
                 BootstrapServers = bootstrapServers ?? throw new ArgumentNullException(nameof(bootstrapServers)),
-                EnableAutoCommit = false
+                EnableAutoCommit = enableAutoCommit,
+                EnableAutoOffsetStore = enableAutoOffsetStore,
+                AutoOffsetReset = autoOffsetReset
             };
 
             var consumerBuilder = new ConsumerBuilder<string, byte[]>(config);
@@ -51,6 +70,8 @@ namespace RockLib.Messaging.Kafka
 
             _pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
             _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
+
+            _enableAutoOffsetStore = enableAutoOffsetStore;
         }
 
         /// <summary>
@@ -133,7 +154,7 @@ namespace RockLib.Messaging.Kafka
                 try
                 {
                     var result = _consumer.Value.Consume(_disposeSource.Token);
-                    var message = new KafkaReceiverMessage(_consumer.Value, result);
+                    var message = new KafkaReceiverMessage(_consumer.Value, result, _enableAutoOffsetStore);
 
                     if (_connected != true)
                     {
@@ -172,7 +193,7 @@ namespace RockLib.Messaging.Kafka
 
         private void OnError(IConsumer<string, byte[]> consumer, Error error)
         {
-            OnError(error.Reason, new KafkaException(error));
+            OnError(error.Reason, new KafkaException(error) { Data = { ["kafka_consumer"] = consumer } });
 
             if (_connected != false)
             {
