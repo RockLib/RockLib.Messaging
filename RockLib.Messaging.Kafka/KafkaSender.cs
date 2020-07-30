@@ -11,7 +11,7 @@ namespace RockLib.Messaging.Kafka
     /// </summary>
     public class KafkaSender : ISender
     {
-        private readonly Lazy<IProducer<Null, string>> _producer;
+        private readonly Lazy<IProducer<string, byte[]>> _producer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KafkaSender"/> class.
@@ -37,10 +37,10 @@ namespace RockLib.Messaging.Kafka
                 MessageTimeoutMs = messageTimeoutMs
             };
 
-            var producerBuilder = new ProducerBuilder<Null, string>(config);
+            var producerBuilder = new ProducerBuilder<string, byte[]>(config);
             producerBuilder.SetErrorHandler(OnError);
 
-            _producer = new Lazy<IProducer<Null, string>>(() => producerBuilder.Build());
+            _producer = new Lazy<IProducer<string, byte[]>>(() => producerBuilder.Build());
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace RockLib.Messaging.Kafka
         /// <param name="name">The name of the sender.</param>
         /// <param name="topic">The topic to produce messages to.</param>
         /// <param name="producer">The Kafka <see cref="IProducer{TKey, TValue}" /> to use for sending messages.</param>
-        public KafkaSender(string name, string topic, IProducer<Null, string> producer)
+        public KafkaSender(string name, string topic, IProducer<string, byte[]> producer)
         {
             if (producer == null)
                 throw new ArgumentNullException(nameof(producer));
@@ -57,7 +57,7 @@ namespace RockLib.Messaging.Kafka
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
 
-            _producer = new Lazy<IProducer<Null, string>>(() => producer);
+            _producer = new Lazy<IProducer<string, byte[]>>(() => producer);
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace RockLib.Messaging.Kafka
         /// <summary>
         /// Gets the <see cref="IProducer{TKey, TValue}" /> for this instance of <see cref="KafkaSender"/>.
         /// </summary>
-        public IProducer<Null, string> Producer { get { return _producer.Value; } }
+        public IProducer<string, byte[]> Producer { get { return _producer.Value; } }
 
         /// <summary>
         /// Occurs when an error happens on a background thread.
@@ -90,7 +90,7 @@ namespace RockLib.Messaging.Kafka
             if (message.OriginatingSystem == null)
                 message.OriginatingSystem = "Kafka";
 
-            var kafkaMessage = new Message<Null, string> { Value = message.StringPayload };
+            var kafkaMessage = new Message<string, byte[]> { Value = message.BinaryPayload };
 
             if (message.Headers.Count > 0)
             {
@@ -114,7 +114,7 @@ namespace RockLib.Messaging.Kafka
             }
         }
 
-        private void OnError(IProducer<Null, string> producer, Error error) 
+        private void OnError(IProducer<string, byte[]> producer, Error error) 
             => Error?.Invoke(this, new ErrorEventArgs(error.Reason, new KafkaException(error)));
     }
 }

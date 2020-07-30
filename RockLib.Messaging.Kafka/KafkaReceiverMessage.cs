@@ -13,7 +13,7 @@ namespace RockLib.Messaging.Kafka
     /// </summary>
     public class KafkaReceiverMessage : ReceiverMessage
     {
-        internal KafkaReceiverMessage(IConsumer<Ignore, string> consumer, ConsumeResult<Ignore, string> result)
+        internal KafkaReceiverMessage(IConsumer<string, byte[]> consumer, ConsumeResult<string, byte[]> result)
             : base(() => result.Message.Value)
         {
             Consumer = consumer;
@@ -23,19 +23,19 @@ namespace RockLib.Messaging.Kafka
         /// <summary>
         /// Gets the <see cref="Consumer{TKey, TValue}"/> that received the message.
         /// </summary>
-        public IConsumer<Ignore, string> Consumer { get; }
+        public IConsumer<string, byte[]> Consumer { get; }
 
         /// <summary>
         /// Gets the actual Kafka message that was received.
         /// </summary>
-        public ConsumeResult<Ignore, string> Result { get; }
+        public ConsumeResult<string, byte[]> Result { get; }
 
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
             if (Result.Message?.Headers != null)
                 foreach (var header in Result.Message.Headers)
-                    headers.Add(header.Key, Encoding.UTF8.GetString(header.GetValueBytes()));
+                    headers[header.Key] = Encoding.UTF8.GetString(header.GetValueBytes()); // TODO: Unconditionally using utf-8 might not be the right thing to do here.
         }
 
         /// <inheritdoc />
