@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging.NamedPipes</PackageId>
-    <PackageVersion>2.2.2</PackageVersion>
+    <PackageVersion>2.2.3</PackageVersion>
     <Authors>RockLib</Authors>
     <Description>Implementation of RockLib.Messaging API that sends and receives messages to a local named pipe.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RockLib.Messaging" Version="2.3.0" />
+    <PackageReference Include="RockLib.Messaging" Version="2.4.2" />
   </ItemGroup>
 
 </Project>
