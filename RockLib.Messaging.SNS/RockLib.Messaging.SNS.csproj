@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging.SNS</PackageId>
-    <PackageVersion>1.2.2</PackageVersion>
+    <PackageVersion>1.2.3</PackageVersion>
     <Authors>RockLib</Authors>
     <Description>Implementation of RockLib.Messaging API that sends messages using Amazon SNS.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.3.101.174" />
-    <PackageReference Include="RockLib.Messaging" Version="2.3.0" />
+    <PackageReference Include="RockLib.Messaging" Version="2.4.2" />
   </ItemGroup>
 
 </Project>
