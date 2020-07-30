@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static RockLib.Messaging.Kafka.Constants;
 
 namespace RockLib.Messaging.Kafka
 {
@@ -36,6 +37,9 @@ namespace RockLib.Messaging.Kafka
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
+            if (Result.Message?.Key is string key)
+                headers[KafkaKeyHeader] = key;
+
             if (Result.Message?.Headers != null)
                 foreach (var header in Result.Message.Headers)
                     headers[header.Key] = Encoding.UTF8.GetString(header.GetValueBytes()); // TODO: Unconditionally using utf-8 might not be the right thing to do here.

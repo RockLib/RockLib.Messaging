@@ -1,8 +1,10 @@
 ﻿using Confluent.Kafka;
+using Newtonsoft.Json;
 using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static RockLib.Messaging.Kafka.Constants;
 
 namespace RockLib.Messaging.Kafka
 {
@@ -11,6 +13,8 @@ namespace RockLib.Messaging.Kafka
     /// </summary>
     public class KafkaSender : ISender
     {
+        private static readonly char[] _quoteChar = { '"' };
+
         private readonly Lazy<IProducer<string, byte[]>> _producer;
 
         /// <summary>
@@ -92,11 +96,19 @@ namespace RockLib.Messaging.Kafka
 
             var kafkaMessage = new Message<string, byte[]> { Value = message.BinaryPayload };
 
+            if (message.Headers.TryGetValue(KafkaKeyHeader, out object objValue)
+                && Serialize(objValue) is string kafkaKey)
+            {
+                kafkaMessage.Key = kafkaKey;
+                message.Headers.Remove(KafkaKeyHeader);
+            }
+
             if (message.Headers.Count > 0)
             {
                 kafkaMessage.Headers = kafkaMessage.Headers ?? new Headers();
                 foreach (var header in message.Headers)
-                    kafkaMessage.Headers.Add(header.Key, Encoding.UTF8.GetBytes(header.Value.ToString()));
+                    if (Encode(Serialize(header.Value)) is byte[] headerValue)
+                        kafkaMessage.Headers.Add(header.Key, headerValue);
             }
 
             return _producer.Value.ProduceAsync(Topic, kafkaMessage);
@@ -116,5 +128,24 @@ namespace RockLib.Messaging.Kafka
 
         private void OnError(IProducer<string, byte[]> producer, Error error) 
             => Error?.Invoke(this, new ErrorEventArgs(error.Reason, new KafkaException(error)));
+
+        private static string Serialize(object value)
+        {
+            if (value is string stringValue)
+                return stringValue;
+
+            if (value is null)
+                return null;
+
+            return JsonConvert.SerializeObject(value).Trim(_quoteChar);
+        }
+
+        private static byte[] Encode(string value)
+        {
+            if (value is null)
+                return null;
+
+            return Encoding.UTF8.GetBytes(value);
+        }
     }
 }
