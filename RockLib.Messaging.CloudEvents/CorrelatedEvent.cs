@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RockLib.Messaging.CloudEvents.Correlating;
+using System;
 
 namespace RockLib.Messaging.CloudEvents
 {
@@ -9,8 +10,6 @@ namespace RockLib.Messaging.CloudEvents
     {
         /// <summary>The name of the <see cref="CorrelationId"/> attribute.</summary>
         public const string CorrelationIdAttribute = "correlationid";
-
-        private string _correlationId;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CorrelatedEvent"/> class.
@@ -29,7 +28,6 @@ namespace RockLib.Messaging.CloudEvents
         public CorrelatedEvent(CorrelatedEvent source)
             : base(source)
         {
-            CorrelationId = source.CorrelationId;
         }
 
         /// <summary>
@@ -47,38 +45,24 @@ namespace RockLib.Messaging.CloudEvents
         public CorrelatedEvent(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)
             : base(receiverMessage, protocolBinding)
         {
-            if (receiverMessage.Headers.TryGetValue(CorrelationIdHeader, out string correlationId))
-            {
-                CorrelationId = correlationId;
-                AdditionalAttributes.Remove(CorrelationIdHeader);
-            }
         }
 
         /// <summary>
-        /// The correlation ID of the event.
+        /// The Correlation ID of the event.
         /// </summary>
         public string CorrelationId
         {
-            get => _correlationId ?? (_correlationId = NewCorrelationId());
-            set
-            {
-                if (string.IsNullOrEmpty(value))
-                    throw new ArgumentNullException(nameof(value));
-                _correlationId = value;
-            }
+            get => this.GetCorrelationId();
+            set => this.SetCorrelationId(value);
         }
 
-        /// <summary>
-        /// Creates a <see cref="SenderMessage"/> with headers mapped from the attributes of this correlated event.
-        /// </summary>
-        /// <returns>The mapped <see cref="SenderMessage"/>.</returns>
-        public override SenderMessage ToSenderMessage()
+        /// <inheritdoc/>
+        public override void Validate()
         {
-            var senderMessage = base.ToSenderMessage();
+            base.Validate();
 
-            senderMessage.Headers[CorrelationIdHeader] = CorrelationId;
-
-            return senderMessage;
+            // Ensure that the correlation id exists.
+            this.GetCorrelationId();
         }
 
         /// <summary>
@@ -90,6 +74,9 @@ namespace RockLib.Messaging.CloudEvents
         /// headers. If <see langword="null"/>, then <see cref="CloudEvent.DefaultProtocolBinding"/> is used
         /// instead.
         /// </param>
+        /// <exception cref="CloudEventValidationException">
+        /// If the <see cref="SenderMessage"/> is not valid.
+        /// </exception>
         public static new void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null)
         {
             if (protocolBinding is null)
@@ -102,8 +89,6 @@ namespace RockLib.Messaging.CloudEvents
                 senderMessage.Headers[correlationIdHeader] = NewCorrelationId();
         }
 
-        private string CorrelationIdHeader => ProtocolBinding.GetHeaderName(CorrelationIdAttribute);
-
-        private static string NewCorrelationId() => Guid.NewGuid().ToString();
+        internal static string NewCorrelationId() => Guid.NewGuid().ToString();
     }
 }

@@ -9,7 +9,6 @@ The RockLib.Messaging.CloudEvents package allows messages to be sent, received, 
 - [CloudEvent class](#cloudevent-class)
   - [CloudEvent attributes](#cloudevent-attributes)
   - [CloudEvent Data](#cloudevent-data)
-  - [AdditionalAttributes property](#additionalattributes-property)
   - [ProtocolBinding property](#protocolbinding-property)
   - [DefaultProtocolBinding static property](#defaultprotocolbinding-static-property)
   - [ToSenderMessage method](#tosendermessage-method)
@@ -119,6 +118,8 @@ The following cloud event attributes are defined by the `CloudEvent` class:
 | Subject (`subject`)                 | `string`   | No        | N/A                         |                                                   |
 | Time (`time`)                       | `DateTime` | No        | `DateTime.UtcNow`           |                                                   |
 
+<!-- TODO: Describe how the Attributes property works. -->
+
 #### CloudEvent Data
 
 The raw data (or payload) of an event is available from the `StringData` and `BinaryData` properties, as well as from the `GetData<T>` and `TryGetData<T>` extension methods. The data of a `CloudEvent`, can be set by calling one of the `SetData` extension method overloads.
@@ -203,10 +204,6 @@ class Client
     public string LastName { get; set; }
 }
 ```
-
-#### AdditionalAttributes property
-
-This `IDictionary<string, string>` contains any attributes that do not correspond to a property of `CloudEvent` (or a subclass).
 
 #### ProtocolBinding property
 

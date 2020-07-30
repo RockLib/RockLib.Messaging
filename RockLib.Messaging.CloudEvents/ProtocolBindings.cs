@@ -1,4 +1,7 @@
-﻿namespace RockLib.Messaging.CloudEvents
+﻿using RockLib.Messaging.CloudEvents.Partitioning;
+using System.Text.RegularExpressions;
+
+namespace RockLib.Messaging.CloudEvents
 {
     /// <summary>
     /// Defines various protocol bindings.
@@ -33,26 +36,50 @@
         private class DefaultProtocolBinding : IProtocolBinding
         {
             string IProtocolBinding.GetHeaderName(string attributeName) => attributeName;
+            string IProtocolBinding.GetAttributeName(string headerName) => headerName;
+            void IProtocolBinding.Bind(CloudEvent fromCloudEvent, SenderMessage toSenderMessage) { }
+            void IProtocolBinding.Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent) { }
         }
 
         private class AmqpProtocolBinding : IProtocolBinding
         {
-            string IProtocolBinding.GetHeaderName(string attributeName) => "cloudEvents:" + attributeName;
+            public const string Prefix = "cloudEvents:";
+            public static readonly Regex AttributeNameRegex = new Regex("^" + Prefix);
+
+            string IProtocolBinding.GetHeaderName(string attributeName) => Prefix + attributeName;
+            string IProtocolBinding.GetAttributeName(string headerName) => AttributeNameRegex.Replace(headerName, "");
+            void IProtocolBinding.Bind(CloudEvent fromCloudEvent, SenderMessage toSenderMessage) { }
+            void IProtocolBinding.Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent) { }
         }
 
         private class HttpProtocolBinding : IProtocolBinding
         {
-            string IProtocolBinding.GetHeaderName(string attributeName) => "ce_" + attributeName;
+            public const string Prefix = "ce_";
+            public static readonly Regex AttributeNameRegex = new Regex("^" + Prefix);
+
+            string IProtocolBinding.GetHeaderName(string attributeName) => Prefix + attributeName;
+            string IProtocolBinding.GetAttributeName(string headerName) => AttributeNameRegex.Replace(headerName, "");
+            void IProtocolBinding.Bind(CloudEvent fromCloudEvent, SenderMessage toSenderMessage) { }
+            void IProtocolBinding.Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent) { }
         }
 
         private class KafkaProtocolBinding : IProtocolBinding
         {
-            string IProtocolBinding.GetHeaderName(string attributeName) => "ce_" + attributeName;
+            public const string Prefix = "ce_";
+            public static readonly Regex AttributeNameRegex = new Regex("^" + Prefix);
+
+            string IProtocolBinding.GetHeaderName(string attributeName) => Prefix + attributeName;
+            string IProtocolBinding.GetAttributeName(string headerName) => AttributeNameRegex.Replace(headerName, "");
+            void IProtocolBinding.Bind(CloudEvent fromCloudEvent, SenderMessage toSenderMessage) { }
+            void IProtocolBinding.Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent) { }
         }
 
         private class MqttProtocolBinding : IProtocolBinding
         {
-            string IProtocolBinding.GetHeaderName(string attributeName) => attributeName;
+            public string GetHeaderName(string attributeName) => attributeName;
+            public string GetAttributeName(string headerName) => headerName;
+            public void Bind(CloudEvent fromCloudEvent, SenderMessage toSenderMessage) { }
+            public void Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent) { }
         }
     }
 }

@@ -3,6 +3,7 @@ using Moq;
 using RockLib.Messaging.Testing;
 using System;
 using System.Net.Mime;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace RockLib.Messaging.CloudEvents.Tests
@@ -16,7 +17,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             cloudEvent.StringData.Should().BeNull();
             cloudEvent.BinaryData.Should().BeNull();
-            cloudEvent.AdditionalAttributes.Should().BeEmpty();
+            cloudEvent.Attributes.Should().BeEmpty();
             cloudEvent.DataContentType.Should().BeNull();
             cloudEvent.DataSchema.Should().BeNull();
             cloudEvent.Sequence.Should().BeNull();
@@ -103,7 +104,6 @@ namespace RockLib.Messaging.CloudEvents.Tests
             sequentialEvent.DataSchema.Should().BeSameAs(dataSchema);
             sequentialEvent.Subject.Should().Be("MySubject");
             sequentialEvent.Time.Should().Be(time);
-            sequentialEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
         [Fact(DisplayName = "Constructor 3 does not require any sequential event attributes to be mapped")]
@@ -123,7 +123,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             sequentialEvent.DataContentType.Should().BeNull();
             sequentialEvent.DataSchema.Should().BeNull();
             sequentialEvent.Subject.Should().BeNull();
-            sequentialEvent.AdditionalAttributes.Should().BeEmpty();
+            sequentialEvent.Attributes.Should().BeEmpty();
         }
 
         [Fact(DisplayName = "Constructor 3 maps with the specified protocol binding")]
@@ -151,6 +151,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var mockProtocolBinding = new Mock<IProtocolBinding>();
             mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
+            mockProtocolBinding.Setup(m => m.GetAttributeName(It.IsAny<string>())).Returns<string>(header => Regex.Replace(header, "^test-", ""));
 
             var sequentialEvent = new SequentialEvent(receiverMessage, mockProtocolBinding.Object);
 
@@ -164,7 +165,6 @@ namespace RockLib.Messaging.CloudEvents.Tests
             sequentialEvent.DataSchema.Should().BeSameAs(dataSchema);
             sequentialEvent.Subject.Should().Be("MySubject");
             sequentialEvent.Time.Should().Be(time);
-            sequentialEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
         [Fact(DisplayName = "ToSenderMessage method maps sequential event attributes to sender message headers")]

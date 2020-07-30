@@ -3,6 +3,7 @@ using Moq;
 using RockLib.Messaging.Testing;
 using System;
 using System.Net.Mime;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace RockLib.Messaging.CloudEvents.Tests
@@ -18,7 +19,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             cloudEvent.StringData.Should().BeNull();
             cloudEvent.BinaryData.Should().BeNull();
-            cloudEvent.AdditionalAttributes.Should().BeEmpty();
+            cloudEvent.Attributes.Should().BeEmpty();
             cloudEvent.DataContentType.Should().BeNull();
             cloudEvent.DataSchema.Should().BeNull();
             cloudEvent.Source.Should().BeNull();
@@ -119,7 +120,6 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.DataSchema.Should().BeSameAs(dataSchema);
             cloudEvent.Subject.Should().Be("MySubject");
             cloudEvent.Time.Should().Be(time);
-            cloudEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
         [Fact(DisplayName = "Constructor 3 does not require any cloud event attributes to be mapped")]
@@ -137,7 +137,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.DataContentType.Should().BeNull();
             cloudEvent.DataSchema.Should().BeNull();
             cloudEvent.Subject.Should().BeNull();
-            cloudEvent.AdditionalAttributes.Should().BeEmpty();
+            cloudEvent.Attributes.Should().BeEmpty();
         }
 
         [Fact(DisplayName = "Constructor 3 maps from stringly typed receiver message headers")]
@@ -163,26 +163,26 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.DataContentType.ToString().Should().Be(dataContentType);
             cloudEvent.DataSchema.ToString().Should().Be(dataSchema);
             cloudEvent.Time.ToString("O").Should().Be(time);
-            cloudEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
-        [Fact(DisplayName = "Constructor 3 maps additional attributes verbatim")]
+        [Fact(DisplayName = "Constructor 3 maps additional attributes")]
         public void Constructor3HappyPath6()
         {
             // Additional attributes provided
 
             var receiverMessage = new FakeReceiverMessage("Hello, world!");
-            receiverMessage.Headers.Add("foo", "abc");
-            receiverMessage.Headers.Add("bar", 123);
+            receiverMessage.Headers.Add("test-foo", "abc");
+            receiverMessage.Headers.Add("test-bar", 123);
 
             var mockProtocolBinding = new Mock<IProtocolBinding>();
             mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
+            mockProtocolBinding.Setup(m => m.GetAttributeName(It.IsAny<string>())).Returns<string>(header => Regex.Replace(header, "^test-", ""));
 
             var cloudEvent = new CloudEvent(receiverMessage, mockProtocolBinding.Object);
 
-            cloudEvent.AdditionalAttributes.Should().HaveCount(2);
-            cloudEvent.AdditionalAttributes.Should().ContainKey("foo").WhichValue.Should().Be("abc");
-            cloudEvent.AdditionalAttributes.Should().ContainKey("bar").WhichValue.Should().Be(123);
+            cloudEvent.Attributes.Should().HaveCount(2);
+            cloudEvent.Attributes.Should().ContainKey("foo").WhichValue.Should().Be("abc");
+            cloudEvent.Attributes.Should().ContainKey("bar").WhichValue.Should().Be(123);
         }
 
 
@@ -197,11 +197,12 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var mockProtocolBinding = new Mock<IProtocolBinding>();
             mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
+            mockProtocolBinding.Setup(m => m.GetAttributeName(It.IsAny<string>())).Returns<string>(header => Regex.Replace(header, "^test-", ""));
 
             var cloudEvent = new CloudEvent(receiverMessage, mockProtocolBinding.Object);
 
             cloudEvent.Id.Should().Be("MyId");
-            cloudEvent.AdditionalAttributes.Should().ContainKey("foo").WhichValue.Should().Be("abc");
+            cloudEvent.Attributes.Should().ContainKey("foo").WhichValue.Should().Be("abc");
         }
 
         [Fact(DisplayName = "Constructor 3 throws when receiverMessage parameter is null")]
@@ -469,8 +470,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.Id = "MyId";
             cloudEvent.Source = "http://mysource/";
             cloudEvent.Type = "MyType";
-            cloudEvent.AdditionalAttributes.Add("foo", "abc");
-            cloudEvent.AdditionalAttributes.Add("bar", 123);
+            cloudEvent.Attributes.Add("foo", "abc");
+            cloudEvent.Attributes.Add("bar", 123);
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
@@ -494,7 +495,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
                 Id = id,
                 Source = "http://mysource/",
                 Type = "MyType",
-                AdditionalAttributes = { { "foo", "abc" } },
+                Attributes = { { "foo", "abc" } },
                 ProtocolBinding = mockProtocolBinding.Object
             };
 
@@ -502,9 +503,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.IdAttribute).WhichValue.Should().BeSameAs(id);
             senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.SpecVersionAttribute).WhichValue.Should().Be("1.0");
-
-            // Note that AdditionalAttributes are mapped verbatim (i.e. not using the protocol binding).
-            senderMessage.Headers.Should().ContainKey("foo").WhichValue.Should().Be("abc");
+            senderMessage.Headers.Should().ContainKey("test-foo").WhichValue.Should().Be("abc");
         }
 
         #endregion
@@ -684,7 +683,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             mockCloudEvent.Object.Id = "MyId";
             mockCloudEvent.Object.Source = "http://mysource/";
             mockCloudEvent.Object.Type = "test";
-            mockCloudEvent.Object.AdditionalAttributes.Add("foo", "abc");
+            mockCloudEvent.Object.Attributes.Add("foo", "abc");
 
             SenderMessage senderMessage = mockCloudEvent.Object;
 

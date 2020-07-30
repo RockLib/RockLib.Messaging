@@ -42,11 +42,6 @@ namespace RockLib.Messaging.CloudEvents
         private static IProtocolBinding _defaultProtocolBinding;
         private IProtocolBinding _protocolBinding;
 
-        private string _id;
-        private string _source;
-        private string _dataContentType;
-        private string _dataSchema;
-        private DateTime? _time;
         private object _data;
 
         /// <summary>
@@ -70,14 +65,9 @@ namespace RockLib.Messaging.CloudEvents
 
             ProtocolBinding = source.ProtocolBinding;
 
-            Source = source.Source;
-            Type = source.Type;
-            DataContentType = source.DataContentType;
-            DataSchema = source.DataSchema;
-            Subject = source.Subject;
-
-            foreach (var additionalAttribute in source.AdditionalAttributes)
-                AdditionalAttributes.Add(additionalAttribute);
+            foreach (var additionalAttribute in source.Attributes)
+                if (additionalAttribute.Key != IdAttribute && additionalAttribute.Key != TimeAttribute)
+                    Attributes.Add(additionalAttribute);
         }
 
         /// <summary>
@@ -123,18 +113,31 @@ namespace RockLib.Messaging.CloudEvents
         }
 
         /// <summary>
+        /// The attributes of this CloudEvent.
+        /// </summary>
+        public IDictionary<string, object> Attributes { get; } = new Dictionary<string, object>();
+
+        /// <summary>
         /// REQUIRED. Identifies the event. Producers MUST ensure that source + id is unique for each
         /// distinct event. If a duplicate event is re-sent (e.g. due to a network error) it MAY have
         /// the same id. Consumers MAY assume that Events with identical source and id are duplicates.
         /// </summary>
         public string Id
         {
-            get => _id ?? (_id = NewId());
+            get
+            {
+                if (Attributes.TryGetValue(IdAttribute, out var value) && value is string id)
+                    return id;
+
+                id = NewId();
+                Attributes[IdAttribute] = id;
+                return id;
+            }
             set
             {
                 if (string.IsNullOrEmpty(value))
                     throw new ArgumentNullException(nameof(value));
-                _id = value;
+                Attributes[IdAttribute] = value;
             }
         }
 
@@ -147,12 +150,18 @@ namespace RockLib.Messaging.CloudEvents
         /// </summary>
         public string Source
         {
-            get => _source;
+            get => Attributes.TryGetValue(SourceAttribute, out var value) && value is string source
+                ? source
+                : null;
             set
             {
                 if (value != null)
+                {
                     new Uri(value, UriKind.RelativeOrAbsolute);
-                _source = value;
+                    Attributes[SourceAttribute] = value;
+                }
+                else
+                    Attributes.Remove(SourceAttribute);
             }
         }
 
@@ -168,7 +177,19 @@ namespace RockLib.Messaging.CloudEvents
         /// enforcement, etc. The format of this is producer defined and might include information
         /// such as the version of the type.
         /// </summary>
-        public string Type { get; set; }
+        public string Type
+        {
+            get => Attributes.TryGetValue(TypeAttribute, out var value) && value is string type
+                ? type
+                : null;
+            set
+            {
+                if (value != null)
+                    Attributes[TypeAttribute] = value;
+                else
+                    Attributes.Remove(TypeAttribute);
+            }
+        }
 
         /// <summary>
         /// Content type of data value.
@@ -176,12 +197,18 @@ namespace RockLib.Messaging.CloudEvents
         /// </summary>
         public string DataContentType
         {
-            get => _dataContentType;
+            get => Attributes.TryGetValue(DataContentTypeAttribute, out var value) && value is string dataContentType
+                ? dataContentType
+                : null;
             set
             {
                 if (value != null)
+                {
                     MediaTypeHeaderValue.Parse(value);
-                _dataContentType = value;
+                    Attributes[DataContentTypeAttribute] = value;
+                }
+                else
+                    Attributes.Remove(DataContentTypeAttribute);
             }
         }
 
@@ -192,12 +219,18 @@ namespace RockLib.Messaging.CloudEvents
         /// </summary>
         public string DataSchema
         {
-            get => _dataSchema;
+            get => Attributes.TryGetValue(DataSchemaAttribute, out var value) && value is string dataSchema
+                ? dataSchema
+                : null;
             set
             {
                 if (value != null)
+                {
                     new Uri(value, UriKind.RelativeOrAbsolute);
-                _dataSchema = value;
+                    Attributes[DataSchemaAttribute] = value;
+                }
+                else
+                    Attributes.Remove(DataSchemaAttribute);
             }
         }
 
@@ -213,21 +246,44 @@ namespace RockLib.Messaging.CloudEvents
         /// interested in blobs with names ending with '.jpg' or '.jpeg' and the subject attribute allows
         /// for constructing a simple and efficient string-suffix filter for that subset of events.</para>
         /// </summary>
-        public string Subject { get; set; }
+        public string Subject
+        {
+            get => Attributes.TryGetValue(SubjectAttribute, out var value) && value is string subject
+                ? subject
+                : null;
+            set
+            {
+                if (value != null)
+                    Attributes[SubjectAttribute] = value;
+                else
+                    Attributes.Remove(SubjectAttribute);
+            }
+        }
 
         /// <summary>
         /// Timestamp of when the occurrence happened.
         /// </summary>
         public DateTime Time
         {
-            get => _time ?? (_time = CurrentTime()).Value;
-            set => _time = value;
-        }
+            get
+            {
+                if (Attributes.TryGetValue(TimeAttribute, out var value))
+                {
+                    if (value is DateTime time)
+                        return time;
+                    if (value is string timeString && DateTime.TryParse(timeString, null, DateTimeStyles.RoundtripKind, out time))
+                    {
+                        Attributes[TimeAttribute] = time;
+                        return time;
+                    }
+                }
 
-        /// <summary>
-        /// Any additional attributes not specific to this CloudEvent type.
-        /// </summary>
-        public IDictionary<string, object> AdditionalAttributes { get; } = new Dictionary<string, object>();
+                var currentTime = CurrentTime();
+                Attributes[TimeAttribute] = currentTime;
+                return currentTime;
+            }
+            set => Attributes[TimeAttribute] = value;
+        }
 
         /// <summary>
         /// Domain-specific information about the occurrence (i.e. the payload) as a string. This
@@ -266,24 +322,12 @@ namespace RockLib.Messaging.CloudEvents
             else
                 senderMessage = new SenderMessage("");
 
-            senderMessage.Headers[IdHeader] = Id;
-            senderMessage.Headers[SourceHeader] = Source;
-            senderMessage.Headers[SpecVersionHeader] = SpecVersion;
-            senderMessage.Headers[TypeHeader] = Type;
+            senderMessage.Headers[ProtocolBinding.GetHeaderName(SpecVersionAttribute)] = SpecVersion;
 
-            if (DataContentType != null)
-                senderMessage.Headers[DataContentTypeHeader] = DataContentType;
+            foreach (var attribute in Attributes)
+                senderMessage.Headers[ProtocolBinding.GetHeaderName(attribute.Key)] = attribute.Value;
 
-            if (DataSchema != null)
-                senderMessage.Headers[DataSchemaHeader] = DataSchema;
-
-            if (!string.IsNullOrEmpty(Subject))
-                senderMessage.Headers[SubjectHeader] = Subject;
-
-            senderMessage.Headers[TimeHeader] = Time;
-
-            foreach (var attribute in AdditionalAttributes)
-                senderMessage.Headers[attribute.Key] = attribute.Value;
+            ProtocolBinding.Bind(this, senderMessage);
 
             return senderMessage;
         }
@@ -297,57 +341,17 @@ namespace RockLib.Messaging.CloudEvents
                 : receiverMessage.StringPayload;
 
             foreach (var header in receiverMessage.Headers)
-                AdditionalAttributes.Add(header);
+                Attributes.Add(ProtocolBinding.GetAttributeName(header.Key), header.Value);
 
-            if (receiverMessage.Headers.TryGetValue(SpecVersionHeader, out string specVersion))
+            if (Attributes.TryGetValue(SpecVersionAttribute, out var value) && value is string specVersion)
             {
                 if (specVersion != _specVersion1_0)
                     throw new CloudEventValidationException(
-                        $"Invalid value found in '{SpecVersionHeader}' header. Expected '{_specVersion1_0}', but was '{specVersion}'.");
-                AdditionalAttributes.Remove(SpecVersionHeader);
+                        $"Invalid '{SpecVersionAttribute}' attribute. Expected '{_specVersion1_0}', but was '{specVersion}'.");
+                Attributes.Remove(SpecVersionAttribute);
             }
 
-            if (receiverMessage.Headers.TryGetValue(IdHeader, out string id))
-            {
-                Id = id;
-                AdditionalAttributes.Remove(IdHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(SourceHeader, out string source))
-            {
-                Source = source;
-                AdditionalAttributes.Remove(SourceHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(TypeHeader, out string type))
-            {
-                Type = type;
-                AdditionalAttributes.Remove(TypeHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(DataContentTypeHeader, out string dataContentType))
-            {
-                DataContentType = dataContentType;
-                AdditionalAttributes.Remove(DataContentTypeHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(DataSchemaHeader, out string dataSchema))
-            {
-                DataSchema = dataSchema;
-                AdditionalAttributes.Remove(DataSchemaHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(SubjectHeader, out string subject))
-            {
-                Subject = subject;
-                AdditionalAttributes.Remove(SubjectHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(TimeHeader, out DateTime time))
-            {
-                Time = time;
-                AdditionalAttributes.Remove(TimeHeader);
-            }
+            ProtocolBinding.Bind(receiverMessage, this);
         }
 
         /// <summary>
@@ -406,11 +410,15 @@ namespace RockLib.Messaging.CloudEvents
         /// <exception cref="CloudEventValidationException">If the cloud event is invalid.</exception>
         public virtual void Validate()
         {
+            _ = Id;
+
             if (Source is null)
                 throw new CloudEventValidationException("Source cannot be null.");
 
             if (string.IsNullOrEmpty(Type))
                 throw new CloudEventValidationException("Type cannot be null or empty.");
+            
+            _ = Time;
         }
 
         /// <summary>
@@ -421,6 +429,9 @@ namespace RockLib.Messaging.CloudEvents
         /// The <see cref="IProtocolBinding"/> used to map CloudEvent attributes to <see cref="SenderMessage"/>
         /// headers. If <see langword="null"/>, then <see cref="DefaultProtocolBinding"/> is used instead.
         /// </param>
+        /// <exception cref="CloudEventValidationException">
+        /// If the <see cref="SenderMessage"/> is not valid.
+        /// </exception>
         public static void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null)
         {
             if (senderMessage is null)
@@ -576,22 +587,6 @@ namespace RockLib.Messaging.CloudEvents
         internal void SetDataField(byte[] data) => _data = data;
 
         internal void ClearDataField() => _data = null;
-
-        private string IdHeader => ProtocolBinding.GetHeaderName(IdAttribute);
-
-        private string SourceHeader => ProtocolBinding.GetHeaderName(SourceAttribute);
-
-        private string SpecVersionHeader => ProtocolBinding.GetHeaderName(SpecVersionAttribute);
-
-        private string TypeHeader => ProtocolBinding.GetHeaderName(TypeAttribute);
-
-        private string DataContentTypeHeader => ProtocolBinding.GetHeaderName(DataContentTypeAttribute);
-
-        private string DataSchemaHeader => ProtocolBinding.GetHeaderName(DataSchemaAttribute);
-
-        private string SubjectHeader => ProtocolBinding.GetHeaderName(SubjectAttribute);
-
-        private string TimeHeader => ProtocolBinding.GetHeaderName(TimeAttribute);
 
         private static string NewId() => Guid.NewGuid().ToString();
 

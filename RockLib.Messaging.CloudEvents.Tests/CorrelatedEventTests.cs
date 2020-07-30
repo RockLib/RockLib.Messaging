@@ -3,6 +3,7 @@ using Moq;
 using RockLib.Messaging.Testing;
 using System;
 using System.Net.Mime;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace RockLib.Messaging.CloudEvents.Tests
@@ -16,7 +17,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             cloudEvent.StringData.Should().BeNull();
             cloudEvent.BinaryData.Should().BeNull();
-            cloudEvent.AdditionalAttributes.Should().BeEmpty();
+            cloudEvent.Attributes.Should().BeEmpty();
             cloudEvent.CorrelationId.Should().NotBeNull();
             cloudEvent.DataContentType.Should().BeNull();
             cloudEvent.DataSchema.Should().BeNull();
@@ -98,7 +99,6 @@ namespace RockLib.Messaging.CloudEvents.Tests
             correlatedEvent.DataSchema.Should().BeSameAs(dataSchema);
             correlatedEvent.Subject.Should().Be("MySubject");
             correlatedEvent.Time.Should().Be(time);
-            correlatedEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
         [Fact(DisplayName = "Constructor 3 does not require any correlated event attributes to be mapped")]
@@ -115,7 +115,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             correlatedEvent.DataContentType.Should().BeNull();
             correlatedEvent.DataSchema.Should().BeNull();
             correlatedEvent.Subject.Should().BeNull();
-            correlatedEvent.AdditionalAttributes.Should().BeEmpty();
+            correlatedEvent.Attributes.Should().BeEmpty();
         }
 
         [Fact(DisplayName = "Constructor 3 maps with the specified protocol binding")]
@@ -142,6 +142,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var mockProtocolBinding = new Mock<IProtocolBinding>();
             mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
+            mockProtocolBinding.Setup(m => m.GetAttributeName(It.IsAny<string>())).Returns<string>(header => Regex.Replace(header, "^test-", ""));
 
             var correlatedEvent = new CorrelatedEvent(receiverMessage, mockProtocolBinding.Object);
 
@@ -154,7 +155,6 @@ namespace RockLib.Messaging.CloudEvents.Tests
             correlatedEvent.DataSchema.Should().BeSameAs(dataSchema);
             correlatedEvent.Subject.Should().Be("MySubject");
             correlatedEvent.Time.Should().Be(time);
-            correlatedEvent.AdditionalAttributes.Should().BeEmpty();
         }
 
         [Fact(DisplayName = "CorrelationId property setter and getter work as expected")]
