@@ -42,7 +42,7 @@ namespace RockLib.Messaging.Kafka
 
             if (Result.Message?.Headers != null)
                 foreach (var header in Result.Message.Headers)
-                    headers[header.Key] = Encoding.UTF8.GetString(header.GetValueBytes()); // TODO: Unconditionally using utf-8 might not be the right thing to do here.
+                    headers[header.Key] = Encoding.UTF8.GetString(header.GetValueBytes());
         }
 
         /// <inheritdoc />
@@ -56,19 +56,12 @@ namespace RockLib.Messaging.Kafka
 
         private Task CommitAsync()
         {
-            try
-            {
-                Consumer.Commit(Result);
+            Consumer.Commit(Result);
 
-                if (_enableAutoOffsetStore is false)
-                    Consumer.StoreOffset(Result);
+            if (_enableAutoOffsetStore is false)
+                Consumer.StoreOffset(Result);
 
-                return Tasks.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                return Tasks.FromException(ex);
-            }
+            return Tasks.CompletedTask;
         }
     }
 }
