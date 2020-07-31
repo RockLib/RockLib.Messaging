@@ -61,7 +61,7 @@ namespace RockLib.Messaging.CloudEvents
         {
             base.Validate();
 
-            // Ensure that the correlation id exists.
+            // Ensure that the correlation id attribute exists.
             this.GetCorrelationId();
         }
 

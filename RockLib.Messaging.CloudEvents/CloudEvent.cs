@@ -433,6 +433,7 @@ namespace RockLib.Messaging.CloudEvents
         /// <exception cref="CloudEventValidationException">If the cloud event is invalid.</exception>
         public virtual void Validate()
         {
+            // Ensure that the id attribute exists.
             _ = Id;
 
             if (Source is null)
@@ -440,7 +441,8 @@ namespace RockLib.Messaging.CloudEvents
 
             if (string.IsNullOrEmpty(Type))
                 throw new CloudEventValidationException("Type cannot be null or empty.");
-            
+
+            // Ensure that the time attribute exists.
             _ = Time;
         }
 
