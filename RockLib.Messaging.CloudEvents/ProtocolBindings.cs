@@ -15,24 +15,9 @@ namespace RockLib.Messaging.CloudEvents
         public static readonly IProtocolBinding Default = new DefaultProtocolBinding();
 
         /// <summary>
-        /// The protocol binding for Amqp.
-        /// </summary>
-        public static readonly IProtocolBinding Amqp = new AmqpProtocolBinding();
-
-        /// <summary>
-        /// The protocol binding for Http.
-        /// </summary>
-        public static readonly IProtocolBinding Http = new HttpProtocolBinding();
-
-        /// <summary>
         /// The protocol binding for Kafka.
         /// </summary>
         public static readonly IProtocolBinding Kafka = new KafkaProtocolBinding();
-
-        /// <summary>
-        /// The protocol binding for Mqtt.
-        /// </summary>
-        public static readonly IProtocolBinding Mqtt = new MqttProtocolBinding();
 
         private class DefaultProtocolBinding : IProtocolBinding
         {
@@ -41,38 +26,6 @@ namespace RockLib.Messaging.CloudEvents
             {
                 isCloudEventAttribute = true;
                 return headerName;
-            }
-            void IProtocolBinding.Bind(CloudEvent fromCloudEvent, SenderMessage toSenderMessage) { }
-            void IProtocolBinding.Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent) { }
-        }
-
-        private class AmqpProtocolBinding : IProtocolBinding
-        {
-            public const string HeaderPrefix = "cloudEvents:";
-            public static readonly Regex AttributeNameRegex = new Regex("^" + HeaderPrefix);
-
-            string IProtocolBinding.GetHeaderName(string attributeName) => HeaderPrefix + attributeName;
-            string IProtocolBinding.GetAttributeName(string headerName, out bool isCloudEventAttribute)
-            {
-                var attributeName = AttributeNameRegex.Replace(headerName, "");
-                isCloudEventAttribute = attributeName != headerName;
-                return attributeName;
-            }
-            void IProtocolBinding.Bind(CloudEvent fromCloudEvent, SenderMessage toSenderMessage) { }
-            void IProtocolBinding.Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent) { }
-        }
-
-        private class HttpProtocolBinding : IProtocolBinding
-        {
-            public const string HeaderPrefix = "ce_";
-            public static readonly Regex AttributeNameRegex = new Regex("^" + HeaderPrefix);
-
-            string IProtocolBinding.GetHeaderName(string attributeName) => HeaderPrefix + attributeName;
-            string IProtocolBinding.GetAttributeName(string headerName, out bool isCloudEventAttribute)
-            {
-                var attributeName = AttributeNameRegex.Replace(headerName, "");
-                isCloudEventAttribute = attributeName != headerName;
-                return attributeName;
             }
             void IProtocolBinding.Bind(CloudEvent fromCloudEvent, SenderMessage toSenderMessage) { }
             void IProtocolBinding.Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent) { }
@@ -128,7 +81,7 @@ namespace RockLib.Messaging.CloudEvents
                     if (contentType.StartsWith(CloudEventsMediaTypePrefix, StringComparison.OrdinalIgnoreCase))
                         structuredMode = true;
 
-                    toCloudEvent.Attributes.Remove(ContentTypeAttribute);
+                    toCloudEvent.Headers.Remove(ContentTypeAttribute);
                     toCloudEvent.DataContentType = contentType;
                 }
 
@@ -141,18 +94,6 @@ namespace RockLib.Messaging.CloudEvents
                     throw new NotImplementedException("Structured mode is not implemented.");
                 }
             }
-        }
-
-        private class MqttProtocolBinding : IProtocolBinding
-        {
-            public string GetHeaderName(string attributeName) => attributeName;
-            public string GetAttributeName(string headerName, out bool isCloudEventAttribute)
-            {
-                isCloudEventAttribute = true;
-                return headerName;
-            }
-            public void Bind(CloudEvent fromCloudEvent, SenderMessage toSenderMessage) { }
-            public void Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent) { }
         }
     }
 }
