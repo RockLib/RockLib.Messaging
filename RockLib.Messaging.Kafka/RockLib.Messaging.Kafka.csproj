@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging.Kafka</PackageId>
-    <PackageVersion>1.0.0-alpha04</PackageVersion>
+    <PackageVersion>1.0.0-alpha05</PackageVersion>
     <Authors>RockLib</Authors>
     <Description>Implementation of RockLib.Messaging API that sends and receives messages using Kafka.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -28,8 +28,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Confluent.Kafka" Version="1.4.4" />
-    <PackageReference Include="RockLib.Messaging" Version="2.4.0" />
+    <PackageReference Include="Confluent.Kafka" Version="1.5.0" />
+    <PackageReference Include="RockLib.Messaging" Version="2.4.2" />
   </ItemGroup>
 
 </Project>
