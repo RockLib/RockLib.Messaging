@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static RockLib.Messaging.Kafka.Constants;
 
 namespace RockLib.Messaging.Kafka
 {
@@ -13,29 +14,35 @@ namespace RockLib.Messaging.Kafka
     /// </summary>
     public class KafkaReceiverMessage : ReceiverMessage
     {
-        internal KafkaReceiverMessage(IConsumer<Ignore, string> consumer, ConsumeResult<Ignore, string> result)
+        private readonly bool _enableAutoOffsetStore;
+
+        internal KafkaReceiverMessage(IConsumer<string, byte[]> consumer, ConsumeResult<string, byte[]> result, bool enableAutoOffsetStore)
             : base(() => result.Message.Value)
         {
             Consumer = consumer;
             Result = result;
+            _enableAutoOffsetStore = enableAutoOffsetStore;
         }
 
         /// <summary>
         /// Gets the <see cref="Consumer{TKey, TValue}"/> that received the message.
         /// </summary>
-        public IConsumer<Ignore, string> Consumer { get; }
+        public IConsumer<string, byte[]> Consumer { get; }
 
         /// <summary>
         /// Gets the actual Kafka message that was received.
         /// </summary>
-        public ConsumeResult<Ignore, string> Result { get; }
+        public ConsumeResult<string, byte[]> Result { get; }
 
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
+            if (Result.Message?.Key is string key)
+                headers[KafkaKeyHeader] = key;
+
             if (Result.Message?.Headers != null)
                 foreach (var header in Result.Message.Headers)
-                    headers.Add(header.Key, Encoding.UTF8.GetString(header.GetValueBytes()));
+                    headers[header.Key] = Encoding.UTF8.GetString(header.GetValueBytes());
         }
 
         /// <inheritdoc />
@@ -49,15 +56,12 @@ namespace RockLib.Messaging.Kafka
 
         private Task CommitAsync()
         {
-            try
-            {
-                Consumer.Commit(Result);
-                return Tasks.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                return Tasks.FromException(ex);
-            }
+            Consumer.Commit(Result);
+
+            if (_enableAutoOffsetStore is false)
+                Consumer.StoreOffset(Result);
+
+            return Tasks.CompletedTask;
         }
     }
 }

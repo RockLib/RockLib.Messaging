@@ -31,7 +31,7 @@ namespace RockLib.Messaging.Kafka.Tests
         {
             var name = "name";
             var topic = "topic";
-            var producer = new Mock<IProducer<Null, string>>().Object;
+            var producer = new Mock<IProducer<string, byte[]>>().Object;
             var sender = new KafkaSender(name, topic, producer);
 
             sender.Name.Should().Be(name);
@@ -63,14 +63,14 @@ namespace RockLib.Messaging.Kafka.Tests
         [Fact(DisplayName = "KafkaSender constructor 2 throws on null name")]
         public void KafkaSenderConstructor2SadPath1()
         {
-            Action action = () => new KafkaSender(null, "topic", new Mock<IProducer<Null, string>>().Object);
+            Action action = () => new KafkaSender(null, "topic", new Mock<IProducer<string, byte[]>>().Object);
             action.Should().Throw<ArgumentNullException>();
         }
 
         [Fact(DisplayName = "KafkaSender constructor 2 throws on null topic")]
         public void KafkaSenderConstructor2SadPath2()
         {
-            Action action = () => new KafkaSender("name", null, new Mock<IProducer<Null, string>>().Object);
+            Action action = () => new KafkaSender("name", null, new Mock<IProducer<string, byte[]>>().Object);
             action.Should().Throw<ArgumentNullException>();
         }
 
@@ -85,30 +85,30 @@ namespace RockLib.Messaging.Kafka.Tests
         public async Task KafkaSenderSendAsyncHappyPath()
         {
             var message = "This is a message";
-            var producerMock = new Mock<IProducer<Null, string>>();
+            var producerMock = new Mock<IProducer<string, byte[]>>();
             producerMock
-                .Setup(pm => pm.ProduceAsync(It.IsAny<string>(), It.IsAny<Message<Null, string>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((DeliveryResult<Null, string>)null);
+                .Setup(pm => pm.ProduceAsync(It.IsAny<string>(), It.IsAny<Message<string, byte[]>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((DeliveryResult<string, byte[]>)null);
 
             var sender = new KafkaSender("name", "topic", "servers");
-            sender.Unlock()._producer = new Lazy<IProducer<Null, string>>(() => producerMock.Object);
+            sender.Unlock()._producer = new Lazy<IProducer<string, byte[]>>(() => producerMock.Object);
 
             await sender.SendAsync(new SenderMessage(message));
 
             producerMock.Verify(pm => pm.ProduceAsync("topic", 
-                It.Is<Message<Null, string>>(m => m.Value == message && Encoding.UTF8.GetString(m.Headers[1].GetValueBytes()) == "Kafka"), 
+                It.Is<Message<string, byte[]>>(m => Encoding.UTF8.GetString(m.Value) == message && Encoding.UTF8.GetString(m.Headers[1].GetValueBytes()) == "Kafka"), 
                 It.IsAny<CancellationToken>()));
         }
 
         [Fact(DisplayName = "KafkaSender Dispose calls Flush and Dispose on producer")]
         public void KafkaSenderDispose()
         {
-            var producerMock = new Mock<IProducer<Null, string>>();
+            var producerMock = new Mock<IProducer<string, byte[]>>();
             producerMock.Setup(pm => pm.Flush(It.IsAny<TimeSpan>()));
             producerMock.Setup(pm => pm.Dispose());
 
             var senderUnlocked = new KafkaSender("name", "topic", "servers").Unlock();
-            senderUnlocked._producer = new Lazy<IProducer<Null, string>>(() => producerMock.Object);
+            senderUnlocked._producer = new Lazy<IProducer<string, byte[]>>(() => producerMock.Object);
             _ = senderUnlocked._producer.Value; 
 
             senderUnlocked.Dispose();

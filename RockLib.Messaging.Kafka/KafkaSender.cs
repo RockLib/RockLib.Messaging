@@ -1,8 +1,10 @@
 ﻿using Confluent.Kafka;
+using Newtonsoft.Json;
 using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static RockLib.Messaging.Kafka.Constants;
 
 namespace RockLib.Messaging.Kafka
 {
@@ -11,7 +13,9 @@ namespace RockLib.Messaging.Kafka
     /// </summary>
     public class KafkaSender : ISender
     {
-        private readonly Lazy<IProducer<Null, string>> _producer;
+        private static readonly char[] _quoteChar = { '"' };
+
+        private readonly Lazy<IProducer<string, byte[]>> _producer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KafkaSender"/> class.
@@ -37,10 +41,10 @@ namespace RockLib.Messaging.Kafka
                 MessageTimeoutMs = messageTimeoutMs
             };
 
-            var producerBuilder = new ProducerBuilder<Null, string>(config);
+            var producerBuilder = new ProducerBuilder<string, byte[]>(config);
             producerBuilder.SetErrorHandler(OnError);
 
-            _producer = new Lazy<IProducer<Null, string>>(() => producerBuilder.Build());
+            _producer = new Lazy<IProducer<string, byte[]>>(() => producerBuilder.Build());
         }
 
         /// <summary>
@@ -49,7 +53,7 @@ namespace RockLib.Messaging.Kafka
         /// <param name="name">The name of the sender.</param>
         /// <param name="topic">The topic to produce messages to.</param>
         /// <param name="producer">The Kafka <see cref="IProducer{TKey, TValue}" /> to use for sending messages.</param>
-        public KafkaSender(string name, string topic, IProducer<Null, string> producer)
+        public KafkaSender(string name, string topic, IProducer<string, byte[]> producer)
         {
             if (producer == null)
                 throw new ArgumentNullException(nameof(producer));
@@ -57,7 +61,7 @@ namespace RockLib.Messaging.Kafka
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
 
-            _producer = new Lazy<IProducer<Null, string>>(() => producer);
+            _producer = new Lazy<IProducer<string, byte[]>>(() => producer);
         }
 
         /// <summary>
@@ -73,7 +77,7 @@ namespace RockLib.Messaging.Kafka
         /// <summary>
         /// Gets the <see cref="IProducer{TKey, TValue}" /> for this instance of <see cref="KafkaSender"/>.
         /// </summary>
-        public IProducer<Null, string> Producer { get { return _producer.Value; } }
+        public IProducer<string, byte[]> Producer { get { return _producer.Value; } }
 
         /// <summary>
         /// Occurs when an error happens on a background thread.
@@ -90,13 +94,21 @@ namespace RockLib.Messaging.Kafka
             if (message.OriginatingSystem == null)
                 message.OriginatingSystem = "Kafka";
 
-            var kafkaMessage = new Message<Null, string> { Value = message.StringPayload };
+            var kafkaMessage = new Message<string, byte[]> { Value = message.BinaryPayload };
+
+            if (message.Headers.TryGetValue(KafkaKeyHeader, out object objValue)
+                && Serialize(objValue) is string kafkaKey)
+            {
+                kafkaMessage.Key = kafkaKey;
+                message.Headers.Remove(KafkaKeyHeader);
+            }
 
             if (message.Headers.Count > 0)
             {
                 kafkaMessage.Headers = kafkaMessage.Headers ?? new Headers();
                 foreach (var header in message.Headers)
-                    kafkaMessage.Headers.Add(header.Key, Encoding.UTF8.GetBytes(header.Value.ToString()));
+                    if (Encode(Serialize(header.Value)) is byte[] headerValue)
+                        kafkaMessage.Headers.Add(header.Key, headerValue);
             }
 
             return _producer.Value.ProduceAsync(Topic, kafkaMessage);
@@ -114,7 +126,26 @@ namespace RockLib.Messaging.Kafka
             }
         }
 
-        private void OnError(IProducer<Null, string> producer, Error error) 
+        private void OnError(IProducer<string, byte[]> producer, Error error) 
             => Error?.Invoke(this, new ErrorEventArgs(error.Reason, new KafkaException(error)));
+
+        private static string Serialize(object value)
+        {
+            if (value is string stringValue)
+                return stringValue;
+
+            if (value is null)
+                return null;
+
+            return JsonConvert.SerializeObject(value).Trim(_quoteChar);
+        }
+
+        private static byte[] Encode(string value)
+        {
+            if (value is null)
+                return null;
+
+            return Encoding.UTF8.GetBytes(value);
+        }
     }
 }
