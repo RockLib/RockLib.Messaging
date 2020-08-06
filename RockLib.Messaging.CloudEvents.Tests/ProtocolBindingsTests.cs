@@ -129,29 +129,6 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Should().ContainKey("Kafka.Key");
         }
 
-        [Fact(DisplayName = "Kafka field's Bind method 1 remaps 'ce_datacontenttype' to 'content-type'")]
-        public void KafkaProtocolBindingBindMethod1HappyPath2()
-        {
-            var cloudEvent = new CloudEvent
-            {
-                Attributes = { ["datacontenttype"] = "test/text" }
-            };
-            var senderMessage = new SenderMessage("")
-            {
-                Headers = { ["ce_datacontenttype"] = "test/text" }
-            };
-
-            senderMessage.Headers.Should().HaveCount(2);
-            senderMessage.Headers.Should().ContainKey(HeaderNames.MessageId);
-            senderMessage.Headers.Should().ContainKey("ce_datacontenttype");
-
-            ProtocolBindings.Kafka.Bind(cloudEvent, senderMessage);
-
-            senderMessage.Headers.Should().HaveCount(2);
-            senderMessage.Headers.Should().ContainKey(HeaderNames.MessageId);
-            senderMessage.Headers.Should().ContainKey("content-type");
-        }
-
         [Fact(DisplayName = "Kafka field's Bind method 2 remaps 'Kafka.Key' to 'partitionkey'")]
         public void KafkaProtocolBindingBindMethod2HappyPath1()
         {
@@ -175,45 +152,5 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.Headers.Should().BeEmpty();
         }
 
-        [Fact(DisplayName = "Kafka field's Bind method 2 remaps 'content-type' to 'datacontenttype'")]
-        public void KafkaProtocolBindingBindMethod2HappyPath2()
-        {
-            var receiverMessage = new FakeReceiverMessage("")
-            {
-                Headers = { ["content-type"] = "test/text" }
-            };
-
-            var cloudEvent = new CloudEvent
-            {
-                Headers = { ["content-type"] = "test/text" }
-            };
-
-            cloudEvent.Attributes.Should().BeEmpty();
-            cloudEvent.Headers.Should().HaveCount(1);
-            cloudEvent.Headers.Should().ContainKey("content-type");
-
-            ProtocolBindings.Kafka.Bind(receiverMessage, cloudEvent);
-
-            cloudEvent.Attributes.Should().HaveCount(1);
-            cloudEvent.Attributes.Should().ContainKey("datacontenttype");
-            cloudEvent.Headers.Should().BeEmpty();
-        }
-
-        [Fact(DisplayName = "Kafka field's Bind method 2 throws when structured mode content-type is not '+json'")]
-        public void KafkaProtocolBindingBindMethod2SadPath()
-        {
-            var receiverMessage = new FakeReceiverMessage("")
-            {
-                Headers = { ["content-type"] = "application/cloudevents+xml" }
-            };
-
-            var cloudEvent = new CloudEvent
-            {
-                Headers = { ["content-type"] = "application/cloudevents+xml" }
-            };
-
-            ProtocolBindings.Kafka.Invoking(b => b.Bind(receiverMessage, cloudEvent))
-                .Should().ThrowExactly<InvalidOperationException>().WithMessage("Unsupported media type.*");
-        }
     }
 }

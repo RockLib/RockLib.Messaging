@@ -31,8 +31,9 @@ namespace RockLib.Messaging.CloudEvents
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CorrelatedEvent"/> class and sets its properties
-        /// according to the payload and headers of the <paramref name="receiverMessage"/>.
+        /// Initializes a new instance of the <see cref="CorrelatedEvent"/> class and sets its
+        /// data, attributes, and headers according to the payload and headers of the <paramref
+        /// name="receiverMessage"/>.
         /// </summary>
         /// <param name="receiverMessage">
         /// The <see cref="IReceiverMessage"/> with headers that map to cloud event attributes.
@@ -44,6 +45,20 @@ namespace RockLib.Messaging.CloudEvents
         /// </param>
         public CorrelatedEvent(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)
             : base(receiverMessage, protocolBinding)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CorrelatedEvent"/> class and sets its data
+        /// and attributes according to the <a href=
+        /// "https://github.com/cloudevents/spec/blob/v1.0/json-format.md">JSON Formatted
+        /// CloudEvent</a>.
+        /// </summary>
+        /// <param name="jsonFormattedCloudEvent">
+        /// A JSON Formatted CloudEvent.
+        /// </param>
+        public CorrelatedEvent(string json)
+            : base(json)
         {
         }
 

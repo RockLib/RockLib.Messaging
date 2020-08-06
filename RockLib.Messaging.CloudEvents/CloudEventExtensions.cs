@@ -207,7 +207,7 @@ namespace RockLib.Messaging.CloudEvents
                 return data;
 
             throw new InvalidCastException(
-                $"Unable to cast the CloudEvent's data, of type '{dataObject.GetType().FullName}', to type '{typeof(T).FullName}'.");
+                $"Unable to cast the CloudEvent's data of type '{dataObject.GetType().FullName}' to type '{typeof(T).FullName}'.");
         }
 
         /// <summary>
@@ -464,13 +464,22 @@ namespace RockLib.Messaging.CloudEvents
                 var stringData = evt.StringData;
 
                 if (string.IsNullOrEmpty(stringData))
-                    return null;
+                {
+                    if (evt.BinaryData != null)
+                        stringData = Encoding.UTF8.GetString(evt.BinaryData);
+
+                    if (string.IsNullOrEmpty(stringData))
+                        return null;
+                }
 
                 return serialization == DataSerialization.Json
                     ? JsonDeserialize<T>(stringData)
                     : XmlDeserialize<T>(stringData);
             });
         }
+
+        internal static bool TryGetDataObject(this CloudEvent cloudEvent, out object data) =>
+            _dataObjects.TryGetValue(cloudEvent, out data);
 
         private static string JsonSerialize(object data) =>
             JsonConvert.SerializeObject(data);

@@ -3,7 +3,6 @@ using Moq;
 using RockLib.Messaging.Testing;
 using System;
 using System.Net.Mime;
-using System.Text.RegularExpressions;
 using Xunit;
 
 namespace RockLib.Messaging.CloudEvents.Tests
@@ -183,7 +182,6 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.Attributes.Should().ContainKey("bar").WhichValue.Should().Be(123);
         }
 
-
         [Fact(DisplayName = "Constructor 3 maps with the specified protocol binding")]
         public void Constructor3HappyPath7()
         {
@@ -220,6 +218,115 @@ namespace RockLib.Messaging.CloudEvents.Tests
             receiverMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "0.0");
 
             Action act = () => new CloudEvent(receiverMessage);
+
+            act.Should().ThrowExactly<CloudEventValidationException>();
+        }
+
+        [Fact(DisplayName = "Constructor 4 does maps 'data_base64' attribute to BinaryData")]
+        public void Constructor4HappyPath1()
+        {
+            var data = new byte[] { 1, 2, 3, 4 };
+            var json = $"{{\"data_base64\":\"{Convert.ToBase64String(data)}\"}}";
+
+            var cloudEvent = new CloudEvent(json);
+
+            cloudEvent.BinaryData.Should().BeEquivalentTo(data);
+        }
+
+        [Fact(DisplayName = "Constructor 4 does maps unformatted 'data' attribute to StringData")]
+        public void Constructor4HappyPath2()
+        {
+            var data = "Hello, world!";
+            var json = $"{{\"data\":\"{data}\"}}";
+
+            var cloudEvent = new CloudEvent(json);
+
+            cloudEvent.StringData.Should().Be(data);
+        }
+
+        [Fact(DisplayName = "Constructor 4 does maps JSON 'data' attribute to StringData")]
+        public void Constructor4HappyPath3()
+        {
+            var data = "{\"foo\":\"abc\",\"bar\":123.45,\"baz\":true}";
+            var json = $"{{\"data\":{data}}}";
+
+            var cloudEvent = new CloudEvent(json);
+
+            cloudEvent.StringData.Should().Be(data);
+        }
+
+        [Fact(DisplayName = "Constructor 4 does maps DateTime 'data' attribute to StringData")]
+        public void Constructor4HappyPath4()
+        {
+            var data = DateTime.UtcNow.ToString("O");
+            var json = $"{{\"data\":\"{data}\"}}";
+
+            var cloudEvent = new CloudEvent(json);
+
+            cloudEvent.StringData.Should().Be(data);
+        }
+
+        [Fact(DisplayName = "Constructor 4 does maps bool 'data' attribute to StringData")]
+        public void Constructor4HappyPath5()
+        {
+            var data = "true";
+            var json = $"{{\"data\":{data}}}";
+
+            var cloudEvent = new CloudEvent(json);
+
+            cloudEvent.StringData.Should().Be(data);
+        }
+
+        [Fact(DisplayName = "Constructor 4 does maps numeric 'data' attribute to StringData")]
+        public void Constructor4HappyPath6()
+        {
+            var data = "123.45";
+            var json = $"{{\"data\":{data}}}";
+
+            var cloudEvent = new CloudEvent(json);
+
+            cloudEvent.StringData.Should().Be(data);
+        }
+
+        [Fact(DisplayName = "Constructor 4 does maps attributes")]
+        public void Constructor4HappyPath7()
+        {
+            var json = "{\"type\":\"MyType\",\"source\":\"/MySource\"}";
+
+            var cloudEvent = new CloudEvent(json);
+
+            cloudEvent.Type.Should().Be("MyType");
+            cloudEvent.Source.Should().Be("/MySource");
+        }
+
+        [Fact(DisplayName = "Constructor 4 throws when jsonFormattedCloudEvent parameter is null")]
+        public void Constructor4SadPath1()
+        {
+            // Null jsonFormattedCloudEvent
+
+            Action act = () => new CloudEvent((string)null);
+
+            act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*jsonFormattedCloudEvent*");
+        }
+
+        [Fact(DisplayName = "Constructor 4 throws when jsonFormattedCloudEvent parameter is empty")]
+        public void Constructor4SadPath2()
+        {
+            // Empty jsonFormattedCloudEvent
+
+            Action act = () => new CloudEvent("");
+
+            act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*jsonFormattedCloudEvent*");
+        }
+
+        [Fact(DisplayName = "Constructor 4 throws when specversion header is not '1.0'")]
+        public void Constructor4SadPath3()
+        {
+            // Invalid specversion
+
+            var json = "{\"specversion\":\"0.0\",\"data\":\"abc\"}";
+
+            Action act = () => new CloudEvent(json);
 
             act.Should().ThrowExactly<CloudEventValidationException>();
         }
@@ -673,7 +780,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         public void ImplicitConversionOperatorHappyPath1()
         {
             var mockCloudEvent = new Mock<CloudEvent>();
-            mockCloudEvent.Setup(m => m.ToSenderMessage()).CallBase();
+            mockCloudEvent.Setup(m => m.ToSenderMessage(It.IsAny<bool>())).CallBase();
             mockCloudEvent.Setup(m => m.Validate()).CallBase();
             mockCloudEvent.Object.SetData("Hello, world!");
             mockCloudEvent.Object.Id = "MyId";
@@ -689,7 +796,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Should().ContainKey(CloudEvent.TypeAttribute).WhichValue.Should().Be("test");
             senderMessage.Headers.Should().ContainKey("foo").WhichValue.Should().Be("abc");
 
-            mockCloudEvent.Verify(m => m.ToSenderMessage(), Times.Once());
+            mockCloudEvent.Verify(m => m.ToSenderMessage(It.IsAny<bool>()), Times.Once());
         }
 
         [Fact(DisplayName = "Implicit conversion operator returns null given null cloud event")]
