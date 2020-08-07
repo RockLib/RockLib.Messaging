@@ -57,8 +57,8 @@ namespace RockLib.Messaging.CloudEvents
         /// <param name="jsonFormattedCloudEvent">
         /// A JSON Formatted CloudEvent.
         /// </param>
-        public CorrelatedEvent(string json)
-            : base(json)
+        public CorrelatedEvent(string jsonFormattedCloudEvent)
+            : base(jsonFormattedCloudEvent)
         {
         }
 

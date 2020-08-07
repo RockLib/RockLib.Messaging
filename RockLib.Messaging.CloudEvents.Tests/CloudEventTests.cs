@@ -1,7 +1,9 @@
 ﻿using FluentAssertions;
 using Moq;
+using Newtonsoft.Json.Linq;
 using RockLib.Messaging.Testing;
 using System;
+using System.Linq;
 using System.Net.Mime;
 using Xunit;
 
@@ -222,7 +224,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().ThrowExactly<CloudEventValidationException>();
         }
 
-        [Fact(DisplayName = "Constructor 4 does maps 'data_base64' attribute to BinaryData")]
+        [Fact(DisplayName = "Constructor 4 maps 'data_base64' attribute to BinaryData")]
         public void Constructor4HappyPath1()
         {
             var data = new byte[] { 1, 2, 3, 4 };
@@ -233,7 +235,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.BinaryData.Should().BeEquivalentTo(data);
         }
 
-        [Fact(DisplayName = "Constructor 4 does maps unformatted 'data' attribute to StringData")]
+        [Fact(DisplayName = "Constructor 4 maps unformatted 'data' attribute to StringData")]
         public void Constructor4HappyPath2()
         {
             var data = "Hello, world!";
@@ -244,7 +246,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.StringData.Should().Be(data);
         }
 
-        [Fact(DisplayName = "Constructor 4 does maps JSON 'data' attribute to StringData")]
+        [Fact(DisplayName = "Constructor 4 maps JSON 'data' attribute to StringData")]
         public void Constructor4HappyPath3()
         {
             var data = "{\"foo\":\"abc\",\"bar\":123.45,\"baz\":true}";
@@ -255,7 +257,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.StringData.Should().Be(data);
         }
 
-        [Fact(DisplayName = "Constructor 4 does maps DateTime 'data' attribute to StringData")]
+        [Fact(DisplayName = "Constructor 4 maps DateTime 'data' attribute to StringData")]
         public void Constructor4HappyPath4()
         {
             var data = DateTime.UtcNow.ToString("O");
@@ -266,7 +268,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.StringData.Should().Be(data);
         }
 
-        [Fact(DisplayName = "Constructor 4 does maps bool 'data' attribute to StringData")]
+        [Fact(DisplayName = "Constructor 4 maps bool 'data' attribute to StringData")]
         public void Constructor4HappyPath5()
         {
             var data = "true";
@@ -277,7 +279,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.StringData.Should().Be(data);
         }
 
-        [Fact(DisplayName = "Constructor 4 does maps numeric 'data' attribute to StringData")]
+        [Fact(DisplayName = "Constructor 4 maps numeric 'data' attribute to StringData")]
         public void Constructor4HappyPath6()
         {
             var data = "123.45";
@@ -288,7 +290,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.StringData.Should().Be(data);
         }
 
-        [Fact(DisplayName = "Constructor 4 does maps attributes")]
+        [Fact(DisplayName = "Constructor 4 maps attributes")]
         public void Constructor4HappyPath7()
         {
             var json = "{\"type\":\"MyType\",\"source\":\"/MySource\"}";
@@ -455,10 +457,159 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
         #endregion
 
+        #region ToJson
+
+        [Fact(DisplayName = "ToJson method maps Attributes to JSON fields")]
+        public void ToJsonMethodHappyPath1()
+        {
+            var cloudEvent = new CloudEvent
+            {
+                Id = "MyId",
+                Source = "/MySource",
+                Attributes = { ["CustomAttribute"] = "MyCustomAttribute" }
+            };
+        }
+
+        [Fact(DisplayName = "ToJson method does not map Headers to JSON fields")]
+        public void ToJsonMethodHappyPath2()
+        {
+            var cloudEvent = new CloudEvent
+            {
+                Type = "MyType",
+                Source = "/MySource",
+                Attributes = { ["customattribute"] = "MyCustomAttribute" },
+                Headers = { ["customheader"] = "MyCustomHeader" }
+            };
+
+            var jsonString = cloudEvent.ToJson();
+
+            dynamic json = JObject.Parse(jsonString);
+
+            string specversion = json.specversion;
+            string id = json.id;
+            string type = json.type;
+            string source = json.source;
+            string time = json.time;
+            string customAttribute = json.customattribute;
+
+            specversion.Should().Be("1.0");
+            id.Should().NotBeNullOrEmpty();
+            type.Should().Be("MyType");
+            source.Should().Be("/MySource");
+            customAttribute.Should().Be("MyCustomAttribute");
+            time.Should().NotBeNullOrEmpty();
+
+            ((JObject)json).Should().NotContainKey("customheader");
+        }
+
+        [Fact(DisplayName = "ToJson method maps binary data to JSON 'data_base64' field")]
+        public void ToJsonMethodHappyPath3()
+        {
+            var data = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+
+            var cloudEvent = new CloudEvent
+            {
+                Type = "MyType",
+                Source = "/MySource"
+            }.SetData(data);
+
+            var jsonString = cloudEvent.ToJson();
+
+            dynamic json = JObject.Parse(jsonString);
+
+            string data_base64 = json.data_base64;
+
+            data_base64.Should().Be(Convert.ToBase64String(data));
+        }
+
+        [Fact(DisplayName = "ToJson method maps json string data to JSON 'data' field")]
+        public void ToJsonMethodHappyPath4()
+        {
+            var jsonData = "{\"foo\":\"abc\",\"bar\":123.45,\"baz\":true}";
+
+            var cloudEvent = new CloudEvent
+            {
+                Type = "MyType",
+                Source = "/MySource"
+            }.SetData(jsonData);
+
+            var jsonString = cloudEvent.ToJson();
+
+            dynamic json = JObject.Parse(jsonString);
+
+            string foo = json.data.foo;
+            double bar = json.data.bar;
+            bool baz = json.data.baz;
+
+            foo.Should().Be("abc");
+            bar.Should().Be(123.45);
+            baz.Should().BeTrue();
+        }
+
+        [Fact(DisplayName = "ToJson method maps unformatted string data to JSON 'data' field")]
+        public void ToJsonMethodHappyPath5()
+        {
+            var unformattedData = "Hello, world!";
+
+            var cloudEvent = new CloudEvent
+            {
+                Type = "MyType",
+                Source = "/MySource"
+            }.SetData(unformattedData);
+
+            var jsonString = cloudEvent.ToJson();
+
+            dynamic json = JObject.Parse(jsonString);
+
+            string data = json.data;
+
+            data.Should().Be(unformattedData);
+        }
+
+        [Fact(DisplayName = "ToJson method maps null data to null 'data' field")]
+        public void ToJsonMethodHappyPath6()
+        {
+            var cloudEvent = new CloudEvent
+            {
+                Type = "MyType",
+                Source = "/MySource"
+            };
+
+            var jsonString = cloudEvent.ToJson();
+
+            var json = JObject.Parse(jsonString);
+
+            json.Should().ContainKey("data")
+                .WhichValue.Should().BeOfType<JValue>()
+                .Which.Value.Should().BeNull();
+        }
+
+        [Theory(DisplayName = "ToJson method indent parameter works as expected")]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ToJsonMethodHappyPath7(bool indent)
+        {
+            var cloudEvent = new CloudEvent
+            {
+                Type = "MyType",
+                Source = "/MySource"
+            };
+
+            var jsonString = cloudEvent.ToJson(indent);
+
+            if (indent)
+                jsonString.Should().Contain("\n");
+            else
+                jsonString.Should().NotContain("\n");
+
+        }
+
+        #endregion
+
         #region ToSenderMessage
 
-        [Fact(DisplayName = "ToSenderMessage method maps string data to StringPayload")]
-        public void ToSenderMessageMethodHappyPath1()
+        [Fact(DisplayName = "ToSenderMessage method Binary Mode maps string data to StringPayload")]
+        public void ToSenderMessageMethodBinaryModeHappyPath1()
         {
             var stringData = "Hello, world!";
 
@@ -474,8 +625,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.StringPayload.Should().BeSameAs(stringData);
         }
 
-        [Fact(DisplayName = "ToSenderMessage method maps binary data to BinaryPayload")]
-        public void ToSenderMessageMethodHappyPath2()
+        [Fact(DisplayName = "ToSenderMessage method Binary Mode maps binary data to BinaryPayload")]
+        public void ToSenderMessageMethodBinaryModeHappyPath2()
         {
             var binaryData = new byte[] { 1, 2, 3, 4 };
 
@@ -491,8 +642,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.BinaryPayload.Should().BeSameAs(binaryData);
         }
 
-        [Fact(DisplayName = "ToSenderMessage method maps null data to empty StringPayload")]
-        public void ToSenderMessageMethodHappyPath3()
+        [Fact(DisplayName = "ToSenderMessage method Binary Mode maps null data to empty StringPayload")]
+        public void ToSenderMessageMethodBinaryModeHappyPath3()
         {
             // null Data
 
@@ -508,8 +659,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.StringPayload.Should().Be("");
         }
 
-        [Fact(DisplayName = "ToSenderMessage method maps cloud event attributes to sender message headers")]
-        public void ToSenderMessageMethodHappyPath4()
+        [Fact(DisplayName = "ToSenderMessage method Binary Mode maps cloud event attributes to sender message headers")]
+        public void ToSenderMessageMethoBinaryModedHappyPath4()
         {
             // All attributes provided
 
@@ -544,8 +695,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers[CloudEvent.TypeAttribute].Should().Be(type);
         }
 
-        [Fact(DisplayName = "ToSenderMessage method does not map null cloud event attributes to sender message headers")]
-        public void ToSenderMessageMethodHappyPath5()
+        [Fact(DisplayName = "ToSenderMessage method Binary Mode does not map null cloud event attributes to sender message headers")]
+        public void ToSenderMessageMethodBinaryModeHappyPath5()
         {
             // No optional attributes provided
 
@@ -564,8 +715,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Should().NotContainKey(CloudEvent.SubjectAttribute);
         }
 
-        [Fact(DisplayName = "ToSenderMessage method adds additional attributes to sender message headers")]
-        public void ToSenderMessageMethodHappyPath6()
+        [Fact(DisplayName = "ToSenderMessage method Binary Mode adds additional attributes to sender message headers")]
+        public void ToSenderMessageMethodBinaryModeHappyPath6()
         {
             // Additional attributes provided
 
@@ -582,8 +733,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Should().ContainKey("bar").WhichValue.Should().Be(123);
         }
 
-        [Fact(DisplayName = "ToSenderMessage method applies specified protocol binding to each attribute")]
-        public void ToSenderMessageMethodHappyPath7()
+        [Fact(DisplayName = "ToSenderMessage method Binary Mode applies specified protocol binding to each attribute")]
+        public void ToSenderMessageMethodBinaryModeHappyPath7()
         {
             // Non-default protocol binding
 
@@ -607,6 +758,42 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.IdAttribute).WhichValue.Should().BeSameAs(id);
             senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.SpecVersionAttribute).WhichValue.Should().Be("1.0");
             senderMessage.Headers.Should().ContainKey("test-foo").WhichValue.Should().Be("abc");
+        }
+
+        [Fact(DisplayName = "ToSenderMessage method Structured Mode renders correctly")]
+        public void ToSenderMessageMethodStructuredModeHappyPath()
+        {
+            var stringData = "Hello, world!";
+
+            var cloudEvent = new CloudEvent
+            {
+                Id = "MyId",
+                Source = "http://mysource/",
+                Type = "MyType",
+                DataContentType = "test/text",
+                Headers = { [HeaderNames.MessageId] = "MyCoreInternalId" }
+            }.SetData(stringData);
+
+            var senderMessage = cloudEvent.ToSenderMessage(structuredMode: true);
+
+            senderMessage.Headers.Should().ContainKey(CloudEvent.StructuredModeContentTypeHeader)
+                .WhichValue.Should().Be(CloudEvent.StructuredModeJsonMediaType);
+            senderMessage.Headers.Should().ContainKey(HeaderNames.MessageId)
+                .WhichValue.Should().Be("MyCoreInternalId");
+
+            dynamic json = JObject.Parse(senderMessage.StringPayload);
+
+            string id = json.id;
+            string source = json.source;
+            string type = json.type;
+            string dataContentType = json.datacontenttype;
+            string data = json.data;
+
+            id.Should().Be(cloudEvent.Id);
+            source.Should().Be(cloudEvent.Source);
+            type.Should().Be(cloudEvent.Type);
+            dataContentType.Should().Be(cloudEvent.DataContentType);
+            data.Should().Be(stringData);
         }
 
         #endregion

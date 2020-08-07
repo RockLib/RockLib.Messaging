@@ -39,8 +39,8 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>The name of the <see cref="Time"/> attribute.</summary>
         public const string TimeAttribute = "time";
 
-        /// <summary>The name of the content type attribute for <c>structured mode</c>.</summary>
-        public const string StructuredModeContentTypeAttribute = "content-type";
+        /// <summary>The name of the content type header for <c>structured mode</c>.</summary>
+        public const string StructuredModeContentTypeHeader = "content-type";
 
         /// <summary>
         /// The prefix of the media type of a 'content-type' header that indicates that its
@@ -383,6 +383,8 @@ namespace RockLib.Messaging.CloudEvents
         /// <returns>A JSON string representing the current <see cref="CloudEvent"/>.</returns>
         public virtual string ToJson(bool indent = false)
         {
+            Validate();
+
             var jobject = new JObject
             {
                 { "specversion", new JValue("1.0") }
@@ -473,7 +475,7 @@ namespace RockLib.Messaging.CloudEvents
             if (structuredMode)
             {
                 senderMessage = new SenderMessage(ToJson(IndentStructuredMode));
-                senderMessage.Headers[StructuredModeContentTypeAttribute] = StructuredModeJsonMediaType;
+                senderMessage.Headers[StructuredModeContentTypeHeader] = StructuredModeJsonMediaType;
                 
                 foreach (var header in Headers)
                     senderMessage.Headers[header.Key] = header.Value;
@@ -510,7 +512,7 @@ namespace RockLib.Messaging.CloudEvents
                 FromJson(receiverMessage.StringPayload);
 
                 foreach (var header in receiverMessage.Headers)
-                    if (header.Key != StructuredModeContentTypeAttribute)
+                    if (header.Key != StructuredModeContentTypeHeader)
                         Headers.Add(header);
             }
             else
@@ -545,22 +547,30 @@ namespace RockLib.Messaging.CloudEvents
         /// Creates an <see cref="HttpRequestMessage"/> with headers mapped from the attributes of this cloud event.
         /// </summary>
         /// <param name="requestUri">A string that represents the request <see cref="Uri"/>.</param>
+        /// <param name="structuredMode">
+        /// <see langword="true"/> to render in Structured Mode, otherwise <see langword="false"/>
+        /// to render in Binary Mode.
+        /// </param>
         /// <returns>The mapped <see cref="HttpRequestMessage"/>.</returns>
-        public HttpRequestMessage ToHttpRequestMessage(string requestUri = null) =>
-            ToHttpRequestMessage(HttpMethod.Get, requestUri);
+        public HttpRequestMessage ToHttpRequestMessage(string requestUri = null, bool structuredMode = false) =>
+            ToHttpRequestMessage(HttpMethod.Get, requestUri, structuredMode);
 
         /// <summary>
         /// Creates an <see cref="HttpRequestMessage"/> with headers mapped from the attributes of this cloud event.
         /// </summary>
         /// <param name="method">The HTTP method of the request.</param>
         /// <param name="requestUri">A string that represents the request <see cref="Uri"/>.</param>
+        /// <param name="structuredMode">
+        /// <see langword="true"/> to render in Structured Mode, otherwise <see langword="false"/>
+        /// to render in Binary Mode.
+        /// </param>
         /// <returns>The mapped <see cref="HttpRequestMessage"/>.</returns>
-        public HttpRequestMessage ToHttpRequestMessage(HttpMethod method, string requestUri = null)
+        public HttpRequestMessage ToHttpRequestMessage(HttpMethod method, string requestUri = null, bool structuredMode = false)
         {
             if (method is null)
                 throw new ArgumentNullException(nameof(method));
 
-            var message = ToSenderMessage();
+            var message = ToSenderMessage(structuredMode);
             var request = new HttpRequestMessage(method, requestUri);
 
             if (message.IsBinary)
@@ -782,7 +792,7 @@ namespace RockLib.Messaging.CloudEvents
         private static DateTime CurrentTime() => DateTime.UtcNow;
 
         private static bool IsStructuredMode(IReceiverMessage receiverMessage) =>
-            receiverMessage.Headers.TryGetValue(StructuredModeContentTypeAttribute, out string contentType)
+            receiverMessage.Headers.TryGetValue(StructuredModeContentTypeHeader, out string contentType)
                 && contentType.StartsWith(StructuredModeMediaTypePrefix);
 
     }

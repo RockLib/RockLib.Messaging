@@ -151,6 +151,5 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.Attributes.Should().ContainKey("partitionkey");
             cloudEvent.Headers.Should().BeEmpty();
         }
-
     }
 }

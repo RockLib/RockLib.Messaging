@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using Moq;
-using RockLib.Messaging.Testing;
 using System;
 using Xunit;
 
@@ -8,24 +7,6 @@ namespace RockLib.Messaging.CloudEvents.Tests
 {
     public class SequentialEventTests
     {
-        [Fact(DisplayName = "Constructor 1 does not initialize anything")]
-        public void Constructor1HappyPath()
-        {
-            var cloudEvent = new SequentialEvent();
-
-            cloudEvent.StringData.Should().BeNull();
-            cloudEvent.BinaryData.Should().BeNull();
-            cloudEvent.Attributes.Should().BeEmpty();
-            cloudEvent.DataContentType.Should().BeNull();
-            cloudEvent.DataSchema.Should().BeNull();
-            cloudEvent.Sequence.Should().BeNull();
-            cloudEvent.SequenceType.Should().BeNull();
-            cloudEvent.Source.Should().BeNull();
-            cloudEvent.SpecVersion.Should().Be("1.0");
-            cloudEvent.Subject.Should().BeNull();
-            cloudEvent.Type.Should().BeNull();
-        }
-
         [Fact(DisplayName = "Constructor 2 sets expected properties")]
         public void Constructor2HappyPath()
         {
@@ -57,227 +38,76 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.Time.Should().NotBe(source.Time);
         }
 
-        [Fact(DisplayName = "Constructor 2 throws is source parameter is null")]
-        public void Constructor2SadPath()
+        [Fact(DisplayName = "Sequence property setter and getter work as expected")]
+        public void SequencePropertyHappyPath()
         {
-            SequentialEvent source = null;
+            var cloudEvent = new SequentialEvent();
 
-            Action act = () => new SequentialEvent(source);
+            cloudEvent.Sequence = "123";
 
-            act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*source*");
+            cloudEvent.Sequence.Should().Be("123");
         }
 
-        [Fact(DisplayName = "Constructor 3 maps sequential event attributes from receiver message headers")]
-        public void Constructor3HappyPath1()
+        [Fact(DisplayName = "SequenceType property setter and getter work as expected")]
+        public void SequenceTypePropertyHappyPath()
         {
-            // All attributes provided
+            var cloudEvent = new SequentialEvent();
 
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+            cloudEvent.SequenceType = "abc";
 
-            var source = "http://MySource";
-            var dataContentType = "application/mycontenttype";
-            var dataSchema = "http://MySource";
-            var time = DateTime.UtcNow;
-
-            receiverMessage.Headers.Add(SequentialEvent.SequenceAttribute, "1");
-            receiverMessage.Headers.Add(SequentialEvent.SequenceTypeAttribute, SequenceTypes.Integer);
-
-            receiverMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
-            receiverMessage.Headers.Add(CloudEvent.SourceAttribute, source);
-            receiverMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
-            receiverMessage.Headers.Add(CloudEvent.DataContentTypeAttribute, dataContentType);
-            receiverMessage.Headers.Add(CloudEvent.DataSchemaAttribute, dataSchema);
-            receiverMessage.Headers.Add(CloudEvent.SubjectAttribute, "MySubject");
-            receiverMessage.Headers.Add(CloudEvent.TimeAttribute, time);
-
-            var sequentialEvent = new SequentialEvent(receiverMessage);
-
-            sequentialEvent.Sequence.Should().Be("1");
-            sequentialEvent.SequenceType.Should().Be(SequenceTypes.Integer);
-
-            sequentialEvent.Id.Should().Be("MyId");
-            sequentialEvent.Source.Should().BeSameAs(source);
-            sequentialEvent.Type.Should().Be("MyType");
-            sequentialEvent.DataContentType.Should().BeSameAs(dataContentType);
-            sequentialEvent.DataSchema.Should().BeSameAs(dataSchema);
-            sequentialEvent.Subject.Should().Be("MySubject");
-            sequentialEvent.Time.Should().Be(time);
+            cloudEvent.SequenceType.Should().Be("abc");
         }
 
-        [Fact(DisplayName = "Constructor 3 does not require any sequential event attributes to be mapped")]
-        public void Constructor3HappyPath2()
+        [Fact(DisplayName = "Validate method does not throw when valid")]
+        public void ValidateMethodHappyPath()
         {
-            // No attributes provided
-
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
-
-            var sequentialEvent = new SequentialEvent(receiverMessage);
-
-            sequentialEvent.Sequence.Should().BeNull();
-            sequentialEvent.SequenceType.Should().BeNull();
-
-            sequentialEvent.Source.Should().BeNull();
-            sequentialEvent.Type.Should().BeNull();
-            sequentialEvent.DataContentType.Should().BeNull();
-            sequentialEvent.DataSchema.Should().BeNull();
-            sequentialEvent.Subject.Should().BeNull();
-            sequentialEvent.Attributes.Should().BeEmpty();
-        }
-
-        [Fact(DisplayName = "Constructor 3 maps with the specified protocol binding")]
-        public void Constructor3HappyPath3()
-        {
-            // Non-default protocol binding
-
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
-
-            var source = "http://MySource";
-            var dataContentType = "application/mycontenttype";
-            var dataSchema = "http://MySource";
-            var time = DateTime.UtcNow;
-
-            receiverMessage.Headers.Add("test-" + SequentialEvent.SequenceAttribute, "1");
-            receiverMessage.Headers.Add("test-" + SequentialEvent.SequenceTypeAttribute, SequenceTypes.Integer);
-
-            receiverMessage.Headers.Add("test-" + CloudEvent.IdAttribute, "MyId");
-            receiverMessage.Headers.Add("test-" + CloudEvent.SourceAttribute, source);
-            receiverMessage.Headers.Add("test-" + CloudEvent.TypeAttribute, "MyType");
-            receiverMessage.Headers.Add("test-" + CloudEvent.DataContentTypeAttribute, dataContentType);
-            receiverMessage.Headers.Add("test-" + CloudEvent.DataSchemaAttribute, dataSchema);
-            receiverMessage.Headers.Add("test-" + CloudEvent.SubjectAttribute, "MySubject");
-            receiverMessage.Headers.Add("test-" + CloudEvent.TimeAttribute, time);
-
-            var mockProtocolBinding = new Mock<IProtocolBinding>().SetupTestProtocolBinding();
-
-            var sequentialEvent = new SequentialEvent(receiverMessage, mockProtocolBinding.Object);
-
-            sequentialEvent.Sequence.Should().Be("1");
-            sequentialEvent.SequenceType.Should().Be(SequenceTypes.Integer);
-
-            sequentialEvent.Id.Should().Be("MyId");
-            sequentialEvent.Source.Should().BeSameAs(source);
-            sequentialEvent.Type.Should().Be("MyType");
-            sequentialEvent.DataContentType.Should().BeSameAs(dataContentType);
-            sequentialEvent.DataSchema.Should().BeSameAs(dataSchema);
-            sequentialEvent.Subject.Should().Be("MySubject");
-            sequentialEvent.Time.Should().Be(time);
-        }
-
-        [Fact(DisplayName = "ToSenderMessage method maps sequential event attributes to sender message headers")]
-        public void ToSenderMessageMethodHappyPath1()
-        {
-            // All attributes provided
-
-            var sequential = "1";
-            var sequentialType = SequenceTypes.Integer;
-            var dataContentType = "application/xml";
-            var dataSchema = "http://dataschema";
-            var id = "MyId";
-            var source = "http://source";
-            var subject = "MySubject";
-            var time = DateTime.UtcNow;
-            var type = "MyType";
-
             var cloudEvent = new SequentialEvent
             {
-                Sequence = sequential,
-                SequenceType = sequentialType,
-                DataContentType = dataContentType,
-                DataSchema = dataSchema,
-                Id = id,
-                Source = source,
-                Subject = subject,
-                Time = time,
-                Type = type
+                Type = "MyType",
+                Source = "/MySource",
+                Sequence = "1",
+                SequenceType = SequenceTypes.Integer
             };
 
-            var senderMessage = cloudEvent.ToSenderMessage();
-
-            senderMessage.Headers[SequentialEvent.SequenceAttribute].Should().BeSameAs(sequential);
-            senderMessage.Headers[SequentialEvent.SequenceTypeAttribute].Should().BeSameAs(sequentialType);
-
-            senderMessage.Headers[CloudEvent.DataContentTypeAttribute].Should().Be(dataContentType.ToString());
-            senderMessage.Headers[CloudEvent.DataSchemaAttribute].Should().Be(dataSchema.ToString());
-            senderMessage.Headers[CloudEvent.IdAttribute].Should().Be(id);
-            senderMessage.Headers[CloudEvent.SourceAttribute].Should().Be(source.ToString());
-            senderMessage.Headers[CloudEvent.SpecVersionAttribute].Should().Be("1.0");
-            senderMessage.Headers[CloudEvent.SubjectAttribute].Should().Be(subject);
-            senderMessage.Headers[CloudEvent.TimeAttribute].Should().Be(time.ToString("O"));
-            senderMessage.Headers[CloudEvent.TypeAttribute].Should().Be(type);
+            cloudEvent.Invoking(ce => ce.Validate())
+                .Should().NotThrow();
         }
 
-        [Fact(DisplayName = "ToSenderMessage method does not map null sequential cloud event attributes to sender message headers")]
-        public void ToSenderMessageMethodHappyPath2()
+        [Theory(DisplayName = "Validate method throws when Sequence is missing")]
+        [InlineData(null)]
+        [InlineData("")]
+        public void ValidateMethodSadPath1(string sequence)
         {
-            // No optional attributes provided
-
             var cloudEvent = new SequentialEvent
             {
-                Sequence = "MySequence",
-                Id = "MyId",
-                Source = "http://MySource",
-                Type = "MyType"
+                Type = "MyType",
+                Source = "/MySource",
+                Sequence = sequence
             };
 
-            var senderMessage = cloudEvent.ToSenderMessage();
-
-            senderMessage.Headers.Should().NotContainKey(SequentialEvent.SequenceTypeAttribute);
-
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.DataContentTypeAttribute);
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.DataSchemaAttribute);
-            senderMessage.Headers[CloudEvent.SpecVersionAttribute].Should().Be("1.0");
-            senderMessage.Headers.Should().NotContainKey(CloudEvent.SubjectAttribute);
+            cloudEvent.Invoking(ce => ce.Validate())
+                .Should().ThrowExactly<CloudEventValidationException>()
+                .WithMessage("Sequence cannot be null or empty.");
         }
 
-        [Fact(DisplayName = "ToSenderMessage method applies specified protocol binding to each attribute")]
-        public void ToSenderMessageMethodHappyPath3()
+        [Fact(DisplayName = "Validate method throws when SequenceType is 'Integer' and Sequence is not an integer")]
+        public void ValidateMethodSadPath2()
         {
-            // Non-default protocol binding
-
-            var sequence = "1";
-            var sequenceType = SequenceTypes.Integer;
-            var dataContentType = "application/xml";
-            var dataSchema = "http://dataschema";
-            var id = "MyId";
-            var source = "http://source";
-            var subject = "MySubject";
-            var time = DateTime.UtcNow;
-            var type = "MyType";
-
-            var mockProtocolBinding = new Mock<IProtocolBinding>();
-            mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
-
             var cloudEvent = new SequentialEvent
             {
-                Sequence = sequence,
-                SequenceType = sequenceType,
-                DataContentType = dataContentType,
-                DataSchema = dataSchema,
-                Id = id,
-                Source = source,
-                Subject = subject,
-                Time = time,
-                Type = type,
-                ProtocolBinding = mockProtocolBinding.Object
+                Type = "MyType",
+                Source = "/MySource",
+                Sequence = "abc",
+                SequenceType = SequenceTypes.Integer
             };
 
-            var senderMessage = cloudEvent.ToSenderMessage();
-
-            senderMessage.Headers["test-" + SequentialEvent.SequenceAttribute].Should().BeSameAs(sequence);
-            senderMessage.Headers["test-" + SequentialEvent.SequenceTypeAttribute].Should().BeSameAs(sequenceType);
-
-            senderMessage.Headers["test-" + CloudEvent.DataContentTypeAttribute].Should().Be(dataContentType.ToString());
-            senderMessage.Headers["test-" + CloudEvent.DataSchemaAttribute].Should().Be(dataSchema.ToString());
-            senderMessage.Headers["test-" + CloudEvent.IdAttribute].Should().Be(id);
-            senderMessage.Headers["test-" + CloudEvent.SourceAttribute].Should().Be(source.ToString());
-            senderMessage.Headers["test-" + CloudEvent.SpecVersionAttribute].Should().Be("1.0");
-            senderMessage.Headers["test-" + CloudEvent.SubjectAttribute].Should().Be(subject);
-            senderMessage.Headers["test-" + CloudEvent.TimeAttribute].Should().Be(time.ToString("O"));
-            senderMessage.Headers["test-" + CloudEvent.TypeAttribute].Should().Be(type);
+            cloudEvent.Invoking(ce => ce.Validate())
+                .Should().ThrowExactly<CloudEventValidationException>()
+                .WithMessage("Invalid valid for Sequence: 'abc'.*");
         }
 
-        [Fact(DisplayName = "Validate method does not throw when given valid sender message")]
-        public void ValidateMethodHappyPath1()
+        [Fact(DisplayName = "Validate static method does not throw when given valid sender message")]
+        public void ValidateStaticMethodHappyPath1()
         {
             var senderMessage = new SenderMessage("Hello, world!");
             
@@ -294,8 +124,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().NotThrow();
         }
 
-        [Fact(DisplayName = "Validate method does not throw when given valid sender message for specified protocol binding")]
-        public void ValidateMethodHappyPath2()
+        [Fact(DisplayName = "Validate static method does not throw when given valid sender message for specified protocol binding")]
+        public void ValidateStaticMethodHappyPath2()
         {
             // Non-default protocol binding
 
@@ -317,12 +147,32 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().NotThrow();
         }
 
-        [Fact(DisplayName = "Validate method throws given missing Sequence header")]
-        public void ValidateMethodSadPath()
+        [Fact(DisplayName = "Validate static method throws given missing Sequence header")]
+        public void ValidateStaticMethodSadPath1()
         {
             // Missing Sequence
 
             var senderMessage = new SenderMessage("Hello, world!");
+
+            senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
+            senderMessage.Headers.Add(CloudEvent.SourceAttribute, new Uri("http://MySource"));
+            senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
+            senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
+
+            Action act = () => SequentialEvent.Validate(senderMessage);
+
+            act.Should().ThrowExactly<CloudEventValidationException>();
+        }
+
+        [Fact(DisplayName = "Validate static method throws when SequenceType is 'Integer' and Sequence header is not an integer")]
+        public void ValidateStaticMethodSadPath2()
+        {
+            // Missing Sequence
+
+            var senderMessage = new SenderMessage("Hello, world!");
+
+            senderMessage.Headers.Add("test-" + SequentialEvent.SequenceAttribute, "abc");
+            senderMessage.Headers.Add("test-" + SequentialEvent.SequenceTypeAttribute, SequenceTypes.Integer);
 
             senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
             senderMessage.Headers.Add(CloudEvent.SourceAttribute, new Uri("http://MySource"));

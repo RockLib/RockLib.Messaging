@@ -5,63 +5,55 @@ using Xunit;
 
 namespace RockLib.Messaging.CloudEvents.Tests
 {
-    public class CorrelatedEventTests
+    public class PartitionedEventTests
     {
-        [Fact(DisplayName = "CorrelationId property setter and getter work as expected")]
+        [Fact(DisplayName = "PartitionKey property setter and getter work as expected")]
         public void CorrelationIdPropertyHappyPath1()
         {
-            var cloudEvent = new CorrelatedEvent();
+            var cloudEvent = new PartitionedEvent();
 
-            cloudEvent.CorrelationId = "123";
+            cloudEvent.PartitionKey = "123";
 
-            cloudEvent.CorrelationId.Should().Be("123");
+            cloudEvent.PartitionKey.Should().Be("123");
         }
 
-        [Fact(DisplayName = "CorrelationId property getter returns new GUID if setter has not been called")]
-        public void CorrelationIdPropertyHappyPath2()
-        {
-            var cloudEvent = new CorrelatedEvent();
-
-            cloudEvent.CorrelationId.Should().NotBeNullOrEmpty();
-            Guid.TryParse(cloudEvent.CorrelationId, out _).Should().BeTrue();
-        }
-
-        [Fact(DisplayName = "CorrelationId property setter throws if value is null")]
-        public void CorrelationIdPropertySadPath()
-        {
-            var cloudEvent = new CorrelatedEvent();
-
-            cloudEvent.Invoking(evt => evt.CorrelationId = null).Should()
-                .ThrowExactly<ArgumentNullException>()
-                .WithMessage("*value*");
-        }
-
-        [Fact(DisplayName = "Validate method adds correlationid attribute if missing")]
+        [Fact(DisplayName = "Validate method does not throw when valid")]
         public void ValidateMethodHappyPath()
         {
-            var cloudEvent = new CorrelatedEvent
+            var cloudEvent = new PartitionedEvent
             {
-                Id = "MyId",
                 Type = "MyType",
                 Source = "/MySource",
-                Time = DateTime.Now
+                PartitionKey = "123"
             };
 
-            cloudEvent.Attributes.Should().HaveCount(4);
+            cloudEvent.Invoking(ce => ce.Validate())
+                .Should().NotThrow();
+        }
 
-            cloudEvent.Validate();
+        [Theory(DisplayName = "Validate method throws when PartitionKey is missing")]
+        [InlineData(null)]
+        [InlineData("")]
+        public void ValidateMethodSadPath1(string partitionKey)
+        {
+            var cloudEvent = new PartitionedEvent
+            {
+                Type = "MyType",
+                Source = "/MySource",
+                PartitionKey = partitionKey
+            };
 
-            cloudEvent.Attributes.Should().HaveCount(5);
-            cloudEvent.Attributes.Should().ContainKey(CorrelatedEvent.CorrelationIdAttribute)
-                .WhichValue.Should().NotBeNull();
+            cloudEvent.Invoking(ce => ce.Validate())
+                .Should().ThrowExactly<CloudEventValidationException>()
+                .WithMessage("PartitionKey cannot be null or empty.");
         }
 
         [Fact(DisplayName = "Validate static method does not throw when given valid sender message")]
         public void ValidateStaticMethodHappyPath1()
         {
             var senderMessage = new SenderMessage("Hello, world!");
-            
-            senderMessage.Headers.Add(CorrelatedEvent.CorrelationIdAttribute, "MyCorrelationId");
+
+            senderMessage.Headers.Add(PartitionedEvent.PartitionKeyAttribute, "123");
 
             senderMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "1.0");
             senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
@@ -69,7 +61,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
             senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
 
-            Action act = () => CorrelatedEvent.Validate(senderMessage);
+            Action act = () => PartitionedEvent.Validate(senderMessage);
 
             act.Should().NotThrow();
         }
@@ -81,7 +73,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var senderMessage = new SenderMessage("Hello, world!");
 
-            senderMessage.Headers.Add("test-" + CorrelatedEvent.CorrelationIdAttribute, "MyCorrelationId");
+            senderMessage.Headers.Add("test-" + PartitionedEvent.PartitionKeyAttribute, "123");
 
             senderMessage.Headers.Add("test-" + CloudEvent.SpecVersionAttribute, "1.0");
             senderMessage.Headers.Add("test-" + CloudEvent.IdAttribute, "MyId");
@@ -92,15 +84,15 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var mockProtocolBinding = new Mock<IProtocolBinding>();
             mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
 
-            Action act = () => CorrelatedEvent.Validate(senderMessage, mockProtocolBinding.Object);
+            Action act = () => PartitionedEvent.Validate(senderMessage, mockProtocolBinding.Object);
 
             act.Should().NotThrow();
         }
 
-        [Fact(DisplayName = "Validate static method throws given missing CorrelationId header")]
+        [Fact(DisplayName = "Validate static method throws given missing PartitionKey header")]
         public void ValidateStaticMethodSadPath()
         {
-            // Missing CorrelationId
+            // Missing PartitionKey
 
             var senderMessage = new SenderMessage("Hello, world!");
 
@@ -109,7 +101,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
             senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
 
-            Action act = () => CorrelatedEvent.Validate(senderMessage);
+            Action act = () => PartitionedEvent.Validate(senderMessage);
 
             act.Should().ThrowExactly<CloudEventValidationException>();
         }
