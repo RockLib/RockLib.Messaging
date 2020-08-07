@@ -34,9 +34,6 @@ namespace RockLib.Messaging.Kafka
         /// </param>
         /// <param name="groupId">Client group id string. All clients sharing the same group.id belong to the same group.</param>
         /// <param name="bootstrapServers">List of brokers as a CSV list of broker host or host:port.</param>
-        /// <param name="enableAutoCommit">
-        /// Whether to automatically and periodically commit offsets in the background.
-        /// </param>
         /// <param name="enableAutoOffsetStore">
         /// Whether to automatically store offset of last message provided to application.
         /// </param>
@@ -48,8 +45,7 @@ namespace RockLib.Messaging.Kafka
         /// messages and checking 'message->err'.
         /// </param>
         public KafkaReceiver(string name, string topic, string groupId, string bootstrapServers,
-            bool enableAutoCommit = true, bool enableAutoOffsetStore = false,
-            AutoOffsetReset autoOffsetReset = AutoOffsetReset.Latest)
+            bool enableAutoOffsetStore = false, AutoOffsetReset autoOffsetReset = AutoOffsetReset.Latest)
             : base(name)
         {
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
@@ -58,7 +54,6 @@ namespace RockLib.Messaging.Kafka
             {
                 GroupId = groupId ?? throw new ArgumentNullException(nameof(groupId)),
                 BootstrapServers = bootstrapServers ?? throw new ArgumentNullException(nameof(bootstrapServers)),
-                EnableAutoCommit = enableAutoCommit,
                 EnableAutoOffsetStore = enableAutoOffsetStore,
                 AutoOffsetReset = autoOffsetReset
             };
