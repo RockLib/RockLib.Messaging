@@ -1,4 +1,6 @@
-﻿namespace RockLib.Messaging.CloudEvents
+﻿using RockLib.Messaging.CloudEvents.Sequencing;
+
+namespace RockLib.Messaging.CloudEvents
 {
     /// <summary>
     /// This extension defines two attributes that can be included within a CloudEvent to describe the
@@ -38,8 +40,6 @@
         public SequentialEvent(SequentialEvent source)
             : base(source)
         {
-            SequenceType = source.SequenceType;
-
             if (SequenceType == SequenceTypes.Integer
                 && int.TryParse(source.Sequence, out int sequence))
             {
@@ -48,8 +48,9 @@
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SequentialEvent"/> class and sets its properties
-        /// according to the payload and headers of the <paramref name="receiverMessage"/>.
+        /// Initializes a new instance of the <see cref="SequentialEvent"/> class and sets its
+        /// data, attributes, and headers according to the payload and headers of the <paramref
+        /// name="receiverMessage"/>.
         /// </summary>
         /// <param name="receiverMessage">
         /// The <see cref="IReceiverMessage"/> with headers that map to cloud event attributes.
@@ -62,45 +63,40 @@
         public SequentialEvent(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)
             : base(receiverMessage, protocolBinding)
         {
-            if (receiverMessage.Headers.TryGetValue(SequenceHeader, out string sequence))
-            {
-                Sequence = sequence;
-                AdditionalAttributes.Remove(SequenceHeader);
-            }
+        }
 
-            if (receiverMessage.Headers.TryGetValue(SequenceTypeHeader, out string sequenceType))
-            {
-                SequenceType = sequenceType;
-                AdditionalAttributes.Remove(SequenceTypeHeader);
-            }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SequentialEvent"/> class and sets its data
+        /// and attributes according to the <a href=
+        /// "https://github.com/cloudevents/spec/blob/v1.0/json-format.md">JSON Formatted
+        /// CloudEvent</a>.
+        /// </summary>
+        /// <param name="jsonFormattedCloudEvent">
+        /// A JSON Formatted CloudEvent.
+        /// </param>
+        public SequentialEvent(string jsonFormattedCloudEvent)
+            : base(jsonFormattedCloudEvent)
+        {
         }
 
         /// <summary>
         /// REQUIRED. Value expressing the relative order of the event. This enables interpretation of
         /// data supercedence.
         /// </summary>
-        public string Sequence { get; set; }
+        public string Sequence
+        {
+            get => this.GetSequence();
+            set => this.SetSequence(value);
+        }
 
         /// <summary>
         /// Specifies the semantics of the sequence attribute. See the <see cref="SequenceTypes"/> class
         /// for known values of this attribute.
         /// </summary>
-        public string SequenceType { get; set; }
-
-        /// <summary>
-        /// Creates a <see cref="SenderMessage"/> with headers mapped from the attributes of this sequential event.
-        /// </summary>
-        /// <returns>The mapped <see cref="SenderMessage"/>.</returns>
-        public override SenderMessage ToSenderMessage()
+        public string SequenceType
         {
-            var senderMessage = base.ToSenderMessage();
-
-            senderMessage.Headers[SequenceHeader] = Sequence;
-
-            if (!string.IsNullOrEmpty(SequenceType))
-                senderMessage.Headers[SequenceTypeHeader] = SequenceType;
-
-            return senderMessage;
+            get => this.GetSequenceType();
+            set => this.SetSequenceType(value);
         }
 
         /// <inheritdoc/>
@@ -125,6 +121,9 @@
         /// headers. If <see langword="null"/>, then <see cref="CloudEvent.DefaultProtocolBinding"/> is used
         /// instead.
         /// </param>
+        /// <exception cref="CloudEventValidationException">
+        /// If the <see cref="SenderMessage"/> is not valid.
+        /// </exception>
         public static new void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null)
         {
             if (protocolBinding is null)
@@ -144,13 +143,9 @@
                 }
             }
             else
-            { 
+            {
                 throw new CloudEventValidationException($"The '{sequenceHeader}' header is missing from the SenderMessage.");
             }
         }
-
-        private string SequenceHeader => ProtocolBinding.GetHeaderName(SequenceAttribute);
-        
-        private string SequenceTypeHeader => ProtocolBinding.GetHeaderName(SequenceTypeAttribute);
     }
 }

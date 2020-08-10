@@ -207,7 +207,7 @@ namespace RockLib.Messaging.CloudEvents
                 return data;
 
             throw new InvalidCastException(
-                $"Unable to cast the CloudEvent's data, of type '{dataObject.GetType().FullName}', to type '{typeof(T).FullName}'.");
+                $"Unable to cast the CloudEvent's data of type '{dataObject.GetType().FullName}' to type '{typeof(T).FullName}'.");
         }
 
         /// <summary>
@@ -277,9 +277,8 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>
         /// Creates a new instance of the <typeparamref name="TCloudEvent"/> type and copies all
         /// cloud event attributes except for <see cref="CloudEvent.Id"/> and <see cref=
-        /// "CloudEvent.Time"/> to the new instance. Note that neither the source's <see cref=
-        /// "CloudEvent.StringData"/>, nor its <see cref="CloudEvent.BinaryData"/>, nor any of its
-        /// <see cref="CloudEvent.AdditionalAttributes"/> are copied to the new instance.
+        /// "CloudEvent.Time"/> to the new instance. Note that the source's data is <em>not</em>
+        /// copied to the new instance.
         /// <para>
         /// The <typeparamref name="TCloudEvent"/> type <em>must</em> define a public copy
         /// constructor - one with a single parameter of type <typeparamref name="TCloudEvent"/>.
@@ -465,13 +464,22 @@ namespace RockLib.Messaging.CloudEvents
                 var stringData = evt.StringData;
 
                 if (string.IsNullOrEmpty(stringData))
-                    return null;
+                {
+                    if (evt.BinaryData != null)
+                        stringData = Encoding.UTF8.GetString(evt.BinaryData);
+
+                    if (string.IsNullOrEmpty(stringData))
+                        return null;
+                }
 
                 return serialization == DataSerialization.Json
                     ? JsonDeserialize<T>(stringData)
                     : XmlDeserialize<T>(stringData);
             });
         }
+
+        internal static bool TryGetDataObject(this CloudEvent cloudEvent, out object data) =>
+            _dataObjects.TryGetValue(cloudEvent, out data);
 
         private static string JsonSerialize(object data) =>
             JsonConvert.SerializeObject(data);

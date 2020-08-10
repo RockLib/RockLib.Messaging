@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -37,17 +39,33 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>The name of the <see cref="Time"/> attribute.</summary>
         public const string TimeAttribute = "time";
 
+        /// <summary>The name of the content type header for <c>structured mode</c>.</summary>
+        public const string StructuredModeContentTypeHeader = "content-type";
+
+        /// <summary>
+        /// The prefix of the media type of a 'content-type' header that indicates that its
+        /// <see cref="IReceiverMessage"/> is rendered in <c>structured mode</c>.
+        /// </summary>
+        public const string StructuredModeMediaTypePrefix = "application/cloudevents";
+
+        /// <summary>
+        /// The suffix of a media type indicating that the content is rendered as JSON.
+        /// </summary>
+        public const string JsonMediaTypeSuffix = "+json";
+
+        /// <summary>
+        /// The media type of a 'content-type' header that indicates that an <see cref=
+        /// "IReceiverMessage"/> is rendered as JSON in <c>structured mode</c>.
+        /// </summary>
+        public const string StructuredModeJsonMediaType = StructuredModeMediaTypePrefix + JsonMediaTypeSuffix;
+
         private const string _specVersion1_0 = "1.0";
 
         private static IProtocolBinding _defaultProtocolBinding;
         private IProtocolBinding _protocolBinding;
 
-        private string _id;
-        private string _source;
-        private string _dataContentType;
-        private string _dataSchema;
-        private DateTime? _time;
         private object _data;
+        private MediaTypeHeaderValue _contentType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CloudEvent"/> class.
@@ -70,19 +88,15 @@ namespace RockLib.Messaging.CloudEvents
 
             ProtocolBinding = source.ProtocolBinding;
 
-            Source = source.Source;
-            Type = source.Type;
-            DataContentType = source.DataContentType;
-            DataSchema = source.DataSchema;
-            Subject = source.Subject;
-
-            foreach (var additionalAttribute in source.AdditionalAttributes)
-                AdditionalAttributes.Add(additionalAttribute);
+            foreach (var additionalAttribute in source.Attributes)
+                if (additionalAttribute.Key != IdAttribute && additionalAttribute.Key != TimeAttribute)
+                    Attributes.Add(additionalAttribute);
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CloudEvent"/> class and sets its properties
-        /// according to the payload and headers of the <paramref name="receiverMessage"/>.
+        /// Initializes a new instance of the <see cref="CloudEvent"/> class and sets its data,
+        /// attributes, and headers according to the payload and headers of the <paramref name=
+        /// "receiverMessage"/>.
         /// </summary>
         /// <param name="receiverMessage">
         /// The <see cref="IReceiverMessage"/> with headers that map to cloud event attributes.
@@ -99,6 +113,28 @@ namespace RockLib.Messaging.CloudEvents
 
             FromReceiverMessage(receiverMessage, protocolBinding);
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CloudEvent"/> class and sets its data and
+        /// attributes according to the <a href=
+        /// "https://github.com/cloudevents/spec/blob/v1.0/json-format.md">JSON Formatted
+        /// CloudEvent</a>.
+        /// </summary>
+        /// <param name="jsonFormattedCloudEvent">
+        /// A JSON Formatted CloudEvent.
+        /// </param>
+        public CloudEvent(string jsonFormattedCloudEvent)
+        {
+            if (string.IsNullOrEmpty(jsonFormattedCloudEvent))
+                throw new ArgumentNullException(nameof(jsonFormattedCloudEvent));
+
+            FromJson(jsonFormattedCloudEvent);
+        }
+
+        /// <summary>
+        /// Whether to indent the JSON payload of sender messages rendered in Structured Mode.
+        /// </summary>
+        public static bool IndentStructuredMode { get; set; }
 
         /// <summary>
         /// Gets or sets the default <see cref="IProtocolBinding"/>. The <see cref=
@@ -123,18 +159,31 @@ namespace RockLib.Messaging.CloudEvents
         }
 
         /// <summary>
+        /// The attributes of this CloudEvent.
+        /// </summary>
+        public IDictionary<string, object> Attributes { get; } = new Dictionary<string, object>();
+
+        /// <summary>
         /// REQUIRED. Identifies the event. Producers MUST ensure that source + id is unique for each
         /// distinct event. If a duplicate event is re-sent (e.g. due to a network error) it MAY have
         /// the same id. Consumers MAY assume that Events with identical source and id are duplicates.
         /// </summary>
         public string Id
         {
-            get => _id ?? (_id = NewId());
+            get
+            {
+                if (Attributes.TryGetValue(IdAttribute, out var value) && value is string id)
+                    return id;
+
+                id = NewId();
+                Attributes[IdAttribute] = id;
+                return id;
+            }
             set
             {
                 if (string.IsNullOrEmpty(value))
                     throw new ArgumentNullException(nameof(value));
-                _id = value;
+                Attributes[IdAttribute] = value;
             }
         }
 
@@ -147,12 +196,18 @@ namespace RockLib.Messaging.CloudEvents
         /// </summary>
         public string Source
         {
-            get => _source;
+            get => Attributes.TryGetValue(SourceAttribute, out var value) && value is string source
+                ? source
+                : null;
             set
             {
                 if (value != null)
+                {
                     new Uri(value, UriKind.RelativeOrAbsolute);
-                _source = value;
+                    Attributes[SourceAttribute] = value;
+                }
+                else
+                    Attributes.Remove(SourceAttribute);
             }
         }
 
@@ -168,7 +223,19 @@ namespace RockLib.Messaging.CloudEvents
         /// enforcement, etc. The format of this is producer defined and might include information
         /// such as the version of the type.
         /// </summary>
-        public string Type { get; set; }
+        public string Type
+        {
+            get => Attributes.TryGetValue(TypeAttribute, out var value) && value is string type
+                ? type
+                : null;
+            set
+            {
+                if (value != null)
+                    Attributes[TypeAttribute] = value;
+                else
+                    Attributes.Remove(TypeAttribute);
+            }
+        }
 
         /// <summary>
         /// Content type of data value.
@@ -176,12 +243,37 @@ namespace RockLib.Messaging.CloudEvents
         /// </summary>
         public string DataContentType
         {
-            get => _dataContentType;
+            get => Attributes.TryGetValue(DataContentTypeAttribute, out var value) && value is string dataContentType
+                ? dataContentType
+                : null;
             set
             {
                 if (value != null)
-                    MediaTypeHeaderValue.Parse(value);
-                _dataContentType = value;
+                {
+                    _contentType = MediaTypeHeaderValue.Parse(value);
+                    Attributes[DataContentTypeAttribute] = value;
+                }
+                else
+                {
+                    _contentType = null;
+                    Attributes.Remove(DataContentTypeAttribute);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Content type of data value as a <see cref="MediaTypeHeaderValue"/>.
+        /// </summary>
+        public MediaTypeHeaderValue ContentType
+        {
+            get
+            {
+                if (_contentType != null)
+                    return _contentType;
+                if (string.IsNullOrEmpty(DataContentType))
+                    return null;
+                _contentType = MediaTypeHeaderValue.Parse(DataContentType);
+                return _contentType;
             }
         }
 
@@ -192,12 +284,18 @@ namespace RockLib.Messaging.CloudEvents
         /// </summary>
         public string DataSchema
         {
-            get => _dataSchema;
+            get => Attributes.TryGetValue(DataSchemaAttribute, out var value) && value is string dataSchema
+                ? dataSchema
+                : null;
             set
             {
                 if (value != null)
+                {
                     new Uri(value, UriKind.RelativeOrAbsolute);
-                _dataSchema = value;
+                    Attributes[DataSchemaAttribute] = value;
+                }
+                else
+                    Attributes.Remove(DataSchemaAttribute);
             }
         }
 
@@ -213,21 +311,49 @@ namespace RockLib.Messaging.CloudEvents
         /// interested in blobs with names ending with '.jpg' or '.jpeg' and the subject attribute allows
         /// for constructing a simple and efficient string-suffix filter for that subset of events.</para>
         /// </summary>
-        public string Subject { get; set; }
+        public string Subject
+        {
+            get => Attributes.TryGetValue(SubjectAttribute, out var value) && value is string subject
+                ? subject
+                : null;
+            set
+            {
+                if (value != null)
+                    Attributes[SubjectAttribute] = value;
+                else
+                    Attributes.Remove(SubjectAttribute);
+            }
+        }
 
         /// <summary>
         /// Timestamp of when the occurrence happened.
         /// </summary>
         public DateTime Time
         {
-            get => _time ?? (_time = CurrentTime()).Value;
-            set => _time = value;
+            get
+            {
+                if (Attributes.TryGetValue(TimeAttribute, out var value))
+                {
+                    if (value is DateTime time)
+                        return time;
+                    if (value is string timeString && DateTime.TryParse(timeString, null, DateTimeStyles.RoundtripKind, out time))
+                    {
+                        Attributes[TimeAttribute] = time;
+                        return time;
+                    }
+                }
+
+                var currentTime = CurrentTime();
+                Attributes[TimeAttribute] = currentTime;
+                return currentTime;
+            }
+            set => Attributes[TimeAttribute] = value;
         }
 
         /// <summary>
-        /// Any additional attributes not specific to this CloudEvent type.
+        /// Message headers not related to CloudEvents.
         /// </summary>
-        public IDictionary<string, object> AdditionalAttributes { get; } = new Dictionary<string, object>();
+        public IDictionary<string, object> Headers { get; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Domain-specific information about the occurrence (i.e. the payload) as a string. This
@@ -249,41 +375,130 @@ namespace RockLib.Messaging.CloudEvents
         public byte[] BinaryData => _data as byte[];
 
         /// <summary>
+        /// Converts the cloud event to a string in the
+        /// <a href='https://github.com/cloudevents/spec/blob/v1.0/json-format.md'>JSON Format for
+        /// CloudEvents</a>.
+        /// </summary>
+        /// <param name="indent">Whether to indent the resulting JSON string.</param>
+        /// <returns>A JSON string representing the current <see cref="CloudEvent"/>.</returns>
+        public virtual string ToJson(bool indent = false)
+        {
+            Validate();
+
+            var jobject = new JObject
+            {
+                { "specversion", new JValue("1.0") }
+            };
+
+            foreach (var attribute in Attributes)
+                jobject.Add(attribute.Key, JToken.FromObject(attribute.Value));
+
+            if (_data is byte[] binaryData)
+                jobject.Add("data_base64", Convert.ToBase64String(binaryData));
+            else if (_data is string stringData)
+            {
+                JToken dataToken;
+                try { dataToken = JToken.Parse(stringData); }
+                catch { dataToken = new JValue(stringData); }
+                jobject.Add("data", dataToken);
+            }
+            else
+                jobject.Add("data", JValue.CreateNull());
+
+            return jobject.ToString(indent ? Formatting.Indented : Formatting.None);
+        }
+
+        private void FromJson(string json)
+        {
+            var jobject = JObject.Parse(json);
+
+            if (jobject.TryGetValue("data_base64", out var token))
+            {
+                if (token is JValue value && value.Value is string stringValue)
+                    _data = Convert.FromBase64String(stringValue);
+                else
+                    throw new InvalidOperationException("'data_base64' attribute must have a string value.");
+            }
+            else if (jobject.TryGetValue("data", out token))
+            {
+                if (token is JValue jvalue)
+                {
+                    if (jvalue.Value is string stringValue)
+                        _data = stringValue;
+                    else if (jvalue.Value is DateTime dateTime)
+                        _data = dateTime.ToString("O");
+                    else if (jvalue.Value is bool b)
+                        _data = b ? "true" : "false";
+                    else
+                        _data = jvalue.Value.ToString();
+                }
+                else
+                    _data = token.ToString(Formatting.None);
+            }
+
+            foreach (var attribute in jobject)
+            {
+                if (attribute.Key == "data" || attribute.Key == "data_base64")
+                    continue;
+
+                if (attribute.Key == "specversion")
+                {
+                    if (attribute.Value is JValue jv && jv.Value is string stringValue && stringValue == "1.0")
+                        continue;
+
+                    throw new CloudEventValidationException(
+                        $"Invalid '{SpecVersionAttribute}' attribute. Expected '{_specVersion1_0}', but was '{attribute.Value}'.");
+                }
+
+                if (attribute.Value is JValue jvalue)
+                    Attributes[attribute.Key] = jvalue.Value;
+                else
+                    Attributes[attribute.Key] = attribute.Value.ToString(Formatting.None);
+            }
+        }
+
+        /// <summary>
         /// Creates a <see cref="SenderMessage"/> with headers mapped from the attributes of this cloud event.
         /// </summary>
+        /// <param name="structuredMode">
+        /// <see langword="true"/> to render in Structured Mode, otherwise <see langword="false"/>
+        /// to render in Binary Mode.
+        /// </param>
         /// <returns>The mapped <see cref="SenderMessage"/>.</returns>
         /// <exception cref="CloudEventValidationException">If the cloud event is invalid.</exception>
-        public virtual SenderMessage ToSenderMessage()
+        public virtual SenderMessage ToSenderMessage(bool structuredMode = false)
         {
             Validate();
 
             SenderMessage senderMessage;
 
-            if (_data is string stringData)
-                senderMessage = new SenderMessage(stringData);
-            else if (_data is byte[] binaryData)
-                senderMessage = new SenderMessage(binaryData);
+            if (structuredMode)
+            {
+                senderMessage = new SenderMessage(ToJson(IndentStructuredMode));
+                senderMessage.Headers[StructuredModeContentTypeHeader] = StructuredModeJsonMediaType;
+                
+                foreach (var header in Headers)
+                    senderMessage.Headers[header.Key] = header.Value;
+            }
             else
-                senderMessage = new SenderMessage("");
+            {
+                if (_data is string stringData)
+                    senderMessage = new SenderMessage(stringData);
+                else if (_data is byte[] binaryData)
+                    senderMessage = new SenderMessage(binaryData);
+                else
+                    senderMessage = new SenderMessage("");
 
-            senderMessage.Headers[IdHeader] = Id;
-            senderMessage.Headers[SourceHeader] = Source;
-            senderMessage.Headers[SpecVersionHeader] = SpecVersion;
-            senderMessage.Headers[TypeHeader] = Type;
+                senderMessage.Headers[ProtocolBinding.GetHeaderName(SpecVersionAttribute)] = SpecVersion;
 
-            if (DataContentType != null)
-                senderMessage.Headers[DataContentTypeHeader] = DataContentType;
+                foreach (var attribute in Attributes)
+                    senderMessage.Headers[ProtocolBinding.GetHeaderName(attribute.Key)] = attribute.Value;
 
-            if (DataSchema != null)
-                senderMessage.Headers[DataSchemaHeader] = DataSchema;
+                foreach (var header in Headers)
+                    senderMessage.Headers[header.Key] = header.Value;
 
-            if (!string.IsNullOrEmpty(Subject))
-                senderMessage.Headers[SubjectHeader] = Subject;
-
-            senderMessage.Headers[TimeHeader] = Time;
-
-            foreach (var attribute in AdditionalAttributes)
-                senderMessage.Headers[attribute.Key] = attribute.Value;
+                ProtocolBinding.Bind(this, senderMessage); 
+            }
 
             return senderMessage;
         }
@@ -292,61 +507,39 @@ namespace RockLib.Messaging.CloudEvents
         {
             ProtocolBinding = protocolBinding ?? DefaultProtocolBinding;
 
-            _data = receiverMessage.IsBinary()
-                ? (object)receiverMessage.BinaryPayload
-                : receiverMessage.StringPayload;
-
-            foreach (var header in receiverMessage.Headers)
-                AdditionalAttributes.Add(header);
-
-            if (receiverMessage.Headers.TryGetValue(SpecVersionHeader, out string specVersion))
+            if (IsStructuredMode(receiverMessage))
             {
-                if (specVersion != _specVersion1_0)
-                    throw new CloudEventValidationException(
-                        $"Invalid value found in '{SpecVersionHeader}' header. Expected '{_specVersion1_0}', but was '{specVersion}'.");
-                AdditionalAttributes.Remove(SpecVersionHeader);
+                FromJson(receiverMessage.StringPayload);
+
+                foreach (var header in receiverMessage.Headers)
+                    if (header.Key != StructuredModeContentTypeHeader)
+                        Headers.Add(header);
             }
-
-            if (receiverMessage.Headers.TryGetValue(IdHeader, out string id))
+            else
             {
-                Id = id;
-                AdditionalAttributes.Remove(IdHeader);
-            }
+                _data = receiverMessage.IsBinary()
+                    ? (object)receiverMessage.BinaryPayload
+                    : receiverMessage.StringPayload;
 
-            if (receiverMessage.Headers.TryGetValue(SourceHeader, out string source))
-            {
-                Source = source;
-                AdditionalAttributes.Remove(SourceHeader);
-            }
+                foreach (var header in receiverMessage.Headers)
+                {
+                    var attributeName = ProtocolBinding.GetAttributeName(header.Key, out bool isCloudEventAttribute);
 
-            if (receiverMessage.Headers.TryGetValue(TypeHeader, out string type))
-            {
-                Type = type;
-                AdditionalAttributes.Remove(TypeHeader);
-            }
+                    if (isCloudEventAttribute)
+                        Attributes.Add(attributeName, header.Value);
+                    else
+                        Headers.Add(attributeName, header.Value);
+                }
 
-            if (receiverMessage.Headers.TryGetValue(DataContentTypeHeader, out string dataContentType))
-            {
-                DataContentType = dataContentType;
-                AdditionalAttributes.Remove(DataContentTypeHeader);
-            }
+                if (Attributes.TryGetValue(SpecVersionAttribute, out var value) && value is string specVersion)
+                {
+                    if (specVersion != _specVersion1_0)
+                        throw new CloudEventValidationException(
+                            $"Invalid '{SpecVersionAttribute}' attribute. Expected '{_specVersion1_0}', but was '{specVersion}'.");
+                    Attributes.Remove(SpecVersionAttribute);
+                }
 
-            if (receiverMessage.Headers.TryGetValue(DataSchemaHeader, out string dataSchema))
-            {
-                DataSchema = dataSchema;
-                AdditionalAttributes.Remove(DataSchemaHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(SubjectHeader, out string subject))
-            {
-                Subject = subject;
-                AdditionalAttributes.Remove(SubjectHeader);
-            }
-
-            if (receiverMessage.Headers.TryGetValue(TimeHeader, out DateTime time))
-            {
-                Time = time;
-                AdditionalAttributes.Remove(TimeHeader);
+                ProtocolBinding.Bind(receiverMessage, this);
             }
         }
 
@@ -354,22 +547,30 @@ namespace RockLib.Messaging.CloudEvents
         /// Creates an <see cref="HttpRequestMessage"/> with headers mapped from the attributes of this cloud event.
         /// </summary>
         /// <param name="requestUri">A string that represents the request <see cref="Uri"/>.</param>
+        /// <param name="structuredMode">
+        /// <see langword="true"/> to render in Structured Mode, otherwise <see langword="false"/>
+        /// to render in Binary Mode.
+        /// </param>
         /// <returns>The mapped <see cref="HttpRequestMessage"/>.</returns>
-        public HttpRequestMessage ToHttpRequestMessage(string requestUri = null) =>
-            ToHttpRequestMessage(HttpMethod.Get, requestUri);
+        public HttpRequestMessage ToHttpRequestMessage(string requestUri = null, bool structuredMode = false) =>
+            ToHttpRequestMessage(HttpMethod.Get, requestUri, structuredMode);
 
         /// <summary>
         /// Creates an <see cref="HttpRequestMessage"/> with headers mapped from the attributes of this cloud event.
         /// </summary>
         /// <param name="method">The HTTP method of the request.</param>
         /// <param name="requestUri">A string that represents the request <see cref="Uri"/>.</param>
+        /// <param name="structuredMode">
+        /// <see langword="true"/> to render in Structured Mode, otherwise <see langword="false"/>
+        /// to render in Binary Mode.
+        /// </param>
         /// <returns>The mapped <see cref="HttpRequestMessage"/>.</returns>
-        public HttpRequestMessage ToHttpRequestMessage(HttpMethod method, string requestUri = null)
+        public HttpRequestMessage ToHttpRequestMessage(HttpMethod method, string requestUri = null, bool structuredMode = false)
         {
             if (method is null)
                 throw new ArgumentNullException(nameof(method));
 
-            var message = ToSenderMessage();
+            var message = ToSenderMessage(structuredMode);
             var request = new HttpRequestMessage(method, requestUri);
 
             if (message.IsBinary)
@@ -406,11 +607,17 @@ namespace RockLib.Messaging.CloudEvents
         /// <exception cref="CloudEventValidationException">If the cloud event is invalid.</exception>
         public virtual void Validate()
         {
+            // Ensure that the id attribute exists.
+            _ = Id;
+
             if (Source is null)
                 throw new CloudEventValidationException("Source cannot be null.");
 
             if (string.IsNullOrEmpty(Type))
                 throw new CloudEventValidationException("Type cannot be null or empty.");
+
+            // Ensure that the time attribute exists.
+            _ = Time;
         }
 
         /// <summary>
@@ -421,6 +628,9 @@ namespace RockLib.Messaging.CloudEvents
         /// The <see cref="IProtocolBinding"/> used to map CloudEvent attributes to <see cref="SenderMessage"/>
         /// headers. If <see langword="null"/>, then <see cref="DefaultProtocolBinding"/> is used instead.
         /// </param>
+        /// <exception cref="CloudEventValidationException">
+        /// If the <see cref="SenderMessage"/> is not valid.
+        /// </exception>
         public static void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null)
         {
             if (senderMessage is null)
@@ -577,24 +787,13 @@ namespace RockLib.Messaging.CloudEvents
 
         internal void ClearDataField() => _data = null;
 
-        private string IdHeader => ProtocolBinding.GetHeaderName(IdAttribute);
-
-        private string SourceHeader => ProtocolBinding.GetHeaderName(SourceAttribute);
-
-        private string SpecVersionHeader => ProtocolBinding.GetHeaderName(SpecVersionAttribute);
-
-        private string TypeHeader => ProtocolBinding.GetHeaderName(TypeAttribute);
-
-        private string DataContentTypeHeader => ProtocolBinding.GetHeaderName(DataContentTypeAttribute);
-
-        private string DataSchemaHeader => ProtocolBinding.GetHeaderName(DataSchemaAttribute);
-
-        private string SubjectHeader => ProtocolBinding.GetHeaderName(SubjectAttribute);
-
-        private string TimeHeader => ProtocolBinding.GetHeaderName(TimeAttribute);
-
         private static string NewId() => Guid.NewGuid().ToString();
 
         private static DateTime CurrentTime() => DateTime.UtcNow;
+
+        private static bool IsStructuredMode(IReceiverMessage receiverMessage) =>
+            receiverMessage.Headers.TryGetValue(StructuredModeContentTypeHeader, out string contentType)
+                && contentType.StartsWith(StructuredModeMediaTypePrefix);
+
     }
 }
