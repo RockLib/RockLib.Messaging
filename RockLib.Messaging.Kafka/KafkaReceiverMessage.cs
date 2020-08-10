@@ -1,5 +1,4 @@
 ﻿using Confluent.Kafka;
-using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -46,18 +45,16 @@ namespace RockLib.Messaging.Kafka
         }
 
         /// <inheritdoc />
-        protected override Task RejectMessageAsync(CancellationToken cancellationToken) => CommitAsync();
+        protected override Task RejectMessageAsync(CancellationToken cancellationToken) => StoreOffsetAsync();
 
         /// <inheritdoc />
-        protected override Task AcknowledgeMessageAsync(CancellationToken cancellationToken) => CommitAsync();
+        protected override Task AcknowledgeMessageAsync(CancellationToken cancellationToken) => StoreOffsetAsync();
 
         /// <inheritdoc />
         protected override Task RollbackMessageAsync(CancellationToken cancellationToken) => Tasks.CompletedTask;
 
-        private Task CommitAsync()
+        private Task StoreOffsetAsync()
         {
-            Consumer.Commit(Result);
-
             if (_enableAutoOffsetStore is false)
                 Consumer.StoreOffset(Result);
 

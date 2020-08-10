@@ -24,12 +24,6 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         public string GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to automatically and periodically commit
-        /// offsets in the background.
-        /// </summary>
-        public bool EnableAutoCommit { get; set; } = true;
-
-        /// <summary>
         /// Gets or sets a value indicating whether to automatically store offset of last message
         /// provided to application.
         /// </summary>
