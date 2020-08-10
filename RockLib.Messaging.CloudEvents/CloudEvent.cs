@@ -137,6 +137,12 @@ namespace RockLib.Messaging.CloudEvents
         public static bool IndentStructuredMode { get; set; }
 
         /// <summary>
+        /// Whether to indent the string data of an event when loading from a JSON-formatted event
+        /// string. Applicable only when the 'data' memeber is a JSON object or array.
+        /// </summary>
+        public static bool IndentDataFromJson { get; set; }
+
+        /// <summary>
         /// Gets or sets the default <see cref="IProtocolBinding"/>. The <see cref=
         /// "ProtocolBinding"/> property defaults to the value of this property if not set
         /// explicitly.
@@ -394,16 +400,14 @@ namespace RockLib.Messaging.CloudEvents
                 jobject.Add(attribute.Key, JToken.FromObject(attribute.Value));
 
             if (_data is byte[] binaryData)
-                jobject.Add("data_base64", Convert.ToBase64String(binaryData));
+                jobject["data_base64"] = Convert.ToBase64String(binaryData);
             else if (_data is string stringData)
             {
                 JToken dataToken;
                 try { dataToken = JToken.Parse(stringData); }
                 catch { dataToken = new JValue(stringData); }
-                jobject.Add("data", dataToken);
+                jobject["data"] = dataToken;
             }
-            else
-                jobject.Add("data", JValue.CreateNull());
 
             return jobject.ToString(indent ? Formatting.Indented : Formatting.None);
         }
@@ -414,12 +418,24 @@ namespace RockLib.Messaging.CloudEvents
 
             if (jobject.TryGetValue("data_base64", out var token))
             {
-                if (token is JValue value && value.Value is string stringValue)
-                    _data = Convert.FromBase64String(stringValue);
+                if (token is JValue jvalue)
+                {
+                    if (jvalue.Value is string stringValue)
+                        try { _data = Convert.FromBase64String(stringValue); }
+                        catch (Exception ex) { throw new CloudEventValidationException("'data_base64' must have a valid base-64 encoded binary value.", ex); }
+                    else if (jvalue.Value != null)
+                        throw new CloudEventValidationException("'data_base64' must have a string value.");
+                }
                 else
-                    throw new InvalidOperationException("'data_base64' attribute must have a string value.");
+                    throw new CloudEventValidationException("'data_base64' must have a string value.");
+
+                if (_data != null
+                    && jobject.TryGetValue("data", out token)
+                    && (!(token is JValue jv) || jv.Value != null))
+                    throw new CloudEventValidationException("'data_base64' and 'data' cannot both have values.");
             }
-            else if (jobject.TryGetValue("data", out token))
+            
+            if (jobject.TryGetValue("data", out token))
             {
                 if (token is JValue jvalue)
                 {
@@ -430,10 +446,10 @@ namespace RockLib.Messaging.CloudEvents
                     else if (jvalue.Value is bool b)
                         _data = b ? "true" : "false";
                     else
-                        _data = jvalue.Value.ToString();
+                        _data = jvalue.Value?.ToString();
                 }
                 else
-                    _data = token.ToString(Formatting.None);
+                    _data = token.ToString(IndentDataFromJson ? Formatting.Indented : Formatting.None);
             }
 
             foreach (var attribute in jobject)
@@ -443,7 +459,7 @@ namespace RockLib.Messaging.CloudEvents
 
                 if (attribute.Key == "specversion")
                 {
-                    if (attribute.Value is JValue jv && jv.Value is string stringValue && stringValue == "1.0")
+                    if (attribute.Value is JValue jv && jv.Value?.ToString() == "1.0")
                         continue;
 
                     throw new CloudEventValidationException(
@@ -453,7 +469,8 @@ namespace RockLib.Messaging.CloudEvents
                 if (attribute.Value is JValue jvalue)
                     Attributes[attribute.Key] = jvalue.Value;
                 else
-                    Attributes[attribute.Key] = attribute.Value.ToString(Formatting.None);
+                    throw new CloudEventValidationException(
+                        $"Invalid value for '{attribute.Key}' member: {attribute.Value.ToString(Formatting.Indented)}");
             }
         }
 
