@@ -5,6 +5,7 @@ using RockLib.Messaging.Testing;
 using System;
 using System.Linq;
 using System.Net.Mime;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace RockLib.Messaging.CloudEvents.Tests
@@ -235,8 +236,18 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.BinaryData.Should().BeEquivalentTo(data);
         }
 
-        [Fact(DisplayName = "Constructor 4 maps unformatted 'data' attribute to StringData")]
+        [Fact(DisplayName = "Constructor 4 handles null 'data_base64' attribute")]
         public void Constructor4HappyPath2()
+        {
+            var json = "{\"data_base64\":null}";
+
+            var cloudEvent = new CloudEvent(json);
+
+            cloudEvent.BinaryData.Should().BeNull();
+        }
+
+        [Fact(DisplayName = "Constructor 4 maps unformatted 'data' attribute to StringData")]
+        public void Constructor4HappyPath3()
         {
             var data = "Hello, world!";
             var json = $"{{\"data\":\"{data}\"}}";
@@ -247,7 +258,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         }
 
         [Fact(DisplayName = "Constructor 4 maps JSON 'data' attribute to StringData")]
-        public void Constructor4HappyPath3()
+        public void Constructor4HappyPath4()
         {
             var data = "{\"foo\":\"abc\",\"bar\":123.45,\"baz\":true}";
             var json = $"{{\"data\":{data}}}";
@@ -258,7 +269,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         }
 
         [Fact(DisplayName = "Constructor 4 maps DateTime 'data' attribute to StringData")]
-        public void Constructor4HappyPath4()
+        public void Constructor4HappyPath5()
         {
             var data = DateTime.UtcNow.ToString("O");
             var json = $"{{\"data\":\"{data}\"}}";
@@ -269,7 +280,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         }
 
         [Fact(DisplayName = "Constructor 4 maps bool 'data' attribute to StringData")]
-        public void Constructor4HappyPath5()
+        public void Constructor4HappyPath6()
         {
             var data = "true";
             var json = $"{{\"data\":{data}}}";
@@ -280,7 +291,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         }
 
         [Fact(DisplayName = "Constructor 4 maps numeric 'data' attribute to StringData")]
-        public void Constructor4HappyPath6()
+        public void Constructor4HappyPath7()
         {
             var data = "123.45";
             var json = $"{{\"data\":{data}}}";
@@ -290,8 +301,18 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.StringData.Should().Be(data);
         }
 
+        [Fact(DisplayName = "Constructor 4 handles null 'data' attribute")]
+        public void Constructor4HappyPath8()
+        {
+            var json = "{\"data\":null}";
+
+            var cloudEvent = new CloudEvent(json);
+
+            cloudEvent.StringData.Should().BeNull();
+        }
+
         [Fact(DisplayName = "Constructor 4 maps attributes")]
-        public void Constructor4HappyPath7()
+        public void Constructor4HappyPath9()
         {
             var json = "{\"type\":\"MyType\",\"source\":\"/MySource\"}";
 
@@ -330,7 +351,65 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             Action act = () => new CloudEvent(json);
 
-            act.Should().ThrowExactly<CloudEventValidationException>();
+            act.Should().ThrowExactly<CloudEventValidationException>().WithMessage("Invalid 'specversion' attribute*");
+        }
+
+        [Theory(DisplayName = "Constructor 4 throws when data_base64 value is not a string")]
+        [InlineData("123.45")]
+        [InlineData("{\"foo\":123}")]
+        [InlineData("[\"abc\"]")]
+        public void Constructor4SadPath4(string data_base64)
+        {
+            // Invalid data_base64
+
+            var json = $"{{\"data_base64\":{data_base64}}}";
+
+            Action act = () => new CloudEvent(json);
+
+            act.Should().ThrowExactly<CloudEventValidationException>().WithMessage("'data_base64' must have a string value.");
+        }
+
+        [Fact(DisplayName = "Constructor 4 throws when data_base64 value is not a valid base-64 encoded binary value")]
+        public void Constructor4SadPath5()
+        {
+            // Invalid base-64 string for data_base64
+
+            var json = "{\"data_base64\":\"Hello, world!\"}";
+
+            Action act = () => new CloudEvent(json);
+
+            act.Should().ThrowExactly<CloudEventValidationException>().WithMessage("'data_base64' must have a valid base-64 encoded binary value.");
+        }
+
+        [Theory(DisplayName = "Constructor 4 throws when data and data_base64 are both provided")]
+        [InlineData("{\"foo\":123}")]
+        [InlineData("[123,null,{}]")]
+        [InlineData("\"Hello, world!\"")]
+        [InlineData("123.45")]
+        public void Constructor4SadPath6(string data)
+        {
+            // data and data_base64 both provided
+
+            var binaryData = new byte[] { 1, 2, 3, 4 };
+            var json = $"{{\"data_base64\":\"{Convert.ToBase64String(binaryData)}\",\"data\":{data}}}";
+
+            Action act = () => new CloudEvent(json);
+
+            act.Should().ThrowExactly<CloudEventValidationException>().WithMessage("'data_base64' and 'data' cannot both have values.");
+        }
+
+        [Theory(DisplayName = "Constructor 4 throws when attribute value is not a string")]
+        [InlineData("{\"foo\":123}")]
+        [InlineData("[\"abc\"]")]
+        public void Constructor4SadPath7(string attributeValue)
+        {
+            // Attribute value is not a string.
+
+            var json = $"{{\"customattribute\":{attributeValue}}}";
+
+            Action act = () => new CloudEvent(json);
+
+            act.Should().ThrowExactly<CloudEventValidationException>().WithMessage("Invalid value for 'customattribute' member*");
         }
 
         #endregion
@@ -566,7 +645,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             data.Should().Be(unformattedData);
         }
 
-        [Fact(DisplayName = "ToJson method maps null data to null 'data' field")]
+        [Fact(DisplayName = "ToJson method does not map null data")]
         public void ToJsonMethodHappyPath6()
         {
             var cloudEvent = new CloudEvent
@@ -579,9 +658,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var json = JObject.Parse(jsonString);
 
-            json.Should().ContainKey("data")
-                .WhichValue.Should().BeOfType<JValue>()
-                .Which.Value.Should().BeNull();
+            json.Should().NotContainKey("data");
         }
 
         [Theory(DisplayName = "ToJson method indent parameter works as expected")]
