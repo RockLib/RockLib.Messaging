@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging</PackageId>
-    <PackageVersion>2.4.2</PackageVersion>
+    <PackageVersion>2.4.3</PackageVersion>
     <Authors>RockLib</Authors>
     <Description>A simple API for sending and receiving messages.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -30,9 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RockLib.Compression" Version="1.0.2" />
-    <PackageReference Include="RockLib.Configuration" Version="2.4.3" />
-    <PackageReference Include="RockLib.Configuration.ObjectFactory" Version="1.6.2" />
+    <PackageReference Include="RockLib.Compression" Version="1.0.3" />
+    <PackageReference Include="RockLib.Configuration" Version="2.4.4" />
+    <PackageReference Include="RockLib.Configuration.ObjectFactory" Version="1.6.3" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'!='net451'">
