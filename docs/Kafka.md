@@ -111,6 +111,10 @@ The first has the following parameters:
   - Client group id string. All clients sharing the same group.id belong to the same group.
 - bootstrapServers
   - List of brokers as a CSV list of broker host or host:port.
+- enableAutoOffsetStore
+  - Whether to automatically store offset of last message provided to application.
+- autoOffsetReset
+  - Action to take when there is no initial offset in offset store or the desired offset is out of range: 'smallest','earliest' - automatically reset the offset to the smallest offset, 'largest','latest' - automatically reset the offset to the largest offset, 'error' - trigger an error which is retrieved by consuming messages and checking 'message->err'.
 
 And the second has the following parameters:
 
