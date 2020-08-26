@@ -17,7 +17,7 @@ namespace RockLib.Messaging.CloudEvents
         public CorrelatedEvent() : base() { }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SequentialEvent"/> class based on the
+        /// Initializes a new instance of the <see cref="CorrelatedEvent"/> class based on the
         /// source sequential event. All cloud and correlated event attributes except <see cref=
         /// "CloudEvent.Id"/> and <see cref="CloudEvent.Time"/> are copied to the new instance.
         /// Note that the source event's data is <em>not</em> copied to the new instance.

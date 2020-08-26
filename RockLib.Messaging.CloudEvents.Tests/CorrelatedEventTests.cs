@@ -97,21 +97,23 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().NotThrow();
         }
 
-        [Fact(DisplayName = "Validate static method throws given missing CorrelationId header")]
+        [Fact(DisplayName = "Validate static method adds missing CorrelationId header")]
         public void ValidateStaticMethodSadPath()
         {
             // Missing CorrelationId
 
             var senderMessage = new SenderMessage("Hello, world!");
 
+            senderMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "1.0");
             senderMessage.Headers.Add(CloudEvent.IdAttribute, "MyId");
             senderMessage.Headers.Add(CloudEvent.SourceAttribute, new Uri("http://MySource"));
             senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
             senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
 
-            Action act = () => CorrelatedEvent.Validate(senderMessage);
+            CorrelatedEvent.Validate(senderMessage);
 
-            act.Should().ThrowExactly<CloudEventValidationException>();
+            senderMessage.Headers.Should().ContainKey(CorrelatedEvent.CorrelationIdAttribute)
+                .WhichValue.Should().NotBeNull();
         }
     }
 }
