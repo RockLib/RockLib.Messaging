@@ -106,7 +106,7 @@ public class MyService : IHostedService
 
 ## CloudEvent class
 
-The `CloudEvent` class is the base class for all CloudEvents. Three additional implementations, [SequentialEvent](#sequentialevent-class), [CorrelatedEvent](#correlatedevent-class), and []() are included in this package.
+The `CloudEvent` class is the base class for all CloudEvents. Three additional implementations, [SequentialEvent](#sequentialevent-class), [CorrelatedEvent](#correlatedevent-class), and [PartitionedEvent](#partitionedevent-class) are included in this package.
 
 #### CloudEvent Constructors
 
@@ -145,7 +145,7 @@ The following CloudEvent attributes are defined by the `CloudEvent` class:
 | Source (`source`)                   | `string`   | Yes       | N/A                         | Must be valid relative or absolute URI.           |
 | SpecVersion (`specversion`)         | `string`   | Yes       | `"1.0"`                     |                                                   |
 | Type (`type`)                       | `string`   | Yes       | N/A                         |                                                   |
-| DataContentType (`datacontenttype`) | `string`   | No        | N/A                         | Must be valid Content-type according to RFC 2616. |
+| DataContentType (`datacontenttype`) | `string`   | No        | N/A                         | Must be valid Content-Type according to RFC 2616. |
 | DataSchema (`dataschema`)           | `string`   | No        | N/A                         | Must be valid relative or absolute URI.           |
 | Subject (`subject`)                 | `string`   | No        | N/A                         |                                                   |
 | Time (`time`)                       | `DateTime` | No        | `DateTime.UtcNow`           |                                                   |
