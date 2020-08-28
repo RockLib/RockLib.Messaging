@@ -1,6 +1,9 @@
 ﻿using Confluent.Kafka;
+using Confluent.Kafka.Admin;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,6 +21,8 @@ namespace RockLib.Messaging.Kafka
         private readonly Lazy<Thread> _trackingThread;
 
         private readonly bool _enableAutoOffsetStore;
+
+        private readonly ConsumerConfig _config;
 
         private bool _stopped;
         private bool _disposed;
@@ -50,7 +55,7 @@ namespace RockLib.Messaging.Kafka
         {
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
 
-            var config = new ConsumerConfig()
+            _config = new ConsumerConfig()
             {
                 GroupId = groupId ?? throw new ArgumentNullException(nameof(groupId)),
                 BootstrapServers = bootstrapServers ?? throw new ArgumentNullException(nameof(bootstrapServers)),
@@ -58,7 +63,7 @@ namespace RockLib.Messaging.Kafka
                 AutoOffsetReset = autoOffsetReset
             };
 
-            var consumerBuilder = new ConsumerBuilder<string, byte[]>(config);
+            var consumerBuilder = new ConsumerBuilder<string, byte[]>(_config);
             consumerBuilder.SetErrorHandler(OnError);
 
             _consumer = new Lazy<IConsumer<string, byte[]>>(() => consumerBuilder.Build());
@@ -111,6 +116,77 @@ namespace RockLib.Messaging.Kafka
             _trackingThread.Value.Start();
             _consumer.Value.Subscribe(Topic);
             _pollingThread.Value.Start();
+        }
+
+        public void Seek(DateTime timestamp)
+        {
+            if (!_consumer.IsValueCreated)
+                throw new InvalidOperationException();
+
+            var offsets = Consumer.OffsetsForTimes(Consumer.Assignment.Select(tp => new TopicPartitionTimestamp(tp, new Timestamp(timestamp))), TimeSpan.FromSeconds(5));
+            foreach (var offset in offsets)
+                Consumer.Seek(offset);
+        }
+
+        public void Replay(DateTime start, DateTime end, Func<IReceiverMessage, Task> callback)
+        {
+            Config config = new AdminClientConfig()
+            {
+                BootstrapServers = _config.BootstrapServers
+            };
+
+            var builder = new AdminClientBuilder(config);
+            var client = builder.Build();
+            var meta = client.GetMetadata(Topic, TimeSpan.FromSeconds(5));
+
+            var topicPartitions = new List<TopicPartition>();
+
+            foreach (var topic in meta.Topics)
+            {
+                foreach (var partition in topic.Partitions)
+                {
+                    topicPartitions.Add(new TopicPartition(topic.Topic, new Partition(partition.PartitionId)));
+                }
+            }
+
+            config = new ConsumerConfig()
+            {
+                GroupId = "kafka-receiver-replay",
+                BootstrapServers = _config.BootstrapServers,
+                EnableAutoOffsetStore = _enableAutoOffsetStore
+            };
+            var consumerBuilder = new ConsumerBuilder<string, byte[]>(config);
+            var consumer = consumerBuilder.Build();
+
+            var startTimestamps = topicPartitions.Select(tp => new TopicPartitionTimestamp(tp, new Timestamp(start)));
+            var endTimestamps = topicPartitions.Select(tp => new TopicPartitionTimestamp(tp, new Timestamp(end)));
+
+            var startOffsets = consumer.OffsetsForTimes(startTimestamps, TimeSpan.FromSeconds(5));
+            var endOffsets = consumer.OffsetsForTimes(endTimestamps, TimeSpan.FromSeconds(5));
+
+            consumer.Assign(startOffsets);
+
+            var partitionsFinished = new bool[endOffsets.Count];
+
+            while (true)
+            {
+                var result = consumer.Consume(TimeSpan.FromSeconds(5));
+                if (result is null)
+                    return;
+
+                var message = new KafkaReceiverMessage(consumer, result, _enableAutoOffsetStore);
+                callback(message).Wait();
+
+                for (int i = 0; i < endOffsets.Count; i++)
+                {
+                    if (result.Offset.Value == endOffsets[i].Offset.Value
+                        && result.Partition.Value == endOffsets[i].Partition.Value)
+                        partitionsFinished[i] = true;
+                }
+
+                if (partitionsFinished.All(x => x))
+                    return;
+            }
         }
 
         /// <summary>
