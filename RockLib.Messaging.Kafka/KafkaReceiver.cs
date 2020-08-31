@@ -128,32 +128,34 @@ namespace RockLib.Messaging.Kafka
                 Consumer.Seek(offset);
         }
 
-        public void Replay(DateTime start, DateTime end, Func<IReceiverMessage, Task> callback)
+        public void Replay(DateTime start, DateTime end, Func<IReceiverMessage, Task> callback) =>
+            Replay(start, end, callback, Topic, _config.BootstrapServers, _config.EnableAutoOffsetStore.Value, _config.AutoOffsetReset.Value);
+
+        public static void Replay(DateTime start, DateTime end, Func<IReceiverMessage, Task> callback,
+            string topic, string bootstrapServers,
+            bool enableAutoOffsetStore = false, AutoOffsetReset autoOffsetReset = AutoOffsetReset.Latest)
         {
             Config config = new AdminClientConfig()
             {
-                BootstrapServers = _config.BootstrapServers
+                BootstrapServers = bootstrapServers
             };
 
             var builder = new AdminClientBuilder(config);
             var client = builder.Build();
-            var meta = client.GetMetadata(Topic, TimeSpan.FromSeconds(5));
+            var topics = client.GetMetadata(topic, TimeSpan.FromSeconds(5)).Topics;
 
             var topicPartitions = new List<TopicPartition>();
 
-            foreach (var topic in meta.Topics)
-            {
-                foreach (var partition in topic.Partitions)
-                {
-                    topicPartitions.Add(new TopicPartition(topic.Topic, new Partition(partition.PartitionId)));
-                }
-            }
+            foreach (var topicMetaData in topics)
+                foreach (var partition in topicMetaData.Partitions)
+                    topicPartitions.Add(new TopicPartition(topicMetaData.Topic, new Partition(partition.PartitionId)));
 
             config = new ConsumerConfig()
             {
                 GroupId = "kafka-receiver-replay",
-                BootstrapServers = _config.BootstrapServers,
-                EnableAutoOffsetStore = _enableAutoOffsetStore
+                BootstrapServers = bootstrapServers,
+                EnableAutoOffsetStore = enableAutoOffsetStore,
+                AutoOffsetReset = autoOffsetReset
             };
             var consumerBuilder = new ConsumerBuilder<string, byte[]>(config);
             var consumer = consumerBuilder.Build();
@@ -174,7 +176,7 @@ namespace RockLib.Messaging.Kafka
                 if (result is null)
                     return;
 
-                var message = new KafkaReceiverMessage(consumer, result, _enableAutoOffsetStore);
+                var message = new KafkaReceiverMessage(consumer, result, enableAutoOffsetStore);
                 callback(message).Wait();
 
                 for (int i = 0; i < endOffsets.Count; i++)
@@ -184,7 +186,7 @@ namespace RockLib.Messaging.Kafka
                         partitionsFinished[i] = true;
                 }
 
-                if (partitionsFinished.All(x => x))
+                if (partitionsFinished.All(finished => finished is true))
                     return;
             }
         }
