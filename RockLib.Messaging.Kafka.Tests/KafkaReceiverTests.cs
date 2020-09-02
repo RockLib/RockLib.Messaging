@@ -26,19 +26,6 @@ namespace RockLib.Messaging.Kafka.Tests
             sender.Consumer.Should().NotBeNull();
         }
 
-        [Fact(DisplayName = "KafkaReceiver constructor 2 sets appropriate properties")]
-        public void KafkaReceiverConstructor2HappyPath()
-        {
-            var name = "name";
-            var topic = "topic";
-            var consumer = new Mock<IConsumer<string, byte[]>>().Object;
-            var sender = new KafkaReceiver(name, topic, consumer);
-
-            sender.Name.Should().Be(name);
-            sender.Topic.Should().Be(topic);
-            sender.Consumer.Should().BeSameAs(consumer);
-        }
-
         [Fact(DisplayName = "KafkaReceiver constructor 1 throws on null topic")]
         public void KafkaReceiverConstructor1SadPath1()
         {
@@ -57,20 +44,6 @@ namespace RockLib.Messaging.Kafka.Tests
         public void KafkaReceiverConstructor1SadPath3()
         {
             Action action = () => new KafkaReceiver("name", "topic", "groupId", null);
-            action.Should().Throw<ArgumentNullException>();
-        }
-
-        [Fact(DisplayName = "KafkaReceiver constructor 2 throws on null topic")]
-        public void KafkaReceiverConstructor2SadPath1()
-        {
-            Action action = () => new KafkaReceiver("name", null, new Mock<IConsumer<string, byte[]>>().Object);
-            action.Should().Throw<ArgumentNullException>();
-        }
-
-        [Fact(DisplayName = "KafkaReceiver constructor 2 throws on null consumer")]
-        public void KafkaReceiverConstructor2SadPath2()
-        {
-            Action action = () => new KafkaReceiver("name", "topic", null);
             action.Should().Throw<ArgumentNullException>();
         }
 

@@ -1,5 +1,4 @@
 ﻿using Confluent.Kafka;
-using Confluent.Kafka.Admin;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,15 +13,13 @@ namespace RockLib.Messaging.Kafka
     /// </summary>
     public class KafkaReceiver : Receiver
     {
+        public const string ReplayGroupId = "kafka-receiver-replay";
+
         private readonly Lazy<Thread> _pollingThread;
         private readonly Lazy<IConsumer<string, byte[]>> _consumer;
         private readonly CancellationTokenSource _disposeSource = new CancellationTokenSource();
         private readonly BlockingCollection<Task> _trackingCollection = new BlockingCollection<Task>();
         private readonly Lazy<Thread> _trackingThread;
-
-        private readonly bool _enableAutoOffsetStore;
-
-        private readonly ConsumerConfig _config;
 
         private bool _stopped;
         private bool _disposed;
@@ -53,46 +50,23 @@ namespace RockLib.Messaging.Kafka
             bool enableAutoOffsetStore = false, AutoOffsetReset autoOffsetReset = AutoOffsetReset.Latest)
             : base(name)
         {
-            Topic = topic ?? throw new ArgumentNullException(nameof(topic));
+            if (string.IsNullOrEmpty(topic))
+                Topic = topic ?? throw new ArgumentNullException(nameof(topic));
+            if (string.IsNullOrEmpty(groupId))
+                throw new ArgumentNullException(nameof(groupId));
+            if (string.IsNullOrEmpty(bootstrapServers))
+                throw new ArgumentNullException(nameof(bootstrapServers));
 
-            _config = new ConsumerConfig()
-            {
-                GroupId = groupId ?? throw new ArgumentNullException(nameof(groupId)),
-                BootstrapServers = bootstrapServers ?? throw new ArgumentNullException(nameof(bootstrapServers)),
-                EnableAutoOffsetStore = enableAutoOffsetStore,
-                AutoOffsetReset = autoOffsetReset
-            };
+            Topic = topic;
+            GroupId = groupId;
+            BootstrapServers = bootstrapServers;
+            EnableAutoOffsetStore = enableAutoOffsetStore;
+            AutoOffsetReset = autoOffsetReset;
 
-            var consumerBuilder = new ConsumerBuilder<string, byte[]>(_config);
+            var consumerBuilder = new ConsumerBuilder<string, byte[]>(GetConsumerConfig());
             consumerBuilder.SetErrorHandler(OnError);
 
             _consumer = new Lazy<IConsumer<string, byte[]>>(() => consumerBuilder.Build());
-
-            _pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
-            _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
-
-            _enableAutoOffsetStore = enableAutoOffsetStore;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="KafkaReceiver"/> class.
-        /// </summary>
-        /// <param name="name">The name of the receiver.</param>
-        /// <param name="topic">
-        /// The topic to subscribe to. A regex can be specified to subscribe to the set of
-        /// all matching topics (which is updated as topics are added / removed from the
-        /// cluster). A regex must be front anchored to be recognized as a regex. e.g. ^myregex
-        /// </param>
-        /// <param name="consumer">The Kafka <see cref="IConsumer{TKey, TValue}" /> to use for receiving messages.</param>
-        public KafkaReceiver(string name, string topic, IConsumer<string, byte[]> consumer)
-            : base(name)
-        {
-            if (consumer == null)
-                throw new ArgumentNullException(nameof(consumer));
-
-            Topic = topic ?? throw new ArgumentNullException(nameof(topic));
-
-            _consumer = new Lazy<IConsumer<string, byte[]>>(() => consumer);
 
             _pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
             _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
@@ -102,6 +76,14 @@ namespace RockLib.Messaging.Kafka
         /// Gets the topic to subscribe to.
         /// </summary>
         public string Topic { get; }
+        
+        public string GroupId { get; }
+        
+        public string BootstrapServers { get; }
+        
+        public bool EnableAutoOffsetStore { get; }
+        
+        public AutoOffsetReset AutoOffsetReset { get; }
 
         /// <summary>
         /// Gets the <see cref="IConsumer{TKey, TValue}" /> for this instance of <see cref="KafkaReceiver"/>.
@@ -128,20 +110,44 @@ namespace RockLib.Messaging.Kafka
                 Consumer.Seek(offset);
         }
 
-        public void Replay(DateTime start, DateTime end, Func<IReceiverMessage, Task> callback) =>
-            Replay(start, end, callback, Topic, _config.BootstrapServers, _config.EnableAutoOffsetStore.Value, _config.AutoOffsetReset.Value);
-
-        public static void Replay(DateTime start, DateTime end, Func<IReceiverMessage, Task> callback,
-            string topic, string bootstrapServers,
-            bool enableAutoOffsetStore = false, AutoOffsetReset autoOffsetReset = AutoOffsetReset.Latest)
+        public Task Replay(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback = null)
         {
-            Config config = new AdminClientConfig()
+            if (callback is null)
             {
-                BootstrapServers = bootstrapServers
-            };
+                if (MessageHandler != null)
+                    callback = message => MessageHandler.OnMessageReceivedAsync(this, message);
+                else
+                    throw new InvalidOperationException($"Replay cannot be called with a null '{nameof(callback)}' parameter before the receiver has been started.");
+            }
 
-            var builder = new AdminClientBuilder(config);
-            var client = builder.Build();
+            return Replay(start, end, callback, Topic, BootstrapServers, EnableAutoOffsetStore, AutoOffsetReset);
+        }
+
+        public static async Task Replay(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback,
+            string topic, string bootstrapServers, bool enableAutoOffsetStore = false,
+            AutoOffsetReset autoOffsetReset = AutoOffsetReset.Latest)
+        {
+            if (end.HasValue)
+            {
+                if (end.Value < start)
+                    throw new ArgumentException("Cannot be earlier than 'start' parameter.", nameof(end));
+                if (end.Value.Kind != DateTimeKind.Utc)
+                    end = end.Value.ToUniversalTime();
+            }
+            else
+                end = DateTime.UtcNow;
+            if (callback is null)
+                throw new ArgumentNullException(nameof(callback));
+            if (string.IsNullOrEmpty(topic))
+                throw new ArgumentNullException(nameof(topic), "Cannot be null or empty.");
+            if (string.IsNullOrEmpty(bootstrapServers))
+                throw new ArgumentNullException(nameof(bootstrapServers), "Cannot be null or empty.");
+
+            var endTimestamp = end.Value;
+
+            Config config = new AdminClientConfig() { BootstrapServers = bootstrapServers };
+            var clientBuilder = new AdminClientBuilder(config);
+            var client = clientBuilder.Build();
             var topics = client.GetMetadata(topic, TimeSpan.FromSeconds(5)).Topics;
 
             var topicPartitions = new List<TopicPartition>();
@@ -152,7 +158,7 @@ namespace RockLib.Messaging.Kafka
 
             config = new ConsumerConfig()
             {
-                GroupId = "kafka-receiver-replay",
+                GroupId = ReplayGroupId,
                 BootstrapServers = bootstrapServers,
                 EnableAutoOffsetStore = enableAutoOffsetStore,
                 AutoOffsetReset = autoOffsetReset
@@ -161,14 +167,11 @@ namespace RockLib.Messaging.Kafka
             var consumer = consumerBuilder.Build();
 
             var startTimestamps = topicPartitions.Select(tp => new TopicPartitionTimestamp(tp, new Timestamp(start)));
-            var endTimestamps = topicPartitions.Select(tp => new TopicPartitionTimestamp(tp, new Timestamp(end)));
-
             var startOffsets = consumer.OffsetsForTimes(startTimestamps, TimeSpan.FromSeconds(5));
-            var endOffsets = consumer.OffsetsForTimes(endTimestamps, TimeSpan.FromSeconds(5));
 
             consumer.Assign(startOffsets);
-
-            var partitionsFinished = new bool[endOffsets.Count];
+            
+            var partitionsFinished = new bool[startOffsets.Count];
 
             while (true)
             {
@@ -176,18 +179,15 @@ namespace RockLib.Messaging.Kafka
                 if (result is null)
                     return;
 
-                var message = new KafkaReceiverMessage(consumer, result, enableAutoOffsetStore);
-                callback(message).Wait();
-
-                for (int i = 0; i < endOffsets.Count; i++)
-                {
-                    if (result.Offset.Value == endOffsets[i].Offset.Value
-                        && result.Partition.Value == endOffsets[i].Partition.Value)
+                for (int i = 0; i < startOffsets.Count; i++)
+                    if (result.Message.Timestamp.UtcDateTime > endTimestamp)
                         partitionsFinished[i] = true;
-                }
 
                 if (partitionsFinished.All(finished => finished is true))
                     return;
+
+                var message = new KafkaReceiverMessage(consumer, result, enableAutoOffsetStore);
+                await callback(message);
             }
         }
 
@@ -220,6 +220,15 @@ namespace RockLib.Messaging.Kafka
             base.Dispose(disposing);
         }
 
+        private ConsumerConfig GetConsumerConfig() =>
+            new ConsumerConfig()
+            {
+                GroupId = GroupId,
+                BootstrapServers = BootstrapServers,
+                EnableAutoOffsetStore = EnableAutoOffsetStore,
+                AutoOffsetReset = AutoOffsetReset
+            };
+
         private void PollForMessages()
         {
             while (!_stopped)
@@ -227,7 +236,7 @@ namespace RockLib.Messaging.Kafka
                 try
                 {
                     var result = _consumer.Value.Consume(_disposeSource.Token);
-                    var message = new KafkaReceiverMessage(_consumer.Value, result, _enableAutoOffsetStore);
+                    var message = new KafkaReceiverMessage(_consumer.Value, result, EnableAutoOffsetStore);
 
                     if (_connected != true)
                     {
