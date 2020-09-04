@@ -17,5 +17,7 @@ namespace RockLib.Messaging.Kafka
         /// header with this name.</para>
         /// </summary>
         public const string KafkaKeyHeader = "Kafka.Key";
+
+        public const string ReplayGroupId = "kafka-receiver-replay";
     }
 }

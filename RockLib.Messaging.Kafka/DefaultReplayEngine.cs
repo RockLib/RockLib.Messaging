@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Kafka
 {
+    using static Constants;
     using static KafkaReceiver;
 
     public class DefaultReplayEngine : IReplayEngine
@@ -22,7 +23,7 @@ namespace RockLib.Messaging.Kafka
             }
             else
             {
-                end = DateTime.UtcNow;
+                end = GetUtcNow();
                 if (end.Value < start)
                     throw new ArgumentException("Cannot be later than DateTime.UtcNow when 'end' parameter is null.", nameof(start));
             }
@@ -33,17 +34,18 @@ namespace RockLib.Messaging.Kafka
             if (string.IsNullOrEmpty(bootstrapServers))
                 throw new ArgumentNullException(nameof(bootstrapServers), "Cannot be null or empty.");
 
-            var endTimestamp = end.Value;
-
             var consumer = GetConsumer(bootstrapServers, enableAutoOffsetStore, autoOffsetReset);
 
             var startTimestamps = GetStartTimestamps(topic, bootstrapServers, start);
             var startOffsets = consumer.OffsetsForTimes(startTimestamps, TimeSpan.FromSeconds(5));
 
-            await Replay(consumer, startOffsets, endTimestamp, callback, enableAutoOffsetStore);
+            await Replay(consumer, startOffsets, end.Value, callback, enableAutoOffsetStore);
         }
 
-        protected virtual IConsumer<string, byte[]> GetConsumer(string bootstrapServers, bool enableAutoOffsetStore, AutoOffsetReset autoOffsetReset)
+        protected virtual DateTime GetUtcNow() => DateTime.UtcNow;
+
+        protected virtual IConsumer<string, byte[]> GetConsumer(string bootstrapServers,
+            bool enableAutoOffsetStore, AutoOffsetReset autoOffsetReset)
         {
             var config = GetConsumerConfig(ReplayGroupId, bootstrapServers, enableAutoOffsetStore, autoOffsetReset);
             var builder = new ConsumerBuilder<string, byte[]>(config);
@@ -52,14 +54,25 @@ namespace RockLib.Messaging.Kafka
 
         protected virtual IEnumerable<TopicPartitionTimestamp> GetStartTimestamps(string topic, string bootstrapServers, DateTime start)
         {
-            var config = new AdminClientConfig() { BootstrapServers = bootstrapServers };
-            var builder = new AdminClientBuilder(config);
-            var client = builder.Build();
-            var topics = client.GetMetadata(topic, TimeSpan.FromSeconds(5)).Topics;
+            var client = GetAdminClient(bootstrapServers);
+            var topics = client.GetMetadata(topic, TimeSpan.FromSeconds(5))?.Topics;
+
+            if (topics == null)
+                yield break;
 
             foreach (var topicMetaData in topics)
-                foreach (var partition in topicMetaData.Partitions)
-                    yield return new TopicPartitionTimestamp(topicMetaData.Topic, new Partition(partition.PartitionId), new Timestamp(start));
+                if (topicMetaData.Partitions != null && (topicMetaData.Error == null || !topicMetaData.Error.IsError))
+                    foreach (var partitionMetaData in topicMetaData.Partitions)
+                        if (partitionMetaData.Error == null || !partitionMetaData.Error.IsError)
+                            yield return new TopicPartitionTimestamp(topicMetaData.Topic,
+                                new Partition(partitionMetaData.PartitionId), new Timestamp(start));
+        }
+
+        protected virtual IAdminClient GetAdminClient(string bootstrapServers)
+        {
+            var config = new AdminClientConfig() { BootstrapServers = bootstrapServers };
+            var builder = new AdminClientBuilder(config);
+            return builder.Build();
         }
 
         protected virtual async Task Replay(IConsumer<string, byte[]> consumer,
@@ -76,13 +89,21 @@ namespace RockLib.Messaging.Kafka
                 if (result is null)
                     return;
 
+                var afterEndTimestamp = false;
+
                 for (int i = 0; i < startOffsets.Count; i++)
                     if (result.TopicPartition == startOffsets[i].TopicPartition
                         && result.Message.Timestamp.UtcDateTime > endTimestamp)
-                        partitionsFinished[i] = true;
+                    {
+                        afterEndTimestamp = partitionsFinished[i] = true;
+                        break;
+                    }
 
                 if (partitionsFinished.All(finished => finished is true))
                     return;
+
+                if (afterEndTimestamp)
+                    continue;
 
                 var message = new KafkaReceiverMessage(consumer, result, enableAutoOffsetStore);
                 try { await callback(message); }

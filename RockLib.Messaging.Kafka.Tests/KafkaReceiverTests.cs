@@ -204,11 +204,10 @@ namespace RockLib.Messaging.Kafka.Tests
         {
             Func<IReceiverMessage, Task> capturedCallback = null;
 
-            Func<DateTime, DateTime?, Func<IReceiverMessage, Task>, string, string, bool, AutoOffsetReset, Task> mockReplayEngineCallback =
+            Action<DateTime, DateTime?, Func<IReceiverMessage, Task>, string, string, bool, AutoOffsetReset> mockReplayEngineCallback =
                 (start, end, callback, topic, bootstrapServers, enableAutoOffsetStore, autoOffsetReset) =>
                 {
                     capturedCallback = callback;
-                    return Task.CompletedTask;
                 };
 
             var mockReplayEngine = new Mock<IReplayEngine>();

@@ -12,8 +12,6 @@ namespace RockLib.Messaging.Kafka
     /// </summary>
     public class KafkaReceiver : Receiver
     {
-        public const string ReplayGroupId = "kafka-receiver-replay";
-
         private readonly Lazy<Thread> _pollingThread;
         private readonly Lazy<IConsumer<string, byte[]>> _consumer;
         private readonly CancellationTokenSource _disposeSource = new CancellationTokenSource();
