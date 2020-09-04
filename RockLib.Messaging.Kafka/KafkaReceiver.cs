@@ -31,8 +31,12 @@ namespace RockLib.Messaging.Kafka
         /// all matching topics (which is updated as topics are added / removed from the
         /// cluster). A regex must be front anchored to be recognized as a regex. e.g. ^myregex
         /// </param>
-        /// <param name="groupId">Client group id string. All clients sharing the same group.id belong to the same group.</param>
-        /// <param name="bootstrapServers">List of brokers as a CSV list of broker host or host:port.</param>
+        /// <param name="groupId">
+        /// Client group id string. All clients sharing the same group.id belong to the same group.
+        /// </param>
+        /// <param name="bootstrapServers">
+        /// List of brokers as a CSV list of broker host or host:port.
+        /// </param>
         /// <param name="enableAutoOffsetStore">
         /// Whether to automatically store offset of last message provided to application.
         /// </param>
@@ -42,6 +46,10 @@ namespace RockLib.Messaging.Kafka
         /// to the smallest offset, 'largest','latest' - automatically reset the offset to
         /// the largest offset, 'error' - trigger an error which is retrieved by consuming
         /// messages and checking 'message->err'.
+        /// </param>
+        /// <param name="replayEngine">
+        /// The <see cref="IReplayEngine"/> used to replay messages. If <see langword="null"/>,
+        /// then a <see cref="DefaultReplayEngine"/> is used.
         /// </param>
         public KafkaReceiver(string name, string topic, string groupId, string bootstrapServers,
             bool enableAutoOffsetStore = false, AutoOffsetReset autoOffsetReset = AutoOffsetReset.Latest,
@@ -76,15 +84,34 @@ namespace RockLib.Messaging.Kafka
         /// Gets the topic to subscribe to.
         /// </summary>
         public string Topic { get; }
-        
+
+        /// <summary>
+        /// Client group id string. All clients sharing the same group.id belong to the same group.
+        /// </summary>
         public string GroupId { get; }
-        
+
+        /// <summary>
+        /// List of brokers as a CSV list of broker host or host:port.
+        /// </summary>
         public string BootstrapServers { get; }
-        
+
+        /// <summary>
+        /// Whether to automatically store offset of last message provided to application.
+        /// </summary>
         public bool EnableAutoOffsetStore { get; }
-        
+
+        /// <summary>
+        /// Action to take when there is no initial offset in offset store or the desired
+        /// offset is out of range: 'smallest','earliest' - automatically reset the offset
+        /// to the smallest offset, 'largest','latest' - automatically reset the offset to
+        /// the largest offset, 'error' - trigger an error which is retrieved by consuming
+        /// messages and checking 'message->err'.
+        /// </summary>
         public AutoOffsetReset AutoOffsetReset { get; }
 
+        /// <summary>
+        /// The <see cref="IReplayEngine"/> used to replay messages.
+        /// </summary>
         public IReplayEngine ReplayEngine { get; }
 
         /// <summary>
@@ -92,6 +119,13 @@ namespace RockLib.Messaging.Kafka
         /// </summary>
         public IConsumer<string, byte[]> Consumer { get { return _consumer.Value; } }
 
+        /// <summary>
+        /// Seeks to the specified timestamp.
+        /// </summary>
+        /// <param name="timestamp">The timestamp to seek to.</param>
+        /// <exception cref="InvalidOperationException">
+        /// If <see cref="Consumer"/> has not yet been assigned.
+        /// </exception>
         public void Seek(DateTime timestamp)
         {
             if (!Consumer.Assignment.Any())
@@ -103,6 +137,23 @@ namespace RockLib.Messaging.Kafka
                 Consumer.Seek(offset);
         }
 
+        /// <summary>
+        /// Replays messages that were created from <paramref name="start"/> to <paramref name=
+        /// "end"/>, invoking the <paramref name="callback"/> delegate for each message. If
+        /// <paramref name="end"/> is null, then messages that were created from <paramref name=
+        /// "start"/> to the current UTC time are replayed.
+        /// </summary>
+        /// <param name="start">The start time.</param>
+        /// <param name="end">
+        /// The end time, or <see langword="null"/> to use the current time as the end time.
+        /// </param>
+        /// <param name="callback">
+        /// The delegate to invoke for each replayed message, or <see langword="null"/> to replay
+        /// messages using <see cref="Receiver.MessageHandler"/>.
+        /// </param>
+        /// <exception cref="InvalidOperationException">
+        /// If the receiver has not been started yet and <paramref name="callback"/> is null.
+        /// </exception>
         public Task Replay(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback = null)
         {
             if (callback is null)

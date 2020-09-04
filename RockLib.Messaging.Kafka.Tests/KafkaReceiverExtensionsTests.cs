@@ -87,10 +87,15 @@ namespace RockLib.Messaging.Kafka.Tests
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
-        public class FakeKafkaReceiver : IReceiver
+        public class FakeKafkaReceiver : Receiver
         {
             private readonly List<DateTime> _seekInvocations = new List<DateTime>();
             private readonly List<(DateTime, DateTime?, Func<IReceiverMessage, Task>)> _replayInvocations = new List<(DateTime, DateTime?, Func<IReceiverMessage, Task>)>();
+
+            public FakeKafkaReceiver()
+                : base("FakeKafkaReceiver")
+            {
+            }
 
             public IReadOnlyList<DateTime> SeekInvocations => _seekInvocations;
 
@@ -101,15 +106,7 @@ namespace RockLib.Messaging.Kafka.Tests
             public async Task Replay(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback = null) =>
                 _replayInvocations.Add((start, end, callback));
 
-            public string Name { get; set; }
-
-            public IMessageHandler MessageHandler { get; set; }
-
-            public event EventHandler Connected;
-            public event EventHandler<DisconnectedEventArgs> Disconnected;
-            public event EventHandler<ErrorEventArgs> Error;
-
-            public void Dispose()
+            protected override void Start()
             {
             }
         }
