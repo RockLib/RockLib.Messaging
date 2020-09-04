@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace RockLib.Messaging.Kafka
 {
-    public static class ReplayExtensions
+    public static class KafkaReceiverExtensions
     {
         public static void Seek(this IReceiver receiver, DateTime timestamp)
         {
@@ -12,10 +12,10 @@ namespace RockLib.Messaging.Kafka
             r.Seek(timestamp);
         }
 
-        public static void Replay(this IReceiver receiver, DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback = null)
+        public static Task Replay(this IReceiver receiver, DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback = null)
         {
             dynamic r = receiver.Undecorate();
-            r.Replay(start, end, callback);
+            return r.Replay(start, end, callback);
         }
     }
 }

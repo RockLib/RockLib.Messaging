@@ -78,7 +78,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.CloudEven
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RockLib.Messaging.HttpUtils", "RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.shproj", "{93800DE0-2CC4-454D-BD9C-4C7058DFD276}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Messaging.CloudEvents", "Example.Messaging.CloudEvents\Example.Messaging.CloudEvents.csproj", "{13418188-1DFE-48F4-9103-B592B34023B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.CloudEvents", "Example.Messaging.CloudEvents\Example.Messaging.CloudEvents.csproj", "{13418188-1DFE-48F4-9103-B592B34023B2}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
