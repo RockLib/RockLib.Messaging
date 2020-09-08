@@ -59,7 +59,7 @@ namespace RockLib.Messaging.Kafka.Tests
                 .Verify(m => m.Replay(mockConsumer.Object, offsets, end, callback, enableAutoOffsetStore), Times.Once());
         }
 
-        [Fact(DisplayName = "Replay method used UtcNow when end parameter is null")]
+        [Fact(DisplayName = "Replay method uses UtcNow when end parameter is null")]
         public async Task ReplayMethodHappyPath2()
         {
             var offsets = new List<TopicPartitionOffset> { new TopicPartitionOffset("MyTopic", new Partition(0), Offset.End) };

@@ -38,7 +38,8 @@ namespace RockLib.Messaging.Kafka
         /// the largest offset, 'error' - trigger an error which is retrieved by consuming
         /// messages and checking 'message->err'.
         /// </param>
-        Task Replay(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback, string topic,
-            string bootstrapServers, bool enableAutoOffsetStore, AutoOffsetReset autoOffsetReset);
+        Task Replay(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback,
+            string topic, string bootstrapServers, bool enableAutoOffsetStore = false,
+            AutoOffsetReset autoOffsetReset = AutoOffsetReset.Latest);
     }
 }

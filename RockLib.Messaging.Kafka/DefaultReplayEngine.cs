@@ -51,8 +51,9 @@ namespace RockLib.Messaging.Kafka
         /// If <paramref name="callback"/> is null, or <paramref name="topic"/> is null or empty,
         /// or <paramref name="bootstrapServers"/> is null or empty.
         /// </exception>
-        public async Task Replay(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback, string topic,
-            string bootstrapServers, bool enableAutoOffsetStore, AutoOffsetReset autoOffsetReset)
+        public async Task Replay(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback,
+            string topic, string bootstrapServers, bool enableAutoOffsetStore = false,
+            AutoOffsetReset autoOffsetReset = AutoOffsetReset.Latest)
         {
             if (end.HasValue)
             {
