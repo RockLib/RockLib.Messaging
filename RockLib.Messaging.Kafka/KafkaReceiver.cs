@@ -147,11 +147,12 @@ namespace RockLib.Messaging.Kafka
         /// </summary>
         /// <param name="start">The start time.</param>
         /// <param name="end">
-        /// The end time, or <see langword="null"/> to use the current time as the end time.
+        /// The end time, or <see langword="null"/> to indicate that the the current UTC time
+        /// should be used.
         /// </param>
         /// <param name="callback">
-        /// The delegate to invoke for each replayed message, or <see langword="null"/> to replay
-        /// messages using <see cref="Receiver.MessageHandler"/>.
+        /// The delegate to invoke for each replayed message, or <see langword="null"/> to indicate
+        /// that <see cref="Receiver.MessageHandler"/> should handle replayed messages.
         /// </param>
         /// <exception cref="InvalidOperationException">
         /// If the receiver has not been started yet and <paramref name="callback"/> is null.
