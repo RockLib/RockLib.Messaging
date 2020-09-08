@@ -541,7 +541,8 @@ namespace RockLib.Messaging.Kafka.Tests
         {
             var receivedMessages = new List<IReceiverMessage>();
 
-            var yesterday = DateTime.UtcNow.AddDays(-1);
+            var now = DateTime.UtcNow;
+            var yesterday = now.AddDays(-1);
 
             ConsumeResult<string, byte[]> PastResult(string message, string topic, int partition, long offset) =>
                 new ConsumeResult<string, byte[]>()
@@ -575,7 +576,6 @@ namespace RockLib.Messaging.Kafka.Tests
                 result3.TopicPartitionOffset,
                 result4.TopicPartitionOffset
             };
-            var endTimestamp = new DateTime(2020, 9, 4, 15, 35, 10, DateTimeKind.Local).ToUniversalTime();
             Func<IReceiverMessage, Task> callback = message =>
             {
                 receivedMessages.Add(message);
@@ -585,7 +585,7 @@ namespace RockLib.Messaging.Kafka.Tests
 
             var engine = new DefaultReplayEngine().Unlock();
 
-            await engine.Replay(mockConsumer.Object, startOffsets, endTimestamp, callback, enableAutoOffsetStore);
+            await engine.Replay(mockConsumer.Object, startOffsets, now, callback, enableAutoOffsetStore);
 
             mockConsumer.Verify(m => m.Assign(startOffsets), Times.Once());
 
