@@ -59,7 +59,7 @@ namespace RockLib.Messaging.Kafka
             : base(name)
         {
             if (string.IsNullOrEmpty(topic))
-                Topic = topic ?? throw new ArgumentNullException(nameof(topic));
+                throw new ArgumentNullException(nameof(topic));
             if (string.IsNullOrEmpty(groupId))
                 throw new ArgumentNullException(nameof(groupId));
             if (string.IsNullOrEmpty(bootstrapServers))
