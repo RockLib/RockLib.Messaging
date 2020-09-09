@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -16,7 +17,7 @@ namespace RockLib.Messaging.Kafka
         private readonly bool _enableAutoOffsetStore;
 
         internal KafkaReceiverMessage(IConsumer<string, byte[]> consumer, ConsumeResult<string, byte[]> result, bool enableAutoOffsetStore)
-            : base(() => result.Message.Value)
+            : base(() => result.Message?.Value ?? new byte[0])
         {
             Consumer = consumer;
             Result = result;
