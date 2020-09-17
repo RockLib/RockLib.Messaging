@@ -80,6 +80,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RockLib.Messaging.HttpUtils
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.CloudEvents", "Example.Messaging.CloudEvents\Example.Messaging.CloudEvents.csproj", "{13418188-1DFE-48F4-9103-B592B34023B2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Application.Testing", "Example.Application.Testing\Example.Application.Testing.csproj", "{7221DFC0-ED53-4F4D-8CB7-163FEEF1E5F8}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.projitems*{93800de0-2cc4-454d-bd9c-4c7058dfd276}*SharedItemsImports = 13
@@ -199,6 +201,10 @@ Global
 		{13418188-1DFE-48F4-9103-B592B34023B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13418188-1DFE-48F4-9103-B592B34023B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13418188-1DFE-48F4-9103-B592B34023B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7221DFC0-ED53-4F4D-8CB7-163FEEF1E5F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7221DFC0-ED53-4F4D-8CB7-163FEEF1E5F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7221DFC0-ED53-4F4D-8CB7-163FEEF1E5F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7221DFC0-ED53-4F4D-8CB7-163FEEF1E5F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -216,6 +222,7 @@ Global
 		{8267F208-ACEF-44B2-87F7-5AB8B5ACC334} = {4D9FDDA2-CE7E-4B49-AADE-20745A52064C}
 		{FA9C8FE8-C056-413C-9FB1-75722A74754B} = {4D9FDDA2-CE7E-4B49-AADE-20745A52064C}
 		{13418188-1DFE-48F4-9103-B592B34023B2} = {4D9FDDA2-CE7E-4B49-AADE-20745A52064C}
+		{7221DFC0-ED53-4F4D-8CB7-163FEEF1E5F8} = {4D9FDDA2-CE7E-4B49-AADE-20745A52064C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3FEE2AF4-936B-474F-A3C0-7118F5655DCC}
