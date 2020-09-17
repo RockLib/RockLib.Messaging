@@ -35,7 +35,8 @@
   - [Use RockLib.Messaging with a DI/IOC container](docs/DIContainer.md)
   - [Send and receive compressed messages](docs/Compressed.md)
   - [Send messages transactionally](docs/TransactionalSend.md)
-  - [Send and receive message as CloudEvents](docs/CloudEvents.md)
+  - [Send and receive message as CloudEvents](docs/CloudEvents.md) 🆕
+  - [Test components that use RockLib.Messaging](Example.Application.Testing/) 🆕
 - API Reference:
   - [RockLib.Messaging](https://www.fuget.org/packages/RockLib.Messaging)
   - [RockLib.Messaging.NamedPipes](https://www.fuget.org/packages/RockLib.Messaging.NamedPipes)
