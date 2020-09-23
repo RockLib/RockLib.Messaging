@@ -29,6 +29,7 @@ namespace RockLib.Messaging.DependencyInjection
                 configureOptions?.Invoke(options);
 
                 var sqsClient = options.SqsClient
+                    ?? serviceProvider.GetService<IAmazonSQS>()
                     ?? (options.Region == null
                         ? new AmazonSQSClient()
                         : new AmazonSQSClient(RegionEndpoint.GetBySystemName(options.Region)));
@@ -53,6 +54,7 @@ namespace RockLib.Messaging.DependencyInjection
                 configureOptions?.Invoke(options);
 
                 var sqsClient = options.SqsClient
+                    ?? serviceProvider.GetService<IAmazonSQS>()
                     ?? (options.Region == null
                         ? new AmazonSQSClient()
                         : new AmazonSQSClient(RegionEndpoint.GetBySystemName(options.Region)));

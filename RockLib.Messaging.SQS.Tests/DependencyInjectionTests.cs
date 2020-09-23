@@ -1,4 +1,5 @@
 ﻿using Amazon;
+using Amazon.SQS;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using RockLib.Messaging.DependencyInjection;
@@ -32,6 +33,26 @@ namespace RockLib.Messaging.SQS.Tests
             sqsSender.MessageGroupId.Should().Be("myMessageGroupId");
         }
 
+        [Fact(DisplayName = "Should register SQS sender with registered SQS client when available")]
+        public void SQSSenderRegisteredClientTest()
+        {
+            var services = new ServiceCollection();
+
+            var sqsClient = new AmazonSQSClient();
+            services.AddSingleton<IAmazonSQS>(sqsClient);
+
+            services.AddSQSSender("mySender");
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            var sender = serviceProvider.GetRequiredService<ISender>();
+
+            var sqsSender = sender.Should().BeOfType<SQSSender>().Subject;
+
+            sqsSender.Name.Should().Be("mySender");
+            sqsSender.SQSClient.Should().BeSameAs(sqsClient);
+        }
+
         [Fact]
         public void SQSReceiverTest()
         {
@@ -60,6 +81,29 @@ namespace RockLib.Messaging.SQS.Tests
             sqsReceiver.AutoAcknwoledge.Should().BeFalse();
             sqsReceiver.WaitTimeSeconds.Should().Be(123);
             sqsReceiver.UnpackSNS.Should().BeTrue();
+        }
+
+        [Fact(DisplayName = "Should register SQS receiver with registered SQS client when available")]
+        public void SQSReceiverRegisteredClientTest()
+        {
+            var services = new ServiceCollection();
+
+            var sqsClient = new AmazonSQSClient();
+            services.AddSingleton<IAmazonSQS>(sqsClient);
+
+            services.AddSQSReceiver("myReceiver", options =>
+            {
+                options.QueueUrl = "http://example.com";
+            });
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            var receiver = serviceProvider.GetRequiredService<IReceiver>();
+
+            var sqsReceiver = receiver.Should().BeOfType<SQSReceiver>().Subject;
+
+            sqsReceiver.Name.Should().Be("myReceiver");
+            sqsReceiver.SQSClient.Should().BeSameAs(sqsClient);
         }
     }
 }
