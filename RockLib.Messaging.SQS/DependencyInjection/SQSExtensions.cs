@@ -29,10 +29,9 @@ namespace RockLib.Messaging.DependencyInjection
                 configureOptions?.Invoke(options);
 
                 var sqsClient = options.SqsClient
-                    ?? serviceProvider.GetService<IAmazonSQS>()
-                    ?? (options.Region == null
-                        ? new AmazonSQSClient()
-                        : new AmazonSQSClient(RegionEndpoint.GetBySystemName(options.Region)));
+                    ?? (options.Region != null
+                        ? new AmazonSQSClient(RegionEndpoint.GetBySystemName(options.Region))
+                        : serviceProvider.GetService<IAmazonSQS>() ?? new AmazonSQSClient());
 
                 return new SQSSender(sqsClient, name, options.QueueUrl, options.MessageGroupId);
             });
@@ -54,10 +53,9 @@ namespace RockLib.Messaging.DependencyInjection
                 configureOptions?.Invoke(options);
 
                 var sqsClient = options.SqsClient
-                    ?? serviceProvider.GetService<IAmazonSQS>()
-                    ?? (options.Region == null
-                        ? new AmazonSQSClient()
-                        : new AmazonSQSClient(RegionEndpoint.GetBySystemName(options.Region)));
+                    ?? (options.Region != null
+                        ? new AmazonSQSClient(RegionEndpoint.GetBySystemName(options.Region))
+                        : serviceProvider.GetService<IAmazonSQS>() ?? new AmazonSQSClient());
 
                 return new SQSReceiver(sqsClient, name, options.QueueUrl, options.MaxMessages,
                     options.AutoAcknowledge, options.WaitTimeSeconds, options.UnpackSNS);
