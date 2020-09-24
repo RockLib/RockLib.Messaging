@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging.SQS</PackageId>
-    <PackageVersion>2.2.5</PackageVersion>
+    <PackageVersion>2.2.6</PackageVersion>
     <Authors>RockLib</Authors>
     <Description>Implementation of RockLib.Messaging API that sends and receives messages using Amazon SQS.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
