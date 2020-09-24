@@ -38,10 +38,13 @@ namespace RockLib.Messaging.SQS.Tests
         {
             var services = new ServiceCollection();
 
-            var sqsClient = new AmazonSQSClient();
+            var sqsClient = new AmazonSQSClient(RegionEndpoint.USEast2);
             services.AddSingleton<IAmazonSQS>(sqsClient);
 
-            services.AddSQSSender("mySender");
+            services.AddSQSSender("mySender", options =>
+            {
+                options.QueueUrl = "http://example.com";
+            });
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -88,7 +91,7 @@ namespace RockLib.Messaging.SQS.Tests
         {
             var services = new ServiceCollection();
 
-            var sqsClient = new AmazonSQSClient();
+            var sqsClient = new AmazonSQSClient(RegionEndpoint.USEast2);
             services.AddSingleton<IAmazonSQS>(sqsClient);
 
             services.AddSQSReceiver("myReceiver", options =>
