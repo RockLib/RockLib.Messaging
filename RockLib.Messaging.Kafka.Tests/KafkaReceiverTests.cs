@@ -243,6 +243,37 @@ namespace RockLib.Messaging.Kafka.Tests
             mockMessageHandler.Verify(m => m.OnMessageReceivedAsync(receiver, message), Times.Once());
         }
 
+        [Fact(DisplayName = "Replay method pauses and resumes the consumer if pauseDuringReplay is true")]
+        public async Task ReplayMethodHappyPath3()
+        {
+            var mockReplayEngine = new Mock<IReplayEngine>();
+            mockReplayEngine.Setup(m => m.Replay(It.IsAny<DateTime>(), It.IsAny<DateTime?>(), It.IsAny<Func<IReceiverMessage, Task>>(),
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<AutoOffsetReset>()))
+                .Returns(Task.CompletedTask);
+
+            var topicPartitions = new List<TopicPartition> { new TopicPartition("MyTopic", new Partition(0)) };
+            var mockConsumer = new Mock<IConsumer<string, byte[]>>();
+            mockConsumer.Setup(m => m.Assignment).Returns(topicPartitions);
+
+            var receiver =
+                new KafkaReceiver("name", "one_topic", "groupId", "servers", true, AutoOffsetReset.Earliest, mockReplayEngine.Object);
+
+            receiver.Unlock()._consumer = new Lazy<IConsumer<string, byte[]>>(() => mockConsumer.Object);
+
+            var start = new DateTime(2020, 9, 3, 20, 22, 58, DateTimeKind.Local).ToUniversalTime();
+            var end = new DateTime(2020, 9, 3, 20, 23, 19, DateTimeKind.Local).ToUniversalTime();
+            Func<IReceiverMessage, Task> callback = message => Task.CompletedTask;
+
+            await receiver.Replay(start, end, callback, pauseDuringReplay: true);
+
+            mockReplayEngine.Verify(m =>
+                m.Replay(start, end, callback, "one_topic", "servers", true, AutoOffsetReset.Earliest),
+                Times.Once());
+
+            mockConsumer.Verify(m => m.Pause(topicPartitions), Times.Once());
+            mockConsumer.Verify(m => m.Resume(topicPartitions), Times.Once());
+        }
+
         [Fact(DisplayName = "Replay method throws when callback parameter and MessageHandler property are both null")]
         public async Task ReplayMethodSadPath()
         {
