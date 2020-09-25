@@ -246,14 +246,19 @@ namespace RockLib.Messaging.Kafka.Tests
         [Fact(DisplayName = "Replay method pauses and resumes the consumer if pauseDuringReplay is true")]
         public async Task ReplayMethodHappyPath3()
         {
-            var mockReplayEngine = new Mock<IReplayEngine>();
-            mockReplayEngine.Setup(m => m.Replay(It.IsAny<DateTime>(), It.IsAny<DateTime?>(), It.IsAny<Func<IReceiverMessage, Task>>(),
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<AutoOffsetReset>()))
-                .Returns(Task.CompletedTask);
+            var sequence = new MockSequence();
+            var mockConsumer = new Mock<IConsumer<string, byte[]>>(MockBehavior.Strict);
+            var mockReplayEngine = new Mock<IReplayEngine>(MockBehavior.Strict);
 
             var topicPartitions = new List<TopicPartition> { new TopicPartition("MyTopic", new Partition(0)) };
-            var mockConsumer = new Mock<IConsumer<string, byte[]>>();
-            mockConsumer.Setup(m => m.Assignment).Returns(topicPartitions);
+            mockConsumer.InSequence(sequence).Setup(m => m.Assignment).Returns(topicPartitions);
+            mockConsumer.InSequence(sequence).Setup(m => m.Pause(topicPartitions));
+
+            mockReplayEngine.InSequence(sequence).Setup(m => m.Replay(It.IsAny<DateTime>(), It.IsAny<DateTime?>(), It.IsAny<Func<IReceiverMessage, Task>>(),
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<AutoOffsetReset>()))
+                .Returns(Task.CompletedTask);
+            
+            mockConsumer.InSequence(sequence).Setup(m => m.Resume(topicPartitions));
 
             var receiver =
                 new KafkaReceiver("name", "one_topic", "groupId", "servers", true, AutoOffsetReset.Earliest, mockReplayEngine.Object);
