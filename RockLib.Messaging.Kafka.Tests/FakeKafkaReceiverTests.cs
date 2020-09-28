@@ -36,11 +36,11 @@ namespace RockLib.Messaging.Kafka.Tests
             DateTime? end2 = null;
             Func<IReceiverMessage, Task> callback2 = null;
 
-            fakeKafkaReceiver.Replay(start1, end1, callback1);
-            fakeKafkaReceiver.Replay(start2, end2, callback2);
+            fakeKafkaReceiver.ReplayAsync(start1, end1, callback1, true);
+            fakeKafkaReceiver.ReplayAsync(start2, end2, callback2, false);
 
-            var expectedInvocation1 = new ReplayInvocation(start1, end1, callback1);
-            var expectedInvocation2 = new ReplayInvocation(start2, end2, callback2);
+            var expectedInvocation1 = new ReplayInvocation(start1, end1, callback1, true);
+            var expectedInvocation2 = new ReplayInvocation(start2, end2, callback2, false);
 
             fakeKafkaReceiver.ReplayInvocations.Should().HaveCount(2);
             fakeKafkaReceiver.ReplayInvocations[0].Should().Be(expectedInvocation1);

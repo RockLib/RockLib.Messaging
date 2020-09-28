@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -119,7 +120,7 @@ namespace RockLib.Messaging.Kafka
         /// <summary>
         /// Gets the <see cref="IConsumer{TKey, TValue}" /> for this instance of <see cref="KafkaReceiver"/>.
         /// </summary>
-        public IConsumer<string, byte[]> Consumer { get { return _consumer.Value; } }
+        public IConsumer<string, byte[]> Consumer => _consumer.Value;
 
         /// <summary>
         /// Seeks to the specified timestamp.
@@ -154,10 +155,14 @@ namespace RockLib.Messaging.Kafka
         /// The delegate to invoke for each replayed message, or <see langword="null"/> to indicate
         /// that <see cref="Receiver.MessageHandler"/> should handle replayed messages.
         /// </param>
+        /// <param name="pauseDuringReplay">
+        /// Whether to pause the consumer while replaying, then resume after replaying is finished.
+        /// </param>
         /// <exception cref="InvalidOperationException">
         /// If the receiver has not been started yet and <paramref name="callback"/> is null.
         /// </exception>
-        public Task Replay(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback = null)
+        public async Task ReplayAsync(DateTime start, DateTime? end,
+            Func<IReceiverMessage, Task> callback = null, bool pauseDuringReplay = false)
         {
             if (callback is null)
             {
@@ -167,7 +172,18 @@ namespace RockLib.Messaging.Kafka
                     throw new InvalidOperationException($"Replay cannot be called with a null '{nameof(callback)}' parameter before the receiver has been started.");
             }
 
-            return ReplayEngine.Replay(start, end, callback, Topic, BootstrapServers, EnableAutoOffsetStore, AutoOffsetReset);
+            IEnumerable<TopicPartition> pausedPartitions = null;
+
+            if (pauseDuringReplay)
+            {
+                pausedPartitions = Consumer.Assignment;
+                Consumer.Pause(pausedPartitions);
+            }
+
+            await ReplayEngine.Replay(start, end, callback, Topic, BootstrapServers, EnableAutoOffsetStore, AutoOffsetReset);
+
+            if (pauseDuringReplay)
+                Consumer.Resume(pausedPartitions);
         }
 
         /// <summary>
@@ -207,7 +223,7 @@ namespace RockLib.Messaging.Kafka
         /// If <paramref name="callback"/> is null, or <paramref name="topic"/> is null or empty,
         /// or <paramref name="bootstrapServers"/> is null or empty.
         /// </exception>
-        public static Task Replay(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback,
+        public static Task ReplayAsync(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback,
             string topic, string bootstrapServers, bool enableAutoOffsetStore = false,
             AutoOffsetReset autoOffsetReset = AutoOffsetReset.Latest) =>
             _defaultReplayEngine.Value.Replay(start, end, callback, topic, bootstrapServers, enableAutoOffsetStore, autoOffsetReset);

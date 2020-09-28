@@ -192,7 +192,7 @@ namespace RockLib.Messaging.Kafka.Tests
             var end = new DateTime(2020, 9, 3, 20, 23, 19, DateTimeKind.Local).ToUniversalTime();
             Func<IReceiverMessage, Task> callback = message => Task.CompletedTask;
 
-            await receiver.Replay(start, end, callback);
+            await receiver.ReplayAsync(start, end, callback);
 
             mockReplayEngine.Verify(m =>
                 m.Replay(start, end, callback, "one_topic", "servers", true, AutoOffsetReset.Earliest),
@@ -228,7 +228,7 @@ namespace RockLib.Messaging.Kafka.Tests
             var expectedStart = new DateTime(2020, 9, 3, 20, 22, 58, DateTimeKind.Local).ToUniversalTime();
             var expectedEnd = new DateTime(2020, 9, 3, 20, 23, 19, DateTimeKind.Local).ToUniversalTime();
 
-            await receiver.Replay(expectedStart, expectedEnd, null);
+            await receiver.ReplayAsync(expectedStart, expectedEnd, null);
 
             mockReplayEngine.Verify(m =>
                 m.Replay(expectedStart, expectedEnd, It.IsAny<Func<IReceiverMessage, Task>>(), "one_topic", "servers", true, AutoOffsetReset.Earliest),
@@ -241,6 +241,42 @@ namespace RockLib.Messaging.Kafka.Tests
             await capturedCallback(message);
 
             mockMessageHandler.Verify(m => m.OnMessageReceivedAsync(receiver, message), Times.Once());
+        }
+
+        [Fact(DisplayName = "Replay method pauses and resumes the consumer if pauseDuringReplay is true")]
+        public async Task ReplayMethodHappyPath3()
+        {
+            var sequence = new MockSequence();
+            var mockConsumer = new Mock<IConsumer<string, byte[]>>(MockBehavior.Strict);
+            var mockReplayEngine = new Mock<IReplayEngine>(MockBehavior.Strict);
+
+            var topicPartitions = new List<TopicPartition> { new TopicPartition("MyTopic", new Partition(0)) };
+            mockConsumer.InSequence(sequence).Setup(m => m.Assignment).Returns(topicPartitions);
+            mockConsumer.InSequence(sequence).Setup(m => m.Pause(topicPartitions));
+
+            mockReplayEngine.InSequence(sequence).Setup(m => m.Replay(It.IsAny<DateTime>(), It.IsAny<DateTime?>(), It.IsAny<Func<IReceiverMessage, Task>>(),
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<AutoOffsetReset>()))
+                .Returns(Task.CompletedTask);
+            
+            mockConsumer.InSequence(sequence).Setup(m => m.Resume(topicPartitions));
+
+            var receiver =
+                new KafkaReceiver("name", "one_topic", "groupId", "servers", true, AutoOffsetReset.Earliest, mockReplayEngine.Object);
+
+            receiver.Unlock()._consumer = new Lazy<IConsumer<string, byte[]>>(() => mockConsumer.Object);
+
+            var start = new DateTime(2020, 9, 3, 20, 22, 58, DateTimeKind.Local).ToUniversalTime();
+            var end = new DateTime(2020, 9, 3, 20, 23, 19, DateTimeKind.Local).ToUniversalTime();
+            Func<IReceiverMessage, Task> callback = message => Task.CompletedTask;
+
+            await receiver.ReplayAsync(start, end, callback, pauseDuringReplay: true);
+
+            mockReplayEngine.Verify(m =>
+                m.Replay(start, end, callback, "one_topic", "servers", true, AutoOffsetReset.Earliest),
+                Times.Once());
+
+            mockConsumer.Verify(m => m.Pause(topicPartitions), Times.Once());
+            mockConsumer.Verify(m => m.Resume(topicPartitions), Times.Once());
         }
 
         [Fact(DisplayName = "Replay method throws when callback parameter and MessageHandler property are both null")]
@@ -257,7 +293,7 @@ namespace RockLib.Messaging.Kafka.Tests
             var start = new DateTime(2020, 9, 3, 20, 22, 58, DateTimeKind.Local).ToUniversalTime();
             var end = new DateTime(2020, 9, 3, 20, 23, 19, DateTimeKind.Local).ToUniversalTime();
 
-            Func<Task> act = async () => await receiver.Replay(start, end, null);
+            Func<Task> act = async () => await receiver.ReplayAsync(start, end, null);
 
             (await act.Should().ThrowExactlyAsync<InvalidOperationException>())
                 .WithMessage("Replay cannot be called with a null 'callback' parameter before the receiver has been started.");

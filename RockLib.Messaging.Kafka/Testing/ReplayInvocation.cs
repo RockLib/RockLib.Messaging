@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace RockLib.Messaging.Testing.Kafka
 {
     /// <summary>
-    /// Represents an invocation of the <see cref="FakeKafkaReceiver.Replay"/> method.
+    /// Represents an invocation of the <see cref="FakeKafkaReceiver.ReplayAsync"/> method.
     /// </summary>
     public struct ReplayInvocation : IEquatable<ReplayInvocation>
     {
@@ -12,41 +12,50 @@ namespace RockLib.Messaging.Testing.Kafka
         /// Initializes a new instance of the <see cref="ReplayInvocation"/> struct.
         /// </summary>
         /// <param name="start">
-        /// The value of the 'start' parameter when the <see cref="FakeKafkaReceiver.Replay"/>
+        /// The value of the 'start' parameter when the <see cref="FakeKafkaReceiver.ReplayAsync"/>
         /// method was invoked.
         /// </param>
         /// <param name="end">
-        /// The value of the 'end' parameter when the <see cref="FakeKafkaReceiver.Replay"/>
+        /// The value of the 'end' parameter when the <see cref="FakeKafkaReceiver.ReplayAsync"/>
         /// method was invoked.
         /// </param>
         /// <param name="callback">
-        /// The value of the 'callback' parameter when the <see cref="FakeKafkaReceiver.Replay"/>
+        /// The value of the 'callback' parameter when the <see cref="FakeKafkaReceiver.ReplayAsync"/>
         /// method was invoked.
         /// </param>
-        public ReplayInvocation(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback)
+        /// <param name="pauseDuringReplay">
+        /// Whether to pause the consumer while replaying, then resume after replaying is finished.
+        /// </param>
+        public ReplayInvocation(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback, bool pauseDuringReplay)
         {
             Start = start;
             End = end;
             Callback = callback;
+            PauseDuringReplay = pauseDuringReplay;
         }
 
         /// <summary>
-        /// The value of the 'start' parameter when the <see cref="FakeKafkaReceiver.Replay"/>
+        /// The value of the 'start' parameter when the <see cref="FakeKafkaReceiver.ReplayAsync"/>
         /// method was invoked.
         /// </summary>
         public DateTime Start { get; }
 
         /// <summary>
-        /// The value of the 'end' parameter when the <see cref="FakeKafkaReceiver.Replay"/>
+        /// The value of the 'end' parameter when the <see cref="FakeKafkaReceiver.ReplayAsync"/>
         /// method was invoked.
         /// </summary>
         public DateTime? End { get; }
 
         /// <summary>
-        /// The value of the 'callback' parameter when the <see cref="FakeKafkaReceiver.Replay"/>
+        /// The value of the 'callback' parameter when the <see cref="FakeKafkaReceiver.ReplayAsync"/>
         /// method was invoked.
         /// </summary>
         public Func<IReceiverMessage, Task> Callback { get; }
+
+        /// <summary>
+        /// Whether to pause the consumer while replaying, then resume after replaying is finished.
+        /// </summary>
+        public bool PauseDuringReplay { get; }
 
         /// <summary>
         /// Deconstructs the <see cref="ReplayInvocation"/>.
@@ -93,7 +102,7 @@ namespace RockLib.Messaging.Testing.Kafka
         /// <param name="right">The second object to compare.</param>
         /// <returns>
         /// <see langword="true"/> if <paramref name="left"/> and <paramref name="right"/>
-        /// represent the same invocation of the <see cref="FakeKafkaReceiver.Replay"/> method;
+        /// represent the same invocation of the <see cref="FakeKafkaReceiver.ReplayAsync"/> method;
         /// otherwise, <see langword="false"/>.
         /// </returns>
         public static bool operator ==(ReplayInvocation left, ReplayInvocation right) =>
@@ -106,7 +115,7 @@ namespace RockLib.Messaging.Testing.Kafka
         /// <param name="right">The second object to compare.</param>
         /// <returns>
         /// <see langword="true"/> if <paramref name="left"/> and <paramref name="right"/> do not
-        /// represent the same invocation of the <see cref="FakeKafkaReceiver.Replay"/> method;
+        /// represent the same invocation of the <see cref="FakeKafkaReceiver.ReplayAsync"/> method;
         /// otherwise, <see langword="false"/>.
         /// </returns>
         public static bool operator !=(ReplayInvocation left, ReplayInvocation right) =>
