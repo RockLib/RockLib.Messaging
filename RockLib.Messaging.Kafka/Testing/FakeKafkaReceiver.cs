@@ -9,7 +9,7 @@ namespace RockLib.Messaging.Testing.Kafka
     /// Defines an implementation of <see cref="IReceiver"/> that is meant to be used when testing
     /// objects that use a <see cref="KafkaReceiver"/> in "real" or "production" scenarios.
     /// </summary>
-    public class FakeKafkaReceiver : Receiver
+    public class FakeKafkaReceiver : Receiver, IKafkaReceiver
     {
         private readonly List<DateTime> _seekInvocations = new List<DateTime>();
         private readonly List<ReplayInvocation> _replayInvocations = new List<ReplayInvocation>();
@@ -22,6 +22,11 @@ namespace RockLib.Messaging.Testing.Kafka
             : base(name)
         {
         }
+
+        /// <summary>
+        /// The timestamp of the stream at which to start listening.
+        /// </summary>
+        public DateTime? StartTimestamp { get; set; }
 
         /// <summary>
         /// The list of the parameters that were passed to the <see cref="Seek"/> method.

@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
+using RockLib.Messaging.Testing.Kafka;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -8,7 +8,7 @@ namespace RockLib.Messaging.Kafka.Tests
 {
     public class KafkaReceiverExtensionsTests
     {
-        [Fact(DisplayName = "Seek extension method undecorates and calls Seek method dynamically")]
+        [Fact(DisplayName = "Seek extension method undecorates and calls Seek method")]
         public void SeekHappyPath()
         {
             var fakeReceiver = new FakeKafkaReceiver();
@@ -27,7 +27,7 @@ namespace RockLib.Messaging.Kafka.Tests
             fakeReceiver.ReplayInvocations.Should().BeEmpty();
         }
 
-        [Fact(DisplayName = "Replay extension method undecorates and calls Replay method dynamically")]
+        [Fact(DisplayName = "Replay extension method undecorates and calls Replay method")]
         public async Task ReplayExtensionMethodHappyPath()
         {
             var fakeReceiver = new FakeKafkaReceiver();
@@ -85,34 +85,5 @@ namespace RockLib.Messaging.Kafka.Tests
 
             public void Dispose() => _receiver.Dispose();
         }
-
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-
-        public class FakeKafkaReceiver : Receiver
-        {
-            private readonly List<DateTime> _seekInvocations = new List<DateTime>();
-            private readonly List<(DateTime, DateTime?, Func<IReceiverMessage, Task>, bool)> _replayInvocations = new List<(DateTime, DateTime?, Func<IReceiverMessage, Task>, bool)>();
-
-            public FakeKafkaReceiver()
-                : base("FakeKafkaReceiver")
-            {
-            }
-
-            public IReadOnlyList<DateTime> SeekInvocations => _seekInvocations;
-
-            public IReadOnlyList<(DateTime, DateTime?, Func<IReceiverMessage, Task>, bool)> ReplayInvocations => _replayInvocations;
-
-            public void Seek(DateTime timestamp) => _seekInvocations.Add(timestamp);
-
-            public async Task ReplayAsync(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback = null, bool pauseDuringReplay = false) =>
-                _replayInvocations.Add((start, end, callback, pauseDuringReplay));
-
-            protected override void Start()
-            {
-            }
-        }
-
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-
     }
 }

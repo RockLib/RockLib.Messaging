@@ -11,7 +11,7 @@ namespace RockLib.Messaging.Kafka
     /// <summary>
     /// An implementation of <see cref="IReceiver"/> that receives messages from Kafka.
     /// </summary>
-    public class KafkaReceiver : Receiver
+    public class KafkaReceiver : Receiver, IKafkaReceiver
     {
         private static readonly Lazy<DefaultReplayEngine> _defaultReplayEngine = new Lazy<DefaultReplayEngine>();
 
@@ -123,6 +123,14 @@ namespace RockLib.Messaging.Kafka
         public IConsumer<string, byte[]> Consumer => _consumer.Value;
 
         /// <summary>
+        /// The timestamp of the stream at which to start listening.
+        /// <para>
+        /// Setting this value after the receiver has been started has no effect.
+        /// </para>
+        /// </summary>
+        public DateTime? StartTimestamp { get; set; }
+
+        /// <summary>
         /// Seeks to the specified timestamp.
         /// </summary>
         /// <param name="timestamp">The timestamp to seek to.</param>
@@ -159,7 +167,7 @@ namespace RockLib.Messaging.Kafka
         /// Whether to pause the consumer while replaying, then resume after replaying is finished.
         /// </param>
         /// <exception cref="InvalidOperationException">
-        /// If the receiver has not been started yet and <paramref name="callback"/> is null.
+        /// If <paramref name="callback"/> is null and the receiver has not been started yet.
         /// </exception>
         public async Task ReplayAsync(DateTime start, DateTime? end,
             Func<IReceiverMessage, Task> callback = null, bool pauseDuringReplay = false)
@@ -235,6 +243,20 @@ namespace RockLib.Messaging.Kafka
         {
             _trackingThread.Value.Start();
             _consumer.Value.Subscribe(Topic);
+
+            if (StartTimestamp.HasValue)
+            {
+                var attempts = 0;
+                while (Consumer.Assignment.Count == 0)
+                {
+                    Thread.Sleep(10);
+                    if (++attempts >= 1000)
+                        throw new TimeoutException();
+                }
+                Console.WriteLine($"Attempts: {attempts}");
+                Seek(StartTimestamp.Value);
+            }
+
             _pollingThread.Value.Start();
         }
 

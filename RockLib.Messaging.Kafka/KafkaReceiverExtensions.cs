@@ -1,5 +1,4 @@
-﻿using Microsoft.CSharp.RuntimeBinder;
-using RockLib.Reflection.Optimized;
+﻿using RockLib.Reflection.Optimized;
 using System;
 using System.Threading.Tasks;
 
@@ -18,17 +17,22 @@ namespace RockLib.Messaging.Kafka
         /// A <see cref="KafkaReceiver"/> or a decorator for a <see cref="KafkaReceiver"/>.
         /// </param>
         /// <param name="timestamp">The timestamp to seek to.</param>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="receiver"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="receiver"/> is not a kafka receiver or a decorator for a kafka
+        /// receiver.
+        /// </exception>
         /// <exception cref="InvalidOperationException">
         /// If the <see cref="KafkaReceiver.Consumer"/> has not yet been assigned.
         /// </exception>
-        /// <exception cref="RuntimeBinderException">
-        /// If <paramref name="receiver"/> is not a <see cref="KafkaReceiver"/>, or not a decorator
-        /// for a <see cref="KafkaReceiver"/>.
-        /// </exception>
         public static void Seek(this IReceiver receiver, DateTime timestamp)
         {
-            dynamic r = receiver.Undecorate();
-            r.Seek(timestamp);
+            if (receiver is null)
+                throw new ArgumentNullException(nameof(receiver));
+
+            receiver.AsKafkaReceiver().Seek(timestamp);
         }
 
         /// <summary>
@@ -51,18 +55,102 @@ namespace RockLib.Messaging.Kafka
         /// <param name="pauseDuringReplay">
         /// Whether to pause the consumer while replaying, then resume after replaying is finished.
         /// </param>
-        /// <exception cref="InvalidOperationException">
-        /// If the receiver has not been started yet and <paramref name="callback"/> is null.
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="receiver"/> is <see langword="null"/>.
         /// </exception>
-        /// <exception cref="RuntimeBinderException">
-        /// If <paramref name="receiver"/> is not a <see cref="KafkaReceiver"/>, or not a decorator
-        /// for a <see cref="KafkaReceiver"/>.
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="receiver"/> is not a kafka receiver or a decorator for a kafka
+        /// receiver.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">
+        /// If <paramref name="callback"/> is null and the receiver has not been started yet.
         /// </exception>
         public static Task ReplayAsync(this IReceiver receiver, DateTime start, DateTime? end,
             Func<IReceiverMessage, Task> callback = null, bool pauseDuringReplay = false)
         {
-            dynamic r = receiver.Undecorate();
-            return r.ReplayAsync(start, end, callback, pauseDuringReplay);
+            if (receiver is null)
+                throw new ArgumentNullException(nameof(receiver));
+
+            return receiver.AsKafkaReceiver().ReplayAsync(start, end, callback, pauseDuringReplay);
         }
+
+        /// <summary>
+        /// Start listening for messages, starting at the specified time, and handle them using
+        /// the specified message handler.
+        /// </summary>
+        /// <param name="receiver">The receiver to start.</param>
+        /// <param name="messageHandler">The object that handles received messages.</param>
+        /// <param name="startTimestamp">
+        /// The timestamp of the stream at which to start listening.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="receiver"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="receiver"/> is not a kafka receiver or a decorator for a kafka
+        /// receiver.
+        /// </exception>
+        public static void Start(this IReceiver receiver, IMessageHandler messageHandler, DateTime startTimestamp)
+        {
+            if (receiver is null)
+                throw new ArgumentNullException(nameof(receiver));
+
+            receiver.AsKafkaReceiver().StartTimestamp = startTimestamp;
+            receiver.Start(messageHandler);
+        }
+
+        /// <summary>
+        /// Start listening for messages, starting at the specified time, and handle them using
+        /// the specified callback function.
+        /// </summary>
+        /// <param name="receiver">The receiver to start.</param>
+        /// <param name="onMessageReceivedAsync">A function that is invoked when a message is received.</param>
+        /// <param name="startTimestamp">
+        /// The timestamp of the stream at which to start listening.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="receiver"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="receiver"/> is not a kafka receiver or a decorator for a kafka
+        /// receiver.
+        /// </exception>
+        public static void Start(this IReceiver receiver, OnMessageReceivedAsyncDelegate onMessageReceivedAsync, DateTime startTimestamp)
+        {
+            if (receiver is null)
+                throw new ArgumentNullException(nameof(receiver));
+
+            receiver.AsKafkaReceiver().StartTimestamp = startTimestamp;
+            receiver.Start(onMessageReceivedAsync);
+        }
+
+        /// <summary>
+        /// Start listening for messages, starting at the specified time, and handle them using
+        /// the specified callback function.
+        /// </summary>
+        /// <param name="receiver">The receiver to start.</param>
+        /// <param name="onMessageReceivedAsync">A function that is invoked when a message is received.</param>
+        /// <param name="startTimestamp">
+        /// The timestamp of the stream at which to start listening.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="receiver"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="receiver"/> is not a kafka receiver or a decorator for a kafka
+        /// receiver.
+        /// </exception>
+        public static void Start(this IReceiver receiver, Func<IReceiverMessage, Task> onMessageReceivedAsync, DateTime startTimestamp)
+        {
+            if (receiver is null)
+                throw new ArgumentNullException(nameof(receiver));
+
+            receiver.AsKafkaReceiver().StartTimestamp = startTimestamp;
+            receiver.Start(onMessageReceivedAsync);
+        }
+
+        private static IKafkaReceiver AsKafkaReceiver(this IReceiver receiver) =>
+            receiver.Undecorate() as IKafkaReceiver
+                ?? throw new ArgumentException("Must be a kafka receiver or a decorator for a kafka receiver.", nameof(receiver));
     }
 }

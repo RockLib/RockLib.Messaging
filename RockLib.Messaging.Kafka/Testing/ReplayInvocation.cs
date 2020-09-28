@@ -66,13 +66,18 @@ namespace RockLib.Messaging.Testing.Kafka
         /// <param name="end">
         /// When this method returns, the value of the <see cref="End"/> property.
         /// </param>
+        /// <param name="callback">
         /// When this method returns, the value of the <see cref="Callback"/> property.
-        /// <param name="callback"></param>
-        public void Deconstruct(out DateTime start, out DateTime? end, out Func<IReceiverMessage, Task> callback)
+        /// </param>
+        /// <param name="pauseDuringReplay">
+        /// When this method returns, the value of the <see cref="PauseDuringReplay"/> property.
+        /// </param>
+        public void Deconstruct(out DateTime start, out DateTime? end, out Func<IReceiverMessage, Task> callback, out bool pauseDuringReplay)
         {
             start = Start;
             end = End;
             callback = Callback;
+            pauseDuringReplay = PauseDuringReplay;
         }
 
         /// <inheritdoc/>
