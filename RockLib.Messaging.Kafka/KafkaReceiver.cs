@@ -161,7 +161,7 @@ namespace RockLib.Messaging.Kafka
         /// <exception cref="InvalidOperationException">
         /// If the receiver has not been started yet and <paramref name="callback"/> is null.
         /// </exception>
-        public async Task Replay(DateTime start, DateTime? end,
+        public async Task ReplayAsync(DateTime start, DateTime? end,
             Func<IReceiverMessage, Task> callback = null, bool pauseDuringReplay = false)
         {
             if (callback is null)
@@ -223,7 +223,7 @@ namespace RockLib.Messaging.Kafka
         /// If <paramref name="callback"/> is null, or <paramref name="topic"/> is null or empty,
         /// or <paramref name="bootstrapServers"/> is null or empty.
         /// </exception>
-        public static Task Replay(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback,
+        public static Task ReplayAsync(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback,
             string topic, string bootstrapServers, bool enableAutoOffsetStore = false,
             AutoOffsetReset autoOffsetReset = AutoOffsetReset.Latest) =>
             _defaultReplayEngine.Value.Replay(start, end, callback, topic, bootstrapServers, enableAutoOffsetStore, autoOffsetReset);

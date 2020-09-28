@@ -48,6 +48,9 @@ namespace RockLib.Messaging.Kafka
         /// The delegate to invoke for each replayed message, or <see langword="null"/> to replay
         /// messages using <see cref="Receiver.MessageHandler"/>.
         /// </param>
+        /// <param name="pauseDuringReplay">
+        /// Whether to pause the consumer while replaying, then resume after replaying is finished.
+        /// </param>
         /// <exception cref="InvalidOperationException">
         /// If the receiver has not been started yet and <paramref name="callback"/> is null.
         /// </exception>
@@ -55,10 +58,11 @@ namespace RockLib.Messaging.Kafka
         /// If <paramref name="receiver"/> is not a <see cref="KafkaReceiver"/>, or not a decorator
         /// for a <see cref="KafkaReceiver"/>.
         /// </exception>
-        public static Task Replay(this IReceiver receiver, DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback = null)
+        public static Task ReplayAsync(this IReceiver receiver, DateTime start, DateTime? end,
+            Func<IReceiverMessage, Task> callback = null, bool pauseDuringReplay = false)
         {
             dynamic r = receiver.Undecorate();
-            return r.Replay(start, end, callback);
+            return r.ReplayAsync(start, end, callback, pauseDuringReplay);
         }
     }
 }

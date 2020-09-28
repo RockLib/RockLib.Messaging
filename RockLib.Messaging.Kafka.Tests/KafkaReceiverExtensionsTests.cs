@@ -37,15 +37,16 @@ namespace RockLib.Messaging.Kafka.Tests
             var expectedEnd = DateTime.UtcNow;
             Func<IReceiverMessage, Task> expectedCallback = message => Task.CompletedTask;
 
-            await receiver.Replay(expectedStart, expectedEnd, expectedCallback);
+            await receiver.ReplayAsync(expectedStart, expectedEnd, expectedCallback, true);
 
-            var (start, end, callback) =
+            var (start, end, callback, pauseDuringReplay) =
                 fakeReceiver.ReplayInvocations.Should().ContainSingle()
                     .Subject;
 
             start.Should().Be(expectedStart);
             end.Should().Be(expectedEnd);
             callback.Should().BeSameAs(expectedCallback);
+            pauseDuringReplay.Should().BeTrue();
 
             fakeReceiver.SeekInvocations.Should().BeEmpty();
         }
@@ -90,7 +91,7 @@ namespace RockLib.Messaging.Kafka.Tests
         public class FakeKafkaReceiver : Receiver
         {
             private readonly List<DateTime> _seekInvocations = new List<DateTime>();
-            private readonly List<(DateTime, DateTime?, Func<IReceiverMessage, Task>)> _replayInvocations = new List<(DateTime, DateTime?, Func<IReceiverMessage, Task>)>();
+            private readonly List<(DateTime, DateTime?, Func<IReceiverMessage, Task>, bool)> _replayInvocations = new List<(DateTime, DateTime?, Func<IReceiverMessage, Task>, bool)>();
 
             public FakeKafkaReceiver()
                 : base("FakeKafkaReceiver")
@@ -99,12 +100,12 @@ namespace RockLib.Messaging.Kafka.Tests
 
             public IReadOnlyList<DateTime> SeekInvocations => _seekInvocations;
 
-            public IReadOnlyList<(DateTime, DateTime?, Func<IReceiverMessage, Task>)> ReplayInvocations => _replayInvocations;
+            public IReadOnlyList<(DateTime, DateTime?, Func<IReceiverMessage, Task>, bool)> ReplayInvocations => _replayInvocations;
 
             public void Seek(DateTime timestamp) => _seekInvocations.Add(timestamp);
 
-            public async Task Replay(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback = null) =>
-                _replayInvocations.Add((start, end, callback));
+            public async Task ReplayAsync(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback = null, bool pauseDuringReplay = false) =>
+                _replayInvocations.Add((start, end, callback, pauseDuringReplay));
 
             protected override void Start()
             {

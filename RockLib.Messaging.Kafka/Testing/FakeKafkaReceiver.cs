@@ -29,7 +29,7 @@ namespace RockLib.Messaging.Testing.Kafka
         public IReadOnlyList<DateTime> SeekInvocations => _seekInvocations;
 
         /// <summary>
-        /// The list of the parameters that were passed to the <see cref="Replay"/> method.
+        /// The list of the parameters that were passed to the <see cref="ReplayAsync"/> method.
         /// </summary>
         public IReadOnlyList<ReplayInvocation> ReplayInvocations => _replayInvocations;
 
@@ -54,9 +54,12 @@ namespace RockLib.Messaging.Testing.Kafka
         /// The delegate to invoke for each replayed message, or <see langword="null"/> to indicate
         /// that <see cref="Receiver.MessageHandler"/> should handle replayed messages.
         /// </param>
-        public Task Replay(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback = null)
+        /// <param name="pauseDuringReplay">
+        /// Whether to pause the consumer while replaying, then resume after replaying is finished.
+        /// </param>
+        public Task ReplayAsync(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback = null, bool pauseDuringReplay = false)
         {
-            _replayInvocations.Add(new ReplayInvocation(start, end, callback));
+            _replayInvocations.Add(new ReplayInvocation(start, end, callback, pauseDuringReplay));
             return Tasks.CompletedTask;
         }
 
