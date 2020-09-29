@@ -51,7 +51,7 @@ namespace RockLib.Messaging.Kafka.Tests
         }
 
         [Fact(DisplayName = "KafkaReceiver Start starts the receiver and tracking threads")]
-        public void KafkaReceiverStartHappyPath()
+        public void KafkaReceiverStartHappyPath1()
         {
             var receiver = new KafkaReceiver("name", "one_topic", "groupId", "servers");
 
@@ -63,6 +63,57 @@ namespace RockLib.Messaging.Kafka.Tests
             unlockedReceiver.Start();
 
             consumerMock.Verify(cm => cm.Subscribe("one_topic"), Times.Once);
+
+            unlockedReceiver.Dispose();
+        }
+
+        [Fact(DisplayName = "Start method seeks to StartTimestamp if it has a value")]
+        public void KafkaReceiverStartHappyPath2()
+        {
+            var assignment = new List<TopicPartition> { new TopicPartition("MyTopic", new Partition(1)) };
+            var offsets = new List<TopicPartitionOffset> { new TopicPartitionOffset(assignment[0], new Offset(1)) };
+
+            var receiver = new KafkaReceiver("name", "one_topic", "groupId", "servers");
+
+            var consumerMock = new Mock<IConsumer<string, byte[]>>();
+            consumerMock.Setup(c => c.Assignment).Returns(assignment);
+            consumerMock.Setup(c => c.OffsetsForTimes(It.IsAny<IEnumerable<TopicPartitionTimestamp>>(), It.IsAny<TimeSpan>()))
+                .Returns(offsets);
+
+            var unlockedReceiver = receiver.Unlock();
+            unlockedReceiver._consumer = new Lazy<IConsumer<string, byte[]>>(() => consumerMock.Object);
+
+            var startTimestamp = new DateTime(2020, 9, 29, 17, 37, 56, DateTimeKind.Local);
+            receiver.StartTimestamp = startTimestamp;
+
+            unlockedReceiver.Start();
+
+            consumerMock.Verify(cm => cm.Subscribe("one_topic"), Times.Once);
+            consumerMock.Verify(cm => cm.Seek(offsets[0]), Times.Once());
+
+            unlockedReceiver.Dispose();
+        }
+
+        [Fact(DisplayName = "Start method, given a StartTimestamp, throws timeout exception if Consumer.Assignment is empty")]
+        public void KafkaReceiverStartSadPath()
+        {
+            var assignment = new List<TopicPartition>();
+
+            var receiver = new KafkaReceiver("name", "one_topic", "groupId", "servers");
+
+            var consumerMock = new Mock<IConsumer<string, byte[]>>();
+            consumerMock.Setup(c => c.Assignment).Returns(assignment);
+
+            var unlockedReceiver = receiver.Unlock();
+            unlockedReceiver._consumer = new Lazy<IConsumer<string, byte[]>>(() => consumerMock.Object);
+
+            var startTimestamp = new DateTime(2020, 9, 29, 17, 37, 56, DateTimeKind.Local);
+            receiver.StartTimestamp = startTimestamp;
+
+            Action act = () => unlockedReceiver.Start();
+
+            act.Should().ThrowExactly<TimeoutException>()
+                .WithMessage("Unable to Seek to StartTimestamp because the Consumer never received its Assignment.");
 
             unlockedReceiver.Dispose();
         }
