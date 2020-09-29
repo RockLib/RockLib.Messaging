@@ -90,10 +90,13 @@ namespace RockLib.Messaging.Kafka
         /// If <paramref name="receiver"/> is not a kafka receiver or a decorator for a kafka
         /// receiver.
         /// </exception>
-        public static void Start(this IReceiver receiver, IMessageHandler messageHandler, DateTime startTimestamp)
+        public static void Start(this IReceiver receiver,
+            IMessageHandler messageHandler, DateTime startTimestamp)
         {
             if (receiver is null)
                 throw new ArgumentNullException(nameof(receiver));
+            if (messageHandler is null)
+                throw new ArgumentNullException(nameof(messageHandler));
 
             receiver.AsKafkaReceiver().StartTimestamp = startTimestamp;
             receiver.Start(messageHandler);
@@ -104,7 +107,9 @@ namespace RockLib.Messaging.Kafka
         /// the specified callback function.
         /// </summary>
         /// <param name="receiver">The receiver to start.</param>
-        /// <param name="onMessageReceivedAsync">A function that is invoked when a message is received.</param>
+        /// <param name="onMessageReceivedAsync">
+        /// A function that is invoked when a message is received.
+        /// </param>
         /// <param name="startTimestamp">
         /// The timestamp of the stream at which to start listening.
         /// </param>
@@ -115,10 +120,13 @@ namespace RockLib.Messaging.Kafka
         /// If <paramref name="receiver"/> is not a kafka receiver or a decorator for a kafka
         /// receiver.
         /// </exception>
-        public static void Start(this IReceiver receiver, OnMessageReceivedAsyncDelegate onMessageReceivedAsync, DateTime startTimestamp)
+        public static void Start(this IReceiver receiver,
+            OnMessageReceivedAsyncDelegate onMessageReceivedAsync, DateTime startTimestamp)
         {
             if (receiver is null)
                 throw new ArgumentNullException(nameof(receiver));
+            if (onMessageReceivedAsync is null)
+                throw new ArgumentNullException(nameof(onMessageReceivedAsync));
 
             receiver.AsKafkaReceiver().StartTimestamp = startTimestamp;
             receiver.Start(onMessageReceivedAsync);
@@ -129,21 +137,27 @@ namespace RockLib.Messaging.Kafka
         /// the specified callback function.
         /// </summary>
         /// <param name="receiver">The receiver to start.</param>
-        /// <param name="onMessageReceivedAsync">A function that is invoked when a message is received.</param>
+        /// <param name="onMessageReceivedAsync">
+        /// A function that is invoked when a message is received.
+        /// </param>
         /// <param name="startTimestamp">
         /// The timestamp of the stream at which to start listening.
         /// </param>
         /// <exception cref="ArgumentNullException">
-        /// If <paramref name="receiver"/> is <see langword="null"/>.
+        /// If <paramref name="receiver"/> or <paramref name="onMessageReceivedAsync"/> is <see
+        /// langword="null"/>.
         /// </exception>
         /// <exception cref="ArgumentException">
         /// If <paramref name="receiver"/> is not a kafka receiver or a decorator for a kafka
         /// receiver.
         /// </exception>
-        public static void Start(this IReceiver receiver, Func<IReceiverMessage, Task> onMessageReceivedAsync, DateTime startTimestamp)
+        public static void Start(this IReceiver receiver,
+            Func<IReceiverMessage, Task> onMessageReceivedAsync, DateTime startTimestamp)
         {
             if (receiver is null)
                 throw new ArgumentNullException(nameof(receiver));
+            if (onMessageReceivedAsync is null)
+                throw new ArgumentNullException(nameof(onMessageReceivedAsync));
 
             receiver.AsKafkaReceiver().StartTimestamp = startTimestamp;
             receiver.Start(onMessageReceivedAsync);
