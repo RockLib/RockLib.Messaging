@@ -1,6 +1,8 @@
 ﻿using FluentAssertions;
+using Moq;
+using RockLib.Dynamic;
+using RockLib.Messaging.Testing.Kafka;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -8,13 +10,13 @@ namespace RockLib.Messaging.Kafka.Tests
 {
     public class KafkaReceiverExtensionsTests
     {
-        [Fact(DisplayName = "Seek extension method undecorates and calls Seek method dynamically")]
+        [Fact(DisplayName = "Seek extension method undecorates and calls Seek method")]
         public void SeekHappyPath()
         {
             var fakeReceiver = new FakeKafkaReceiver();
             IReceiver receiver = new ReceiverDecorator(fakeReceiver);
 
-            var expectedTimestamp = DateTime.UtcNow;
+            var expectedTimestamp = new DateTime(2020, 9, 29, 17, 19, 28, DateTimeKind.Local);
 
             receiver.Seek(expectedTimestamp);
 
@@ -27,14 +29,26 @@ namespace RockLib.Messaging.Kafka.Tests
             fakeReceiver.ReplayInvocations.Should().BeEmpty();
         }
 
-        [Fact(DisplayName = "Replay extension method undecorates and calls Replay method dynamically")]
+        [Fact(DisplayName = "Seek extension method throws if receiver parameter is null")]
+        public void SeekSadPath()
+        {
+            IReceiver receiver = null;
+
+            var timestamp = new DateTime(2020, 9, 29, 17, 19, 28, DateTimeKind.Local);
+
+            Action act = () => receiver.Seek(timestamp);
+
+            act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*receiver*");
+        }
+
+        [Fact(DisplayName = "Replay extension method undecorates and calls Replay method")]
         public async Task ReplayExtensionMethodHappyPath()
         {
             var fakeReceiver = new FakeKafkaReceiver();
             IReceiver receiver = new ReceiverDecorator(fakeReceiver);
 
-            var expectedStart = DateTime.Now;
-            var expectedEnd = DateTime.UtcNow;
+            var expectedStart = new DateTime(2020, 9, 29, 17, 22, 26, DateTimeKind.Local);
+            var expectedEnd = new DateTime(2020, 9, 29, 17, 22, 32, DateTimeKind.Local);
             Func<IReceiverMessage, Task> expectedCallback = message => Task.CompletedTask;
 
             await receiver.ReplayAsync(expectedStart, expectedEnd, expectedCallback, true);
@@ -49,6 +63,196 @@ namespace RockLib.Messaging.Kafka.Tests
             pauseDuringReplay.Should().BeTrue();
 
             fakeReceiver.SeekInvocations.Should().BeEmpty();
+        }
+
+        [Fact(DisplayName = "Replay extension method throws if receiver parameter is null")]
+        public async Task ReplayExtensionMethodSadPath()
+        {
+            IReceiver receiver = null;
+
+            var expectedStart = new DateTime(2020, 9, 29, 17, 22, 26, DateTimeKind.Local);
+            var expectedEnd = new DateTime(2020, 9, 29, 17, 22, 32, DateTimeKind.Local);
+            Func<IReceiverMessage, Task> expectedCallback = message => Task.CompletedTask;
+
+            Func<Task> act = () => receiver.ReplayAsync(expectedStart, expectedEnd, expectedCallback, true);
+
+            await act.Should().ThrowExactlyAsync<ArgumentNullException>().WithMessage("*receiver*");
+        }
+
+        [Fact(DisplayName = "Start method 1 sets StartTimestamp and starts the receiver")]
+        public void StartMethod1HappyPath()
+        {
+            var kafkaReceiver = new FakeKafkaReceiver();
+            var receiver = new ReceiverDecorator(kafkaReceiver);
+            
+            var messageHandler = new Mock<IMessageHandler>().Object;
+            var startTimestamp = new DateTime(2020, 9, 29, 15, 15, 58, DateTimeKind.Local).ToUniversalTime();
+
+            receiver.Start(messageHandler, startTimestamp);
+
+            kafkaReceiver.StartTimestamp.Should().Be(startTimestamp);
+            receiver.MessageHandler.Should().Be(messageHandler);
+        }
+
+        [Fact(DisplayName = "Start method 1 throws if receiver parameter is null")]
+        public void StartMethod1SadPath1()
+        {
+            IReceiver receiver = null;
+
+            var messageHandler = new Mock<IMessageHandler>().Object;
+            var startTimestamp = new DateTime(2020, 9, 29, 17, 1, 52, DateTimeKind.Local);
+
+            Action act = () => receiver.Start(messageHandler, startTimestamp);
+
+            act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*receiver*");
+        }
+
+        [Fact(DisplayName = "Start method 1 throws if messageHandler parameter is null")]
+        public void StartMethod1SadPath2()
+        {
+            var kafkaReceiver = new FakeKafkaReceiver();
+            var receiver = new ReceiverDecorator(kafkaReceiver);
+
+            IMessageHandler messageHandler = null;
+            var startTimestamp = new DateTime(2020, 9, 29, 17, 1, 52, DateTimeKind.Local);
+
+            Action act = () => receiver.Start(messageHandler, startTimestamp);
+
+            act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*messageHandler*");
+        }
+
+        [Fact(DisplayName = "Start method 1 throws if receiver is not a kafka receiver")]
+        public void StartMethod1SadPath3()
+        {
+            var receiver = new Mock<IReceiver>().Object;
+
+            var messageHandler = new Mock<IMessageHandler>().Object;
+            var startTimestamp = new DateTime(2020, 9, 29, 17, 4, 47, DateTimeKind.Local);
+
+            Action act = () => receiver.Start(messageHandler, startTimestamp);
+
+            act.Should().ThrowExactly<ArgumentException>()
+                .WithMessage("Must be a kafka receiver or a decorator for a kafka receiver.*receiver*");
+        }
+
+        [Fact(DisplayName = "Start method 2 sets StartTimestamp and starts the receiver")]
+        public void StartMethod2HappyPath()
+        {
+            var kafkaReceiver = new FakeKafkaReceiver();
+            var receiver = new ReceiverDecorator(kafkaReceiver);
+
+            OnMessageReceivedAsyncDelegate onMessageReceivedAsync = (r, m) => Task.CompletedTask;
+            var startTimestamp = new DateTime(2020, 9, 29, 15, 15, 58, DateTimeKind.Local).ToUniversalTime();
+
+            receiver.Start(onMessageReceivedAsync, startTimestamp);
+
+            kafkaReceiver.StartTimestamp.Should().Be(startTimestamp);
+
+            OnMessageReceivedAsyncDelegate actualOnMessageReceivedAsync =
+                receiver.MessageHandler.Unlock()._onMessageReceivedAsync;
+            actualOnMessageReceivedAsync.Should().BeSameAs(onMessageReceivedAsync);
+        }
+
+        [Fact(DisplayName = "Start method 2 throws if receiver parameter is null")]
+        public void StartMethod2SadPath1()
+        {
+            IReceiver receiver = null;
+
+            OnMessageReceivedAsyncDelegate onMessageReceivedAsync = (r, m) => Task.CompletedTask;
+            var startTimestamp = new DateTime(2020, 9, 29, 17, 1, 52, DateTimeKind.Local);
+
+            Action act = () => receiver.Start(onMessageReceivedAsync, startTimestamp);
+
+            act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*receiver*");
+        }
+
+        [Fact(DisplayName = "Start method 2 throws if onMessageReceivedAsync parameter is null")]
+        public void StartMethod2SadPath2()
+        {
+            var kafkaReceiver = new FakeKafkaReceiver();
+            var receiver = new ReceiverDecorator(kafkaReceiver);
+
+            OnMessageReceivedAsyncDelegate onMessageReceivedAsync = null;
+            var startTimestamp = new DateTime(2020, 9, 29, 17, 1, 52, DateTimeKind.Local);
+
+            Action act = () => receiver.Start(onMessageReceivedAsync, startTimestamp);
+
+            act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*onMessageReceivedAsync*");
+        }
+
+        [Fact(DisplayName = "Start method 2 throws if receiver is not a kafka receiver")]
+        public void StartMethod2SadPath3()
+        {
+            var receiver = new Mock<IReceiver>().Object;
+
+            OnMessageReceivedAsyncDelegate onMessageReceivedAsync = (r, m) => Task.CompletedTask;
+            var startTimestamp = new DateTime(2020, 9, 29, 17, 4, 47, DateTimeKind.Local);
+
+            Action act = () => receiver.Start(onMessageReceivedAsync, startTimestamp);
+
+            act.Should().ThrowExactly<ArgumentException>()
+                .WithMessage("Must be a kafka receiver or a decorator for a kafka receiver.*receiver*");
+        }
+
+        [Fact(DisplayName = "Start method 3 sets StartTimestamp and starts the receiver")]
+        public void StartMethod3HappyPath()
+        {
+            var kafkaReceiver = new FakeKafkaReceiver();
+            var receiver = new ReceiverDecorator(kafkaReceiver);
+
+            Func<IReceiverMessage, Task> onMessageReceivedAsync = m => Task.CompletedTask;
+            var startTimestamp = new DateTime(2020, 9, 29, 15, 15, 58, DateTimeKind.Local).ToUniversalTime();
+
+            receiver.Start(onMessageReceivedAsync, startTimestamp);
+
+            kafkaReceiver.StartTimestamp.Should().Be(startTimestamp);
+
+            OnMessageReceivedAsyncDelegate outerDelegate =
+                receiver.MessageHandler.Unlock()._onMessageReceivedAsync;
+            Func<IReceiverMessage, Task> actualOnMessageReceivedAsync =
+                outerDelegate.Target.Unlock().onMessageReceivedAsync;
+            actualOnMessageReceivedAsync.Should().BeSameAs(onMessageReceivedAsync);
+        }
+
+        [Fact(DisplayName = "Start method 3 throws if receiver parameter is null")]
+        public void StartMethod3SadPath1()
+        {
+            IReceiver receiver = null;
+
+            Func<IReceiverMessage, Task> onMessageReceivedAsync = m => Task.CompletedTask;
+            var startTimestamp = new DateTime(2020, 9, 29, 17, 1, 52, DateTimeKind.Local);
+
+            Action act = () => receiver.Start(onMessageReceivedAsync, startTimestamp);
+
+            act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*receiver*");
+        }
+
+        [Fact(DisplayName = "Start method 3 throws if onMessageReceivedAsync parameter is null")]
+        public void StartMethod3SadPath2()
+        {
+            var kafkaReceiver = new FakeKafkaReceiver();
+            var receiver = new ReceiverDecorator(kafkaReceiver);
+
+            Func<IReceiverMessage, Task> onMessageReceivedAsync = null;
+            var startTimestamp = new DateTime(2020, 9, 29, 17, 1, 52, DateTimeKind.Local);
+
+            Action act = () => receiver.Start(onMessageReceivedAsync, startTimestamp);
+
+            act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*onMessageReceivedAsync*");
+        }
+
+        [Fact(DisplayName = "Start method 3 throws if receiver is not a kafka receiver")]
+        public void StartMethod3SadPath3()
+        {
+            var receiver = new Mock<IReceiver>().Object;
+
+            Func<IReceiverMessage, Task> onMessageReceivedAsync = m => Task.CompletedTask;
+            var startTimestamp = new DateTime(2020, 9, 29, 17, 4, 47, DateTimeKind.Local);
+
+            Action act = () => receiver.Start(onMessageReceivedAsync, startTimestamp);
+
+            act.Should().ThrowExactly<ArgumentException>()
+                .WithMessage("Must be a kafka receiver or a decorator for a kafka receiver.*receiver*");
         }
 
         public class ReceiverDecorator : IReceiver
@@ -85,34 +289,5 @@ namespace RockLib.Messaging.Kafka.Tests
 
             public void Dispose() => _receiver.Dispose();
         }
-
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-
-        public class FakeKafkaReceiver : Receiver
-        {
-            private readonly List<DateTime> _seekInvocations = new List<DateTime>();
-            private readonly List<(DateTime, DateTime?, Func<IReceiverMessage, Task>, bool)> _replayInvocations = new List<(DateTime, DateTime?, Func<IReceiverMessage, Task>, bool)>();
-
-            public FakeKafkaReceiver()
-                : base("FakeKafkaReceiver")
-            {
-            }
-
-            public IReadOnlyList<DateTime> SeekInvocations => _seekInvocations;
-
-            public IReadOnlyList<(DateTime, DateTime?, Func<IReceiverMessage, Task>, bool)> ReplayInvocations => _replayInvocations;
-
-            public void Seek(DateTime timestamp) => _seekInvocations.Add(timestamp);
-
-            public async Task ReplayAsync(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback = null, bool pauseDuringReplay = false) =>
-                _replayInvocations.Add((start, end, callback, pauseDuringReplay));
-
-            protected override void Start()
-            {
-            }
-        }
-
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-
     }
 }
