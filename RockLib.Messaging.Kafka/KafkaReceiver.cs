@@ -253,7 +253,6 @@ namespace RockLib.Messaging.Kafka
                     if (++attempts >= 300)
                         throw new TimeoutException("Unable to Seek to StartTimestamp because the Consumer never received its Assignment.");
                 }
-                Console.WriteLine($"Attempts: {attempts}");
                 Seek(StartTimestamp.Value);
             }
 
