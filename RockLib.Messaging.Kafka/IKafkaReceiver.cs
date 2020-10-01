@@ -8,5 +8,7 @@ namespace RockLib.Messaging.Kafka
         DateTime? StartTimestamp { set; }
         Task ReplayAsync(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback = null, bool pauseDuringReplay = false);
         void Seek(DateTime timestamp);
+        void Pause();
+        void Resume();
     }
 }
