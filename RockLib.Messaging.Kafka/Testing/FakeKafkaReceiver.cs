@@ -95,6 +95,17 @@ namespace RockLib.Messaging.Testing.Kafka
         }
 
         /// <summary>
+        /// Resets the invocations of the receiver.
+        /// </summary>
+        public void Reset()
+        {
+            _seekInvocations.Clear();
+            _replayInvocations.Clear();
+            PauseInvocations = 0;
+            ResumeInvocations = 0;
+        }
+
+        /// <summary>
         /// Does nothing.
         /// </summary>
         protected override void Start()
