@@ -36,6 +36,48 @@ namespace RockLib.Messaging.Kafka
         }
 
         /// <summary>
+        /// Pauses consumption of the stream.
+        /// </summary>
+        /// <param name="receiver">
+        /// A <see cref="KafkaReceiver"/> or a decorator for a <see cref="KafkaReceiver"/>.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="receiver"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="receiver"/> is not a kafka receiver or a decorator for a kafka
+        /// receiver.
+        /// </exception>
+        public static void Pause(this IReceiver receiver)
+        {
+            if (receiver is null)
+                throw new ArgumentNullException(nameof(receiver));
+
+            receiver.AsKafkaReceiver().Pause();
+        }
+
+        /// <summary>
+        /// Resumes consumption of the stream.
+        /// </summary>
+        /// <param name="receiver">
+        /// A <see cref="KafkaReceiver"/> or a decorator for a <see cref="KafkaReceiver"/>.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// If <paramref name="receiver"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="receiver"/> is not a kafka receiver or a decorator for a kafka
+        /// receiver.
+        /// </exception>
+        public static void Resume(this IReceiver receiver)
+        {
+            if (receiver is null)
+                throw new ArgumentNullException(nameof(receiver));
+
+            receiver.AsKafkaReceiver().Resume();
+        }
+
+        /// <summary>
         /// Replays messages that were created from <paramref name="start"/> to <paramref name=
         /// "end"/>, invoking the <paramref name="callback"/> delegate for each message. If
         /// <paramref name="end"/> is null, then messages that were created from <paramref name=
