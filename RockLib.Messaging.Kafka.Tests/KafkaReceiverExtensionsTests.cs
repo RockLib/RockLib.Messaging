@@ -30,7 +30,7 @@ namespace RockLib.Messaging.Kafka.Tests
         }
 
         [Fact(DisplayName = "Seek extension method throws if receiver parameter is null")]
-        public void SeekSadPath()
+        public void SeekSadPath1()
         {
             IReceiver receiver = null;
 
@@ -39,6 +39,82 @@ namespace RockLib.Messaging.Kafka.Tests
             Action act = () => receiver.Seek(timestamp);
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*receiver*");
+        }
+
+        [Fact(DisplayName = "Seek extension method throws if receiver is not a kafka receiver")]
+        public void SeekSadPath2()
+        {
+            var receiver = new Mock<IReceiver>().Object;
+
+            var timestamp = new DateTime(2020, 9, 29, 17, 19, 28, DateTimeKind.Local);
+
+            Action act = () => receiver.Seek(timestamp);
+
+            act.Should().ThrowExactly<ArgumentException>().WithMessage("Must be a kafka receiver or a decorator for a kafka receiver.*receiver*");
+        }
+
+        [Fact(DisplayName = "Pause extension method undecorates and calls Pause method")]
+        public void PauseHappyPath()
+        {
+            var fakeReceiver = new FakeKafkaReceiver();
+            IReceiver receiver = new ReceiverDecorator(fakeReceiver);
+
+            receiver.Pause();
+            receiver.Pause();
+
+            fakeReceiver.PauseInvocations.Should().Be(2);
+        }
+
+        [Fact(DisplayName = "Pause extension method throws if receiver parameter is null")]
+        public void PauseSadPath1()
+        {
+            IReceiver receiver = null;
+
+            Action act = () => receiver.Pause();
+
+            act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*receiver*");
+        }
+
+        [Fact(DisplayName = "Pause extension method throws if receiver is not a kafka receiver")]
+        public void PauseSadPath2()
+        {
+            var receiver = new Mock<IReceiver>().Object;
+
+            Action act = () => receiver.Pause();
+
+            act.Should().ThrowExactly<ArgumentException>().WithMessage("Must be a kafka receiver or a decorator for a kafka receiver.*receiver*");
+        }
+
+        [Fact(DisplayName = "Resume extension method undecorates and calls Resume method")]
+        public void ResumeHappyPath()
+        {
+            var fakeReceiver = new FakeKafkaReceiver();
+            IReceiver receiver = new ReceiverDecorator(fakeReceiver);
+
+            receiver.Resume();
+            receiver.Resume();
+
+            fakeReceiver.ResumeInvocations.Should().Be(2);
+        }
+
+        [Fact(DisplayName = "Resume extension method throws if receiver parameter is null")]
+        public void ResumeSadPath1()
+        {
+            IReceiver receiver = null;
+
+            Action act = () => receiver.Resume();
+
+            act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*receiver*");
+        }
+
+        [Fact(DisplayName = "Resume extension method throws if receiver is not a kafka receiver")]
+        public void ResumeSadPath2()
+        {
+            var receiver = new Mock<IReceiver>().Object;
+
+            Action act = () => receiver.Resume();
+
+            act.Should().ThrowExactly<ArgumentException>().WithMessage("Must be a kafka receiver or a decorator for a kafka receiver.*receiver*");
         }
 
         [Fact(DisplayName = "Replay extension method undecorates and calls Replay method")]
@@ -66,7 +142,7 @@ namespace RockLib.Messaging.Kafka.Tests
         }
 
         [Fact(DisplayName = "Replay extension method throws if receiver parameter is null")]
-        public async Task ReplayExtensionMethodSadPath()
+        public async Task ReplayExtensionMethodSadPath1()
         {
             IReceiver receiver = null;
 
@@ -77,6 +153,20 @@ namespace RockLib.Messaging.Kafka.Tests
             Func<Task> act = () => receiver.ReplayAsync(expectedStart, expectedEnd, expectedCallback, true);
 
             await act.Should().ThrowExactlyAsync<ArgumentNullException>().WithMessage("*receiver*");
+        }
+
+        [Fact(DisplayName = "Replay extension method throws if receiver is not a kafka receiver")]
+        public async Task ReplayExtensionMethodSadPath2()
+        {
+            var receiver = new Mock<IReceiver>().Object;
+
+            var expectedStart = new DateTime(2020, 9, 29, 17, 22, 26, DateTimeKind.Local);
+            var expectedEnd = new DateTime(2020, 9, 29, 17, 22, 32, DateTimeKind.Local);
+            Func<IReceiverMessage, Task> expectedCallback = message => Task.CompletedTask;
+
+            Func<Task> act = () => receiver.ReplayAsync(expectedStart, expectedEnd, expectedCallback, true);
+
+            await act.Should().ThrowExactlyAsync<ArgumentException>().WithMessage("Must be a kafka receiver or a decorator for a kafka receiver.*receiver*");
         }
 
         [Fact(DisplayName = "Start method 1 sets StartTimestamp and starts the receiver")]

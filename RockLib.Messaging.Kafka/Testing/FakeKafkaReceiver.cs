@@ -39,6 +39,16 @@ namespace RockLib.Messaging.Testing.Kafka
         public IReadOnlyList<ReplayInvocation> ReplayInvocations => _replayInvocations;
 
         /// <summary>
+        /// The number of times the <see cref="Pause"/> method has been called.
+        /// </summary>
+        public int PauseInvocations { get; private set; }
+
+        /// <summary>
+        /// The number of times the <see cref="Resume"/> method has been called.
+        /// </summary>
+        public int ResumeInvocations { get; private set; }
+
+        /// <summary>
         /// Adds the <paramref name="timestamp"/> to the <see cref="SeekInvocations"/> list.
         /// </summary>
         /// <param name="timestamp">The timestamp to seek to.</param>
@@ -66,6 +76,33 @@ namespace RockLib.Messaging.Testing.Kafka
         {
             _replayInvocations.Add(new ReplayInvocation(start, end, callback, pauseDuringReplay));
             return Tasks.CompletedTask;
+        }
+
+        /// <summary>
+        /// Increments <see cref="PauseInvocations"/>.
+        /// </summary>
+        public void Pause()
+        {
+            PauseInvocations++;
+        }
+
+        /// <summary>
+        /// Increments <see cref="ResumeInvocations"/>.
+        /// </summary>
+        public void Resume()
+        {
+            ResumeInvocations++;
+        }
+
+        /// <summary>
+        /// Resets the invocations of the receiver.
+        /// </summary>
+        public void Reset()
+        {
+            _seekInvocations.Clear();
+            _replayInvocations.Clear();
+            PauseInvocations = 0;
+            ResumeInvocations = 0;
         }
 
         /// <summary>

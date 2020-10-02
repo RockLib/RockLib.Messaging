@@ -228,6 +228,52 @@ namespace RockLib.Messaging.Kafka.Tests
                 .WithMessage("Seek cannot be called before the receiver has been started.");
         }
 
+        [Fact(DisplayName = "Pause method passes Consumer.Assignment to Consumer.Pause")]
+        public void PauseMethodHappyPath()
+        {
+            var assignments = new List<TopicPartition>
+            {
+                new TopicPartition("one_topic", new Partition(0)),
+                new TopicPartition("one_topic", new Partition(1))
+            };
+
+            var mockConsumer = new Mock<IConsumer<string, byte[]>>();
+            mockConsumer.Setup(m => m.Assignment).Returns(assignments);
+
+            var lazyConsumer = new Lazy<IConsumer<string, byte[]>>(() => mockConsumer.Object);
+
+            var receiver = new KafkaReceiver("name", "one_topic", "groupId", "servers");
+
+            receiver.Unlock()._consumer = lazyConsumer;
+
+            receiver.Pause();
+
+            mockConsumer.Verify(m => m.Pause(assignments), Times.Once(), "Pause() was called once");
+        }
+
+        [Fact(DisplayName = "Resume method passes Consumer.Assignment to Consumer.Resume")]
+        public void ResumeMethodHappyPath()
+        {
+            var assignments = new List<TopicPartition>
+            {
+                new TopicPartition("one_topic", new Partition(0)),
+                new TopicPartition("one_topic", new Partition(1))
+            };
+
+            var mockConsumer = new Mock<IConsumer<string, byte[]>>();
+            mockConsumer.Setup(m => m.Assignment).Returns(assignments);
+
+            var lazyConsumer = new Lazy<IConsumer<string, byte[]>>(() => mockConsumer.Object);
+
+            var receiver = new KafkaReceiver("name", "one_topic", "groupId", "servers");
+
+            receiver.Unlock()._consumer = lazyConsumer;
+
+            receiver.Resume();
+
+            mockConsumer.Verify(m => m.Resume(assignments), Times.Once(), "Resume() was called once");
+        }
+
         [Fact(DisplayName = "Replay method passes parameters and properties to ReplayEngine")]
         public async Task ReplayMethodHappyPath1()
         {

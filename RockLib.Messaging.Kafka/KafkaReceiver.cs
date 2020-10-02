@@ -149,6 +149,16 @@ namespace RockLib.Messaging.Kafka
         }
 
         /// <summary>
+        /// Pauses consumption of the stream.
+        /// </summary>
+        public void Pause() => Consumer.Pause(Consumer.Assignment);
+
+        /// <summary>
+        /// Resumes consumption of the stream.
+        /// </summary>
+        public void Resume() => Consumer.Resume(Consumer.Assignment);
+
+        /// <summary>
         /// Replays messages that were created from <paramref name="start"/> to <paramref name=
         /// "end"/>, invoking the <paramref name="callback"/> delegate for each message. If
         /// <paramref name="end"/> is null, then messages that were created from <paramref name=
