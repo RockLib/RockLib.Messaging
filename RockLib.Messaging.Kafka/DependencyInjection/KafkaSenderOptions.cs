@@ -1,6 +1,4 @@
 ﻿#if !NET451
-using Confluent.Kafka;
-
 namespace RockLib.Messaging.Kafka.DependencyInjection
 {
     /// <summary>
