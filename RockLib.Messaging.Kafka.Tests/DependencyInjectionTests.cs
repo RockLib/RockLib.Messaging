@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using RockLib.Messaging.Kafka.DependencyInjection;
-using Confluent.Kafka;
 
 namespace RockLib.Messaging.Kafka.Tests
 {

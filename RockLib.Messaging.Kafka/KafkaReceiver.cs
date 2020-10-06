@@ -1,8 +1,6 @@
 ﻿using Confluent.Kafka;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,10 +9,8 @@ namespace RockLib.Messaging.Kafka
     /// <summary>
     /// An implementation of <see cref="IReceiver"/> that receives messages from Kafka.
     /// </summary>
-    public class KafkaReceiver : Receiver, IKafkaReceiver
+    public class KafkaReceiver : Receiver
     {
-        private static readonly Lazy<DefaultReplayEngine> _defaultReplayEngine = new Lazy<DefaultReplayEngine>();
-
         private readonly Lazy<Thread> _pollingThread;
         private readonly Lazy<IConsumer<string, byte[]>> _consumer;
         private readonly CancellationTokenSource _disposeSource = new CancellationTokenSource();
@@ -50,13 +46,8 @@ namespace RockLib.Messaging.Kafka
         /// the largest offset, 'error' - trigger an error which is retrieved by consuming
         /// messages and checking 'message->err'.
         /// </param>
-        /// <param name="replayEngine">
-        /// The <see cref="IReplayEngine"/> used to replay messages. If <see langword="null"/>,
-        /// then a <see cref="DefaultReplayEngine"/> is used.
-        /// </param>
         public KafkaReceiver(string name, string topic, string groupId, string bootstrapServers,
-            bool enableAutoOffsetStore = false, AutoOffsetReset autoOffsetReset = AutoOffsetReset.Latest,
-            IReplayEngine replayEngine = null)
+            bool enableAutoOffsetStore = false, AutoOffsetReset autoOffsetReset = AutoOffsetReset.Latest)
             : base(name)
         {
             if (string.IsNullOrEmpty(topic))
@@ -71,7 +62,6 @@ namespace RockLib.Messaging.Kafka
             BootstrapServers = bootstrapServers;
             EnableAutoOffsetStore = enableAutoOffsetStore;
             AutoOffsetReset = autoOffsetReset;
-            ReplayEngine = replayEngine ?? _defaultReplayEngine.Value;
 
             var config = GetConsumerConfig(GroupId, BootstrapServers, EnableAutoOffsetStore, AutoOffsetReset);
             var builder = new ConsumerBuilder<string, byte[]>(config);
@@ -113,138 +103,9 @@ namespace RockLib.Messaging.Kafka
         public AutoOffsetReset AutoOffsetReset { get; }
 
         /// <summary>
-        /// The <see cref="IReplayEngine"/> used to replay messages.
-        /// </summary>
-        public IReplayEngine ReplayEngine { get; }
-
-        /// <summary>
         /// Gets the <see cref="IConsumer{TKey, TValue}" /> for this instance of <see cref="KafkaReceiver"/>.
         /// </summary>
         public IConsumer<string, byte[]> Consumer => _consumer.Value;
-
-        /// <summary>
-        /// The timestamp of the stream at which to start listening.
-        /// <para>
-        /// Setting this value after the receiver has been started has no effect.
-        /// </para>
-        /// </summary>
-        public DateTime? StartTimestamp { get; set; }
-
-        /// <summary>
-        /// Seeks to the specified timestamp.
-        /// </summary>
-        /// <param name="timestamp">The timestamp to seek to.</param>
-        /// <exception cref="InvalidOperationException">
-        /// If <see cref="Consumer"/> has not yet been assigned.
-        /// </exception>
-        public void Seek(DateTime timestamp)
-        {
-            if (!Consumer.Assignment.Any())
-                throw new InvalidOperationException("Seek cannot be called before the receiver has been started.");
-
-            var timestamps = Consumer.Assignment.Select(topicPartition => new TopicPartitionTimestamp(topicPartition, new Timestamp(timestamp)));
-            var offsets = Consumer.OffsetsForTimes(timestamps, TimeSpan.FromSeconds(5));
-            foreach (var offset in offsets)
-                Consumer.Seek(offset);
-        }
-
-        /// <summary>
-        /// Pauses consumption of the stream.
-        /// </summary>
-        public void Pause() => Consumer.Pause(Consumer.Assignment);
-
-        /// <summary>
-        /// Resumes consumption of the stream.
-        /// </summary>
-        public void Resume() => Consumer.Resume(Consumer.Assignment);
-
-        /// <summary>
-        /// Replays messages that were created from <paramref name="start"/> to <paramref name=
-        /// "end"/>, invoking the <paramref name="callback"/> delegate for each message. If
-        /// <paramref name="end"/> is null, then messages that were created from <paramref name=
-        /// "start"/> to the current UTC time are replayed.
-        /// </summary>
-        /// <param name="start">The start time.</param>
-        /// <param name="end">
-        /// The end time, or <see langword="null"/> to indicate that the the current UTC time
-        /// should be used.
-        /// </param>
-        /// <param name="callback">
-        /// The delegate to invoke for each replayed message, or <see langword="null"/> to indicate
-        /// that <see cref="Receiver.MessageHandler"/> should handle replayed messages.
-        /// </param>
-        /// <param name="pauseDuringReplay">
-        /// Whether to pause the consumer while replaying, then resume after replaying is finished.
-        /// </param>
-        /// <exception cref="InvalidOperationException">
-        /// If <paramref name="callback"/> is null and the receiver has not been started yet.
-        /// </exception>
-        public async Task ReplayAsync(DateTime start, DateTime? end,
-            Func<IReceiverMessage, Task> callback = null, bool pauseDuringReplay = false)
-        {
-            if (callback is null)
-            {
-                if (MessageHandler != null)
-                    callback = message => MessageHandler.OnMessageReceivedAsync(this, message);
-                else
-                    throw new InvalidOperationException($"Replay cannot be called with a null '{nameof(callback)}' parameter before the receiver has been started.");
-            }
-
-            IEnumerable<TopicPartition> pausedPartitions = null;
-
-            if (pauseDuringReplay)
-            {
-                pausedPartitions = Consumer.Assignment;
-                Consumer.Pause(pausedPartitions);
-            }
-
-            await ReplayEngine.Replay(start, end, callback, Topic, BootstrapServers, EnableAutoOffsetStore, AutoOffsetReset);
-
-            if (pauseDuringReplay)
-                Consumer.Resume(pausedPartitions);
-        }
-
-        /// <summary>
-        /// Replays messages that were created from <paramref name="start"/> to <paramref name=
-        /// "end"/>, invoking the <paramref name="callback"/> delegate for each message. If
-        /// <paramref name="end"/> is null, then messages that were created from <paramref name=
-        /// "start"/> to the current UTC time are replayed.
-        /// </summary>
-        /// <param name="start">The start time.</param>
-        /// <param name="end">
-        /// The end time, or <see langword="null"/> to use the current time as the end time.
-        /// </param>
-        /// <param name="callback">The delegate to invoke for each replayed message.</param>
-        /// <param name="topic">
-        /// The topic to subscribe to. A regex can be specified to subscribe to the set of
-        /// all matching topics (which is updated as topics are added / removed from the
-        /// cluster). A regex must be front anchored to be recognized as a regex. e.g. ^myregex
-        /// </param>
-        /// <param name="bootstrapServers">
-        /// List of brokers as a CSV list of broker host or host:port.
-        /// </param>
-        /// <param name="enableAutoOffsetStore">
-        /// Whether to automatically store offset of each message replayed.
-        /// </param>
-        /// <param name="autoOffsetReset">
-        /// Action to take when there is no initial offset in offset store or the desired
-        /// offset is out of range: 'smallest','earliest' - automatically reset the offset
-        /// to the smallest offset, 'largest','latest' - automatically reset the offset to
-        /// the largest offset, 'error' - trigger an error which is retrieved by consuming
-        /// messages and checking 'message->err'.
-        /// </param>
-        /// <exception cref="ArgumentException">
-        /// If <paramref name="end"/> is earlier than <paramref name="start"/>, or if <paramref
-        /// name="end"/> is null and <paramref name="start"/> is after the current UTC time.
-        /// </exception>
-        /// <exception cref="ArgumentNullException">
-        /// If <paramref name="callback"/> is null, or <paramref name="topic"/> is null or empty,
-        /// or <paramref name="bootstrapServers"/> is null or empty.
-        /// </exception>
-        public static Task ReplayAsync(DateTime start, DateTime? end, Func<IReceiverMessage, Task> callback,
-            string topic, string bootstrapServers, bool enableAutoOffsetStore = false,
-            AutoOffsetReset autoOffsetReset = AutoOffsetReset.Latest) =>
-            _defaultReplayEngine.Value.Replay(start, end, callback, topic, bootstrapServers, enableAutoOffsetStore, autoOffsetReset);
 
         /// <summary>
         /// Starts the background threads and subscribes to the topic.
@@ -253,19 +114,6 @@ namespace RockLib.Messaging.Kafka
         {
             _trackingThread.Value.Start();
             _consumer.Value.Subscribe(Topic);
-
-            if (StartTimestamp.HasValue)
-            {
-                var attempts = 0;
-                while (Consumer.Assignment.Count == 0)
-                {
-                    Thread.Sleep(10);
-                    if (++attempts >= 300)
-                        throw new TimeoutException("Unable to Seek to StartTimestamp because the Consumer never received its Assignment.");
-                }
-                Seek(StartTimestamp.Value);
-            }
-
             _pollingThread.Value.Start();
         }
 
