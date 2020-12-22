@@ -34,12 +34,10 @@ namespace RockLib.Messaging.Kafka
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
+            BootstrapServers = bootstrapServers ?? throw new ArgumentNullException(nameof(bootstrapServers));
+            MessageTimeoutMs = messageTimeoutMs;
 
-            var config = new ProducerConfig()
-            {
-                BootstrapServers = bootstrapServers ?? throw new ArgumentNullException(nameof(bootstrapServers)),
-                MessageTimeoutMs = messageTimeoutMs
-            };
+            var config = GetProducerConfig(bootstrapServers, messageTimeoutMs);
 
             var producerBuilder = new ProducerBuilder<string, byte[]>(config);
             producerBuilder.SetErrorHandler(OnError);
@@ -52,16 +50,21 @@ namespace RockLib.Messaging.Kafka
         /// </summary>
         /// <param name="name">The name of the sender.</param>
         /// <param name="topic">The topic to produce messages to.</param>
-        /// <param name="producer">The Kafka <see cref="IProducer{TKey, TValue}" /> to use for sending messages.</param>
-        public KafkaSender(string name, string topic, IProducer<string, byte[]> producer)
+        /// <param name="producerConfig">The configuration used in creation of the Kafka producer.</param>
+        public KafkaSender(string name, string topic, ProducerConfig producerConfig)
         {
-            if (producer == null)
-                throw new ArgumentNullException(nameof(producer));
+            if (producerConfig is null)
+                throw new ArgumentNullException(nameof(producerConfig));
 
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
+            BootstrapServers = producerConfig.BootstrapServers;
+            MessageTimeoutMs = producerConfig.MessageTimeoutMs;
 
-            _producer = new Lazy<IProducer<string, byte[]>>(() => producer);
+            var producerBuilder = new ProducerBuilder<string, byte[]>(producerConfig);
+            producerBuilder.SetErrorHandler(OnError);
+
+            _producer = new Lazy<IProducer<string, byte[]>>(() => producerBuilder.Build());
         }
 
         /// <summary>
@@ -73,6 +76,20 @@ namespace RockLib.Messaging.Kafka
         /// Gets the topic to subscribe to.
         /// </summary>
         public string Topic { get; }
+
+        /// <summary>
+        /// List of brokers as a CSV list of broker host or host:port.
+        /// </summary>
+        public string BootstrapServers { get; }
+
+        /// <summary>
+        /// Local message timeout. This value is only enforced locally and limits the time
+        /// a produced message waits for successful delivery. A time of 0 is infinite. This
+        /// is the maximum time librdkafka may use to deliver a message (including retries).
+        /// Delivery error occurs when either the retry count or the message timeout are
+        /// exceeded.
+        /// </summary>
+        public int? MessageTimeoutMs { get; }
 
         /// <summary>
         /// Gets the <see cref="IProducer{TKey, TValue}" /> for this instance of <see cref="KafkaSender"/>.
@@ -146,6 +163,15 @@ namespace RockLib.Messaging.Kafka
                 return null;
 
             return Encoding.UTF8.GetBytes(value);
+        }
+
+        internal static ProducerConfig GetProducerConfig(string bootstrapServers, int messageTimeoutMs)
+        {
+            return new ProducerConfig()
+            {
+                BootstrapServers = bootstrapServers,
+                MessageTimeoutMs = messageTimeoutMs
+            };
         }
     }
 }

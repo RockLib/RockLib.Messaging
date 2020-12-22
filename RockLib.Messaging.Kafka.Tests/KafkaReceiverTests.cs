@@ -19,11 +19,17 @@ namespace RockLib.Messaging.Kafka.Tests
             var topic = "topic";
             var groupId = "groupId";
             var servers = "bootstrapServers";
-            var sender = new KafkaReceiver(name, topic, groupId, servers);
+            var enableOffsetRestore = true;
+            var autoOffsetReset = AutoOffsetReset.Error;
+            var receiver = new KafkaReceiver(name, topic, groupId, servers, enableOffsetRestore, autoOffsetReset);
 
-            sender.Name.Should().Be(name);
-            sender.Topic.Should().Be(topic);
-            sender.Consumer.Should().NotBeNull();
+            receiver.Name.Should().Be(name);
+            receiver.Topic.Should().Be(topic);
+            receiver.GroupId.Should().Be(groupId);
+            receiver.BootstrapServers.Should().Be(servers);
+            receiver.EnableAutoOffsetStore.Should().Be(enableOffsetRestore);
+            receiver.AutoOffsetReset.Should().Be(autoOffsetReset);
+            receiver.Consumer.Should().NotBeNull();
         }
 
         [Fact(DisplayName = "KafkaReceiver constructor 1 throws on null topic")]
@@ -47,23 +53,38 @@ namespace RockLib.Messaging.Kafka.Tests
             action.Should().Throw<ArgumentNullException>();
         }
 
-        [Fact(DisplayName = "KafkaReceiver constructor 2 sets name, topic, and consumer")]
+        [Fact(DisplayName = "KafkaReceiver constructor 2 sets appropriate properties")]
         public void KafkaReceiverConstructor2HappyPath()
         {
             var name = "name";
             var topic = "topic";
-            var consumer = new Mock<IConsumer<string, byte[]>>().Object;
+            var groupId = "groupId";
+            var servers = "bootstrapServers";
+            var enableOffsetRestore = true;
+            var autoOffsetReset = AutoOffsetReset.Error;
+            var consumer = new ConsumerConfig()
+            {
+                GroupId = groupId,
+                BootstrapServers = servers,
+                EnableAutoOffsetStore = enableOffsetRestore,
+                AutoOffsetReset = autoOffsetReset
+            };
+
             var receiver = new KafkaReceiver(name, topic, consumer);
 
             receiver.Name.Should().Be(name);
             receiver.Topic.Should().Be(topic);
-            receiver.Consumer.Should().Be(consumer);
+            receiver.GroupId.Should().Be(groupId);
+            receiver.BootstrapServers.Should().Be(servers);
+            receiver.EnableAutoOffsetStore.Should().Be(enableOffsetRestore);
+            receiver.AutoOffsetReset.Should().Be(autoOffsetReset);
+            receiver.Consumer.Should().NotBeNull();
         }
 
         [Fact(DisplayName = "KafkaReceiver constructor 2 throws on null topic")]
         public void KafkaReceiverConstructor2SadPath1()
         {
-            Action action = () => new KafkaReceiver("name", null, new Mock<IConsumer<string, byte[]>>().Object);
+            Action action = () => new KafkaReceiver("name", null, new ConsumerConfig());
             action.Should().Throw<ArgumentNullException>();
         }
 

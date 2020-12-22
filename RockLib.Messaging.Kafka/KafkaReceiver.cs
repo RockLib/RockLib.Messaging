@@ -47,23 +47,16 @@ namespace RockLib.Messaging.Kafka
         /// messages and checking 'message->err'.
         /// </param>
         public KafkaReceiver(string name, string topic, string groupId, string bootstrapServers,
-            bool enableAutoOffsetStore = false, AutoOffsetReset autoOffsetReset = AutoOffsetReset.Latest)
+            bool enableAutoOffsetStore = false, AutoOffsetReset autoOffsetReset = Confluent.Kafka.AutoOffsetReset.Latest)
             : base(name)
         {
-            if (string.IsNullOrEmpty(topic))
-                throw new ArgumentNullException(nameof(topic));
-            if (string.IsNullOrEmpty(groupId))
-                throw new ArgumentNullException(nameof(groupId));
-            if (string.IsNullOrEmpty(bootstrapServers))
-                throw new ArgumentNullException(nameof(bootstrapServers));
-
-            Topic = topic;
-            GroupId = groupId;
-            BootstrapServers = bootstrapServers;
+            Topic = topic ?? throw new ArgumentNullException(nameof(topic));
+            GroupId = groupId ?? throw new ArgumentNullException(nameof(groupId));
+            BootstrapServers = bootstrapServers ?? throw new ArgumentNullException(nameof(bootstrapServers));
             EnableAutoOffsetStore = enableAutoOffsetStore;
             AutoOffsetReset = autoOffsetReset;
 
-            var config = GetConsumerConfig(GroupId, BootstrapServers, EnableAutoOffsetStore, AutoOffsetReset);
+            var config = GetConsumerConfig(groupId, bootstrapServers, enableAutoOffsetStore, autoOffsetReset);
             var builder = new ConsumerBuilder<string, byte[]>(config);
             builder.SetErrorHandler(OnError);
 
@@ -75,9 +68,6 @@ namespace RockLib.Messaging.Kafka
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KafkaReceiver"/> class.
-        /// NOTE: This constructor will leave <see cref="GroupId"/>, <see cref="BootstrapServers"/>,
-        /// <see cref="EnableAutoOffsetStore"/>, and <see cref="AutoOffsetReset"/> null, as they cannot be
-        /// extracted from an IConsumer.
         /// </summary>
         /// <param name="name">The name of the receiver.</param>
         /// <param name="topic">
@@ -85,18 +75,23 @@ namespace RockLib.Messaging.Kafka
         /// all matching topics (which is updated as topics are added / removed from the
         /// cluster). A regex must be front anchored to be recognized as a regex. e.g. ^myregex
         /// </param>
-        /// <param name="consumer">The Kafka <see cref="IConsumer{TKey, TValue}" /> to use for consuming messages.</param>
-        public KafkaReceiver(string name, string topic, IConsumer<string, byte[]> consumer)
+        /// <param name="consumerConfig">The configuration used in creation of the Kafka consumer.</param>
+        public KafkaReceiver(string name, string topic, ConsumerConfig consumerConfig)
             : base(name)
         {
-            if (string.IsNullOrEmpty(topic))
-                throw new ArgumentNullException(nameof(topic));
-            if (consumer is null)
-                throw new ArgumentNullException(nameof(consumer));
+            if (consumerConfig is null)
+                throw new ArgumentNullException(nameof(consumerConfig));
 
-            Topic = topic;
+            Topic = topic ?? throw new ArgumentNullException(nameof(topic));
+            GroupId = consumerConfig.GroupId;
+            BootstrapServers = consumerConfig.BootstrapServers;
+            EnableAutoOffsetStore = consumerConfig.EnableAutoOffsetStore;
+            AutoOffsetReset = consumerConfig.AutoOffsetReset;
 
-            _consumer = new Lazy<IConsumer<string, byte[]>>(() => consumer);
+            var builder = new ConsumerBuilder<string, byte[]>(consumerConfig);
+            builder.SetErrorHandler(OnError);
+
+            _consumer = new Lazy<IConsumer<string, byte[]>>(() => builder.Build());
 
             _pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
             _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
@@ -120,7 +115,7 @@ namespace RockLib.Messaging.Kafka
         /// <summary>
         /// Whether to automatically store offset of last message provided to application.
         /// </summary>
-        public bool EnableAutoOffsetStore { get; }
+        public bool? EnableAutoOffsetStore { get; }
 
         /// <summary>
         /// Action to take when there is no initial offset in offset store or the desired
@@ -129,7 +124,7 @@ namespace RockLib.Messaging.Kafka
         /// the largest offset, 'error' - trigger an error which is retrieved by consuming
         /// messages and checking 'message->err'.
         /// </summary>
-        public AutoOffsetReset AutoOffsetReset { get; }
+        public AutoOffsetReset? AutoOffsetReset { get; }
 
         /// <summary>
         /// Gets the <see cref="IConsumer{TKey, TValue}" /> for this instance of <see cref="KafkaReceiver"/>.
@@ -182,7 +177,7 @@ namespace RockLib.Messaging.Kafka
                 try
                 {
                     var result = _consumer.Value.Consume(_disposeSource.Token);
-                    var message = new KafkaReceiverMessage(_consumer.Value, result, EnableAutoOffsetStore);
+                    var message = new KafkaReceiverMessage(_consumer.Value, result, EnableAutoOffsetStore ?? false);
 
                     if (_connected != true)
                     {

@@ -23,6 +23,8 @@ namespace RockLib.Messaging.Kafka.Tests
 
             sender.Name.Should().Be(name);
             sender.Topic.Should().Be(topic);
+            sender.BootstrapServers.Should().Be(servers);
+            sender.MessageTimeoutMs.Should().Be(timeout);
             sender.Producer.Should().NotBeNull();
         }
 
@@ -31,12 +33,20 @@ namespace RockLib.Messaging.Kafka.Tests
         {
             var name = "name";
             var topic = "topic";
-            var producer = new Mock<IProducer<string, byte[]>>().Object;
-            var sender = new KafkaSender(name, topic, producer);
+            var servers = "bootstrapServers";
+            var timeout = 100;
+            var config = new ProducerConfig()
+            {
+                BootstrapServers = servers,
+                MessageTimeoutMs = timeout
+            };
+            var sender = new KafkaSender(name, topic, config);
 
             sender.Name.Should().Be(name);
             sender.Topic.Should().Be(topic);
-            sender.Producer.Should().BeSameAs(producer);
+            sender.BootstrapServers.Should().Be(servers);
+            sender.MessageTimeoutMs.Should().Be(timeout);
+            sender.Producer.Should().NotBeNull();
         }
 
         [Fact(DisplayName = "KafkaSender constructor throws on null name")]
@@ -63,18 +73,18 @@ namespace RockLib.Messaging.Kafka.Tests
         [Fact(DisplayName = "KafkaSender constructor 2 throws on null name")]
         public void KafkaSenderConstructor2SadPath1()
         {
-            Action action = () => new KafkaSender(null, "topic", new Mock<IProducer<string, byte[]>>().Object);
+            Action action = () => new KafkaSender(null, "topic", new ProducerConfig());
             action.Should().Throw<ArgumentNullException>();
         }
 
         [Fact(DisplayName = "KafkaSender constructor 2 throws on null topic")]
         public void KafkaSenderConstructor2SadPath2()
         {
-            Action action = () => new KafkaSender("name", null, new Mock<IProducer<string, byte[]>>().Object);
+            Action action = () => new KafkaSender("name", null, new ProducerConfig());
             action.Should().Throw<ArgumentNullException>();
         }
 
-        [Fact(DisplayName = "KafkaSender constructor 2 throws on null producer")]
+        [Fact(DisplayName = "KafkaSender constructor 2 throws on null producer config")]
         public void KafkaSenderConstructor2SadPath3()
         {
             Action action = () => new KafkaSender("name", "topic", null);
