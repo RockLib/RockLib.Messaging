@@ -74,6 +74,35 @@ namespace RockLib.Messaging.Kafka
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="KafkaReceiver"/> class.
+        /// NOTE: This constructor will leave <see cref="GroupId"/>, <see cref="BootstrapServers"/>,
+        /// <see cref="EnableAutoOffsetStore"/>, and <see cref="AutoOffsetReset"/> null, as they cannot be
+        /// extracted from an IConsumer.
+        /// </summary>
+        /// <param name="name">The name of the receiver.</param>
+        /// <param name="topic">
+        /// The topic to subscribe to. A regex can be specified to subscribe to the set of
+        /// all matching topics (which is updated as topics are added / removed from the
+        /// cluster). A regex must be front anchored to be recognized as a regex. e.g. ^myregex
+        /// </param>
+        /// <param name="consumer">The Kafka <see cref="IConsumer{TKey, TValue}" /> to use for consuming messages.</param>
+        public KafkaReceiver(string name, string topic, IConsumer<string, byte[]> consumer)
+            : base(name)
+        {
+            if (string.IsNullOrEmpty(topic))
+                throw new ArgumentNullException(nameof(topic));
+            if (consumer is null)
+                throw new ArgumentNullException(nameof(consumer));
+
+            Topic = topic;
+
+            _consumer = new Lazy<IConsumer<string, byte[]>>(() => consumer);
+
+            _pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
+            _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
+        }
+
+        /// <summary>
         /// Gets the topic to subscribe to.
         /// </summary>
         public string Topic { get; }

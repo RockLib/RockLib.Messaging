@@ -47,6 +47,33 @@ namespace RockLib.Messaging.Kafka.Tests
             action.Should().Throw<ArgumentNullException>();
         }
 
+        [Fact(DisplayName = "KafkaReceiver constructor 2 sets name, topic, and consumer")]
+        public void KafkaReceiverConstructor2HappyPath()
+        {
+            var name = "name";
+            var topic = "topic";
+            var consumer = new Mock<IConsumer<string, byte[]>>().Object;
+            var receiver = new KafkaReceiver(name, topic, consumer);
+
+            receiver.Name.Should().Be(name);
+            receiver.Topic.Should().Be(topic);
+            receiver.Consumer.Should().Be(consumer);
+        }
+
+        [Fact(DisplayName = "KafkaReceiver constructor 2 throws on null topic")]
+        public void KafkaReceiverConstructor2SadPath1()
+        {
+            Action action = () => new KafkaReceiver("name", null, new Mock<IConsumer<string, byte[]>>().Object);
+            action.Should().Throw<ArgumentNullException>();
+        }
+
+        [Fact(DisplayName = "KafkaReceiver constructor 2 throws on null consumer")]
+        public void KafkaReceiverConstructor2SadPath2()
+        {
+            Action action = () => new KafkaReceiver("name", "topic", null);
+            action.Should().Throw<ArgumentNullException>();
+        }
+
         [Fact(DisplayName = "KafkaReceiver Start starts the receiver and tracking threads")]
         public void KafkaReceiverStartHappyPath1()
         {
