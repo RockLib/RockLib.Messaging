@@ -26,7 +26,7 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
                 var options = optionsMonitor?.Get(name) ?? new KafkaSenderOptions();
                 configureOptions?.Invoke(options);
 
-                return new KafkaSender(name, options.Topic, options.BootstrapServers, options.MessageTimeoutMs);
+                return new KafkaSender(name, options.Topic, options);
             });
         }
 
@@ -45,7 +45,7 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
                 var options = optionsMonitor?.Get(name) ?? new KafkaReceiverOptions();
                 configureOptions?.Invoke(options);
 
-                return new KafkaReceiver(name, options.Topic, options.GroupId, options.BootstrapServers);
+                return new KafkaReceiver(name, options.Topic, options);
             });
         }
     }
