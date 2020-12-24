@@ -8,6 +8,12 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
     /// </summary>
     public class KafkaReceiverOptions : ConsumerConfig
     {
+        public KafkaReceiverOptions() : base()
+        {
+            EnableAutoOffsetStore = false;
+            AutoOffsetReset = Confluent.Kafka.AutoOffsetReset.Latest;
+        }
+
         /// <summary>
         /// Gets or sets the topic to subscribe to.
         /// </summary>

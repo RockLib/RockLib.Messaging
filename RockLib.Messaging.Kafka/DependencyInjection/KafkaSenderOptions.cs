@@ -8,6 +8,11 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
     /// </summary>
     public class KafkaSenderOptions : ProducerConfig
     {
+        public KafkaSenderOptions() : base()
+        {
+            MessageTimeoutMs = 10000;
+        }
+
         /// <summary>
         /// Gets or sets the topic to subscribe to.
         /// </summary>
