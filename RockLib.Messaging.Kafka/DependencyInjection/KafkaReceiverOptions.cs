@@ -8,7 +8,11 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
     /// </summary>
     public class KafkaReceiverOptions : ConsumerConfig
     {
-        public KafkaReceiverOptions() : base()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KafkaReceiverOptions"/> class.
+        /// </summary>
+        public KafkaReceiverOptions()
+            : base()
         {
             EnableAutoOffsetStore = false;
             AutoOffsetReset = Confluent.Kafka.AutoOffsetReset.Latest;

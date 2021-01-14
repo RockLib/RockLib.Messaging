@@ -8,7 +8,11 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
     /// </summary>
     public class KafkaSenderOptions : ProducerConfig
     {
-        public KafkaSenderOptions() : base()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KafkaSenderOptions"/> class.
+        /// </summary>
+        public KafkaSenderOptions()
+            : base()
         {
             MessageTimeoutMs = 10000;
         }
