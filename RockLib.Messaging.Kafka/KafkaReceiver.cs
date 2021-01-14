@@ -82,6 +82,9 @@ namespace RockLib.Messaging.Kafka
             if (consumerConfig is null)
                 throw new ArgumentNullException(nameof(consumerConfig));
 
+            if (consumerConfig.EnableAutoCommit is false)
+                throw new ArgumentOutOfRangeException(nameof(consumerConfig), "The 'EnableAutoCommit' setting must be true.");
+
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
             GroupId = consumerConfig.GroupId;
             BootstrapServers = consumerConfig.BootstrapServers;
