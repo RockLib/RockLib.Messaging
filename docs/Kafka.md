@@ -23,8 +23,8 @@ And the second has the following parameters:
   - The name of the instance of KafkaSender.
 - topic
   - The topic to produce messages to.
-- producer
-  - The Kafka IProducer to use for sending messages.
+- producerConfig
+  - The configuration used in creation of the Kafka producer.
 
 ---
 
@@ -122,8 +122,8 @@ And the second has the following parameters:
   - The name of the instance of KafkaReceiver.
 - topic
   - The topic to subscribe to. A regex can be specified to subscribe to the set of all matching topics (which is updated as topics are added / removed from the cluster). A regex must be front anchored to be recognized as a regex. e.g. `^myregex`
-- consumer
-  - The Kafka IConsumer to use for receiving messages.
+- consumerConfig
+  - The configuration used in creation of the Kafka consumer.
 
 ---
 
