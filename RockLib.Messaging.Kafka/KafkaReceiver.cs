@@ -14,7 +14,7 @@ namespace RockLib.Messaging.Kafka
         private readonly Lazy<Thread> _pollingThread;
         private readonly Lazy<IConsumer<string, byte[]>> _consumer;
         private readonly CancellationTokenSource _disposeSource = new CancellationTokenSource();
-        private readonly BlockingCollection<Task> _trackingCollection = new BlockingCollection<Task>();
+        private readonly BlockingCollection<Task> _trackingCollection;
         private readonly Lazy<Thread> _trackingThread;
 
         private bool _stopped;
@@ -46,8 +46,12 @@ namespace RockLib.Messaging.Kafka
         /// the largest offset, 'error' - trigger an error which is retrieved by consuming
         /// messages and checking 'message->err'.
         /// </param>
+        /// <param name="synchronousProcessing">
+        /// Whether the kafka receiver should process messages synchronously.
+        /// </param>
         public KafkaReceiver(string name, string topic, string groupId, string bootstrapServers,
-            bool enableAutoOffsetStore = false, AutoOffsetReset autoOffsetReset = Confluent.Kafka.AutoOffsetReset.Latest)
+            bool enableAutoOffsetStore = false, AutoOffsetReset autoOffsetReset = Confluent.Kafka.AutoOffsetReset.Latest,
+            bool synchronousProcessing = false)
             : base(name)
         {
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
@@ -62,8 +66,16 @@ namespace RockLib.Messaging.Kafka
 
             _consumer = new Lazy<IConsumer<string, byte[]>>(() => builder.Build());
 
-            _pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
-            _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
+            if (synchronousProcessing)
+            {
+                _pollingThread = new Lazy<Thread>(() => new Thread(SynchronousPollForMessages) { IsBackground = true });
+            }
+            else
+            {
+                _trackingCollection = new BlockingCollection<Task>();
+                _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
+                _pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
+            }
         }
 
         /// <summary>
@@ -76,7 +88,10 @@ namespace RockLib.Messaging.Kafka
         /// cluster). A regex must be front anchored to be recognized as a regex. e.g. ^myregex
         /// </param>
         /// <param name="consumerConfig">The configuration used in creation of the Kafka consumer.</param>
-        public KafkaReceiver(string name, string topic, ConsumerConfig consumerConfig)
+        /// <param name="synchronousProcessing">
+        /// Whether the kafka receiver should process messages synchronously.
+        /// </param>
+        public KafkaReceiver(string name, string topic, ConsumerConfig consumerConfig, bool synchronousProcessing = false)
             : base(name)
         {
             if (consumerConfig is null)
@@ -96,8 +111,16 @@ namespace RockLib.Messaging.Kafka
 
             _consumer = new Lazy<IConsumer<string, byte[]>>(() => builder.Build());
 
-            _pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
-            _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
+            if (synchronousProcessing)
+            {
+                _pollingThread = new Lazy<Thread>(() => new Thread(SynchronousPollForMessages) { IsBackground = true });
+            }
+            else
+            {
+                _pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
+                _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
+                _trackingCollection = new BlockingCollection<Task>();
+            }
         }
 
         /// <summary>
@@ -139,7 +162,7 @@ namespace RockLib.Messaging.Kafka
         /// </summary>
         protected override void Start()
         {
-            _trackingThread.Value.Start();
+            _trackingThread?.Value.Start();
             _consumer.Value.Subscribe(Topic);
             _pollingThread.Value.Start();
         }
@@ -161,7 +184,7 @@ namespace RockLib.Messaging.Kafka
             if (_pollingThread.IsValueCreated)
                 _pollingThread.Value.Join();
 
-            if (_trackingThread.IsValueCreated)
+            if (_trackingThread?.IsValueCreated is true)
                 _trackingThread.Value.Join();
 
             if (_consumer.IsValueCreated)
@@ -214,6 +237,36 @@ namespace RockLib.Messaging.Kafka
                 catch (Exception ex)
                 {
                     OnError("Error while tracking message handler task.", ex);
+                }
+            }
+        }
+
+        private void SynchronousPollForMessages()
+        {
+            while (!_stopped)
+            {
+                try
+                {
+                    var result = _consumer.Value.Consume(_disposeSource.Token);
+                    var message = new KafkaReceiverMessage(_consumer.Value, result, EnableAutoOffsetStore ?? false);
+
+                    if (_connected != true)
+                    {
+                        _connected = true;
+                        OnConnected();
+                    }
+
+                    var task = MessageHandler.OnMessageReceivedAsync(this, message);
+                    task.GetAwaiter().GetResult();
+                }
+                catch (OperationCanceledException) when (_disposeSource.IsCancellationRequested)
+                {
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    OnError("Error in polling loop.", ex);
+                    // TODO: Delay the loop?
                 }
             }
         }
