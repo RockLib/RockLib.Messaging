@@ -184,6 +184,8 @@ namespace RockLib.Messaging.Kafka
             if (_pollingThread.IsValueCreated)
                 _pollingThread.Value.Join();
 
+            _trackingCollection?.CompleteAdding();
+
             if (_trackingThread?.IsValueCreated is true)
                 _trackingThread.Value.Join();
 
@@ -228,7 +230,7 @@ namespace RockLib.Messaging.Kafka
 
         private void TrackMessageHandling()
         {
-            foreach (var task in _trackingCollection)
+            foreach (var task in _trackingCollection.GetConsumingEnumerable())
             {
                 try
                 {
