@@ -22,6 +22,12 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         /// Gets or sets the topic to subscribe to.
         /// </summary>
         public string Topic { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the kafka receiver should process messages
+        /// synchronously.
+        /// </summary>
+        public bool SynchronousProcessing { get; set; }
     }
 }
 #endif

@@ -45,7 +45,7 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
                 var options = optionsMonitor?.Get(name) ?? new KafkaReceiverOptions();
                 configureOptions?.Invoke(options);
 
-                return new KafkaReceiver(name, options.Topic, options);
+                return new KafkaReceiver(name, options.Topic, options, options.SynchronousProcessing);
             });
         }
     }
