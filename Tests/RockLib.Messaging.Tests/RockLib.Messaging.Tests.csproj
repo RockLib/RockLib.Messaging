@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RockLib.Messaging\RockLib.Messaging.csproj" />
+    <ProjectReference Include="..\..\RockLib.Messaging\RockLib.Messaging.csproj" />
   </ItemGroup>
 
   <ItemGroup>

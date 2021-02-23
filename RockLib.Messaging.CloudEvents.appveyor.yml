@@ -4,7 +4,7 @@ configuration: Release
 only_commits:
   files:
   - RockLib.Messaging.CloudEvents/
-  - RockLib.Messaging.CloudEvents.Tests/
+  - Tests/RockLib.Messaging.CloudEvents.Tests/
   - RockLib.Messaging.CloudEvents.sln
   - RockLib.Messaging.CloudEvents.appveyor.yml
 before_build:
