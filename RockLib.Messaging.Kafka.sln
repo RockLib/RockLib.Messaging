@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29926.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.Kafka", "RockLib.Messaging.Kafka\RockLib.Messaging.Kafka.csproj", "{2D35EA9A-C9C3-4915-894F-815D9CE5700A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.Kafka.Tests", "RockLib.Messaging.Kafka.Tests\RockLib.Messaging.Kafka.Tests.csproj", "{BDA37A2A-CA76-4FF1-B08F-2783C637B492}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.Kafka.Tests", "Tests\RockLib.Messaging.Kafka.Tests\RockLib.Messaging.Kafka.Tests.csproj", "{BDA37A2A-CA76-4FF1-B08F-2783C637B492}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

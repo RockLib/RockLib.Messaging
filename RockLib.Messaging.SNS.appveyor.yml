@@ -4,7 +4,7 @@ configuration: Release
 only_commits:
   files:
   - RockLib.Messaging.SNS/
-  - RockLib.Messaging.SNS.Tests/
+  - Tests/RockLib.Messaging.SNS.Tests/
   - RockLib.Messaging.SNS.sln
   - RockLib.Messaging.SNS.appveyor.yml
 before_build:

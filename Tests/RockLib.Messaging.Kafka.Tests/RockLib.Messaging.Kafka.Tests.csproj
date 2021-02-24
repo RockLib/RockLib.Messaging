@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RockLib.Messaging.Kafka\RockLib.Messaging.Kafka.csproj" />
+    <ProjectReference Include="..\..\RockLib.Messaging.Kafka\RockLib.Messaging.Kafka.csproj" />
   </ItemGroup>
 
 </Project>

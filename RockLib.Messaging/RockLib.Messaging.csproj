@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net451;net462</TargetFrameworks>
+    <TargetFrameworks>net5.0;netstandard2.0;net451;net462</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\RockLib.Messaging.xml</DocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(PackageId).xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,12 +30,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RockLib.Compression" Version="1.0.3" />
-    <PackageReference Include="RockLib.Configuration" Version="2.4.4" />
-    <PackageReference Include="RockLib.Configuration.ObjectFactory" Version="1.6.3" />
+    <PackageReference Include="RockLib.Compression" Version="1.0.4" />
+    <PackageReference Include="RockLib.Configuration" Version="2.5.1" />
+    <PackageReference Include="RockLib.Configuration.ObjectFactory" Version="1.6.7" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'!='net451'">
+  <ItemGroup Condition="'$(TargetFramework)'=='net5.0'">
+    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0' Or '$(TargetFramework)'=='net462'">
     <PackageReference Include="Microsoft.Extensions.Options" Version="2.2.0" />
   </ItemGroup>
 

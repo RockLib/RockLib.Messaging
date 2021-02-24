@@ -4,7 +4,7 @@ configuration: Release
 only_commits:
   files:
   - RockLib.Messaging/
-  - RockLib.Messaging.Tests/
+  - Tests/RockLib.Messaging.Tests/
   - RockLib.Messaging.sln
   - RockLib.Messaging.appveyor.yml
 before_build:

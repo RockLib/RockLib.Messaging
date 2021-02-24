@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging", "RockLib.Messaging\RockLib.Messaging.csproj", "{E1860FD3-54D8-4EDB-82E0-E61ED8725F20}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.Tests", "RockLib.Messaging.Tests\RockLib.Messaging.Tests.csproj", "{6B81F84C-A768-43DC-8F2E-F6F0EE9A9F32}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.Tests", "Tests\RockLib.Messaging.Tests\RockLib.Messaging.Tests.csproj", "{6B81F84C-A768-43DC-8F2E-F6F0EE9A9F32}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

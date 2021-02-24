@@ -4,7 +4,7 @@ configuration: Release
 only_commits:
   files:
   - RockLib.Messaging.Kafka/
-  - RockLib.Messaging.Kafka.Tests/
+  - Tests/RockLib.Messaging.Kafka.Tests/
   - RockLib.Messaging.Kafka.sln
   - RockLib.Messaging.Kafka.appveyor.yml
 before_build:
