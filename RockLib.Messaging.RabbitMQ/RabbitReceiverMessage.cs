@@ -20,7 +20,7 @@ namespace RockLib.Messaging.RabbitMQ
         private readonly bool _autoAck;
 
         internal RabbitReceiverMessage(BasicDeliverEventArgs args, IModel channel, bool autoAck)
-             : base(() => args.Body)
+             : base(() => args.Body.ToArray())
         {
             _args = args;
             _channel = channel;
