@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net451;net462</TargetFrameworks>
+    <TargetFrameworks>net5.0;netstandard2.0;net451;net462</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\RockLib.Messaging.SNS.xml</DocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(PackageId).xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,8 +30,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.3.101.174" />
-    <PackageReference Include="RockLib.Messaging" Version="2.4.3" />
+    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.5.1.44" />
+    <PackageReference Include="RockLib.Messaging" Version="2.4.4" />
   </ItemGroup>
 
 </Project>
