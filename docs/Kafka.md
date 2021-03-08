@@ -17,7 +17,7 @@ The first has the following parameters:
 - messageTimeoutMs (optional, defaults to 10000)
   - Local message timeout. This value is only enforced locally and limits the time a produced message waits for successful delivery. A time of 0 is infinite. This is the maximum time librdkafka may use to deliver a message (including retries). Delivery error occurs when either the retry count or the message timeout are exceeded.
 
-And the second has the following parameters:
+The second has the following parameters:
 
 - name
   - The name of the instance of KafkaSender.
@@ -26,6 +26,19 @@ And the second has the following parameters:
 - producerConfig
   - The configuration used in creation of the Kafka producer.
 
+The third has the following parameters:
+
+- name
+  - The name of the instance of KafkaSender.
+- topic
+  - The topic to produce messages to.
+- bootstrapServers
+  - List of brokers as a CSV list of broker host or host:port.
+- schemaId
+  - Schema ID for broker to validate message schema against
+- messageTimeoutMs (optional, defaults to 10000)
+  - Local message timeout. This value is only enforced locally and limits the time a produced message waits for successful delivery. A time of 0 is infinite. This is the maximum time librdkafka may use to deliver a message (including retries). Delivery error occurs when either the retry count or the message timeout are exceeded.
+  
 ---
 
 To add an KafkaSender to a service collection for dependency injection, use the `AddKafkaSender` method, optionally passing in a `configureOptions` callback:
@@ -53,7 +66,8 @@ public void ConfigureServices(IServiceCollection services)
     "MyKafkaSender": {
         "Topic": "test",
         "BootstrapServers": "localhost:9092",
-        "MessageTimeoutMs": 10000
+        "MessageTimeoutMs": 10000,
+        "SchemaId": 7890
     }
 }
 */
@@ -72,7 +86,8 @@ MessagingScenarioFactory can be configured with an `KafkaSender` named "commands
                 "Name": "commands",
                 "Topic": "test",
                 "BootstrapServers": "localhost:9092",
-                "MessageTimeoutMs": 10000
+                "MessageTimeoutMs": 10000,
+                "SchemaId": 1234
             }
         }
     }
