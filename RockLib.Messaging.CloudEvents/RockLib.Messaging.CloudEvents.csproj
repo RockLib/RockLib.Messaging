@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging.CloudEvents</PackageId>
-    <PackageVersion>1.0.0-rc2</PackageVersion>
+    <PackageVersion>1.0.0</PackageVersion>
     <Authors>RockLib</Authors>
     <Description>Send and receive messages using the CloudEvents format.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
