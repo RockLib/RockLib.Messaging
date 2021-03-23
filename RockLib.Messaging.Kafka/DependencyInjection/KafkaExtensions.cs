@@ -1,6 +1,5 @@
 ﻿#if !NET451
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using RockLib.Messaging.DependencyInjection;
 using System;
 
@@ -16,18 +15,23 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="name">The name of the sender.</param>
-        /// <param name="configureOptions">A callback for configuring the <see cref="KafkaSenderOptions"/>.</param>
+        /// <param name="configureOptions">
+        /// An optional callback for configuring the <see cref="KafkaSenderOptions"/>. If provided,
+        /// invoking this callback is the <em>last</em> step in creating and configuring the
+        /// options used to create the sender.
+        /// </param>
+        /// <param name="reloadOnChange">
+        /// Whether to create a kafka sender that automatically reloads itself when its
+        /// configuration or options change.
+        /// </param>
         /// <returns>A builder allowing the sender to be decorated.</returns>
-        public static ISenderBuilder AddKafkaSender(this IServiceCollection services, string name, Action<KafkaSenderOptions> configureOptions = null)
+        public static ISenderBuilder AddKafkaSender(this IServiceCollection services, string name,
+            Action<KafkaSenderOptions> configureOptions = null, bool reloadOnChange = true)
         {
-            return services.AddSender(serviceProvider =>
-            {
-                var optionsMonitor = serviceProvider.GetService<IOptionsMonitor<KafkaSenderOptions>>();
-                var options = optionsMonitor?.Get(name) ?? new KafkaSenderOptions();
-                configureOptions?.Invoke(options);
+            return services.AddSender(name, CreateKafkaSender, configureOptions, reloadOnChange);
 
-                return new KafkaSender(name, options.Topic, options);
-            });
+            ISender CreateKafkaSender(KafkaSenderOptions options, IServiceProvider serviceProvider) =>
+                new KafkaSender(name, options.Topic, options);
         }
 
         /// <summary>
@@ -35,18 +39,23 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="name">The name of the receiver.</param>
-        /// <param name="configureOptions">A callback for configuring the <see cref="KafkaReceiverOptions"/>.</param>
+        /// <param name="configureOptions">
+        /// An optional callback for configuring the <see cref="KafkaReceiverOptions"/>. If
+        /// provided, invoking this callback is the <em>last</em> step in creating and configuring
+        /// the options used to create the receiver.
+        /// </param>
+        /// <param name="reloadOnChange">
+        /// Whether to create a kafka receiver that automatically reloads itself when its
+        /// configuration or options change.
+        /// </param>
         /// <returns>A builder allowing the receiver to be decorated.</returns>
-        public static IReceiverBuilder AddKafkaReceiver(this IServiceCollection services, string name, Action<KafkaReceiverOptions> configureOptions = null)
+        public static IReceiverBuilder AddKafkaReceiver(this IServiceCollection services, string name,
+            Action<KafkaReceiverOptions> configureOptions = null, bool reloadOnChange = true)
         {
-            return services.AddReceiver(serviceProvider =>
-            {
-                var optionsMonitor = serviceProvider.GetService<IOptionsMonitor<KafkaReceiverOptions>>();
-                var options = optionsMonitor?.Get(name) ?? new KafkaReceiverOptions();
-                configureOptions?.Invoke(options);
+            return services.AddReceiver(name, CreateKafkaReceiver, configureOptions, reloadOnChange);
 
-                return new KafkaReceiver(name, options.Topic, options, options.SynchronousProcessing);
-            });
+            IReceiver CreateKafkaReceiver(KafkaReceiverOptions options, IServiceProvider serviceProvider) =>
+                new KafkaReceiver(name, options.Topic, options, options.SynchronousProcessing);
         }
     }
 }
