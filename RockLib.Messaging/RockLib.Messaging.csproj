@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging</PackageId>
-    <PackageVersion>2.4.4</PackageVersion>
+    <PackageVersion>2.5.0</PackageVersion>
     <Authors>RockLib</Authors>
     <Description>A simple API for sending and receiving messages.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
