@@ -23,7 +23,7 @@ namespace RockLib.Messaging.Tests
             services.AddSingleton(mockOptionsMonitor.Object);
 
             services.AddSender<TestSenderOptions>("MyReloadingSender",
-                o => new TestSender("MyTestSender", o.TestSetting1, o.TestSetting2));
+                (o, p) => new TestSender("MyTestSender", o.TestSetting1, o.TestSetting2));
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -45,7 +45,7 @@ namespace RockLib.Messaging.Tests
             services.AddSingleton(mockOptionsMonitor.Object);
 
             services.AddSender<TestSenderOptions>("MyReloadingSender",
-                o => new TestSender("MyTestSender", o.TestSetting1, o.TestSetting2),
+                (o, p) => new TestSender("MyTestSender", o.TestSetting1, o.TestSetting2),
                 reloadOnChange: false);
 
             var serviceProvider = services.BuildServiceProvider();
@@ -61,7 +61,7 @@ namespace RockLib.Messaging.Tests
             var services = new ServiceCollection();
 
             services.AddSender<TestSenderOptions>("MyReloadingSender",
-                o => new TestSender("MyTestSender", o.TestSetting1, o.TestSetting2));
+                (o, p) => new TestSender("MyTestSender", o.TestSetting1, o.TestSetting2));
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -79,7 +79,7 @@ namespace RockLib.Messaging.Tests
             services.AddSingleton(mockOptionsMonitor.Object);
 
             services.AddReceiver<TestReceiverOptions>("MyReloadingReceiver",
-                o => new TestReceiver("MyTestReceiver", o.TestSetting1, o.TestSetting2));
+                (o, p) => new TestReceiver("MyTestReceiver", o.TestSetting1, o.TestSetting2));
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -101,7 +101,7 @@ namespace RockLib.Messaging.Tests
             services.AddSingleton(mockOptionsMonitor.Object);
 
             services.AddReceiver<TestReceiverOptions>("MyReloadingReceiver",
-                o => new TestReceiver("MyTestReceiver", o.TestSetting1, o.TestSetting2),
+                (o, p) => new TestReceiver("MyTestReceiver", o.TestSetting1, o.TestSetting2),
                 reloadOnChange: false);
 
             var serviceProvider = services.BuildServiceProvider();
@@ -117,7 +117,7 @@ namespace RockLib.Messaging.Tests
             var services = new ServiceCollection();
 
             services.AddReceiver<TestReceiverOptions>("MyReloadingReceiver",
-                o => new TestReceiver("MyTestReceiver", o.TestSetting1, o.TestSetting2));
+                (o, p) => new TestReceiver("MyTestReceiver", o.TestSetting1, o.TestSetting2));
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -147,7 +147,7 @@ namespace RockLib.Messaging.Tests
             services.AddSingleton(mockOptionsMonitor.Object);
 
             services.AddSender<TestSenderOptions>("MyReloadingSender",
-                o => new TestSender("MyTestSender", o.TestSetting1, o.TestSetting2));
+                (o, p) => new TestSender("MyTestSender", o.TestSetting1, o.TestSetting2));
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -167,7 +167,7 @@ namespace RockLib.Messaging.Tests
             var services = new ServiceCollection();
 
             services.AddSender<TestSenderOptions>("MyReloadingSender",
-                o => new TestSender("MyTestSender", o.TestSetting1, o.TestSetting2));
+                (o, p) => new TestSender("MyTestSender", o.TestSetting1, o.TestSetting2));
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -192,7 +192,7 @@ namespace RockLib.Messaging.Tests
             services.AddSingleton(mockOptionsMonitor.Object);
 
             services.AddSender<TestSenderOptions>("MyReloadingSender",
-                o => new TestSender("MyTestSender", o.TestSetting1, o.TestSetting2));
+                (o, p) => new TestSender("MyTestSender", o.TestSetting1, o.TestSetting2));
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -223,7 +223,7 @@ namespace RockLib.Messaging.Tests
             services.AddSingleton(mockOptionsMonitor.Object);
 
             services.AddSender<TestSenderOptions>("MyReloadingSender",
-                o => new TestSender("MyTestSender", o.TestSetting1, o.TestSetting2),
+                (o, p) => new TestSender("MyTestSender", o.TestSetting1, o.TestSetting2),
                 o =>
                 {
                     o.TestSetting1 = "ConfiguredTestSetting1";
@@ -259,7 +259,7 @@ namespace RockLib.Messaging.Tests
             services.AddSingleton(mockOptionsMonitor.Object);
 
             services.AddReceiver<TestReceiverOptions>("MyReloadingReceiver",
-                o => new TestReceiver("MyTestReceiver", o.TestSetting1, o.TestSetting2));
+                (o, p) => new TestReceiver("MyTestReceiver", o.TestSetting1, o.TestSetting2));
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -279,7 +279,7 @@ namespace RockLib.Messaging.Tests
             var services = new ServiceCollection();
 
             services.AddReceiver<TestReceiverOptions>("MyReloadingReceiver",
-                o => new TestReceiver("MyTestReceiver", o.TestSetting1, o.TestSetting2));
+                (o, p) => new TestReceiver("MyTestReceiver", o.TestSetting1, o.TestSetting2));
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -304,7 +304,7 @@ namespace RockLib.Messaging.Tests
             services.AddSingleton(mockOptionsMonitor.Object);
 
             services.AddReceiver<TestReceiverOptions>("MyReloadingReceiver",
-                o => new TestReceiver("MyTestReceiver", o.TestSetting1, o.TestSetting2));
+                (o, p) => new TestReceiver("MyTestReceiver", o.TestSetting1, o.TestSetting2));
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -335,7 +335,7 @@ namespace RockLib.Messaging.Tests
             services.AddSingleton(mockOptionsMonitor.Object);
 
             services.AddReceiver<TestReceiverOptions>("MyReloadingReceiver",
-                o => new TestReceiver("MyTestReceiver", o.TestSetting1, o.TestSetting2),
+                (o, p) => new TestReceiver("MyTestReceiver", o.TestSetting1, o.TestSetting2),
                 o =>
                 {
                     o.TestSetting1 = "ConfiguredTestSetting1";
@@ -361,7 +361,7 @@ namespace RockLib.Messaging.Tests
         {
             IServiceCollection services = null;
             string senderName = "MySender";
-            Func<TestSenderOptions, ISender> createSender = options => new TestSender("MyTestSender", options.TestSetting1, options.TestSetting2);
+            Func<TestSenderOptions, IServiceProvider, ISender> createSender = (options, serviceProvider) => new TestSender("MyTestSender", options.TestSetting1, options.TestSetting2);
 
             Action act = () => services.AddSender(senderName, createSender);
 
@@ -373,7 +373,7 @@ namespace RockLib.Messaging.Tests
         {
             IServiceCollection services = new ServiceCollection();
             string senderName = null;
-            Func<TestSenderOptions, ISender> createSender = options => new TestSender("MyTestSender", options.TestSetting1, options.TestSetting2);
+            Func<TestSenderOptions, IServiceProvider, ISender> createSender = (options, serviceProvider) => new TestSender("MyTestSender", options.TestSetting1, options.TestSetting2);
 
             Action act = () => services.AddSender(senderName, createSender);
 
@@ -385,7 +385,7 @@ namespace RockLib.Messaging.Tests
         {
             IServiceCollection services = new ServiceCollection();
             string senderName = "MySender";
-            Func<TestSenderOptions, ISender> createSender = null;
+            Func<TestSenderOptions, IServiceProvider, ISender> createSender = null;
 
             Action act = () => services.AddSender(senderName, createSender);
 
@@ -397,7 +397,7 @@ namespace RockLib.Messaging.Tests
         {
             IServiceCollection services = null;
             string receiverName = "MyReceiver";
-            Func<TestReceiverOptions, IReceiver> createReceiver = options => new TestReceiver("MyTestReceiver", options.TestSetting1, options.TestSetting2);
+            Func<TestReceiverOptions, IServiceProvider, IReceiver> createReceiver = (options, serviceProvider) => new TestReceiver("MyTestReceiver", options.TestSetting1, options.TestSetting2);
 
             Action act = () => services.AddReceiver(receiverName, createReceiver);
 
@@ -409,7 +409,7 @@ namespace RockLib.Messaging.Tests
         {
             IServiceCollection services = new ServiceCollection();
             string receiverName = null;
-            Func<TestReceiverOptions, IReceiver> createReceiver = options => new TestReceiver("MyTestReceiver", options.TestSetting1, options.TestSetting2);
+            Func<TestReceiverOptions, IServiceProvider, IReceiver> createReceiver = (options, serviceProvider) => new TestReceiver("MyTestReceiver", options.TestSetting1, options.TestSetting2);
 
             Action act = () => services.AddReceiver(receiverName, createReceiver);
 
@@ -421,7 +421,7 @@ namespace RockLib.Messaging.Tests
         {
             IServiceCollection services = new ServiceCollection();
             string receiverName = "MyReceiver";
-            Func<TestReceiverOptions, IReceiver> createReceiver = null;
+            Func<TestReceiverOptions, IServiceProvider, IReceiver> createReceiver = null;
 
             Action act = () => services.AddReceiver(receiverName, createReceiver);
 

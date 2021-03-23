@@ -6,16 +6,20 @@ namespace RockLib.Messaging.DependencyInjection
 {
     internal class ReloadingReceiver<TReceiverOptions> : IReceiver
     {
-        public ReloadingReceiver(string name, Func<TReceiverOptions, IReceiver> createReceiver, TReceiverOptions initialOptions,
+        public ReloadingReceiver(IServiceProvider serviceProvider, string name,
+            Func<TReceiverOptions, IServiceProvider, IReceiver> createReceiver, TReceiverOptions initialOptions,
             IOptionsMonitor<TReceiverOptions> optionsMonitor, Action<TReceiverOptions> configureOptions)
         {
+            ServiceProvider = serviceProvider;
             Name = name;
             CreateReceiver = createReceiver;
             ConfigureOptions = configureOptions;
 
-            Receiver = CreateReceiver.Invoke(initialOptions);
+            Receiver = CreateReceiver.Invoke(initialOptions, ServiceProvider);
             ChangeListener = optionsMonitor.OnChange(OptionsMonitorChanged);
         }
+
+        public IServiceProvider ServiceProvider { get; }
 
         public string Name { get; }
 
@@ -25,7 +29,7 @@ namespace RockLib.Messaging.DependencyInjection
             set => Receiver.MessageHandler = value;
         }
 
-        public Func<TReceiverOptions, IReceiver> CreateReceiver { get; }
+        public Func<TReceiverOptions, IServiceProvider, IReceiver> CreateReceiver { get; }
 
         public Action<TReceiverOptions> ConfigureOptions { get; }
 
@@ -94,7 +98,7 @@ namespace RockLib.Messaging.DependencyInjection
                 ConfigureOptions?.Invoke(options);
 
                 var oldReceiver = Receiver;
-                var newReceiver = CreateReceiver.Invoke(options);
+                var newReceiver = CreateReceiver.Invoke(options, ServiceProvider);
 
                 newReceiver.Connected += ConnectedHandler;
                 newReceiver.Disconnected += DisconnectedHandler;

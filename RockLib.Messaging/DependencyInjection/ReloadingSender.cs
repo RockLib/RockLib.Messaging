@@ -8,22 +8,26 @@ namespace RockLib.Messaging.DependencyInjection
 {
     internal class ReloadingSender<TSenderOptions> : ISender
     {
-        public ReloadingSender(string name, Func<TSenderOptions, ISender> createSender, TSenderOptions initialOptions,
+        public ReloadingSender(IServiceProvider serviceProvider, string name,
+            Func<TSenderOptions, IServiceProvider, ISender> createSender, TSenderOptions initialOptions,
             IOptionsMonitor<TSenderOptions> optionsMonitor, Action<TSenderOptions> configureOptions)
         {
+            ServiceProvider = serviceProvider;
             Name = name;
             CreateSender = createSender;
             ConfigureOptions = configureOptions;
 
-            Sender = CreateSender.Invoke(initialOptions);
+            Sender = CreateSender.Invoke(initialOptions, ServiceProvider);
             ChangeListener = optionsMonitor.OnChange(OptionsMonitorChanged);
         }
+
+        public IServiceProvider ServiceProvider { get; }
 
         public string Name { get; }
 
         public ISender Sender { get; private set; }
 
-        public Func<TSenderOptions, ISender> CreateSender { get; }
+        public Func<TSenderOptions, IServiceProvider, ISender> CreateSender { get; }
 
         public Action<TSenderOptions> ConfigureOptions { get; }
 
@@ -45,7 +49,7 @@ namespace RockLib.Messaging.DependencyInjection
                 ConfigureOptions?.Invoke(options);
 
                 var oldSender = Sender;
-                var newSender = CreateSender.Invoke(options);
+                var newSender = CreateSender.Invoke(options, ServiceProvider);
 
                 Sender = newSender;
                 oldSender.Dispose();

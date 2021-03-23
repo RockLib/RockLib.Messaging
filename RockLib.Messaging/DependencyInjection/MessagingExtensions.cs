@@ -76,7 +76,7 @@ namespace RockLib.Messaging.DependencyInjection
         /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the sender.</param>
         /// <returns>A new <see cref="ISenderBuilder"/> for decorating the <see cref="ISender"/>.</returns>
         public static ISenderBuilder AddSender<TSenderOptions>(this IServiceCollection services, string senderName,
-            Func<TSenderOptions, ISender> createSender, Action<TSenderOptions> configureOptions = null,
+            Func<TSenderOptions, IServiceProvider, ISender> createSender, Action<TSenderOptions> configureOptions = null,
             bool reloadOnChange = true, ServiceLifetime lifetime = _defaultLifetime)
             where TSenderOptions : class, new()
         {
@@ -94,9 +94,9 @@ namespace RockLib.Messaging.DependencyInjection
                 configureOptions?.Invoke(options);
 
                 if (reloadOnChange && optionsMonitor != null)
-                    return new ReloadingSender<TSenderOptions>(senderName, createSender, options, optionsMonitor, configureOptions);
+                    return new ReloadingSender<TSenderOptions>(serviceProvider, senderName, createSender, options, optionsMonitor, configureOptions);
 
-                return createSender.Invoke(options);
+                return createSender.Invoke(options, serviceProvider);
             }, lifetime);
         }
 
@@ -236,7 +236,7 @@ namespace RockLib.Messaging.DependencyInjection
         /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the receiver.</param>
         /// <returns>A new <see cref="IReceiverBuilder"/> for decorating the <see cref="IReceiver"/>.</returns>
         public static IReceiverBuilder AddReceiver<TReceiverOptions>(this IServiceCollection services, string receiverName,
-            Func<TReceiverOptions, IReceiver> createReceiver, Action<TReceiverOptions> configureOptions = null,
+            Func<TReceiverOptions, IServiceProvider, IReceiver> createReceiver, Action<TReceiverOptions> configureOptions = null,
             bool reloadOnChange = true, ServiceLifetime lifetime = _defaultLifetime)
             where TReceiverOptions : class, new()
         {
@@ -254,9 +254,9 @@ namespace RockLib.Messaging.DependencyInjection
                 configureOptions?.Invoke(options);
 
                 if (reloadOnChange && optionsMonitor != null)
-                    return new ReloadingReceiver<TReceiverOptions>(receiverName, createReceiver, options, optionsMonitor, configureOptions);
+                    return new ReloadingReceiver<TReceiverOptions>(serviceProvider, receiverName, createReceiver, options, optionsMonitor, configureOptions);
 
-                return createReceiver.Invoke(options);
+                return createReceiver.Invoke(options, serviceProvider);
             }, lifetime);
         }
 
