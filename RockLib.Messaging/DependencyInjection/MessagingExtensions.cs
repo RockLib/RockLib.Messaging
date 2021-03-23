@@ -90,13 +90,16 @@ namespace RockLib.Messaging.DependencyInjection
             return services.AddSender(serviceProvider =>
             {
                 var optionsMonitor = serviceProvider.GetService<IOptionsMonitor<TSenderOptions>>();
-                var options = optionsMonitor?.Get(senderName) ?? new TSenderOptions();
-                configureOptions?.Invoke(options);
 
                 if (reloadOnChange && optionsMonitor != null)
-                    return new ReloadingSender<TSenderOptions>(serviceProvider, senderName, createSender, options, optionsMonitor, configureOptions);
+                {
+                    return new ReloadingSender<TSenderOptions>(senderName,
+                        options => createSender.Invoke(options, serviceProvider),
+                        optionsMonitor, configureOptions);
+                }
 
-                return createSender.Invoke(options, serviceProvider);
+                var senderOptions = optionsMonitor.GetOptions(senderName, configureOptions);
+                return createSender.Invoke(senderOptions, serviceProvider);
             }, lifetime);
         }
 
@@ -250,13 +253,16 @@ namespace RockLib.Messaging.DependencyInjection
             return services.AddReceiver(serviceProvider =>
             {
                 var optionsMonitor = serviceProvider.GetService<IOptionsMonitor<TReceiverOptions>>();
-                var options = optionsMonitor?.Get(receiverName) ?? new TReceiverOptions();
-                configureOptions?.Invoke(options);
 
                 if (reloadOnChange && optionsMonitor != null)
-                    return new ReloadingReceiver<TReceiverOptions>(serviceProvider, receiverName, createReceiver, options, optionsMonitor, configureOptions);
+                {
+                    return new ReloadingReceiver<TReceiverOptions>(receiverName,
+                        options => createReceiver.Invoke(options, serviceProvider),
+                        optionsMonitor, configureOptions);
+                }
 
-                return createReceiver.Invoke(options, serviceProvider);
+                var receiverOptions = optionsMonitor.GetOptions(receiverName, configureOptions);
+                return createReceiver.Invoke(receiverOptions, serviceProvider);
             }, lifetime);
         }
 
@@ -283,6 +289,15 @@ namespace RockLib.Messaging.DependencyInjection
             services.SetReceiverLookupDescriptor();
 
             return builder;
+        }
+
+        internal static TOptions GetOptions<TOptions>(this IOptionsMonitor<TOptions> optionsMonitor,
+            string name, Action<TOptions> configureOptions)
+            where TOptions : class, new()
+        {
+            var options = optionsMonitor?.Get(name) ?? new TOptions();
+            configureOptions?.Invoke(options);
+            return options;
         }
 
         private static IConfigurationSection GetMessagingSection(IServiceProvider serviceProvider)

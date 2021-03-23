@@ -20,9 +20,7 @@ namespace RockLib.Messaging.Tests
         [Fact(DisplayName = "Constructor sets its properties")]
         public void ConstructorTest()
         {
-            var mockServiceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
-
-            Func<TestReceiverOptions, IServiceProvider, IReceiver> expectedCreateReceiver = (options, provider) =>
+            Func<TestReceiverOptions, IReceiver> expectedCreateReceiver = options =>
             {
                 return new TestReceiver("MyTestReceiver", options.TestSetting1, options.TestSetting2);
             };
@@ -36,19 +34,21 @@ namespace RockLib.Messaging.Tests
             var mockOptionsMonitor = new Mock<IOptionsMonitor<TestReceiverOptions>>(MockBehavior.Strict);
             var mockChangeListener = new Mock<IDisposable>(MockBehavior.Strict);
 
+            mockOptionsMonitor.Setup(m => m.Get("MyReloadingReceiver")).Returns(testOptions);
             mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestReceiverOptions, string>>()))
                 .Returns(mockChangeListener.Object);
 
             Action<TestReceiverOptions> expectedConfigureOptions = options => { };
 
-            IReceiver receiver = ReloadingReceiver.New(mockServiceProvider.Object, "MyReloadingReceiver", expectedCreateReceiver, testOptions, mockOptionsMonitor.Object, expectedConfigureOptions);
+            IReceiver receiver = ReloadingReceiver.New("MyReloadingReceiver",
+                expectedCreateReceiver, mockOptionsMonitor.Object, expectedConfigureOptions);
 
             receiver.Name.Should().Be("MyReloadingReceiver");
             receiver.GetType().Should().Be(ReloadingReceiver);
 
             dynamic r = receiver;
 
-            Func<TestReceiverOptions, IServiceProvider, IReceiver> createReceiver = r.CreateReceiver;
+            Func<TestReceiverOptions, IReceiver> createReceiver = r.CreateReceiver;
             createReceiver.Should().BeSameAs(expectedCreateReceiver);
 
             Action<TestReceiverOptions> configureOptions = r.ConfigureOptions;
@@ -66,9 +66,7 @@ namespace RockLib.Messaging.Tests
         [Fact(DisplayName = "When options change, a new inner receiver is created, state is transferred from the old one, and the old one is disposed")]
         public void OnOptionsChangedTest1()
         {
-            var mockServiceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
-
-            Func<TestReceiverOptions, IServiceProvider, IReceiver> createReceiver = (options, provider) =>
+            Func<TestReceiverOptions, IReceiver> createReceiver = options =>
             {
                 return new TestReceiver("MyTestReceiver", options.TestSetting1, options.TestSetting2);
             };
@@ -84,6 +82,7 @@ namespace RockLib.Messaging.Tests
 
             Action<TestReceiverOptions, string> onChangeCallback = null;
 
+            mockOptionsMonitor.Setup(m => m.Get("MyReloadingReceiver")).Returns(initialOptions);
             mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestReceiverOptions, string>>()))
                 .Callback<Action<TestReceiverOptions, string>>(onChange => onChangeCallback = onChange)
                 .Returns(mockChangeListener.Object);
@@ -93,7 +92,9 @@ namespace RockLib.Messaging.Tests
                 options.TestSetting2 = "ConfiguredTestSetting2";
             };
 
-            IReceiver receiver = ReloadingReceiver.New(mockServiceProvider.Object, "MyReloadingReceiver", createReceiver, initialOptions, mockOptionsMonitor.Object, configureOptions);
+            IReceiver receiver = ReloadingReceiver.New("MyReloadingReceiver",
+                createReceiver, mockOptionsMonitor.Object, configureOptions);
+
             dynamic r = receiver;
 
             onChangeCallback.Should().NotBeNull();
@@ -146,9 +147,7 @@ namespace RockLib.Messaging.Tests
         [Fact(DisplayName = "When options with a different name change, the inner receiver is not recreated")]
         public void OnOptionsChangedTest2()
         {
-            var mockServiceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
-
-            Func<TestReceiverOptions, IServiceProvider, IReceiver> createReceiver = (options, provider) =>
+            Func<TestReceiverOptions, IReceiver> createReceiver = options =>
             {
                 return new TestReceiver("MyTestReceiver", options.TestSetting1, options.TestSetting2);
             };
@@ -163,14 +162,16 @@ namespace RockLib.Messaging.Tests
             var mockChangeListener = new Mock<IDisposable>(MockBehavior.Strict);
 
             Action<TestReceiverOptions, string> onChangeCallback = null;
-
+            
+            mockOptionsMonitor.Setup(m => m.Get("MyReloadingReceiver")).Returns(initialOptions);
             mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestReceiverOptions, string>>()))
                 .Callback<Action<TestReceiverOptions, string>>(onChange => onChangeCallback = onChange)
                 .Returns(mockChangeListener.Object);
 
             Action<TestReceiverOptions> configureOptions = options => { };
 
-            IReceiver receiver = ReloadingReceiver.New(mockServiceProvider.Object, "MyReloadingReceiver", createReceiver, initialOptions, mockOptionsMonitor.Object, configureOptions);
+            IReceiver receiver = ReloadingReceiver.New("MyReloadingReceiver",
+                createReceiver, mockOptionsMonitor.Object, configureOptions);
             dynamic r = receiver;
 
             onChangeCallback.Should().NotBeNull();
@@ -195,9 +196,7 @@ namespace RockLib.Messaging.Tests
         [Fact(DisplayName = "Dispose method disposes the change listener and the current receiver")]
         public void DisposeTest()
         {
-            var mockServiceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
-
-            Func<TestReceiverOptions, IServiceProvider, IReceiver> createReceiver = (options, provider) =>
+            Func<TestReceiverOptions, IReceiver> createReceiver = options =>
             {
                 return new TestReceiver("MyTestReceiver", options.TestSetting1, options.TestSetting2);
             };
@@ -211,12 +210,14 @@ namespace RockLib.Messaging.Tests
             var mockOptionsMonitor = new Mock<IOptionsMonitor<TestReceiverOptions>>(MockBehavior.Strict);
             var mockChangeListener = new Mock<IDisposable>();
 
+            mockOptionsMonitor.Setup(m => m.Get("MyReloadingReceiver")).Returns(initialOptions);
             mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestReceiverOptions, string>>()))
                 .Returns(mockChangeListener.Object);
 
             Action<TestReceiverOptions> configureOptions = options => { };
             
-            IReceiver receiver = ReloadingReceiver.New(mockServiceProvider.Object, "MyReloadingReceiver", createReceiver, initialOptions, mockOptionsMonitor.Object, configureOptions);
+            IReceiver receiver = ReloadingReceiver.New("MyReloadingReceiver",
+                createReceiver, mockOptionsMonitor.Object, configureOptions);
 
             TestReceiver testReceiver = ((dynamic)receiver).Receiver;
 

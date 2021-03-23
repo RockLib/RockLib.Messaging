@@ -22,9 +22,7 @@ namespace RockLib.Messaging.Tests
         [Fact(DisplayName = "Constructor sets its properties")]
         public void ConstructorTest()
         {
-            var mockServiceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
-
-            Func<TestSenderOptions, IServiceProvider, ISender> expectedCreateSender = (options, provider) =>
+            Func<TestSenderOptions, ISender> expectedCreateSender = options =>
             {
                 return new TestSender("MyTestSender", options.TestSetting1, options.TestSetting2);
             };
@@ -38,23 +36,21 @@ namespace RockLib.Messaging.Tests
             var mockOptionsMonitor = new Mock<IOptionsMonitor<TestSenderOptions>>(MockBehavior.Strict);
             var mockChangeListener = new Mock<IDisposable>(MockBehavior.Strict);
 
+            mockOptionsMonitor.Setup(m => m.Get("MyReloadingSender")).Returns(testOptions);
             mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestSenderOptions, string>>()))
                 .Returns(mockChangeListener.Object);
 
             Action<TestSenderOptions> expectedConfigureOptions = options => { };
 
-            ISender sender = ReloadingSender.New(mockServiceProvider.Object, "MyReloadingSender",
-                expectedCreateSender, testOptions, mockOptionsMonitor.Object, expectedConfigureOptions);
+            ISender sender = ReloadingSender.New("MyReloadingSender",
+                expectedCreateSender, mockOptionsMonitor.Object, expectedConfigureOptions);
 
             sender.Name.Should().Be("MyReloadingSender");
             sender.GetType().Should().Be(ReloadingSender);
 
             dynamic s = sender;
 
-            IServiceProvider serviceProvider = s.ServiceProvider;
-            serviceProvider.Should().BeSameAs(mockServiceProvider.Object);
-
-            Func<TestSenderOptions, IServiceProvider, ISender> createSender = s.CreateSender;
+            Func<TestSenderOptions, ISender> createSender = s.CreateSender;
             createSender.Should().BeSameAs(expectedCreateSender);
 
             Action<TestSenderOptions> configureOptions = s.ConfigureOptions;
@@ -72,9 +68,7 @@ namespace RockLib.Messaging.Tests
         [Fact(DisplayName = "When options change, a new inner sender is created and the old one is disposed")]
         public void OnOptionsChangedTest1()
         {
-            var mockServiceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
-
-            Func<TestSenderOptions, IServiceProvider, ISender> createSender = (options, provider) =>
+            Func<TestSenderOptions, ISender> createSender = options =>
             {
                 return new TestSender("MyTestSender", options.TestSetting1, options.TestSetting2);
             };
@@ -90,6 +84,7 @@ namespace RockLib.Messaging.Tests
 
             Action<TestSenderOptions, string> onChangeCallback = null;
 
+            mockOptionsMonitor.Setup(m => m.Get("MyReloadingSender")).Returns(initialOptions);
             mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestSenderOptions, string>>()))
                 .Callback<Action<TestSenderOptions, string>>(onChange => onChangeCallback = onChange)
                 .Returns(mockChangeListener.Object);
@@ -99,8 +94,9 @@ namespace RockLib.Messaging.Tests
                 options.TestSetting2 = "ConfiguredTestSetting2";
             };
 
-            ISender sender = ReloadingSender.New(mockServiceProvider.Object, "MyReloadingSender",
-                createSender, initialOptions, mockOptionsMonitor.Object, configureOptions);
+            ISender sender = ReloadingSender.New("MyReloadingSender",
+                createSender, mockOptionsMonitor.Object, configureOptions);
+
             dynamic s = sender;
 
             onChangeCallback.Should().NotBeNull();
@@ -133,9 +129,7 @@ namespace RockLib.Messaging.Tests
         [Fact(DisplayName = "When options with a different name change, the inner sender is not recreated")]
         public void OnOptionsChangedTest2()
         {
-            var mockServiceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
-
-            Func<TestSenderOptions, IServiceProvider, ISender> createSender = (options, provider) =>
+            Func<TestSenderOptions, ISender> createSender = options =>
             {
                 return new TestSender("MyTestSender", options.TestSetting1, options.TestSetting2);
             };
@@ -151,14 +145,16 @@ namespace RockLib.Messaging.Tests
 
             Action<TestSenderOptions, string> onChangeCallback = null;
 
+            mockOptionsMonitor.Setup(m => m.Get("MyReloadingSender")).Returns(initialOptions);
             mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestSenderOptions, string>>()))
                 .Callback<Action<TestSenderOptions, string>>(onChange => onChangeCallback = onChange)
                 .Returns(mockChangeListener.Object);
 
             Action<TestSenderOptions> configureOptions = options => { };
 
-            ISender sender = ReloadingSender.New(mockServiceProvider.Object, "MyReloadingSender",
-                createSender, initialOptions, mockOptionsMonitor.Object, configureOptions);
+            ISender sender = ReloadingSender.New("MyReloadingSender",
+                createSender, mockOptionsMonitor.Object, configureOptions);
+
             dynamic r = sender;
 
             onChangeCallback.Should().NotBeNull();
@@ -183,9 +179,7 @@ namespace RockLib.Messaging.Tests
         [Fact(DisplayName = "Dispose method disposes the change listener and the current sender")]
         public void DisposeTest()
         {
-            var mockServiceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
-
-            Func<TestSenderOptions, IServiceProvider, ISender> createSender = (options, provider) =>
+            Func<TestSenderOptions, ISender> createSender = options =>
             {
                 return new TestSender("MyTestSender", options.TestSetting1, options.TestSetting2);
             };
@@ -199,13 +193,14 @@ namespace RockLib.Messaging.Tests
             var mockOptionsMonitor = new Mock<IOptionsMonitor<TestSenderOptions>>(MockBehavior.Strict);
             var mockChangeListener = new Mock<IDisposable>();
 
+            mockOptionsMonitor.Setup(m => m.Get("MyReloadingSender")).Returns(initialOptions);
             mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestSenderOptions, string>>()))
                 .Returns(mockChangeListener.Object);
 
             Action<TestSenderOptions> configureOptions = options => { };
 
-            ISender sender = ReloadingSender.New(mockServiceProvider.Object, "MyReloadingSender",
-                createSender, initialOptions, mockOptionsMonitor.Object, configureOptions);
+            ISender sender = ReloadingSender.New("MyReloadingSender",
+                createSender, mockOptionsMonitor.Object, configureOptions);
 
             TestSender testSender = ((dynamic)sender).Sender;
 

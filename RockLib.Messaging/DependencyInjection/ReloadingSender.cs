@@ -7,27 +7,25 @@ using System.Threading.Tasks;
 namespace RockLib.Messaging.DependencyInjection
 {
     internal class ReloadingSender<TSenderOptions> : ISender
+        where TSenderOptions : class, new()
     {
-        public ReloadingSender(IServiceProvider serviceProvider, string name,
-            Func<TSenderOptions, IServiceProvider, ISender> createSender, TSenderOptions initialOptions,
+        public ReloadingSender(string name, Func<TSenderOptions, ISender> createSender,
             IOptionsMonitor<TSenderOptions> optionsMonitor, Action<TSenderOptions> configureOptions)
         {
-            ServiceProvider = serviceProvider;
             Name = name;
             CreateSender = createSender;
             ConfigureOptions = configureOptions;
 
-            Sender = CreateSender.Invoke(initialOptions, ServiceProvider);
+            var options = optionsMonitor.GetOptions(Name, configureOptions);
+            Sender = CreateSender.Invoke(options);
             ChangeListener = optionsMonitor.OnChange(OptionsMonitorChanged);
         }
-
-        public IServiceProvider ServiceProvider { get; }
 
         public string Name { get; }
 
         public ISender Sender { get; private set; }
 
-        public Func<TSenderOptions, IServiceProvider, ISender> CreateSender { get; }
+        public Func<TSenderOptions, ISender> CreateSender { get; }
 
         public Action<TSenderOptions> ConfigureOptions { get; }
 
@@ -49,7 +47,7 @@ namespace RockLib.Messaging.DependencyInjection
                 ConfigureOptions?.Invoke(options);
 
                 var oldSender = Sender;
-                var newSender = CreateSender.Invoke(options, ServiceProvider);
+                var newSender = CreateSender.Invoke(options);
 
                 Sender = newSender;
                 oldSender.Dispose();
