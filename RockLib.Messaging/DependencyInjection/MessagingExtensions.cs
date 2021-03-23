@@ -1,6 +1,7 @@
 ﻿#if !NET451
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RockLib.Configuration;
 using RockLib.Configuration.ObjectFactory;
 using System;
@@ -42,6 +43,63 @@ namespace RockLib.Messaging.DependencyInjection
                 var resolver = new Resolver(serviceProvider.GetService);
 
                 return messagingSection.CreateSender(senderName, resolver: resolver);
+            }, lifetime);
+        }
+
+        /// <summary>
+        /// Adds an <see cref="ISender"/> to the service collection where the sender is created
+        /// with options obtained by name from an <see cref="IOptionsMonitor{TOptions}"/> using
+        /// the specified factory method.
+        /// <para>If <paramref name="reloadOnChange"/> is true, then the sender will automatically
+        /// reload itself whenever its options
+        /// changes.</para>
+        /// </summary>
+        /// <typeparam name="TSenderOptions">The type of options used to create the sender.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="senderName">
+        /// The name that identifies which named options to use from the <see cref=
+        /// "IOptionsMonitor{TOptions}"/>.
+        /// </param>
+        /// <param name="createSender">
+        /// A function that creates the instance of <see cref="ISender"/> using options obtained
+        /// from the <see cref="IOptionsMonitor{TOptions}"/>.
+        /// </param>
+        /// <param name="configureOptions">
+        /// An optional callback for configuring the <typeparamref name="TSenderOptions"/>. If
+        /// provided, invoking this callback is the <em>last</em> step in creating and configuring
+        /// the options used to create the sender.
+        /// </param>
+        /// <param name="reloadOnChange">
+        /// Whether to create a sender that automatically reloads itself when its configuration
+        /// or options change.
+        /// </param>
+        /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the sender.</param>
+        /// <returns>A new <see cref="ISenderBuilder"/> for decorating the <see cref="ISender"/>.</returns>
+        public static ISenderBuilder AddSender<TSenderOptions>(this IServiceCollection services, string senderName,
+            Func<TSenderOptions, IServiceProvider, ISender> createSender, Action<TSenderOptions> configureOptions = null,
+            bool reloadOnChange = true, ServiceLifetime lifetime = _defaultLifetime)
+            where TSenderOptions : class, new()
+        {
+            if (services is null)
+                throw new ArgumentNullException(nameof(services));
+            if (senderName is null)
+                throw new ArgumentNullException(nameof(senderName));
+            if (createSender is null)
+                throw new ArgumentNullException(nameof(createSender));
+
+            return services.AddSender(serviceProvider =>
+            {
+                var optionsMonitor = serviceProvider.GetService<IOptionsMonitor<TSenderOptions>>();
+
+                if (reloadOnChange && optionsMonitor != null)
+                {
+                    return new ReloadingSender<TSenderOptions>(senderName,
+                        options => createSender.Invoke(options, serviceProvider),
+                        optionsMonitor, configureOptions);
+                }
+
+                var senderOptions = optionsMonitor.GetOptions(senderName, configureOptions);
+                return createSender.Invoke(senderOptions, serviceProvider);
             }, lifetime);
         }
 
@@ -153,6 +211,62 @@ namespace RockLib.Messaging.DependencyInjection
         }
 
         /// <summary>
+        /// Adds an <see cref="IReceiver"/> to the service collection where the receiver is created
+        /// with options obtained by name from an <see cref="IOptionsMonitor{TOptions}"/> using
+        /// the specified factory method.
+        /// <para>If <paramref name="reloadOnChange"/> is true, then the receiver will automatically
+        /// reload itself whenever its options changes.</para>
+        /// </summary>
+        /// <typeparam name="TReceiverOptions">The type of options used to create the receiver.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="receiverName">
+        /// The name that identifies which named options to use from the <see cref=
+        /// "IOptionsMonitor{TOptions}"/>.
+        /// </param>
+        /// <param name="createReceiver">
+        /// A function that creates the instance of <see cref="IReceiver"/> using options obtained
+        /// from the <see cref="IOptionsMonitor{TOptions}"/>.
+        /// </param>
+        /// <param name="configureOptions">
+        /// An optional callback for configuring the <typeparamref name="TReceiverOptions"/>. If
+        /// provided, invoking this callback is the <em>last</em> step in creating and configuring
+        /// the options used to create the receiver.
+        /// </param>
+        /// <param name="reloadOnChange">
+        /// Whether to create a receiver that automatically reloads itself when its configuration
+        /// or options change.
+        /// </param>
+        /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the receiver.</param>
+        /// <returns>A new <see cref="IReceiverBuilder"/> for decorating the <see cref="IReceiver"/>.</returns>
+        public static IReceiverBuilder AddReceiver<TReceiverOptions>(this IServiceCollection services, string receiverName,
+            Func<TReceiverOptions, IServiceProvider, IReceiver> createReceiver, Action<TReceiverOptions> configureOptions = null,
+            bool reloadOnChange = true, ServiceLifetime lifetime = _defaultLifetime)
+            where TReceiverOptions : class, new()
+        {
+            if (services is null)
+                throw new ArgumentNullException(nameof(services));
+            if (receiverName is null)
+                throw new ArgumentNullException(nameof(receiverName));
+            if (createReceiver is null)
+                throw new ArgumentNullException(nameof(createReceiver));
+
+            return services.AddReceiver(serviceProvider =>
+            {
+                var optionsMonitor = serviceProvider.GetService<IOptionsMonitor<TReceiverOptions>>();
+
+                if (reloadOnChange && optionsMonitor != null)
+                {
+                    return new ReloadingReceiver<TReceiverOptions>(receiverName,
+                        options => createReceiver.Invoke(options, serviceProvider),
+                        optionsMonitor, configureOptions);
+                }
+
+                var receiverOptions = optionsMonitor.GetOptions(receiverName, configureOptions);
+                return createReceiver.Invoke(receiverOptions, serviceProvider);
+            }, lifetime);
+        }
+
+        /// <summary>
         /// Adds an <see cref="IReceiver"/> to the service collection.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
@@ -175,6 +289,15 @@ namespace RockLib.Messaging.DependencyInjection
             services.SetReceiverLookupDescriptor();
 
             return builder;
+        }
+
+        internal static TOptions GetOptions<TOptions>(this IOptionsMonitor<TOptions> optionsMonitor,
+            string name, Action<TOptions> configureOptions)
+            where TOptions : class, new()
+        {
+            var options = optionsMonitor?.Get(name) ?? new TOptions();
+            configureOptions?.Invoke(options);
+            return options;
         }
 
         private static IConfigurationSection GetMessagingSection(IServiceProvider serviceProvider)
