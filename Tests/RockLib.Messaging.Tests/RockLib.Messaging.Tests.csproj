@@ -24,6 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="CustomConfigFiles\SingleSender_appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
