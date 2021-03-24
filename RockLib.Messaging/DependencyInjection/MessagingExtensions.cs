@@ -40,10 +40,15 @@ namespace RockLib.Messaging.DependencyInjection
             return services.AddSender(serviceProvider =>
             {
                 var messagingSection = GetMessagingSection(serviceProvider);
-                var resolver = new Resolver(serviceProvider.GetService);
+                var resolver = new Resolver(serviceProvider.GetService, CanResolve);
 
                 return messagingSection.CreateSender(senderName, resolver: resolver);
             }, lifetime);
+
+            bool CanResolve(Type type) =>
+                type != typeof(ISender)
+                && type != typeof(SenderLookup)
+                && services.Any(s => s.ServiceType == type);
         }
 
         /// <summary>
@@ -150,10 +155,15 @@ namespace RockLib.Messaging.DependencyInjection
             return services.AddTransactionalSender(serviceProvider =>
             {
                 var messagingSection = GetMessagingSection(serviceProvider);
-                var resolver = new Resolver(serviceProvider.GetService);
+                var resolver = new Resolver(serviceProvider.GetService, CanResolve);
 
                 return (ITransactionalSender)messagingSection.CreateSender(senderName, resolver: resolver);
             }, lifetime);
+
+            bool CanResolve(Type type) =>
+                type != typeof(ITransactionalSender)
+                && type != typeof(TransactionalSenderLookup)
+                && services.Any(s => s.ServiceType == type);
         }
 
         /// <summary>
@@ -204,10 +214,15 @@ namespace RockLib.Messaging.DependencyInjection
             return services.AddReceiver(serviceProvider =>
             {
                 var messagingSection = GetMessagingSection(serviceProvider);
-                var resolver = new Resolver(serviceProvider.GetService);
+                var resolver = new Resolver(serviceProvider.GetService, CanResolve);
 
                 return messagingSection.CreateReceiver(receiverName, resolver: resolver);
             }, lifetime);
+
+            bool CanResolve(Type type) =>
+                type != typeof(IReceiver)
+                && type != typeof(ReceiverLookup)
+                && services.Any(s => s.ServiceType == type);
         }
 
         /// <summary>

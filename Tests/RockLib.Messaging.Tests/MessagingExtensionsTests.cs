@@ -2,16 +2,116 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
+using RockLib.Configuration;
 using RockLib.Messaging.DependencyInjection;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
+
 using static RockLib.Messaging.Tests.ReloadingSenderTests;
 using static RockLib.Messaging.Tests.ReloadingReceiverTests;
+using FluentAssertions.Extensions;
 
 namespace RockLib.Messaging.Tests
 {
     public class MessagingExtensionsTests
     {
+        #region Method 1 - configured by configuration, created by configuration object factory
+
+        [Fact]
+        public void AddSenderExtensionMethod1HappyPath()
+        {
+            var services = new ServiceCollection();
+
+            services.AddSingleton(Config.Root);
+
+            services.AddSender("MyTestSenderDecorator");
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            serviceProvider.ExecutionTimeOf(s => s.GetRequiredService<ISender>()).Should().BeLessOrEqualTo(250.Milliseconds());
+        }
+
+        [Fact]
+        public void AddReceiverExtensionMethod1HappyPath()
+        {
+            var services = new ServiceCollection();
+
+            services.AddSingleton(Config.Root);
+
+            services.AddReceiver("MyTestReceiverDecorator");
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            serviceProvider.ExecutionTimeOf(s => s.GetRequiredService<IReceiver>()).Should().BeLessOrEqualTo(250.Milliseconds());
+        }
+
+        public class TestSenderDecorator : ISender
+        {
+            public TestSenderDecorator(string name, ISender sender) =>
+                (Name, Sender) = (name, sender);
+
+            public TestSenderDecorator(string name, string senderName)
+                : this(name, MessagingScenarioFactory.CreateSender(senderName))
+            {
+            }
+
+            public string Name { get; }
+
+            public ISender Sender { get; }
+
+            public void Dispose() => Sender.Dispose();
+
+            public Task SendAsync(SenderMessage message, CancellationToken cancellationToken) =>
+                Sender.SendAsync(message, cancellationToken);
+        }
+
+        public class TestReceiverDecorator : IReceiver
+        {
+            public TestReceiverDecorator(string name, IReceiver receiver) =>
+                (Name, Receiver) = (name, receiver);
+
+            public TestReceiverDecorator(string name, string receiverName)
+                : this(name, MessagingScenarioFactory.CreateReceiver(receiverName))
+            {
+            }
+
+            public string Name { get; }
+
+            public IReceiver Receiver { get; }
+
+            public IMessageHandler MessageHandler
+            {
+                get => Receiver.MessageHandler;
+                set => Receiver.MessageHandler = value;
+            }
+
+            public event EventHandler Connected
+            {
+                add { Receiver.Connected += value; }
+                remove { Receiver.Connected -= value; }
+            }
+
+            public event EventHandler<DisconnectedEventArgs> Disconnected
+            {
+                add { Receiver.Disconnected += value; }
+                remove { Receiver.Disconnected -= value; }
+            }
+
+            public event EventHandler<ErrorEventArgs> Error
+            {
+                add { Receiver.Error += value; }
+                remove { Receiver.Error -= value; }
+            }
+
+            public void Dispose() => Receiver.Dispose();
+        }
+
+        #endregion
+
+        #region Method 2 - configured by options, created by callback
+
         #region Reloading sender/receiver vs regular sender/receiver
 
         [Fact(DisplayName = "AddSender extension method 2 adds reloading sender when reloadOnChange parameter is true")]
@@ -427,5 +527,7 @@ namespace RockLib.Messaging.Tests
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*createReceiver*");
         }
+
+        #endregion
     }
 }
