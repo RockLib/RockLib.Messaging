@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SNS", "RockLib.Messaging.SNS\RockLib.Messaging.SNS.csproj", "{F5558582-F71D-40E3-B47F-66E1F025527E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SNS", "RockLib.Messaging.SNS.csproj", "{F5558582-F71D-40E3-B47F-66E1F025527E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SNS.Tests", "Tests\RockLib.Messaging.SNS.Tests\RockLib.Messaging.SNS.Tests.csproj", "{616A4D6D-44E7-46BB-A080-DECC15D53448}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.SNS.Tests", "..\Tests\RockLib.Messaging.SNS.Tests\RockLib.Messaging.SNS.Tests.csproj", "{616A4D6D-44E7-46BB-A080-DECC15D53448}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

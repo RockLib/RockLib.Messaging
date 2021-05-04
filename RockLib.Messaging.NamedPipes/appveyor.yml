@@ -1,64 +1,41 @@
-version: 'RockLib.Messaging.RabbitMQ.{build}.0.0-ci'
+version: 'RockLib.Messaging.NamedPipes.{build}.0.0-ci'
 image: Visual Studio 2019
 configuration: Release
 only_commits:
   files:
-  - RockLib.Messaging.RabbitMQ/
-  - RockLib.Messaging.RabbitMQ.sln
-  - RockLib.Messaging.RabbitMQ.appveyor.yml
+  - RockLib.Messaging.NamedPipes/
+  - Tests/RockLib.Messaging.NamedPipes.Tests/
 before_build:
 - ps: |
     # The path to the solution to restore.
-    $sln_path = "RockLib.Messaging.RabbitMQ.sln"
+    $sln_path = "RockLib.Messaging.NamedPipes\RockLib.Messaging.NamedPipes.sln"
     
     # The path to the main csproj file. It will be patched during the build.
-    $csproj_path = "RockLib.Messaging.RabbitMQ\RockLib.Messaging.RabbitMQ.csproj"
+    $csproj_path = "RockLib.Messaging.NamedPipes\RockLib.Messaging.NamedPipes.csproj"
     
     # The version of the build artifact's nuget package when created by CI builds.
     $ci_package_version = "$Env:appveyor_build_number.0.0-ci"
     
-    # This before_build script does four things:
+    # This before_build script does three things:
     #
-    # 1) Update the csproj's package release notes to be the current commit message.
-    # 2) Synchronize the AppVeyor build version and the csproj's package version.
+    # 1) Synchronize the AppVeyor build version and the csproj's package version.
     #   a) If the current build is a deploy build*, update the AppVeyor build version to match
     #      the csproj's nuget package version.
     #   b) If the current build is a CI build*, update the csproj's package version to match
     #      the AppVeyor build version.
-    # 3) Set an AppVeyor build variable named 'csproj_build_version' to the csproj's package version.
+    # 2) Set an AppVeyor build variable named 'csproj_build_version' to the csproj's package version.
     #    This value is used by deploy providers to determine whether the current commit should be deployed.
-    # 4) Restore packages for the sln. .NET Standard libraries won't build without restoring first.
+    # 3) Restore packages for the sln. .NET Standard libraries won't build without restoring first.
     #
     # *The current build is a deploy build if the 'appveyor_repo_tag' variable is 'true' and the
     #  'appveyor_repo_tag_name' variable is the the value of the 'csproj_build_version' variable, as set in
-    #  #3 above. Otherwise, the current build is a CI build.
+    #  #2 above. Otherwise, the current build is a CI build.
     
     function Get-Csproj-Build-Version ($csproj)
     {
         $package_id = $csproj.SelectSingleNode("/Project/PropertyGroup/PackageId").InnerText
         $package_version = $csproj.SelectSingleNode("/Project/PropertyGroup/PackageVersion").InnerText
         Return "$package_id.$package_version"
-    }
-
-    function Update-Package-Release-Notes ($csproj)
-    {
-        $commit_message = "$Env:appveyor_repo_commit_message`n`n$Env:appveyor_repo_commit_message_extended"
-        $commit_message = $commit_message.Replace("\n", "`n").TrimEnd()
-
-        $package_release_notes_node = $csproj.SelectSingleNode("/Project/PropertyGroup/PackageReleaseNotes")
-        $package_release_notes_node.InnerText = $commit_message
-    }
-
-    function Update-Package-Description ($csproj)
-    {
-        $commit_id = "$Env:appveyor_repo_commit"
-        $project_url = $csproj.SelectSingleNode("/Project/PropertyGroup/PackageProjectUrl").InnerText
-        $commit_url = "$project_url/tree/$commit_id"
-
-        $package_description_node = $csproj.SelectSingleNode("/Project/PropertyGroup/Description")
-        $original_description = $package_description_node.InnerText
-
-        $package_description_node.InnerText = "$original_description`n`nThis package was built from the source code at $commit_url"
     }
 
     function Synchronize-AppVeyor-And-Csproj-Versions ($csproj)
@@ -84,8 +61,6 @@ before_build:
     # The $csproj xml object contains the contents of the csproj file.
     $csproj = [xml](Get-Content $csproj_path)
 
-    Update-Package-Release-Notes $csproj
-    Update-Package-Description $csproj
     Synchronize-AppVeyor-And-Csproj-Versions $csproj
     Set-Csproj-Build-Version-Variable $csproj
 
@@ -94,7 +69,7 @@ before_build:
 
     nuget restore $sln_path
 build:
-  project: RockLib.Messaging.RabbitMQ.sln
+  project: RockLib.Messaging.NamedPipes/RockLib.Messaging.NamedPipes.sln
   verbosity: minimal
 artifacts:
 - path: '**/$(csproj_build_version).nupkg'
@@ -121,3 +96,4 @@ notifications:
   on_build_success: false
   on_build_failure: false
   on_build_status_changed: true
+  

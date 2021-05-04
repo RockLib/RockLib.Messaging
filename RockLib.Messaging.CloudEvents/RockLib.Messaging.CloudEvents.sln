@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29926.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.CloudEvents", "RockLib.Messaging.CloudEvents\RockLib.Messaging.CloudEvents.csproj", "{A40564DD-9C71-444D-B8E9-2098A6AA3445}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.CloudEvents", "RockLib.Messaging.CloudEvents.csproj", "{A40564DD-9C71-444D-B8E9-2098A6AA3445}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.CloudEvents.Tests", "Tests\RockLib.Messaging.CloudEvents.Tests\RockLib.Messaging.CloudEvents.Tests.csproj", "{57E86379-F6E9-4F83-93E5-F4CF68B51049}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.CloudEvents.Tests", "..\Tests\RockLib.Messaging.CloudEvents.Tests\RockLib.Messaging.CloudEvents.Tests.csproj", "{57E86379-F6E9-4F83-93E5-F4CF68B51049}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
