@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging</PackageId>
-    <PackageVersion>2.5.1</PackageVersion>
+    <PackageVersion>2.5.2</PackageVersion>
     <Authors>RockLib</Authors>
     <Description>A simple API for sending and receiving messages.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -14,7 +14,7 @@
     <PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageIcon>icon.png</PackageIcon>
-    <Copyright>Copyright 2017-2020 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
+    <Copyright>Copyright 2017-2021 (c) Quicken Loans Corporation. All rights reserved.</Copyright>
     <PackageTags>rocklib messaging</PackageTags>
     <Version>2.0.0</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
