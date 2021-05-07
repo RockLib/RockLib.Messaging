@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging.RabbitMQ</PackageId>
-    <PackageVersion>1.0.0-alpha08</PackageVersion>
+    <PackageVersion>1.0.0-alpha09</PackageVersion>
     <Authors>RockLib</Authors>
     <Description>Implementation of RockLib.Messaging API that sends and receives messages using RabbitMQ.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
