@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Adds SourceLink to nuget package.
 
+#### Changed
+
+- Updates RockLib.Messaging package to latest version, which includes SourceLink.
+
 ----
 
 **Note:** Release notes in the above format are not available for earlier versions of
