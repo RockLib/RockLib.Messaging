@@ -17,7 +17,7 @@ namespace RockLib.Messaging.DependencyInjection
         /// <param name="name">The name of the sender.</param>
         /// <param name="configureOptions">A callback for configuring the <see cref="SNSSenderOptions"/>.</param>
         /// <param name="reloadOnChange">
-        /// Whether to create a named pipe sender that automatically reloads itself when its
+        /// Whether to create an SNS sender that automatically reloads itself when its
         /// configuration or options change.
         /// </param>
         /// <returns>A builder allowing the sender to be decorated.</returns>

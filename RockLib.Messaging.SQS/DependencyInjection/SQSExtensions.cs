@@ -13,13 +13,13 @@ namespace RockLib.Messaging.DependencyInjection
     public static class SQSExtensions
     {
         /// <summary>
-        /// Adds a <see cref="SQSSender"/> to the service collection.
+        /// Adds an <see cref="SQSSender"/> to the service collection.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="name">The name of the sender.</param>
         /// <param name="configureOptions">A callback for configuring the <see cref="SQSSenderOptions"/>.</param>
         /// <param name="reloadOnChange">
-        /// Whether to create a named pipe sender that automatically reloads itself when its
+        /// Whether to create an SQS sender that automatically reloads itself when its
         /// configuration or options change.
         /// </param>
         /// <returns>A builder allowing the sender to be decorated.</returns>
@@ -40,7 +40,7 @@ namespace RockLib.Messaging.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a <see cref="SQSSender"/> to the service collection.
+        /// Adds an <see cref="SQSSender"/> to the service collection.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="name">The name of the sender.</param>
@@ -51,13 +51,13 @@ namespace RockLib.Messaging.DependencyInjection
             services.AddSQSSender(name, configureOptions, true);
 
         /// <summary>
-        /// Adds a <see cref="SQSReceiver"/> to the service collection.
+        /// Adds an <see cref="SQSReceiver"/> to the service collection.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="name">The name of the receiver.</param>
         /// <param name="configureOptions">A callback for configuring the <see cref="SQSReceiverOptions"/>.</param>
         /// <param name="reloadOnChange">
-        /// Whether to create a named pipe sender that automatically reloads itself when its
+        /// Whether to create an SQS receiver that automatically reloads itself when its
         /// configuration or options change.
         /// </param>
         /// <returns>A builder allowing the receiver to be decorated.</returns>
@@ -79,7 +79,7 @@ namespace RockLib.Messaging.DependencyInjection
         }
 
         /// <summary>
-        /// Adds a <see cref="SQSReceiver"/> to the service collection.
+        /// Adds an <see cref="SQSReceiver"/> to the service collection.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="name">The name of the receiver.</param>
