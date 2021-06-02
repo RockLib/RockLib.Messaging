@@ -11,7 +11,7 @@ namespace Example.Messaging.CloudEvents
 {
     public class ExampleService : IHostedService
     {
-        private readonly Uri _cloudEventSource;
+        private readonly string _cloudEventSource;
 
         private readonly ISender _userPipeSender;
         private readonly IReceiver _userPipeReceiver;
@@ -27,7 +27,7 @@ namespace Example.Messaging.CloudEvents
             if (string.IsNullOrEmpty(options.Value.Source))
                 throw new ArgumentException("Invalid ExampleOptions: Source must have non-empty value.", nameof(options));
 
-            _cloudEventSource = new Uri(options.Value.Source, UriKind.RelativeOrAbsolute);
+            _cloudEventSource = options.Value.Source;
 
             _userPipeSender = senderLookup("user-pipe");
             _userPipeReceiver = receiverLookup("user-pipe");
@@ -71,12 +71,11 @@ namespace Example.Messaging.CloudEvents
 
             Console.WriteLine();
 
-            var cloudEvent = new CloudEvent
+            var cloudEvent = new CloudEvent()
             {
-                StringData = input,
                 Source = _cloudEventSource,
                 Type = "example"
-            };
+            }.SetData(input);
 
             await _userPipeSender.SendAsync(cloudEvent);
         }
@@ -90,8 +89,8 @@ namespace Example.Messaging.CloudEvents
 
             var middle = userEvent.StringData.Length / 2;
 
-            worker1Event.StringData = userEvent.StringData[..middle];
-            worker2Event.StringData = userEvent.StringData[middle..];
+            worker1Event.SetData(userEvent.StringData[..middle]);
+            worker2Event.SetData(userEvent.StringData[middle..]);
 
             await _workerPipe1Sender.SendAsync(worker1Event);
             await _workerPipe2Sender.SendAsync(worker2Event);
