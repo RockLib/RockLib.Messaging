@@ -14,13 +14,16 @@ namespace RockLib.Messaging.SQS
     public sealed class SQSReceiverMessage : ReceiverMessage
     {
         private readonly Func<CancellationToken, Task> _deleteMessageAsync;
+        private readonly Func<CancellationToken, Task> _rollbackMessageAsync;
         private readonly bool _unpackSns;
 
-        internal SQSReceiverMessage(Message message, Func<CancellationToken, Task> deleteMessageAsync, bool unpackSNS)
+        internal SQSReceiverMessage(Message message, Func<CancellationToken, Task> deleteMessageAsync, 
+            Func<CancellationToken, Task> rollbackMessageAsync, bool unpackSNS)
             : base(() => GetRawPayload(message.Body, unpackSNS))
         {
             Message = message;
             _deleteMessageAsync = deleteMessageAsync;
+            _rollbackMessageAsync = rollbackMessageAsync;
             _unpackSns = unpackSNS;
         }
 
@@ -33,7 +36,7 @@ namespace RockLib.Messaging.SQS
         protected override Task AcknowledgeMessageAsync(CancellationToken cancellationToken) => _deleteMessageAsync(cancellationToken);
 
         /// <inheritdoc />
-        protected override Task RollbackMessageAsync(CancellationToken cancellationToken) => Task.FromResult(0); // Do nothing - the message will automatically be redelivered by SQS when left unacknowledged.
+        protected override Task RollbackMessageAsync(CancellationToken cancellationToken) => _rollbackMessageAsync(cancellationToken);
 
         /// <inheritdoc />
         protected override Task RejectMessageAsync(CancellationToken cancellationToken) => _deleteMessageAsync(cancellationToken);

@@ -2,6 +2,7 @@
 using Amazon.SQS;
 using RockLib.Messaging.SQS;
 using System;
+using System.Threading;
 
 namespace RockLib.Messaging.DependencyInjection
 {
@@ -77,6 +78,14 @@ namespace RockLib.Messaging.DependencyInjection
         /// SNS message.
         /// </summary>
         public bool UnpackSNS { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether to terminate the message visibility timeout when
+        /// <see cref="SQSReceiverMessage.RollbackMessageAsync(CancellationToken)"/> is called.
+        /// Terminating the message visibility timeout allows the message to immediately become
+        /// available for queue consumers to process.
+        /// </summary>
+        public bool TerminateMessageVisibilityTimeoutOnRollback { get; set; }
     }
 }
 #endif

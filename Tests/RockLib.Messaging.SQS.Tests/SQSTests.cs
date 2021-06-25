@@ -164,17 +164,19 @@ namespace RockLib.Messaging.SQS.Tests
                 It.IsAny<CancellationToken>()));
         }
 
-        [Fact]
-        public void RollbackDoesNotDeleteTheMessageByReceiptHandleWithItsIAmazonSQS()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void RollbackDoesNotDeleteTheMessageByReceiptHandleWithItsIAmazonSQS(bool terminateMessageVisibilityTimeoutOnRollback)
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
             SetupReceiveMessageAsync(mockSqs);
-            SetupDeleteMessageAsync(mockSqs);
+            SetupChangeMessageVisibilityAsync(mockSqs);
 
             var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false))
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false, terminateMessageVisibilityTimeoutOnRollback: terminateMessageVisibilityTimeoutOnRollback))
             {
                 receiver.Start(async m =>
                 {
@@ -189,6 +191,59 @@ namespace RockLib.Messaging.SQS.Tests
                 It.IsAny<DeleteMessageRequest>(),
                 It.IsAny<CancellationToken>()),
                 Times.Never);
+        }
+
+        [Fact]
+        public void WhenTerminateMessageVisibilityTimeoutOnRollbackIsFalseRollbackDoesNotChangeMessageVisibilityByReceiptHandleWithItsIAmazonSQS()
+        {
+            var mockSqs = new Mock<IAmazonSQS>();
+
+            SetupReceiveMessageAsync(mockSqs);
+            SetupChangeMessageVisibilityAsync(mockSqs);
+
+            var waitHandle = new AutoResetEvent(false);
+
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false, terminateMessageVisibilityTimeoutOnRollback: false))
+            {
+                receiver.Start(async m =>
+                {
+                    await m.RollbackAsync();
+                    waitHandle.Set();
+                });
+
+                waitHandle.WaitOne();
+            }
+
+            mockSqs.Verify(m => m.ChangeMessageVisibilityAsync(
+                It.IsAny<ChangeMessageVisibilityRequest>(),
+                It.IsAny<CancellationToken>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public void WhenTerminateMessageVisibilityTimeoutOnRollbackIsTrueRollbackChangesMessageVisibilityToZeroByReceiptHandleWithItsIAmazonSQS()
+        {
+            var mockSqs = new Mock<IAmazonSQS>();
+
+            SetupReceiveMessageAsync(mockSqs);
+            SetupChangeMessageVisibilityAsync(mockSqs);
+
+            var waitHandle = new AutoResetEvent(false);
+
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false, terminateMessageVisibilityTimeoutOnRollback: true))
+            {
+                receiver.Start(async m =>
+                {
+                    await m.RollbackAsync();
+                    waitHandle.Set();
+                });
+
+                waitHandle.WaitOne();
+            }
+
+            mockSqs.Verify(m => m.ChangeMessageVisibilityAsync(
+                It.Is<ChangeMessageVisibilityRequest>(r => r.VisibilityTimeout == 0),
+                It.IsAny<CancellationToken>()));
         }
 
         [Fact]
@@ -296,7 +351,7 @@ namespace RockLib.Messaging.SQS.Tests
                 Body = snsMessage
             };
 
-            var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), unpackSNS: true);
+            var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), c => Task.FromResult(0), unpackSNS: true);
 
             sqsReceiverMessage.StringPayload.Should().Be("This is a better test message");
             sqsReceiverMessage.Headers["TopicARN"].Should().Be("arn:PutARealARNHere");
@@ -324,7 +379,7 @@ namespace RockLib.Messaging.SQS.Tests
                 Body = snsMessage
             };
 
-            var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), unpackSNS: true);
+            var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), c => Task.FromResult(0), unpackSNS: true);
 
             sqsReceiverMessage.StringPayload.Should().Be("This is a better test message");
             sqsReceiverMessage.Headers["TopicARN"].Should().Be("arn:PutARealARNHere");
@@ -334,6 +389,15 @@ namespace RockLib.Messaging.SQS.Tests
         {
             mockSqs.Setup(m => m.DeleteMessageAsync(It.IsAny<DeleteMessageRequest>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(new DeleteMessageResponse
+                {
+                    HttpStatusCode = httpStatusCode
+                }));
+        }
+
+        private static void SetupChangeMessageVisibilityAsync(Mock<IAmazonSQS> mockSqs, HttpStatusCode httpStatusCode = HttpStatusCode.OK)
+        {
+            mockSqs.Setup(m => m.ChangeMessageVisibilityAsync(It.IsAny<ChangeMessageVisibilityRequest>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(new ChangeMessageVisibilityResponse
                 {
                     HttpStatusCode = httpStatusCode
                 }));
