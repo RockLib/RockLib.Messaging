@@ -52,14 +52,19 @@ namespace RockLib.Messaging.SQS
         /// the call returns successfully with an empty list of messages.
         /// </param>
         /// <param name="unpackSNS">Whether to attempt to unpack the message body as an SNS message.</param>
+        /// <param name="terminateMessageVisibilityTimeoutOnRollback">Whether to terminate the
+        /// message visibility timeout when <see cref="SQSReceiverMessage.RollbackMessageAsync(CancellationToken)"/>
+        /// is called. Terminating the message visibility timeout allows the message to immediately
+        /// become available for queue consumers to process.</param>
         public SQSReceiver(string name,
             string queueUrl,
             string region = null,
             int maxMessages = DefaultMaxMessages,
             bool autoAcknowledge = true,
             int waitTimeSeconds = DefaultWaitTimeSeconds,
-            bool unpackSNS = false)
-            : this(region == null ? new AmazonSQSClient() : new AmazonSQSClient(RegionEndpoint.GetBySystemName(region)), name, queueUrl, maxMessages, autoAcknowledge, waitTimeSeconds, unpackSNS)
+            bool unpackSNS = false,
+            bool terminateMessageVisibilityTimeoutOnRollback = false)
+            : this(region == null ? new AmazonSQSClient() : new AmazonSQSClient(RegionEndpoint.GetBySystemName(region)), name, queueUrl, maxMessages, autoAcknowledge, waitTimeSeconds, unpackSNS, terminateMessageVisibilityTimeoutOnRollback)
         {
         }
 
@@ -84,13 +89,18 @@ namespace RockLib.Messaging.SQS
         /// the call returns successfully with an empty list of messages.
         /// </param>
         /// <param name="unpackSNS">Whether to attempt to unpack the message body as an SNS message.</param>
+        /// <param name="terminateMessageVisibilityTimeoutOnRollback">Whether to terminate the
+        /// message visibility timeout when <see cref="SQSReceiverMessage.RollbackMessageAsync(CancellationToken)"/>
+        /// is called. Terminating the message visibility timeout allows the message to immediately
+        /// become available for queue consumers to process.</param>
         public SQSReceiver(IAmazonSQS sqs,
             string name,
             string queueUrl,
             int maxMessages = DefaultMaxMessages,
             bool autoAcknowledge = true,
             int waitTimeSeconds = DefaultWaitTimeSeconds,
-            bool unpackSNS = false)
+            bool unpackSNS = false,
+            bool terminateMessageVisibilityTimeoutOnRollback = false)
             : base(name)
         {
             if (maxMessages < 1 || maxMessages > 10)
@@ -104,6 +114,7 @@ namespace RockLib.Messaging.SQS
             AutoAcknwoledge = autoAcknowledge;
             WaitTimeSeconds = waitTimeSeconds;
             UnpackSNS = unpackSNS;
+            TerminateMessageVisibilityTimeoutOnRollback = terminateMessageVisibilityTimeoutOnRollback;
 
             _receiveMessagesTask = new Lazy<Task>(ReceiveMessages);
         }
@@ -138,6 +149,15 @@ namespace RockLib.Messaging.SQS
         /// Gets a value indicating whether to attempt to unpack the message body as an SNS message.
         /// </summary>
         public bool UnpackSNS { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether to terminate the message visibility timeout when
+        /// <see cref="SQSReceiverMessage.RollbackMessageAsync(CancellationToken)"/> is called.
+        /// Terminating the message visibility timeout allows the message to immediately become
+        /// available for queue consumers
+        /// to process.
+        /// </summary>
+        public bool TerminateMessageVisibilityTimeoutOnRollback { get; }
 
         /// <summary>
         /// Gets the object that communicates with SQS.
@@ -235,7 +255,10 @@ namespace RockLib.Messaging.SQS
             Task DeleteMessageAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
                 DeleteAsync(receiptHandle, cancellationToken);
 
-            var receiverMessage = new SQSReceiverMessage(message, DeleteMessageAsync, UnpackSNS);
+            Task RollbackMessageAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
+                RollbackAsync(receiptHandle, cancellationToken);
+
+            var receiverMessage = new SQSReceiverMessage(message, DeleteMessageAsync, RollbackMessageAsync, UnpackSNS);
 
             try
             {
@@ -261,7 +284,35 @@ namespace RockLib.Messaging.SQS
             }
         }
 
-        private async Task DeleteAsync(string receiptHandle, CancellationToken cancellationToken)
+        private Task DeleteAsync(string receiptHandle, CancellationToken cancellationToken)
+        {
+            return ExecuteWithRetry(async () =>
+            {
+                return await SQSClient.DeleteMessageAsync(new DeleteMessageRequest
+                {
+                    QueueUrl = QueueUrl,
+                    ReceiptHandle = receiptHandle
+                }, cancellationToken).ConfigureAwait(false);
+            });
+        }
+
+        private Task RollbackAsync(string receiptHandle, CancellationToken cancellationToken)
+        {
+            if (!TerminateMessageVisibilityTimeoutOnRollback)
+                return Task.FromResult(0);
+
+            return ExecuteWithRetry(async () =>
+            {
+                return await SQSClient.ChangeMessageVisibilityAsync(new ChangeMessageVisibilityRequest
+                {
+                    VisibilityTimeout = 0,
+                    QueueUrl = QueueUrl,
+                    ReceiptHandle = receiptHandle
+                }, cancellationToken).ConfigureAwait(false);
+            });
+        }
+
+        private async Task ExecuteWithRetry(Func<Task<AmazonWebServiceResponse>> funcToExecute)
         {
             int i = 0;
 
@@ -269,13 +320,8 @@ namespace RockLib.Messaging.SQS
             {
                 try
                 {
-                    var deleteResponse = await SQSClient.DeleteMessageAsync(new DeleteMessageRequest
-                    {
-                        QueueUrl = QueueUrl,
-                        ReceiptHandle = receiptHandle
-                    }, cancellationToken).ConfigureAwait(false);
-
-                    if (deleteResponse.HttpStatusCode == HttpStatusCode.OK)
+                    var response = await funcToExecute();
+                    if (response.HttpStatusCode == HttpStatusCode.OK)
                         return;
                 }
                 catch

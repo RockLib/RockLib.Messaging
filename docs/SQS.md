@@ -104,10 +104,12 @@ The SQSReceiver class can be directly instantiated and has the following paramet
   - The duration (in seconds) for which calls to ReceiveMessage wait for a message to arrive in the queue before returning. If a message is available, the call returns sooner than WaitTimeSeconds. If no messages are available and the wait time expires, the call returns successfully with an empty list of messages.
 - unpackSNS (optional, defaults to false)
   - Whether to attempt to unpack the message body as an SNS message.
+- terminateMessageVisibilityTimeoutOnRollback (optional, defaults to false)
+  - Whether to terminate the message visibility timeout when SQSReceiverMessage.RollbackMessageAsync is called. Terminating the message visibility timeout allows the message to immediately become available for queue consumers to process.
 
 ```c#
 IReceiver receiver = new SQSReceiver("MyReceiver", "https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name",
-    region:"us-west-2", maxMessages: 3, autoAcknowledge: true, waitTimeSeconds: 0, unpackSNS: false);
+    region:"us-west-2", maxMessages: 3, autoAcknowledge: true, waitTimeSeconds: 0, unpackSNS: false, terminateMessageVisibilityTimeoutOnRollback: false);
 ```
 
 ---
@@ -123,6 +125,7 @@ services.AddSQSReceiver("MySender", options =>
     options.AutoAcknowledge = true;
     options.WaitTimeSeconds = 0;
     options.UnpackSNS = false;
+    options.TerminateMessageVisibilityTimeoutOnRollback = false;
 });
 ```
 
@@ -143,7 +146,8 @@ public void ConfigureServices(IServiceCollection services)
     "MaxMessages": 3,
     "AutoAcknowledge": true,
     "WaitTimeSeconds": 0,
-    "UnpackSNS": false
+    "UnpackSNS": false,
+    "TerminateMessageVisibilityTimeoutOnRollback": false
   }
 }
 */
@@ -165,7 +169,8 @@ MessagingScenarioFactory can be configured with an `SQSReceiver` named "commands
                 "MaxMessages": 3,
                 "AutoAcknowledge": true,
                 "WaitTimeSeconds": 0,
-                "UnpackSNS": false
+                "UnpackSNS": false,
+                "TerminateMessageVisibilityTimeoutOnRollback": false
             }
         }
     }

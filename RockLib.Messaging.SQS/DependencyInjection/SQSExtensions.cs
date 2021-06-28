@@ -74,7 +74,8 @@ namespace RockLib.Messaging.DependencyInjection
                         : serviceProvider.GetService<IAmazonSQS>() ?? new AmazonSQSClient());
 
                 return new SQSReceiver(sqsClient, name, options.QueueUrl, options.MaxMessages,
-                    options.AutoAcknowledge, options.WaitTimeSeconds, options.UnpackSNS);
+                    options.AutoAcknowledge, options.WaitTimeSeconds, options.UnpackSNS,
+                    options.TerminateMessageVisibilityTimeoutOnRollback);
             }
         }
 

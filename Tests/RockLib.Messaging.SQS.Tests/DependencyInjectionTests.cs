@@ -103,6 +103,7 @@ namespace RockLib.Messaging.SQS.Tests
                 options.AutoAcknowledge = false;
                 options.WaitTimeSeconds = 123;
                 options.UnpackSNS = true;
+                options.TerminateMessageVisibilityTimeoutOnRollback = true;
             }, false);
 
             var serviceProvider = services.BuildServiceProvider();
@@ -118,6 +119,7 @@ namespace RockLib.Messaging.SQS.Tests
             sqsReceiver.AutoAcknwoledge.Should().BeFalse();
             sqsReceiver.WaitTimeSeconds.Should().Be(123);
             sqsReceiver.UnpackSNS.Should().BeTrue();
+            sqsReceiver.TerminateMessageVisibilityTimeoutOnRollback.Should().BeTrue();
         }
 
         [Fact]
@@ -137,6 +139,7 @@ namespace RockLib.Messaging.SQS.Tests
                 options.AutoAcknowledge = false;
                 options.WaitTimeSeconds = 123;
                 options.UnpackSNS = true;
+                options.TerminateMessageVisibilityTimeoutOnRollback = true;
             }, true);
 
             var serviceProvider = services.BuildServiceProvider();
@@ -154,6 +157,7 @@ namespace RockLib.Messaging.SQS.Tests
             sqsReceiver.AutoAcknwoledge.Should().BeFalse();
             sqsReceiver.WaitTimeSeconds.Should().Be(123);
             sqsReceiver.UnpackSNS.Should().BeTrue();
+            sqsReceiver.TerminateMessageVisibilityTimeoutOnRollback.Should().BeTrue();
         }
 
         [Fact(DisplayName = "Should register SQS receiver with registered SQS client when available")]
