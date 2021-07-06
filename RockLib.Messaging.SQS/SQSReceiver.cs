@@ -70,6 +70,40 @@ namespace RockLib.Messaging.SQS
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SQSReceiver"/> class.
+        /// Uses a default implementation of the <see cref="AmazonSQSClient"/> to
+        /// communicate with SQS.
+        /// </summary>
+        /// <param name="name">The name of the receiver.</param>
+        /// <param name="queueUrl">The url of the SQS queue.</param>
+        /// <param name="region">The region of the SQS queue.</param>
+        /// <param name="maxMessages">
+        /// The maximum number of messages to return with each call to the SQS endpoint.
+        /// Amazon SQS never returns more messages than this value (however, fewer messages
+        /// might be returned). Valid values are 1 to 10.
+        /// </param>
+        /// <param name="autoAcknowledge">
+        /// Whether messages will be automatically acknowledged after the message handler executes.
+        /// </param>
+        /// <param name="waitTimeSeconds">
+        /// The duration (in seconds) for which calls to ReceiveMessage wait for a message
+        /// to arrive in the queue before returning. If a message is available, the call returns
+        /// sooner than WaitTimeSeconds. If no messages are available and the wait time expires,
+        /// the call returns successfully with an empty list of messages.
+        /// </param>
+        /// <param name="unpackSNS">Whether to attempt to unpack the message body as an SNS message.</param>
+        public SQSReceiver(string name,
+            string queueUrl,
+            string region,
+            int maxMessages,
+            bool autoAcknowledge,
+            int waitTimeSeconds,
+            bool unpackSNS)
+            : this(name, queueUrl, region, maxMessages, autoAcknowledge, waitTimeSeconds, unpackSNS, false)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SQSReceiver"/> class.
         /// </summary>
         /// <param name="sqs">An object that communicates with SQS.</param>
         /// <param name="name">The name of the receiver.</param>
@@ -117,6 +151,38 @@ namespace RockLib.Messaging.SQS
             TerminateMessageVisibilityTimeoutOnRollback = terminateMessageVisibilityTimeoutOnRollback;
 
             _receiveMessagesTask = new Lazy<Task>(ReceiveMessages);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SQSReceiver"/> class.
+        /// </summary>
+        /// <param name="sqs">An object that communicates with SQS.</param>
+        /// <param name="name">The name of the receiver.</param>
+        /// <param name="queueUrl">The url of the SQS queue.</param>
+        /// <param name="maxMessages">
+        /// The maximum number of messages to return with each call to the SQS endpoint.
+        /// Amazon SQS never returns more messages than this value (however, fewer messages
+        /// might be returned). Valid values are 1 to 10.
+        /// </param>
+        /// <param name="autoAcknowledge">
+        /// Whether messages will be automatically acknowledged after the message handler executes.
+        /// </param>
+        /// <param name="waitTimeSeconds">
+        /// The duration (in seconds) for which calls to ReceiveMessage wait for a message
+        /// to arrive in the queue before returning. If a message is available, the call returns
+        /// sooner than WaitTimeSeconds. If no messages are available and the wait time expires,
+        /// the call returns successfully with an empty list of messages.
+        /// </param>
+        /// <param name="unpackSNS">Whether to attempt to unpack the message body as an SNS message.</param>
+        public SQSReceiver(IAmazonSQS sqs,
+            string name,
+            string queueUrl,
+            int maxMessages,
+            bool autoAcknowledge,
+            int waitTimeSeconds,
+            bool unpackSNS)
+            : this(sqs, name, queueUrl, maxMessages, autoAcknowledge, waitTimeSeconds, unpackSNS, false)
+        {
         }
 
         /// <summary>
