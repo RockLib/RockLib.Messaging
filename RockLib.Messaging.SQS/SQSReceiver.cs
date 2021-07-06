@@ -237,7 +237,7 @@ namespace RockLib.Messaging.SQS
         {
             if (!_receiveMessagesTask.IsValueCreated && !_stopped)
             {
-                var dummy = _receiveMessagesTask.Value;
+                _ = _receiveMessagesTask.Value;
             }
         }
 
@@ -378,7 +378,7 @@ namespace RockLib.Messaging.SQS
             });
         }
 
-        private async Task ExecuteWithRetry(Func<Task<AmazonWebServiceResponse>> funcToExecute)
+        private static async Task ExecuteWithRetry(Func<Task<AmazonWebServiceResponse>> funcToExecute)
         {
             int i = 0;
 
