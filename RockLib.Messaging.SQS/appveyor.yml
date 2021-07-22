@@ -85,7 +85,7 @@ deploy:
     appveyor_repo_tag_name: $(csproj_build_version)
 - provider: NuGet
   api_key:
-    secure: /aVzW+PxGg5BNIf1vjwlpzF47ybzXunJAIsc7y1dSruIJm+cEQjFqNO7HEHmswQi
+    secure: 87Beymkb5jPtRYptB4ERIe5KaE9nda2V5hyXXVGLmg4FIuTjLwz/5T8bRh+e2sNh
   on:
     appveyor_repo_tag: true
     appveyor_repo_tag_name: $(csproj_build_version)
