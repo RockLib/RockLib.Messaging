@@ -9,8 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changed
 
-- Updates RockLib.Compression package to latest version, which includes SourceLink.
 - Changes "Quicken Loans" to "Rocket Mortgage".
+- Updates RockLib.Compression to latest version, [1.0.6](https://github.com/RockLib/RockLib.Compression/blob/main/RockLib.Compression/CHANGELOG.md#106---2021-08-11).
+- Updates RockLib.Configuration to latest version, [2.5.3](https://github.com/RockLib/RockLib.Configuration/blob/main/RockLib.Configuration/CHANGELOG.md#253---2021-08-11).
+- Updates RockLib.Configuration.ObjectFactory to latest version, [1.6.9](https://github.com/RockLib/RockLib.Configuration/blob/main/RockLib.Configuration.ObjectFactory/CHANGELOG.md#169---2021-08-11).
 
 ## 2.5.2 - 2021-05-07
 
