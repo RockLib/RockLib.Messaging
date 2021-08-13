@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Changed
 
 - Changes "Quicken Loans" to "Rocket Mortgage".
+- Updates RockLib.Messaging to latest version, [2.5.3](https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging/CHANGELOG.md#253---2021-08-12).
+- Updates RockLib.Reflection.Optimized to latest version, [1.3.2](https://github.com/RockLib/RockLib.Reflection.Optimized/blob/main/RockLib.Reflection.Optimized/CHANGELOG.md#132---2021-08-11).
+- Updates Confluent.Kafka to latest version, [1.7.0](https://github.com/confluentinc/confluent-kafka-dotnet/releases/tag/v1.7.0).
 
 ## 1.0.0-rc7 - 2021-05-07
 

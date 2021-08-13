@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Changed
 
 - Changes "Quicken Loans" to "Rocket Mortgage".
+- Updates RockLib.Messaging to latest version, [2.5.3](https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging/CHANGELOG.md#253---2021-08-12).
+- Updates RabbitMQ.Client to latest version, [6.2.2](https://github.com/rabbitmq/rabbitmq-dotnet-client/releases/tag/v6.2.2).
 
 ## 1.0.0-alpha09 - 2021-05-07
 

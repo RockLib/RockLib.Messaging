@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RockLib.Messaging" Version="2.5.2" />
+    <PackageReference Include="RockLib.Messaging" Version="2.5.3" />
   </ItemGroup>
 
 </Project>
