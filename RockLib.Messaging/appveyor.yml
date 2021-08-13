@@ -85,14 +85,14 @@ deploy:
     appveyor_repo_tag_name: $(csproj_build_version)
 - provider: NuGet
   api_key:
-    secure: 87Beymkb5jPtRYptB4ERIe5KaE9nda2V5hyXXVGLmg4FIuTjLwz/5T8bRh+e2sNh
+    secure: EohoG6MyG78HAMmPQPdGMN0redJf3PCzJxjHLPx7zRMQztfg++td64Ze6Ccyrj+C
   on:
     appveyor_repo_tag: true
     appveyor_repo_tag_name: $(csproj_build_version)
 notifications:
 - provider: Email
   to:
-  - rocklibsupport@quickenloans.com
+  - rocklibsupport@rocketmortgage.com
   on_build_success: false
   on_build_failure: false
   on_build_status_changed: true
