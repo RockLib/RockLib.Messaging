@@ -5,19 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 2.3.0-alpha02 - 2021-08-12
+## 2.3.0 - 2021-09-07
+
+#### Added
+
+- Adds ability to terminate the message visibility timeout when rolling back.
 
 #### Changed
 
 - Changes "Quicken Loans" to "Rocket Mortgage".
 - Updates RockLib.Messaging to latest version, [2.5.3](https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging/CHANGELOG.md#253---2021-08-12).
 - Updates AWSSDK.SQS to latest version, [3.7.0.52](https://github.com/aws/aws-sdk-net/blob/master/SDK.CHANGELOG.md#37950-2021-08-12-1814-utc).
-
-## 2.3.0-alpha01 - 2021-06-28
-
-#### Added
-
-- Adds ability to terminate the message visibility timeout when rolling back.
 
 ## 2.2.9 - 2021-05-20
 
