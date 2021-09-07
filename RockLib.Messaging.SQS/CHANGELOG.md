@@ -19,7 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Adds ability to terminate the message visibility timeout when rolling back.
 
-#### 2.2.9 - 2021-05-20
+## 2.2.9 - 2021-05-20
+
+#### Added
 
 - Adds `reloadOnChange` parameter to DI extension methods.
 
