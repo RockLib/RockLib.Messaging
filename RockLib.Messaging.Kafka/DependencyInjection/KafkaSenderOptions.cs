@@ -21,6 +21,11 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         /// Gets or sets the topic to subscribe to.
         /// </summary>
         public string Topic { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the schema ID to validate messages against
+        /// </summary>
+        public int SchemaId { get; set; }
     }
 }
 #endif
