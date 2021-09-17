@@ -75,7 +75,11 @@ namespace RockLib.Messaging.Kafka
         /// </summary>
         /// <param name="name">The name of the sender.</param>
         /// <param name="topic">The topic to produce messages to.</param>
-        /// <param name="schemaId">The schema ID to have the broker validate messages against.</param>
+        /// <param name="schemaId">
+        /// The schema ID to have the broker validate messages against. The sender will prepend a leading empty byte
+        /// and the schema ID to the payload according to the Confluent 
+        /// <a href="https://docs.confluent.io/platform/current/schema-registry/serdes-develop/index.html#wire-format">wire format</a>.
+        /// </param>
         /// <param name="bootstrapServers">List of brokers as a CSV list of broker host or host:port.</param>
         /// <param name="messageTimeoutMs">
         /// Local message timeout. This value is only enforced locally and limits the time
@@ -143,7 +147,9 @@ namespace RockLib.Messaging.Kafka
         public event EventHandler<ErrorEventArgs> Error;
 
         /// <summary>
-        /// Determine if the message should include the schema ID for validation
+        /// Determine if the message should include the schema ID for validation. When <code>true</code> the sender
+        /// prepends an empty byte and the schema ID to the payload according to the Confluent
+        /// <a href="https://docs.confluent.io/platform/current/schema-registry/serdes-develop/index.html#wire-format">wire format</a>.
         /// </summary>
         private bool ShouldIncludeSchemaId => SchemaId > 0;
 
