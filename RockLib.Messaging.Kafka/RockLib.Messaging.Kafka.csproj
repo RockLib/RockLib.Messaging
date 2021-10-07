@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <PackageId>RockLib.Messaging.Kafka</PackageId>
-    <PackageVersion>1.0.0-rc9</PackageVersion>
+    <PackageVersion>1.0.0-rc10</PackageVersion>
     <Authors>RockLib</Authors>
     <Description>Implementation of RockLib.Messaging API that sends and receives messages using Kafka.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
