@@ -4,7 +4,7 @@ See the [.NET Core example] or [.NET Framework example] for a complete demo appl
 
 ## KafkaSender
 
-The KafkaSender class can be directly instantiated one of two ways.
+The KafkaSender class can be directly instantiated in a few ways.
 
 The first has the following parameters:
 
@@ -38,7 +38,18 @@ The third has the following parameters:
   - Schema ID for broker to validate message schema against
 - messageTimeoutMs (optional, defaults to 10000)
   - Local message timeout. This value is only enforced locally and limits the time a produced message waits for successful delivery. A time of 0 is infinite. This is the maximum time librdkafka may use to deliver a message (including retries). Delivery error occurs when either the retry count or the message timeout are exceeded.
-  
+
+The fourth has the following parameters:
+
+- name
+  - The name of the instance of KafkaSender.
+- topic
+  - The topic to produce messages to.
+- schemaId
+  - Schema ID for broker to validate message schema against
+- producerConfig
+  - The configuration used in creation of the Kafka producer.
+
 ---
 
 To add an KafkaSender to a service collection for dependency injection, use the `AddKafkaSender` method, optionally passing in a `configureOptions` callback:

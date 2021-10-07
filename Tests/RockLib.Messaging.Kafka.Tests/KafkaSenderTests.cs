@@ -69,6 +69,29 @@ namespace RockLib.Messaging.Kafka.Tests
             sender.Producer.Should().NotBeNull();
             sender.SchemaId.Should().Be(schemaId);
         }
+        
+        [Fact(DisplayName = "KafkaSender constructor 4 sets appropriate properties")]
+        public void KafkaSenderConstructor4HappyPath()
+        {
+            var name = "name";
+            var topic = "topic";
+            var servers = "bootstrapServers";
+            var timeout = 100;
+            var schemaId = 10;
+            var config = new ProducerConfig()
+            {
+                BootstrapServers = servers,
+                MessageTimeoutMs = timeout
+            };
+            var sender = new KafkaSender(name, topic, schemaId, config);
+
+            sender.Name.Should().Be(name);
+            sender.Topic.Should().Be(topic);
+            sender.BootstrapServers.Should().Be(servers);
+            sender.MessageTimeoutMs.Should().Be(timeout);
+            sender.Producer.Should().NotBeNull();
+            sender.SchemaId.Should().Be(schemaId);
+        }
 
         [Fact(DisplayName = "KafkaSender constructor throws on null name")]
         public void KafkaSenderConstructorSadPath1()
@@ -138,6 +161,34 @@ namespace RockLib.Messaging.Kafka.Tests
         public void KafkaSenderConstructor3SadPath3()
         {
             Action action = () => new KafkaSender("name", "topic", 10, null);
+            action.Should().Throw<ArgumentNullException>();
+        }
+        
+        [Fact(DisplayName = "KafkaSender constructor 4 throws on null name")]
+        public void KafkaSenderConstructor4SadPath1()
+        {
+            Action action = () => new KafkaSender(null, "topic", 1, new ProducerConfig());
+            action.Should().Throw<ArgumentNullException>();
+        }
+
+        [Fact(DisplayName = "KafkaSender constructor 4 throws on null topic")]
+        public void KafkaSenderConstructor4SadPath2()
+        {
+            Action action = () => new KafkaSender("name", null, 1, new ProducerConfig());
+            action.Should().Throw<ArgumentNullException>();
+        }
+        
+        [Fact(DisplayName = "KafkaSender constructor 4 throws on invalid schema ID")]
+        public void KafkaSenderConstructor4SadPath3()
+        {
+            Action action = () => new KafkaSender("name", "topic", 0, new ProducerConfig());
+            action.Should().Throw<ArgumentOutOfRangeException>();
+        }
+
+        [Fact(DisplayName = "KafkaSender constructor 4 throws on null producer config")]
+        public void KafkaSenderConstructor4SadPath4()
+        {
+            Action action = () => new KafkaSender("name", "topic", 1, null);
             action.Should().Throw<ArgumentNullException>();
         }
 

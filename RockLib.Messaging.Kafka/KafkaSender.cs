@@ -108,6 +108,25 @@ namespace RockLib.Messaging.Kafka
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="KafkaSender"/> class.
+        /// </summary>
+        /// <param name="name">The name of the sender.</param>
+        /// <param name="topic">The topic to produce messages to.</param>
+        /// <param name="schemaId">
+        /// The schema ID to have the broker validate messages against. The sender will prepend a leading empty byte
+        /// and the schema ID to the payload according to the Confluent 
+        /// <a href="https://docs.confluent.io/platform/current/schema-registry/serdes-develop/index.html#wire-format">wire format</a>.
+        /// </param>
+        /// <param name="producerConfig">The configuration used in creation of the Kafka producer.</param>
+        public KafkaSender(string name, string topic, int schemaId, ProducerConfig producerConfig)
+            : this(name, topic, producerConfig)
+        {
+            if (schemaId <= 0)
+                throw new ArgumentOutOfRangeException(nameof(schemaId), "Should be greater than 0");
+            SchemaId = schemaId;
+        }
+
+        /// <summary>
         /// Gets the name of this instance of <see cref="KafkaSender"/>.
         /// </summary>
         public string Name { get; }
