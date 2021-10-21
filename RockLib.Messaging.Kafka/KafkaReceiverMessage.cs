@@ -1,4 +1,5 @@
-﻿using Confluent.Kafka;
+﻿using System;
+using Confluent.Kafka;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -13,14 +14,18 @@ namespace RockLib.Messaging.Kafka
     /// </summary>
     public class KafkaReceiverMessage : ReceiverMessage
     {
+        private const int HeaderSize = sizeof(byte) + sizeof(int);
+        
         private readonly bool _enableAutoOffsetStore;
+        private readonly bool _containsSchemaId;
 
-        internal KafkaReceiverMessage(IConsumer<string, byte[]> consumer, ConsumeResult<string, byte[]> result, bool enableAutoOffsetStore)
-            : base(() => result.Message?.Value ?? new byte[0])
+        internal KafkaReceiverMessage(IConsumer<string, byte[]> consumer, ConsumeResult<string, byte[]> result, bool enableAutoOffsetStore, bool containsSchemaId)
+            : base(() => GetRawPayload(result.Message?.Value ?? new byte[0], containsSchemaId))
         {
             Consumer = consumer;
             Result = result;
             _enableAutoOffsetStore = enableAutoOffsetStore;
+            _containsSchemaId = containsSchemaId;
         }
 
         /// <summary>
@@ -42,6 +47,22 @@ namespace RockLib.Messaging.Kafka
             if (Result.Message?.Headers != null)
                 foreach (var header in Result.Message.Headers)
                     headers[header.Key] = Encoding.UTF8.GetString(header.GetValueBytes());
+        }
+
+        private static byte[] GetRawPayload(byte[] payload, bool containsSchemaId)
+        {
+            if (containsSchemaId)
+            {
+#if NETCOREAPP5_0_OR_GREATER
+                return payload[HeaderSize..];
+#else
+                var subset = new byte[payload.Length - HeaderSize];
+                Array.Copy(payload, HeaderSize, subset, 0, subset.Length);
+                return subset;
+#endif
+            }
+
+            return payload;
         }
 
         /// <inheritdoc />
