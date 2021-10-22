@@ -1,6 +1,9 @@
 using FluentAssertions;
 using Xunit;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using Confluent.Kafka;
 using Moq;
 using RockLib.Dynamic;
@@ -163,6 +166,53 @@ namespace RockLib.Messaging.Kafka.Tests
             consumerMock.Verify(m => m.Consume(It.IsAny<CancellationToken>()));
 
             receivedMessage.Should().Be("This is the expected message!");
+        }
+        
+        [Fact(DisplayName = "KafkaReceiver receives message with schema ID from consumer")]
+        public void KafkaReceiverSchemaIdHappyPath()
+        {
+            const int schemaId = 100;
+            const string msg = "This is the expected message!";
+            byte[] BuildBuffer()
+            {
+                var buffer = new byte[] { 0 };
+                return buffer.Concat(BitConverter.GetBytes(IPAddress.HostToNetworkOrder(schemaId)))
+                    .Concat(Encoding.UTF8.GetBytes(msg))
+                    .ToArray();
+            }
+
+            var message = new Message<string, byte[]>() { Value = BuildBuffer() };
+            var result = new ConsumeResult<string, byte[]>() { Message = message };
+
+            var consumerMock = new Mock<IConsumer<string, byte[]>>();
+            consumerMock.Setup(c => c.Subscribe(It.IsAny<string>()));
+            consumerMock.Setup(c => c.Consume(It.IsAny<CancellationToken>())).Returns(result);
+
+            var waitHandle = new AutoResetEvent(false);
+
+            string receivedMessage = null;
+            var parsedSchemaId = -1;
+
+            using (var receiver = new KafkaReceiver("NAME", "TOPIC", "GROUPID", "SERVER", schemaValidation: true))
+            {
+                var unlockedReceiver = receiver.Unlock();
+                unlockedReceiver._consumer = new Lazy<IConsumer<string, byte[]>>(() => consumerMock.Object);
+
+                receiver.Start(m =>
+                {
+                    receivedMessage = m.StringPayload;
+                    parsedSchemaId = int.Parse(m.Headers[Constants.KafkaSchemaIdHeader].ToString());
+                    waitHandle.Set();
+                    return Task.CompletedTask;
+                });
+
+                waitHandle.WaitOne();
+            }
+
+            consumerMock.Verify(m => m.Consume(It.IsAny<CancellationToken>()));
+
+            receivedMessage.Should().Be(msg);
+            parsedSchemaId.Should().Be(schemaId);
         }
     }
 }
