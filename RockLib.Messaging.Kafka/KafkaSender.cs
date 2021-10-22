@@ -15,7 +15,6 @@ namespace RockLib.Messaging.Kafka
     /// </summary>
     public class KafkaSender : ISender
     {
-        private const byte SchemaIdLeadingByte = 0;
         private static readonly char[] _quoteChar = { '"' };
 
         private readonly Lazy<IProducer<string, byte[]>> _producer;

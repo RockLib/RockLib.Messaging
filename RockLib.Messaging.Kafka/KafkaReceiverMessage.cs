@@ -1,6 +1,8 @@
 ﻿using System;
 using Confluent.Kafka;
 using System.Collections.Generic;
+using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,6 +46,9 @@ namespace RockLib.Messaging.Kafka
             if (Result.Message?.Key is string key)
                 headers[KafkaKeyHeader] = key;
 
+            if (TryGetSchemaId(Result.Message?.Value, _containsSchemaId, out var schemaId))
+                headers[KafkaSchemaIdHeader] = schemaId;
+
             if (Result.Message?.Headers != null)
                 foreach (var header in Result.Message.Headers)
                     headers[header.Key] = Encoding.UTF8.GetString(header.GetValueBytes());
@@ -51,18 +56,33 @@ namespace RockLib.Messaging.Kafka
 
         private static byte[] GetRawPayload(byte[] payload, bool containsSchemaId)
         {
-            if (containsSchemaId)
-            {
-#if NETCOREAPP5_0_OR_GREATER
-                return payload[HeaderSize..];
+            if (!containsSchemaId) return payload;
+
+#if NET5_0_OR_GREATER
+            return payload[HeaderSize..];
 #else
-                var subset = new byte[payload.Length - HeaderSize];
-                Array.Copy(payload, HeaderSize, subset, 0, subset.Length);
-                return subset;
+            var body = new byte[payload.Length - HeaderSize];
+            Array.Copy(payload, HeaderSize, body, 0, body.Length);
+            return body;
 #endif
+        }
+
+        private static bool TryGetSchemaId(byte[] payload, bool containsSchemaId, out int schemaId)
+        {
+            if (!containsSchemaId || payload[0] != SchemaIdLeadingByte)
+            {
+                schemaId = -1;
+                return false;
             }
 
-            return payload;
+            using (var ms = new MemoryStream(payload))
+            using (var reader = new BinaryReader(ms))
+            {
+                reader.ReadByte(); //move past leading magic byte
+                schemaId = IPAddress.NetworkToHostOrder(reader.ReadInt32());
+            }
+            
+            return true;
         }
 
         /// <inheritdoc />

@@ -17,6 +17,7 @@ namespace RockLib.Messaging.Kafka
         private readonly BlockingCollection<Task> _trackingCollection;
         private readonly Lazy<Thread> _trackingThread;
 
+        private bool _schemaValidation;
         private bool _stopped;
         private bool _disposed;
         private bool? _connected;
@@ -49,9 +50,14 @@ namespace RockLib.Messaging.Kafka
         /// <param name="synchronousProcessing">
         /// Whether the kafka receiver should process messages synchronously.
         /// </param>
+        /// <param name="schemaValidation">Whether the Kafka receiver expects schema information to be present.
+        /// When true the first 5 bytes are expected to contain the schema ID according
+        /// to the Confluent
+        /// <a href="https://docs.confluent.io/platform/current/schema-registry/serdes-develop/index.html#wire-format">wire format</a>
+        /// </param>
         public KafkaReceiver(string name, string topic, string groupId, string bootstrapServers,
             bool enableAutoOffsetStore = false, AutoOffsetReset autoOffsetReset = Confluent.Kafka.AutoOffsetReset.Latest,
-            bool synchronousProcessing = false)
+            bool synchronousProcessing = false, bool schemaValidation = false)
             : base(name)
         {
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
@@ -76,6 +82,8 @@ namespace RockLib.Messaging.Kafka
                 _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
                 _pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
             }
+
+            _schemaValidation = schemaValidation;
         }
 
         /// <summary>
@@ -91,7 +99,13 @@ namespace RockLib.Messaging.Kafka
         /// <param name="synchronousProcessing">
         /// Whether the kafka receiver should process messages synchronously.
         /// </param>
-        public KafkaReceiver(string name, string topic, ConsumerConfig consumerConfig, bool synchronousProcessing = false)
+        /// <param name="schemaValidation">Whether the Kafka receiver expects schema information to be present.
+        /// When true the first 5 bytes are expected to contain the schema ID according
+        /// to the Confluent
+        /// <a href="https://docs.confluent.io/platform/current/schema-registry/serdes-develop/index.html#wire-format">wire format</a>
+        /// </param>
+        public KafkaReceiver(string name, string topic, ConsumerConfig consumerConfig, bool synchronousProcessing = false, 
+            bool schemaValidation = false)
             : base(name)
         {
             if (consumerConfig is null)
@@ -121,6 +135,8 @@ namespace RockLib.Messaging.Kafka
                 _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
                 _trackingCollection = new BlockingCollection<Task>();
             }
+
+            _schemaValidation = schemaValidation;
         }
 
         /// <summary>
@@ -205,7 +221,7 @@ namespace RockLib.Messaging.Kafka
                 try
                 {
                     var result = _consumer.Value.Consume(_disposeSource.Token);
-                    var message = new KafkaReceiverMessage(_consumer.Value, result, EnableAutoOffsetStore ?? false);
+                    var message = new KafkaReceiverMessage(_consumer.Value, result, EnableAutoOffsetStore ?? false, _schemaValidation);
 
                     if (_connected != true)
                     {
@@ -250,7 +266,7 @@ namespace RockLib.Messaging.Kafka
                 try
                 {
                     var result = _consumer.Value.Consume(_disposeSource.Token);
-                    var message = new KafkaReceiverMessage(_consumer.Value, result, EnableAutoOffsetStore ?? false);
+                    var message = new KafkaReceiverMessage(_consumer.Value, result, EnableAutoOffsetStore ?? false, _schemaValidation);
 
                     if (_connected != true)
                     {
