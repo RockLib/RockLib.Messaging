@@ -141,6 +141,10 @@ The first has the following parameters:
   - Whether to automatically store offset of last message provided to application.
 - autoOffsetReset
   - Action to take when there is no initial offset in offset store or the desired offset is out of range: 'smallest','earliest' - automatically reset the offset to the smallest offset, 'largest','latest' - automatically reset the offset to the largest offset, 'error' - trigger an error which is retrieved by consuming messages and checking 'message->err'.
+- synchronousProcessing
+  - Whether the kafka receiver should process messages synchronously.
+- schemaValidation
+  - Should the receiver expect schema information in the message payload
 
 And the second has the following parameters:
 
@@ -150,6 +154,10 @@ And the second has the following parameters:
   - The topic to subscribe to. A regex can be specified to subscribe to the set of all matching topics (which is updated as topics are added / removed from the cluster). A regex must be front anchored to be recognized as a regex. e.g. `^myregex`
 - consumerConfig
   - The configuration used in creation of the Kafka consumer.
+- synchronousProcessing
+  - Whether the kafka receiver should process messages synchronously.
+- schemaValidation
+  - Should the receiver expect schema information in the message payload
 
 ---
 
@@ -197,7 +205,8 @@ MessagingScenarioFactory can be configured with an `KafkaReceiver` named "comman
                 "Name": "commands",
                 "Topic": "test",
                 "GroupId": "test-consumer-group",
-                "BootstrapServers": "localhost:9092"
+                "BootstrapServers": "localhost:9092",
+                "SchemaValidation": true
             }
         }
     }
@@ -215,6 +224,7 @@ IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
 receiver.Start(async message =>
 {
     Console.WriteLine(message.StringPayload);
+    Console.WriteLine(message.Headers[Constants.KafkaSchemaIdHeader]);
 
     // Always handle the message.
     await message.AcknowledgeAsync();
