@@ -143,7 +143,7 @@ The first has the following parameters:
   - Action to take when there is no initial offset in offset store or the desired offset is out of range: 'smallest','earliest' - automatically reset the offset to the smallest offset, 'largest','latest' - automatically reset the offset to the largest offset, 'error' - trigger an error which is retrieved by consuming messages and checking 'message->err'.
 - synchronousProcessing
   - Whether the kafka receiver should process messages synchronously.
-- schemaValidation
+- schemaIdRequired
   - Should the receiver expect schema information in the message payload
 
 And the second has the following parameters:
@@ -156,7 +156,7 @@ And the second has the following parameters:
   - The configuration used in creation of the Kafka consumer.
 - synchronousProcessing
   - Whether the kafka receiver should process messages synchronously.
-- schemaValidation
+- schemaIdRequired
   - Should the receiver expect schema information in the message payload
 
 ---
@@ -206,7 +206,7 @@ MessagingScenarioFactory can be configured with an `KafkaReceiver` named "comman
                 "Topic": "test",
                 "GroupId": "test-consumer-group",
                 "BootstrapServers": "localhost:9092",
-                "SchemaValidation": true
+                "SchemaIdRequired": true
             }
         }
     }

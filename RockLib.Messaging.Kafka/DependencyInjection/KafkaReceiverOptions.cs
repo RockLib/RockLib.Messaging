@@ -32,7 +32,7 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         /// <summary>
         /// Gets or sets whether the kafka receiver expects schema information in the payload 
         /// </summary>
-        public bool SchemaValidation { get; set; }
+        public bool SchemaIdRequired { get; set; }
     }
 }
 #endif

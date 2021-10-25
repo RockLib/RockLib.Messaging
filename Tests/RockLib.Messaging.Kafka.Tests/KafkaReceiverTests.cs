@@ -64,6 +64,7 @@ namespace RockLib.Messaging.Kafka.Tests
             var groupId = "groupId";
             var servers = "bootstrapServers";
             var enableOffsetRestore = true;
+            var schemaIdRequired = true;
             var autoOffsetReset = AutoOffsetReset.Error;
             var consumer = new ConsumerConfig()
             {
@@ -73,15 +74,19 @@ namespace RockLib.Messaging.Kafka.Tests
                 AutoOffsetReset = autoOffsetReset
             };
 
-            var receiver = new KafkaReceiver(name, topic, consumer);
+            using (var receiver = new KafkaReceiver(name, topic, consumer, schemaIdRequired: schemaIdRequired))
+            {
+                receiver.Name.Should().Be(name);
+                receiver.Topic.Should().Be(topic);
+                receiver.GroupId.Should().Be(groupId);
+                receiver.BootstrapServers.Should().Be(servers);
+                receiver.EnableAutoOffsetStore.Should().Be(enableOffsetRestore);
+                receiver.AutoOffsetReset.Should().Be(autoOffsetReset);
+                receiver.Consumer.Should().NotBeNull();
 
-            receiver.Name.Should().Be(name);
-            receiver.Topic.Should().Be(topic);
-            receiver.GroupId.Should().Be(groupId);
-            receiver.BootstrapServers.Should().Be(servers);
-            receiver.EnableAutoOffsetStore.Should().Be(enableOffsetRestore);
-            receiver.AutoOffsetReset.Should().Be(autoOffsetReset);
-            receiver.Consumer.Should().NotBeNull();
+                var unlockedReceiver = receiver.Unlock();
+                Assert.Equal(schemaIdRequired, unlockedReceiver._schemaIdRequired);
+            }
         }
 
         [Fact(DisplayName = "KafkaReceiver constructor 2 throws on null topic")]
@@ -193,7 +198,7 @@ namespace RockLib.Messaging.Kafka.Tests
             string receivedMessage = null;
             var parsedSchemaId = -1;
 
-            using (var receiver = new KafkaReceiver("NAME", "TOPIC", "GROUPID", "SERVER", schemaValidation: true))
+            using (var receiver = new KafkaReceiver("NAME", "TOPIC", "GROUPID", "SERVER", schemaIdRequired: true))
             {
                 var unlockedReceiver = receiver.Unlock();
                 unlockedReceiver._consumer = new Lazy<IConsumer<string, byte[]>>(() => consumerMock.Object);
