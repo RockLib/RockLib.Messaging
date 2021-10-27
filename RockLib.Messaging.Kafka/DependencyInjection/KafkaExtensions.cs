@@ -55,7 +55,7 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
             return services.AddReceiver(name, CreateKafkaReceiver, configureOptions, reloadOnChange);
 
             IReceiver CreateKafkaReceiver(KafkaReceiverOptions options, IServiceProvider serviceProvider) =>
-                new KafkaReceiver(name, options.Topic, options, options.SynchronousProcessing);
+                new KafkaReceiver(name, options.Topic, options, options.SynchronousProcessing, options.SchemaIdRequired);
         }
     }
 }

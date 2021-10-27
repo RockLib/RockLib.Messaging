@@ -17,5 +17,17 @@ namespace RockLib.Messaging.Kafka
         /// header with this name.</para>
         /// </summary>
         public const string KafkaKeyHeader = "Kafka.Key";
+
+        /// <summary>
+        /// The name of the header containing the schema ID. 
+        /// </summary>
+        public const string KafkaSchemaIdHeader = "Kafka.SchemaId";
+
+        /// <summary>
+        /// Byte value to indicate the raw payload contains a schema ID. When the first byte of the payload is the
+        /// <see cref="SchemaIdLeadingByte"/> the subsequent 4 bytes compose the schema ID value according to the Confluent 
+        /// <a href="https://docs.confluent.io/platform/current/schema-registry/serdes-develop/index.html#wire-format">wire format</a>
+        /// </summary>
+        internal const byte SchemaIdLeadingByte = 0;
     }
 }

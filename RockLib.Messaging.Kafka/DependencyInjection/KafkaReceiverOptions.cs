@@ -28,6 +28,11 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         /// synchronously.
         /// </summary>
         public bool SynchronousProcessing { get; set; }
+        
+        /// <summary>
+        /// Gets or sets whether the kafka receiver expects schema information in the payload 
+        /// </summary>
+        public bool SchemaIdRequired { get; set; }
     }
 }
 #endif
