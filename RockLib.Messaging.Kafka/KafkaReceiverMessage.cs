@@ -1,11 +1,12 @@
 ﻿using System;
-using Confluent.Kafka;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Confluent.Kafka;
+using RockLib.Messaging.Kafka.Exceptions;
 using static RockLib.Messaging.Kafka.Constants;
 
 namespace RockLib.Messaging.Kafka
@@ -57,7 +58,9 @@ namespace RockLib.Messaging.Kafka
         private static byte[] GetRawPayload(byte[] payload, bool containsSchemaId)
         {
             if (!containsSchemaId) return payload;
-
+            
+            CheckPayloadLength(payload);
+            
 #if NET5_0_OR_GREATER
             return payload[HeaderSize..];
 #else
@@ -67,12 +70,27 @@ namespace RockLib.Messaging.Kafka
 #endif
         }
 
+        private static void CheckPayloadLength(byte[] payload)
+        {
+            if (payload.Length <= HeaderSize)
+            {
+                throw new InvalidMessageException($"Expected payload greater than {HeaderSize} bytes but payload is {payload.Length} bytes");
+            }
+        }
+        
         private static bool TryGetSchemaId(byte[] payload, bool containsSchemaId, out int schemaId)
         {
-            if (!containsSchemaId || payload[0] != SchemaIdLeadingByte)
+            if (!containsSchemaId)
             {
                 schemaId = -1;
                 return false;
+            }
+
+            CheckPayloadLength(payload);
+
+            if (payload[0] != SchemaIdLeadingByte)
+            {
+                throw new InvalidMessageException($"Expected schema registry data frame. Magic byte was {payload[0]} instead of {SchemaIdLeadingByte}");
             }
 
             using (var ms = new MemoryStream(payload))

@@ -10,6 +10,7 @@ using RockLib.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
+using RockLib.Messaging.Kafka.Exceptions;
 
 namespace RockLib.Messaging.Kafka.Tests
 {
@@ -218,6 +219,75 @@ namespace RockLib.Messaging.Kafka.Tests
 
             receivedMessage.Should().Be(msg);
             parsedSchemaId.Should().Be(schemaId);
+        }
+        
+        [Fact(DisplayName = "KafkaReceiver receives short message from consumer")]
+        public void KafkaReceiverSchemaIdExceptionForShortMessage()
+        {
+            var message = new Message<string, byte[]>() { Value = new byte[4]{ 1, 2, 3, 4 } };
+            var result = new ConsumeResult<string, byte[]>() { Message = message };
+
+            var consumerMock = new Mock<IConsumer<string, byte[]>>();
+            consumerMock.Setup(c => c.Subscribe(It.IsAny<string>()));
+            consumerMock.Setup(c => c.Consume(It.IsAny<CancellationToken>())).Returns(result);
+
+            var waitHandle = new AutoResetEvent(false);
+
+            using (var receiver = new KafkaReceiver("NAME", "TOPIC", "GROUPID", "SERVER", schemaIdRequired: true))
+            {
+                var unlockedReceiver = receiver.Unlock();
+                unlockedReceiver._consumer = new Lazy<IConsumer<string, byte[]>>(() => consumerMock.Object);
+
+                receiver.Start(m =>
+                {
+                    var ex = Assert.Throws<InvalidMessageException>(() => m.Headers[Constants.KafkaKeyHeader].ToString());
+                    Assert.StartsWith("Expected payload greater than", ex.Message);
+                    
+                    ex = Assert.Throws<InvalidMessageException>(() => m.StringPayload);
+                    Assert.StartsWith("Expected payload greater than", ex.Message);
+                    waitHandle.Set();
+                    return Task.CompletedTask;
+                });
+
+                waitHandle.WaitOne();
+            }
+
+            consumerMock.Verify(m => m.Consume(It.IsAny<CancellationToken>()));
+        }
+        
+        [Fact(DisplayName = "KafkaReceiver receives invalid schema data frame")]
+        public void KafkaReceiverSchemaIdExceptionForInvalidSchemaDataFrame()
+        {
+            var message = new Message<string, byte[]>() { Value = new byte[6]{ 1, 1, 2, 3, 4, 5 } };
+            var result = new ConsumeResult<string, byte[]>() { Message = message };
+
+            var consumerMock = new Mock<IConsumer<string, byte[]>>();
+            consumerMock.Setup(c => c.Subscribe(It.IsAny<string>()));
+            consumerMock.Setup(c => c.Consume(It.IsAny<CancellationToken>())).Returns(result);
+
+            var waitHandle = new AutoResetEvent(false);
+
+            using (var receiver = new KafkaReceiver("NAME", "TOPIC", "GROUPID", "SERVER", schemaIdRequired: true))
+            {
+                var unlockedReceiver = receiver.Unlock();
+                unlockedReceiver._consumer = new Lazy<IConsumer<string, byte[]>>(() => consumerMock.Object);
+
+                receiver.Start(m =>
+                {
+                    var ex = Assert.Throws<InvalidMessageException>(() => m.Headers[Constants.KafkaKeyHeader].ToString());
+                    Assert.StartsWith("Expected schema registry data frame", ex.Message);
+                    
+                    ex = Assert.Throws<InvalidMessageException>(() => m.StringPayload);
+                    Assert.StartsWith("Expected schema registry data frame", ex.Message);
+                    
+                    waitHandle.Set();
+                    return Task.CompletedTask;
+                });
+
+                waitHandle.WaitOne();
+            }
+
+            consumerMock.Verify(m => m.Consume(It.IsAny<CancellationToken>()));
         }
     }
 }
