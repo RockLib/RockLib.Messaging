@@ -5,11 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.0.0-rc11 - 2021-10-27
+
+#### Added
+
+- Adds payload schemaId detection to support schema validation.
+
 ## 1.0.0-rc10 - 2021-10-07
 
 #### Added
 
-- Adds constructor to KafkaSender class that accommodates specifying the SchemaId as well as Kafka producer config. 
+- Adds constructor to KafkaSender class that accommodates specifying the SchemaId as well as Kafka producer config.
 
 ## 1.0.0-rc9 - 2021-09-17
 
