@@ -43,6 +43,7 @@ namespace RockLib.Messaging.Kafka
 
             var producerBuilder = new ProducerBuilder<string, byte[]>(config);
             producerBuilder.SetErrorHandler(OnError);
+            producerBuilder.SetStatisticsHandler(OnStatisticsEmitted);
 
             _producer = new Lazy<IProducer<string, byte[]>>(() => producerBuilder.Build());
         }
@@ -65,6 +66,7 @@ namespace RockLib.Messaging.Kafka
 
             var producerBuilder = new ProducerBuilder<string, byte[]>(producerConfig);
             producerBuilder.SetErrorHandler(OnError);
+            producerBuilder.SetStatisticsHandler(OnStatisticsEmitted);
 
             _producer = new Lazy<IProducer<string, byte[]>>(() => producerBuilder.Build());
         }
@@ -102,6 +104,7 @@ namespace RockLib.Messaging.Kafka
 
             var producerBuilder = new ProducerBuilder<string, byte[]>(config);
             producerBuilder.SetErrorHandler(OnError);
+            producerBuilder.SetStatisticsHandler(OnStatisticsEmitted);
 
             _producer = new Lazy<IProducer<string, byte[]>>(() => producerBuilder.Build());
         }
@@ -163,6 +166,12 @@ namespace RockLib.Messaging.Kafka
         /// Occurs when an error happens on a background thread.
         /// </summary>
         public event EventHandler<ErrorEventArgs> Error;
+        
+        /// <summary>
+        /// Occurs when the Kafka producer emits statistics. The statistics is a JSON formatted string as defined here:
+        /// <a href="https://github.com/edenhill/librdkafka/blob/master/STATISTICS.md">https://github.com/edenhill/librdkafka/blob/master/STATISTICS.md</a>
+        /// </summary>
+        public event EventHandler<string> StatisticsEmitted;
 
         /// <summary>
         /// Determine if the message should include the schema ID for validation. When <code>true</code> the sender
@@ -256,6 +265,14 @@ namespace RockLib.Messaging.Kafka
                 binaryWriter.Write(message.BinaryPayload);
                 return memoryStream.ToArray();
             }
+        }
+
+        /// <summary>
+        /// Callback for the Kafka producer. Invokes the <see cref="StatisticsEmitted"/> event.
+        /// </summary>
+        private void OnStatisticsEmitted(IProducer<string, byte[]> producer, string statistics)
+        {
+            StatisticsEmitted?.Invoke(this, statistics);
         }
     }
 }

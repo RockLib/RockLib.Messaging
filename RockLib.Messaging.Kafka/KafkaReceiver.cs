@@ -69,6 +69,7 @@ namespace RockLib.Messaging.Kafka
             var config = GetConsumerConfig(groupId, bootstrapServers, enableAutoOffsetStore, autoOffsetReset);
             var builder = new ConsumerBuilder<string, byte[]>(config);
             builder.SetErrorHandler(OnError);
+            builder.SetStatisticsHandler(OnStatisticsEmitted);
 
             _consumer = new Lazy<IConsumer<string, byte[]>>(() => builder.Build());
 
@@ -122,6 +123,7 @@ namespace RockLib.Messaging.Kafka
 
             var builder = new ConsumerBuilder<string, byte[]>(consumerConfig);
             builder.SetErrorHandler(OnError);
+            builder.SetStatisticsHandler(OnStatisticsEmitted);
 
             _consumer = new Lazy<IConsumer<string, byte[]>>(() => builder.Build());
 
@@ -172,6 +174,12 @@ namespace RockLib.Messaging.Kafka
         /// Gets the <see cref="IConsumer{TKey, TValue}" /> for this instance of <see cref="KafkaReceiver"/>.
         /// </summary>
         public IConsumer<string, byte[]> Consumer => _consumer.Value;
+
+        /// <summary>
+        /// Occurs when the Kafka consumer emits statistics. The statistics is a JSON formatted string as defined here:
+        /// <a href="https://github.com/edenhill/librdkafka/blob/master/STATISTICS.md">https://github.com/edenhill/librdkafka/blob/master/STATISTICS.md</a>
+        /// </summary>
+        public event EventHandler<string> StatisticsEmitted; 
 
         /// <summary>
         /// Starts the background threads and subscribes to the topic.
@@ -308,5 +316,13 @@ namespace RockLib.Messaging.Kafka
                 EnableAutoOffsetStore = enableAutoOffsetStore,
                 AutoOffsetReset = autoOffsetReset
             };
+
+        /// <summary>
+        /// Callback for the Kafka consumer. Invokes the <see cref="StatisticsEmitted"/> event.
+        /// </summary>
+        private void OnStatisticsEmitted(IConsumer<string, byte[]> consumer, string statistics)
+        {
+            StatisticsEmitted?.Invoke(this, statistics);
+        }
     }
 }
