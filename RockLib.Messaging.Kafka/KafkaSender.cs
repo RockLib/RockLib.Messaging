@@ -32,14 +32,19 @@ namespace RockLib.Messaging.Kafka
         /// Delivery error occurs when either the retry count or the message timeout are
         /// exceeded.
         /// </param>
-        public KafkaSender(string name, string topic, string bootstrapServers, int messageTimeoutMs = 10000)
+        /// /// <param name="statisticsIntervalMs">
+        /// The statistics emit interval in milliseconds. Granularity is 1,000ms. An event handler must be attached to the
+        /// <see cref="StatisticsEmitted"/> event to receive the statistics data. Setting to 0 disables statistics. 
+        /// </param>
+        public KafkaSender(string name, string topic, string bootstrapServers, int messageTimeoutMs = 10000, 
+            int statisticsIntervalMs = 0)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
             BootstrapServers = bootstrapServers ?? throw new ArgumentNullException(nameof(bootstrapServers));
             MessageTimeoutMs = messageTimeoutMs;
 
-            var config = GetProducerConfig(bootstrapServers, messageTimeoutMs);
+            var config = GetProducerConfig(bootstrapServers, messageTimeoutMs, statisticsIntervalMs);
 
             var producerBuilder = new ProducerBuilder<string, byte[]>(config);
             producerBuilder.SetErrorHandler(OnError);
@@ -89,7 +94,12 @@ namespace RockLib.Messaging.Kafka
         /// Delivery error occurs when either the retry count or the message timeout are
         /// exceeded.
         /// </param>
-        public KafkaSender(string name, string topic, int schemaId, string bootstrapServers, int messageTimeoutMs = 10000)
+        /// <param name="statisticsIntervalMs">
+        /// The statistics emit interval in milliseconds. Granularity is 1,000ms. An event handler must be attached to the
+        /// <see cref="StatisticsEmitted"/> event to receive the statistics data. Setting to 0 disables statistics.
+        /// </param>
+        public KafkaSender(string name, string topic, int schemaId, string bootstrapServers, int messageTimeoutMs = 10000,
+            int statisticsIntervalMs = 0)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
@@ -100,7 +110,7 @@ namespace RockLib.Messaging.Kafka
                 throw new ArgumentOutOfRangeException(nameof(schemaId), "Should be greater than 0");
             SchemaId = schemaId;
 
-            var config = GetProducerConfig(bootstrapServers, messageTimeoutMs);
+            var config = GetProducerConfig(bootstrapServers, messageTimeoutMs, statisticsIntervalMs);
 
             var producerBuilder = new ProducerBuilder<string, byte[]>(config);
             producerBuilder.SetErrorHandler(OnError);
@@ -244,12 +254,14 @@ namespace RockLib.Messaging.Kafka
             return Encoding.UTF8.GetBytes(value);
         }
 
-        internal static ProducerConfig GetProducerConfig(string bootstrapServers, int messageTimeoutMs)
+        internal static ProducerConfig GetProducerConfig(string bootstrapServers, int messageTimeoutMs,
+            int statisticsIntervalMs)
         {
             return new ProducerConfig()
             {
                 BootstrapServers = bootstrapServers,
-                MessageTimeoutMs = messageTimeoutMs
+                MessageTimeoutMs = messageTimeoutMs,
+                StatisticsIntervalMs = statisticsIntervalMs
             };
         }
 

@@ -53,11 +53,15 @@ namespace RockLib.Messaging.Kafka
         /// <param name="schemaIdRequired">Whether the Kafka receiver expects schema information to be present.
         /// When true the first 5 bytes are expected to contain the schema ID according
         /// to the Confluent
-        /// <a href="https://docs.confluent.io/platform/current/schema-registry/serdes-develop/index.html#wire-format">wire format</a>
+        /// <a href="https://docs.confluent.io/platform/current/schema-registry/serdes-develop/index.html#wire-format">wire format</a>.
+        /// </param>
+        /// <param name="statisticsIntervalMs">
+        /// The statistics emit interval in milliseconds. Granularity is 1,000ms. An event handler must be attached to the
+        /// <see cref="StatisticsEmitted"/> event to receive the statistics data. Setting to 0 disables statistics. 
         /// </param>
         public KafkaReceiver(string name, string topic, string groupId, string bootstrapServers,
             bool enableAutoOffsetStore = false, AutoOffsetReset autoOffsetReset = Confluent.Kafka.AutoOffsetReset.Latest,
-            bool synchronousProcessing = false, bool schemaIdRequired = false)
+            bool synchronousProcessing = false, bool schemaIdRequired = false, int statisticsIntervalMs = 0)
             : base(name)
         {
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
@@ -66,7 +70,7 @@ namespace RockLib.Messaging.Kafka
             EnableAutoOffsetStore = enableAutoOffsetStore;
             AutoOffsetReset = autoOffsetReset;
 
-            var config = GetConsumerConfig(groupId, bootstrapServers, enableAutoOffsetStore, autoOffsetReset);
+            var config = GetConsumerConfig(groupId, bootstrapServers, enableAutoOffsetStore, autoOffsetReset, statisticsIntervalMs);
             var builder = new ConsumerBuilder<string, byte[]>(config);
             builder.SetErrorHandler(OnError);
             builder.SetStatisticsHandler(OnStatisticsEmitted);
@@ -308,13 +312,15 @@ namespace RockLib.Messaging.Kafka
             }
         }
 
-        internal static ConsumerConfig GetConsumerConfig(string groupId, string bootstrapServers, bool enableAutoOffsetStore, AutoOffsetReset autoOffsetReset) =>
+        internal static ConsumerConfig GetConsumerConfig(string groupId, string bootstrapServers,
+            bool enableAutoOffsetStore, AutoOffsetReset autoOffsetReset, int statisticsIntervalMs) =>
             new ConsumerConfig
             {
                 GroupId = groupId,
                 BootstrapServers = bootstrapServers,
                 EnableAutoOffsetStore = enableAutoOffsetStore,
-                AutoOffsetReset = autoOffsetReset
+                AutoOffsetReset = autoOffsetReset,
+                StatisticsIntervalMs = statisticsIntervalMs
             };
 
         /// <summary>
