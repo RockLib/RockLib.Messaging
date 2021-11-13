@@ -16,6 +16,8 @@ The first has the following parameters:
   - List of brokers as a CSV list of broker host or host:port.
 - messageTimeoutMs (optional, defaults to 10000)
   - Local message timeout. This value is only enforced locally and limits the time a produced message waits for successful delivery. A time of 0 is infinite. This is the maximum time librdkafka may use to deliver a message (including retries). Delivery error occurs when either the retry count or the message timeout are exceeded.
+- statisticsIntervalMs (optional, defaults 0)
+  - The statistics emit interval
 
 The second has the following parameters:
 
@@ -38,6 +40,8 @@ The third has the following parameters:
   - Schema ID for broker to validate message schema against
 - messageTimeoutMs (optional, defaults to 10000)
   - Local message timeout. This value is only enforced locally and limits the time a produced message waits for successful delivery. A time of 0 is infinite. This is the maximum time librdkafka may use to deliver a message (including retries). Delivery error occurs when either the retry count or the message timeout are exceeded.
+- statisticsIntervalMs (optional, defaults 0)
+  - The statistics emit interval
 
 The fourth has the following parameters:
 
@@ -145,6 +149,8 @@ The first has the following parameters:
   - Whether the kafka receiver should process messages synchronously.
 - schemaIdRequired
   - Should the receiver expect schema information in the message payload
+- statisticsIntervalMs (optional, defaults 0)
+  - The statistics emit interval
 
 And the second has the following parameters:
 
@@ -235,6 +241,44 @@ Console.ReadLine();
 
 // When finished listening, dispose the receiver.
 receiver.Dispose();
+```
+
+---
+
+## Statistics
+Both the `KafkaReceiver` and `KafkaSender` have a `StatisticsEmitted` event that is invoked when their underlying client emits statistics. 
+This is disabled by default, but can be enabled by setting the `statisticsIntervalMs` parameter during instance construction. The statistics is a JSON formatted string as defined here:
+[https://github.com/edenhill/librdkafka/blob/master/STATISTICS.md](https://github.com/edenhill/librdkafka/blob/master/STATISTICS.md).
+
+```json
+{
+    "RockLib.Messaging": {
+        "Receivers": {
+            "Type": "RockLib.Messaging.Kafka.KafkaReceiver, RockLib.Messaging.Kafka",
+            "Value": {
+                "Name": "commands",
+                "Topic": "test",
+                "GroupId": "test-consumer-group",
+                "BootstrapServers": "localhost:9092",
+                "StatisticsIntervalMs": 60000
+            }
+        }
+    }
+}
+```
+
+```c#
+// MessagingScenarioFactory uses the above JSON configuration to create a KafkaReceiver:
+IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
+
+//StatisticsEmitted event handler
+void OnStatisticsEmitted(object sender, string stats)
+{
+    Console.WriteLine($"Statistics emitted: {stats}");
+}
+
+//convenience extension method for attaching a handler
+receiver.AddStatisticsEmittedHandler(OnStatisticsEmitted);
 ```
 
 ---
