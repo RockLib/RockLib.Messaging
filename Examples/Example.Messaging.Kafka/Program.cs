@@ -3,6 +3,7 @@ using RockLib.Messaging;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using RockLib.Messaging.Kafka;
 
 namespace Example.Messaging.Kafka.DotNetCore20
 {
@@ -14,6 +15,7 @@ namespace Example.Messaging.Kafka.DotNetCore20
             Console.WriteLine("1) Create an ISender and prompt for messages.");
             Console.WriteLine("2) Create an IReceiver and listen for messages.");
             Console.WriteLine("3) Create an ISender and an IReceiver and send one message from one to the other.");
+            Console.WriteLine("4) Same as 3 but with statistics displayed.");
             Console.WriteLine("q) Quit");
             Console.WriteLine("Tip: Start multiple instances of this app and have them send and receive to each other.");
             Console.Write("selection>");
@@ -33,7 +35,11 @@ namespace Example.Messaging.Kafka.DotNetCore20
                         return;
                     case '3':
                         Console.WriteLine(c);
-                        SendAndReceiveOneMessage();
+                        SendAndReceiveOneMessage(false);
+                        return;
+                    case '4':
+                        Console.WriteLine(c);
+                        SendAndReceiveOneMessage(true);
                         return;
                     case 'q':
                         Console.WriteLine(c);
@@ -81,13 +87,19 @@ namespace Example.Messaging.Kafka.DotNetCore20
             }
         }
 
-        private static void SendAndReceiveOneMessage()
+        private static void SendAndReceiveOneMessage(bool displayStatistics)
         {
             // Use a wait handle to pause the main thread while waiting for the message to be received.
             var waitHandle = new AutoResetEvent(false);
 
             var sender = MessagingScenarioFactory.CreateSender("Sender1");
             var receiver = MessagingScenarioFactory.CreateReceiver("Receiver1");
+
+            if (displayStatistics)
+            {
+                sender.AddStatisticsEmittedHandler(StatisticsHandler);
+                receiver.AddStatisticsEmittedHandler(StatisticsHandler);
+            }
 
             receiver.Start(async m =>
             {
@@ -163,6 +175,11 @@ namespace Example.Messaging.Kafka.DotNetCore20
             }
 
             return false;
+        }
+
+        private static void StatisticsHandler(object sender, string stats)
+        {
+            Console.WriteLine($"Statistics emitted: {stats}");
         }
     }
 }
