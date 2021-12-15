@@ -77,6 +77,12 @@ namespace Example.Messaging.RabbitMQ.DotNetCore20
         {
             using (var receiver = MessagingScenarioFactory.CreateReceiver("Receiver1"))
             {
+                receiver.Error += (obj, args) =>
+                {
+                    // Do something when the receiver ecounters an error
+                    throw new Exception($"Error in the receiver: {args.Exception.Message}");
+                };
+
                 receiver.Start(async m =>
                 {
                     foreach (var header in m.Headers)
@@ -99,6 +105,12 @@ namespace Example.Messaging.RabbitMQ.DotNetCore20
 
             var sender = MessagingScenarioFactory.CreateSender("Sender1");
             var receiver = MessagingScenarioFactory.CreateReceiver("Receiver1");
+
+            receiver.Error += (obj, args) =>
+            {
+                // Do something when the receiver ecounters an error
+                throw new Exception($"Error in the receiver: {args.Exception.Message}");
+            };
 
             receiver.Start(async m =>
             {

@@ -31,12 +31,27 @@ namespace Example.Messaging.CloudEvents
 
             _userPipeSender = senderLookup("user-pipe");
             _userPipeReceiver = receiverLookup("user-pipe");
+            _userPipeReceiver.Error += (obj, args) =>
+            {
+                // Do something when the receiver ecounters an error
+                throw new Exception($"Error in the user-pipe receiver: {args.Exception.Message}");
+            };
 
             _workerPipe1Sender = senderLookup("worker-pipe-1");
             _workerPipe1Receiver = receiverLookup("worker-pipe-1");
+            _workerPipe1Receiver.Error += (obj, args) =>
+            {
+                // Do something when the receiver ecounters an error
+                throw new Exception($"Error in the worker-pipe-1 receiver: {args.Exception.Message}");
+            };
 
             _workerPipe2Sender = senderLookup("worker-pipe-2");
             _workerPipe2Receiver = receiverLookup("worker-pipe-2");
+            _workerPipe2Receiver.Error += (obj, args) =>
+            {
+                // Do something when the receiver ecounters an error
+                throw new Exception($"Error in the worker-pipe-2 receiver: {args.Exception.Message}");
+            };
         }
 
         public Task StartAsync(CancellationToken cancellationToken)

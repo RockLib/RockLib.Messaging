@@ -127,3 +127,43 @@ If the message was *not* processed successfully, and the sender *should* redeliv
 ```c#
 await message.RollbackAsync();
 ```
+
+---
+
+## Handling Error/Connected/Disconnected Events
+
+Once your instance of IReceiver has been created, you can create handlers for events that the receiver may publish.  
+  
+---
+
+Connected events can be handled using
+
+```c#
+receiver.Connected += (obj, args) =>
+{
+    // Do something when the receiver connects to the service
+};
+```
+
+---
+
+Error Events can be handled using 
+
+```c#
+receiver.Error += (obj, args) =>
+{
+    // Do something when the receiver ecounters an error
+    throw new Exception($"Error in the receiver: {args.Exception.Message}");
+};
+```
+
+---
+
+Disconnected Events can be handled using
+
+```c#
+receiver.Disconnected += (obj, args) =>
+{
+    // Do something when the receiver disconnects from the service
+};
+```
