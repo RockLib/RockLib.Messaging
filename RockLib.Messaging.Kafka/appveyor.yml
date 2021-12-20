@@ -79,13 +79,13 @@ deploy:
   release: $(appveyor_repo_commit_message)
   description: 'A changelog is available at https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging.Kafka/CHANGELOG.md.'
   auth_token:
-    secure: KXPWPPgQiqWszV5SxCVjuBqrT+ZAwPYG9ArtFURPv4ZCPQYEr+7kiHcUj+rMKapA
+    secure: gglgEqQVi2MuIUl8g8rS6jb5r8sgr0PYa4qXq9XaAGeAJ+oAEFmlNFFw/jgX8hQr
   on:
     appveyor_repo_tag: true
     appveyor_repo_tag_name: $(csproj_build_version)
 - provider: NuGet
   api_key:
-    secure: EohoG6MyG78HAMmPQPdGMN0redJf3PCzJxjHLPx7zRMQztfg++td64Ze6Ccyrj+C
+    secure: A/s5F7VfxuaDqSjD8sti01zN7/9bZ5+9A/IpohDeZgpWY0cESCbw0NVFbYbmUoXc
   on:
     appveyor_repo_tag: true
     appveyor_repo_tag_name: $(csproj_build_version)
