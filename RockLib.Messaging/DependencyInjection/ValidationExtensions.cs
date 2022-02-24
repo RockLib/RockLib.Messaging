@@ -1,5 +1,4 @@
-﻿#if !NET451
-using System;
+﻿using System;
 
 namespace RockLib.Messaging.DependencyInjection
 {
@@ -22,9 +21,14 @@ namespace RockLib.Messaging.DependencyInjection
         public static ISenderBuilder AddValidation(this ISenderBuilder builder, Action<SenderMessage> validateMessage)
         {
             if (builder is null)
+            {
                 throw new ArgumentNullException(nameof(builder));
+            }
+
             if (validateMessage is null)
+            {
                 throw new ArgumentNullException(nameof(validateMessage));
+            }
 
             return builder.AddDecorator((sender, serviceProvider) =>
                 new ValidatingSender(sender.Name, sender, validateMessage));
@@ -44,13 +48,17 @@ namespace RockLib.Messaging.DependencyInjection
         public static ITransactionalSenderBuilder AddValidation(this ITransactionalSenderBuilder builder, Action<SenderMessage> validateMessage)
         {
             if (builder is null)
+            {
                 throw new ArgumentNullException(nameof(builder));
+            }
+
             if (validateMessage is null)
+            {
                 throw new ArgumentNullException(nameof(validateMessage));
+            }
 
             return builder.AddDecorator((transactionalSender, serviceProvider) =>
                 new ValidatingTransactionalSender(transactionalSender.Name, transactionalSender, validateMessage));
         }
     }
 }
-#endif

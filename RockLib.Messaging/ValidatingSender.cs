@@ -10,6 +10,8 @@ namespace RockLib.Messaging
     /// </summary>
     public class ValidatingSender : ISender
     {
+        private bool disposedValue;
+
         /// <summary>
         /// Initializes a new instances of the <see cref="ValidatingSender"/> class.
         /// </summary>
@@ -43,11 +45,6 @@ namespace RockLib.Messaging
         public Action<SenderMessage> Validate { get; }
 
         /// <summary>
-        /// Disposes the <see cref="ISender"/> returned by the <see cref="Sender"/> property.
-        /// </summary>
-        public void Dispose() => Sender.Dispose();
-
-        /// <summary>
         /// Validates, then asynchronously sends the specified message.
         /// </summary>
         /// <param name="message">The message to send.</param>
@@ -56,6 +53,32 @@ namespace RockLib.Messaging
         {
             Validate(message);
             return Sender.SendAsync(message, cancellationToken);
+        }
+
+        /// <summary>
+        /// Disposes the object.
+        /// </summary>
+        /// <param name="disposing">Set to <c>true</c> when called from <see cref="Dispose()"/></param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    Sender.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        /// <summary>
+        /// Disposes the object.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

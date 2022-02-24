@@ -17,7 +17,9 @@ namespace RockLib.Messaging
         /// <summary>
         /// Gets the payload of the message as a byte array.
         /// </summary>
+#pragma warning disable CA1819 // Properties should not return arrays
         byte[] BinaryPayload { get; }
+#pragma warning restore CA1819 // Properties should not return arrays
 
         /// <summary>
         /// Gets the headers of the message.

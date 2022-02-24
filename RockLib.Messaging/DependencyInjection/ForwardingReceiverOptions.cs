@@ -1,5 +1,4 @@
-﻿#if !NET451
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +15,7 @@ namespace RockLib.Messaging.DependencyInjection
         /// parameter of the <see cref="GetAcknowledgeForwarder"/> method - that is used as the
         /// forwarder for messages that are acknowledged.
         /// </summary>
-        public string AcknowledgeForwarderName { get; set; }
+        public string? AcknowledgeForwarderName { get; set; }
 
         /// <summary>
         /// Gets or sets the outcome for received messages that have been forwarded to to the
@@ -29,7 +28,7 @@ namespace RockLib.Messaging.DependencyInjection
         /// parameter of the <see cref="GetRollbackForwarder"/> method - that is used as the
         /// forwarder for messages that are rolled back.
         /// </summary>
-        public string RollbackForwarderName { get; set; }
+        public string? RollbackForwarderName { get; set; }
 
         /// <summary>
         /// Gets or sets the outcome for received messages that have been forwarded to to the
@@ -42,7 +41,7 @@ namespace RockLib.Messaging.DependencyInjection
         /// parameter of the <see cref="GetRejectForwarder"/> method - that is used as the
         /// forwarder for messages that are rejected.
         /// </summary>
-        public string RejectForwarderName { get; set; }
+        public string? RejectForwarderName { get; set; }
 
         /// <summary>
         /// Gets or sets the outcome for received messages that have been forwarded to to the
@@ -57,8 +56,8 @@ namespace RockLib.Messaging.DependencyInjection
         /// The service provider that has a registered <see cref="ISender"/> with a name matching
         /// <see cref="AcknowledgeForwarderName"/>.
         /// </param>
-        /// <returns>The acknowledge forwarder.</returns>
-        public ISender GetAcknowledgeForwarder(IServiceProvider serviceProvider) => GetForwarder(serviceProvider, AcknowledgeForwarderName);
+        /// <returns>The acknowledge forwarder, or <c>null</c> if one isn't found.</returns>
+        public ISender? GetAcknowledgeForwarder(IServiceProvider serviceProvider) => GetForwarder(serviceProvider, AcknowledgeForwarderName);
 
         /// <summary>
         /// Gets the <see cref="ISender"/> to be used as the <see cref="ForwardingReceiver.RollbackForwarder"/>.
@@ -67,8 +66,8 @@ namespace RockLib.Messaging.DependencyInjection
         /// The service provider that has a registered <see cref="ISender"/> with a name matching
         /// <see cref="RollbackForwarderName"/>.
         /// </param>
-        /// <returns>The rollback forwarder.</returns>
-        public ISender GetRollbackForwarder(IServiceProvider serviceProvider) => GetForwarder(serviceProvider, RollbackForwarderName);
+        /// <returns>The rollback forwarder, or <c>null</c> if one isn't found.</returns>
+        public ISender? GetRollbackForwarder(IServiceProvider serviceProvider) => GetForwarder(serviceProvider, RollbackForwarderName);
 
         /// <summary>
         /// Gets the <see cref="ISender"/> to be used as the <see cref="ForwardingReceiver.RejectForwarder"/>.
@@ -77,15 +76,14 @@ namespace RockLib.Messaging.DependencyInjection
         /// The service provider that has a registered <see cref="ISender"/> with a name matching
         /// <see cref="RejectForwarderName"/>.
         /// </param>
-        /// <returns>The reject forwarder.</returns>
-        public ISender GetRejectForwarder(IServiceProvider serviceProvider) => GetForwarder(serviceProvider, RejectForwarderName);
+        /// <returns>The reject forwarder, or <c>null</c> if one isn't found.</returns>
+        public ISender? GetRejectForwarder(IServiceProvider serviceProvider) => GetForwarder(serviceProvider, RejectForwarderName);
 
-        private static ISender GetForwarder(IServiceProvider serviceProvider, string name) =>
-            name == null
+        private static ISender? GetForwarder(IServiceProvider serviceProvider, string? name) =>
+            name is null
                 ? null
                 : serviceProvider.GetService<IEnumerable<ISender>>()?.FirstOrDefault(s => s.Name == name)
                     ?? serviceProvider.GetService<IEnumerable<ITransactionalSender>>()?.FirstOrDefault(s => s.Name == name)
                     ?? throw new InvalidOperationException($"No senders found matching name '{name}'.");
     }
 }
-#endif

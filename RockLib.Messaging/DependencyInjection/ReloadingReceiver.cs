@@ -1,5 +1,4 @@
-﻿#if !NET451
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using System;
 
 namespace RockLib.Messaging.DependencyInjection
@@ -8,7 +7,7 @@ namespace RockLib.Messaging.DependencyInjection
         where TReceiverOptions : class, new()
     {
         public ReloadingReceiver(string name, Func<TReceiverOptions, IReceiver> createReceiver,
-            IOptionsMonitor<TReceiverOptions> optionsMonitor, Action<TReceiverOptions> configureOptions)
+            IOptionsMonitor<TReceiverOptions> optionsMonitor, Action<TReceiverOptions>? configureOptions)
         {
             Name = name;
             CreateReceiver = createReceiver;
@@ -29,17 +28,17 @@ namespace RockLib.Messaging.DependencyInjection
 
         public Func<TReceiverOptions, IReceiver> CreateReceiver { get; }
 
-        public Action<TReceiverOptions> ConfigureOptions { get; }
+        public Action<TReceiverOptions>? ConfigureOptions { get; }
 
         public IReceiver Receiver { get; private set; }
 
         public IDisposable ChangeListener { get; }
 
-        public EventHandler ConnectedHandler { get; private set; }
+        public EventHandler? ConnectedHandler { get; private set; }
 
-        public EventHandler<DisconnectedEventArgs> DisconnectedHandler { get; private set; }
+        public EventHandler<DisconnectedEventArgs>? DisconnectedHandler { get; private set; }
 
-        public EventHandler<ErrorEventArgs> ErrorHandler { get; private set; }
+        public EventHandler<ErrorEventArgs>? ErrorHandler { get; private set; }
 
         public event EventHandler Connected
         {
@@ -101,7 +100,7 @@ namespace RockLib.Messaging.DependencyInjection
                 newReceiver.Connected += ConnectedHandler;
                 newReceiver.Disconnected += DisconnectedHandler;
                 newReceiver.Error += ErrorHandler;
-                if (oldReceiver.MessageHandler != null && newReceiver.MessageHandler == null)
+                if (oldReceiver.MessageHandler is not null && newReceiver.MessageHandler is null)
                     newReceiver.MessageHandler = oldReceiver.MessageHandler;
 
                 Receiver = newReceiver;
@@ -110,4 +109,3 @@ namespace RockLib.Messaging.DependencyInjection
         }
     }
 }
-#endif

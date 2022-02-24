@@ -46,28 +46,49 @@ namespace RockLib.Messaging
         /// be redelivered.
         /// </summary>
         /// <param name="receiverMessage">The message to acknowledge.</param>
-        public static Task AcknowledgeAsync(this IReceiverMessage receiverMessage) =>
-            receiverMessage.AcknowledgeAsync(CancellationToken.None);
+        public static Task AcknowledgeAsync(this IReceiverMessage receiverMessage)
+        {
+            if (receiverMessage is null)
+            {
+                throw new ArgumentNullException(nameof(receiverMessage));
+            }
+            return receiverMessage.AcknowledgeAsync(CancellationToken.None);
+        }
 
         /// <summary>
         /// Indicates that the message was not successfully processed but should be
         /// (or should be allowed to be) redelivered.
         /// </summary>
         /// <param name="receiverMessage">The message to roll back.</param>
-        public static Task RollbackAsync(this IReceiverMessage receiverMessage) =>
-            receiverMessage.RollbackAsync(CancellationToken.None);
+        public static Task RollbackAsync(this IReceiverMessage receiverMessage)
+        {
+            if (receiverMessage is null)
+            {
+                throw new ArgumentNullException(nameof(receiverMessage));
+            }
+
+            return receiverMessage.RollbackAsync(CancellationToken.None);
+        }
 
         /// <summary>
         /// Indicates that the message could not be successfully processed and should
         /// not be redelivered.
         /// </summary>
         /// <param name="receiverMessage">The message to reject.</param>
-        public static Task RejectAsync(this IReceiverMessage receiverMessage) =>
-            receiverMessage.RejectAsync(CancellationToken.None);
+        public static Task RejectAsync(this IReceiverMessage receiverMessage)
+        {
+            if (receiverMessage is null)
+            {
+                throw new ArgumentNullException(nameof(receiverMessage));
+            }
+
+            return receiverMessage.RejectAsync(CancellationToken.None);
+        }
 
         private static void Sync(Func<Task> getTaskOfTResult)
         {
-            SynchronizationContext old = SynchronizationContext.Current;
+            var old = SynchronizationContext.Current;
+
             try
             {
                 SynchronizationContext.SetSynchronizationContext(null);
@@ -84,9 +105,9 @@ namespace RockLib.Messaging
         /// </summary>
         /// <param name="receiverMessage">The source <see cref="IReceiverMessage"/> object.</param>
         /// <returns>The ID of the message.</returns>
-        public static string GetMessageId(this IReceiverMessage receiverMessage) =>
+        public static string? GetMessageId(this IReceiverMessage receiverMessage) =>
             receiverMessage.GetHeaders()
-                .TryGetValue(HeaderNames.MessageId, out string messageId)
+                .TryGetValue(HeaderNames.MessageId, out string? messageId)
                     ? messageId
                     : null;
 
@@ -119,9 +140,9 @@ namespace RockLib.Messaging
         /// </summary>
         /// <param name="receiverMessage">The source <see cref="IReceiverMessage"/> object.</param>
         /// <returns>The originating system of the message.</returns>
-        public static string GetOriginatingSystem(this IReceiverMessage receiverMessage) =>
+        public static string? GetOriginatingSystem(this IReceiverMessage receiverMessage) =>
             receiverMessage.GetHeaders()
-                .TryGetValue(HeaderNames.OriginatingSystem, out string originatingSystem)
+                .TryGetValue(HeaderNames.OriginatingSystem, out string? originatingSystem)
                     ? originatingSystem
                     : null;
 
@@ -143,7 +164,7 @@ namespace RockLib.Messaging
         /// A new <see cref="SenderMessage"/> instance that is equivalent to the specified
         /// <paramref name="receiverMessage"/> parameter.
         /// </returns>
-        public static SenderMessage ToSenderMessage(this IReceiverMessage receiverMessage, Func<object, object> validateHeaderValue = null) =>
+        public static SenderMessage ToSenderMessage(this IReceiverMessage receiverMessage, Func<object, object>? validateHeaderValue = null) =>
             new SenderMessage(receiverMessage, validateHeaderValue);
     }
 }

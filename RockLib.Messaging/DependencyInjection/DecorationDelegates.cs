@@ -1,5 +1,12 @@
-﻿#if !NET451
-using System;
+﻿using System;
+
+// TODO: I wonder if we can get rid of these.
+// For example, SenderDecoration is the same as:
+// Func<ISender, IServiceProvider, ISender>
+// I think if we delete these and update call sites with the
+// appropriate Func and Action values, it'll work just fine.
+// The advantage of the delegates is that they have a little bit more 
+// naming verbosity, but that can be achieved with the parameter names as well.
 
 namespace RockLib.Messaging.DependencyInjection
 {
@@ -36,4 +43,3 @@ namespace RockLib.Messaging.DependencyInjection
     /// <returns>An <see cref="IReceiver"/> decorator.</returns>
     public delegate IReceiver ReceiverDecoration(IReceiver receiver, IServiceProvider serviceProvider);
 }
-#endif

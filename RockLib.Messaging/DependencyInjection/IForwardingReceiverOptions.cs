@@ -1,5 +1,4 @@
-﻿#if !NET451
-using System;
+﻿using System;
 
 namespace RockLib.Messaging.DependencyInjection
 {
@@ -12,7 +11,7 @@ namespace RockLib.Messaging.DependencyInjection
         /// Gets or sets the name of the receiver - as obtained from an <see cref="IServiceProvider"/>
         /// - that is used as the forwarder for messages that are acknowledged.
         /// </summary>
-        string AcknowledgeForwarderName { get; set; }
+        string? AcknowledgeForwarderName { get; set; }
 
         /// <summary>
         /// Gets or sets the outcome for received messages that have been forwarded to to the
@@ -24,7 +23,7 @@ namespace RockLib.Messaging.DependencyInjection
         /// Gets or sets the name of the receiver - as obtained from an <see cref="IServiceProvider"/>
         /// - that is used as the forwarder for messages that are rolled back.
         /// </summary>
-        string RollbackForwarderName { get; set; }
+        string? RollbackForwarderName { get; set; }
 
         /// <summary>
         /// Gets or sets the outcome for received messages that have been forwarded to to the
@@ -36,7 +35,7 @@ namespace RockLib.Messaging.DependencyInjection
         /// Gets or sets the name of the receiver - as obtained from an <see cref="IServiceProvider"/>
         /// - that is used as the forwarder for messages that are rejected.
         /// </summary>
-        string RejectForwarderName { get; set; }
+        string? RejectForwarderName { get; set; }
 
         /// <summary>
         /// Gets or sets the outcome for received messages that have been forwarded to to the
@@ -45,4 +44,3 @@ namespace RockLib.Messaging.DependencyInjection
         ForwardingOutcome RejectOutcome { get; set; }
     }
 }
-#endif

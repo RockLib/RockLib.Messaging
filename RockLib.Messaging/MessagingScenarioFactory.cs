@@ -5,7 +5,8 @@ using RockLib.Configuration;
 using RockLib.Immutable;
 using RockLib.Configuration.ObjectFactory;
 using Microsoft.Extensions.Configuration;
-using Resolver=RockLib.Configuration.ObjectFactory.Resolver;
+using Resolver = RockLib.Configuration.ObjectFactory.Resolver;
+using System.Globalization;
 
 namespace RockLib.Messaging
 {
@@ -15,7 +16,7 @@ namespace RockLib.Messaging
     /// </summary>
     public static class MessagingScenarioFactory
     {
-        private static readonly Semimutable<IConfiguration> _configuration = 
+        private static readonly Semimutable<IConfiguration> _configuration =
             new Semimutable<IConfiguration>(() => Config.Root.GetCompositeSection("RockLib_Messaging", "RockLib.Messaging"));
 
         /// <summary>
@@ -57,8 +58,8 @@ namespace RockLib.Messaging
         /// </param>
         /// <returns>A new instance of the <see cref="ISender"/> interface.</returns>
         public static ISender CreateSender(string name,
-            DefaultTypes defaultTypes = null, ValueConverters valueConverters = null,
-            IResolver resolver = null, bool reloadOnConfigChange = true) =>
+            DefaultTypes? defaultTypes = null, ValueConverters? valueConverters = null,
+            IResolver? resolver = null, bool reloadOnConfigChange = true) =>
             Configuration.CreateSender(name, defaultTypes, valueConverters, resolver, reloadOnConfigChange);
 
         /// <summary>
@@ -89,11 +90,18 @@ namespace RockLib.Messaging
         /// </param>
         /// <returns>A new instance of the <see cref="ISender"/> interface.</returns>
         public static ISender CreateSender(this IConfiguration configuration, string name,
-            DefaultTypes defaultTypes = null, ValueConverters valueConverters = null,
-            IResolver resolver = null, bool reloadOnConfigChange = true)
+            DefaultTypes? defaultTypes = null, ValueConverters? valueConverters = null,
+            IResolver? resolver = null, bool reloadOnConfigChange = true)
         {
-            if (name == null)
+            if (configuration is null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            if (name is null)
+            {
                 throw new ArgumentNullException(nameof(name));
+            }
 
             return configuration.CreateScenario<ISender>("senders", name, defaultTypes, valueConverters, resolver, reloadOnConfigChange);
         }
@@ -123,8 +131,8 @@ namespace RockLib.Messaging
         /// </param>
         /// <returns>A new instance of the <see cref="IReceiver"/> interface.</returns>
         public static IReceiver CreateReceiver(string name,
-            DefaultTypes defaultTypes = null, ValueConverters valueConverters = null,
-            IResolver resolver = null, bool reloadOnConfigChange = true) =>
+            DefaultTypes? defaultTypes = null, ValueConverters? valueConverters = null,
+            IResolver? resolver = null, bool reloadOnConfigChange = true) =>
             Configuration.CreateReceiver(name, defaultTypes, valueConverters, resolver, reloadOnConfigChange);
 
         /// <summary>
@@ -155,47 +163,69 @@ namespace RockLib.Messaging
         /// </param>
         /// <returns>A new instance of the <see cref="IReceiver"/> interface.</returns>
         public static IReceiver CreateReceiver(this IConfiguration configuration, string name,
-            DefaultTypes defaultTypes = null, ValueConverters valueConverters = null,
-            IResolver resolver = null, bool reloadOnConfigChange = true)
+            DefaultTypes? defaultTypes = null, ValueConverters? valueConverters = null,
+            IResolver? resolver = null, bool reloadOnConfigChange = true)
         {
-            if (name == null)
+            if (configuration is null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            if (name is null)
+            {
                 throw new ArgumentNullException(nameof(name));
+            }
 
             return configuration.CreateScenario<IReceiver>("receivers", name, defaultTypes, valueConverters, resolver, reloadOnConfigChange);
         }
 
-        private static T CreateScenario<T>(this IConfiguration configuration, string sectionName, string scenarioName, DefaultTypes defaultTypes, ValueConverters valueConverters, IResolver resolver, bool reloadOnConfigChange)
+        private static T CreateScenario<T>(this IConfiguration configuration,
+            string sectionName, string scenarioName, DefaultTypes? defaultTypes, ValueConverters? valueConverters, IResolver? resolver, bool reloadOnConfigChange)
         {
             var section = configuration.GetSection(sectionName);
 
             if (section.IsEmpty())
+            {
                 throw new KeyNotFoundException($"The '{sectionName}' section is empty.");
+            }
 
             if (section.IsList())
             {
                 foreach (var child in section.GetChildren())
+                {
                     if (scenarioName.Equals(child.GetSectionName(), StringComparison.OrdinalIgnoreCase))
+                    {
                         return reloadOnConfigChange
                             ? child.CreateReloadingProxy<T>(defaultTypes, valueConverters, resolver)
                             : child.Create<T>(defaultTypes, valueConverters, resolver);
+                    }
+                }
             }
             else if (scenarioName.Equals(section.GetSectionName(), StringComparison.OrdinalIgnoreCase))
+            {
                 return reloadOnConfigChange
                     ? section.CreateReloadingProxy<T>(defaultTypes, valueConverters, resolver)
                     : section.Create<T>(defaultTypes, valueConverters, resolver);
+            }
 
             throw new KeyNotFoundException($"No {sectionName} were found matching the name '{scenarioName}'.");
         }
 
         private static bool IsEmpty(this IConfigurationSection section) =>
-            section.Value == null && !section.GetChildren().Any();
+            section.Value is null && !section.GetChildren().Any();
 
         private static bool IsList(this IConfigurationSection section)
         {
-            int i = 0;
+            var i = 0;
+
             foreach (var child in section.GetChildren())
-                if (child.Key != i++.ToString())
+            {
+                if (child.Key != i++.ToString(CultureInfo.InvariantCulture))
+                {
                     return false;
+                }
+            }
+
             return true;
         }
 
@@ -203,8 +233,10 @@ namespace RockLib.Messaging
         {
             var valueSection = section;
 
-            if (section["type"] != null && !section.GetSection("value").IsEmpty())
+            if (section["type"] is not null && !section.GetSection("value").IsEmpty())
+            {
                 valueSection = section.GetSection("value");
+            }
 
             return valueSection["name"];
         }

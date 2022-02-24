@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RockLib.Messaging.Testing
+namespace RockLib.Messaging.Tests
 {
     /// <summary>
     /// A fake implementation of the <see cref="IReceiverMessage"/> interface that allows
@@ -62,7 +62,7 @@ namespace RockLib.Messaging.Testing
         HeaderDictionary IReceiverMessage.Headers => _headerDictionary;
 
         /// <inheritdoc />
-        public bool Handled => HandledBy != null;
+        public bool Handled => HandledBy is not null;
 
         /// <summary>
         /// Gets the name of the method (Acknowledge, Rollback, or Reject) that

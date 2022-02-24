@@ -1,57 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFrameworks>net5.0;netstandard2.0;net451;net462</TargetFrameworks>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <PackageId>RockLib.Messaging</PackageId>
-    <PackageVersion>2.5.3</PackageVersion>
-    <Authors>RockLib</Authors>
-    <Description>A simple API for sending and receiving messages.</Description>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>A changelog is available at https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging/CHANGELOG.md.</PackageReleaseNotes>
-    <PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
-    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <PackageIcon>icon.png</PackageIcon>
-    <Copyright>Copyright 2017-2021 (c) Rocket Mortgage. All rights reserved.</Copyright>
-    <PackageTags>rocklib messaging</PackageTags>
-    <Version>2.0.0</Version>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <PublishRepositoryUrl>True</PublishRepositoryUrl>
-    <EmbedUntrackedSources>True</EmbedUntrackedSources>
-    <DebugType>Embedded</DebugType>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(PackageId).xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\LICENSE.md" Pack="true" PackagePath="" />
-    <None Include="..\icon.png" Pack="true" PackagePath="" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="RockLib.Compression" Version="1.0.6" />
-    <PackageReference Include="RockLib.Configuration" Version="2.5.3" />
-    <PackageReference Include="RockLib.Configuration.ObjectFactory" Version="1.6.9" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)'=='net5.0'">
-    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0' Or '$(TargetFramework)'=='net462'">
-    <PackageReference Include="Microsoft.Extensions.Options" Version="2.2.0" />
-  </ItemGroup>
-
+	<PropertyGroup>
+		<DebugType>Embedded</DebugType>
+		<Description>A simple API for sending and receiving messages.</Description>
+		<EmbedUntrackedSources>True</EmbedUntrackedSources>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageId>RockLib.Messaging</PackageId>
+		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+		<PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<PackageReleaseNotes>A changelog is available at https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging/CHANGELOG.md.</PackageReleaseNotes>
+		<PackageTags>rocklib messaging</PackageTags>
+		<PackageVersion>2.5.3</PackageVersion>
+		<PublishRepositoryUrl>True</PublishRepositoryUrl>
+		<Version>2.0.0</Version>
+	</PropertyGroup>
+	<PropertyGroup>
+		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(PackageId).xml</DocumentationFile>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Include="..\LICENSE.md" Pack="true" PackagePath="" />
+		<None Include="..\icon.png" Pack="true" PackagePath="" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+		<PackageReference Include="RockLib.Compression" Version="1.0.6" />
+		<PackageReference Include="RockLib.Configuration" Version="2.5.3" />
+		<PackageReference Include="RockLib.Configuration.ObjectFactory" Version="1.6.9" />
+	</ItemGroup>
 </Project>
