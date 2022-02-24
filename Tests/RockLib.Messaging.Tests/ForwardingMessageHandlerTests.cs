@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using RockLib.Messaging.Testing;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -10,15 +9,15 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task OnMessageReceivedCallsInnerHandlerOnMessageReceivedWithForwardingReceiverMessage()
         {
-            var receiver = new FakeReceiver();
-            var forwardingReceiver = new ForwardingReceiver("foo", receiver);
+            using var receiver = new FakeReceiver();
+            using var forwardingReceiver = new ForwardingReceiver("foo", receiver);
             var messageHandler = new FakeMessageHandler();
 
             var handler = new ForwardingMessageHandler(forwardingReceiver, messageHandler);
 
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var message = new FakeReceiverMessage("Hello, world!");
 
-            await handler.OnMessageReceivedAsync(receiver, message);
+            await handler.OnMessageReceivedAsync(receiver, message).ConfigureAwait(false);
 
             messageHandler.ReceivedMessages.Should().ContainSingle();
             messageHandler.ReceivedMessages[0].Receiver.Should().BeSameAs(forwardingReceiver);

@@ -1,5 +1,4 @@
-﻿using RockLib.Messaging.Testing;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Xunit;
 
 namespace RockLib.Messaging.Tests
@@ -9,17 +8,18 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task TheCallbackPassedToStart1IsInvokedWhenAMessageIsReceived()
         {
-            var receiver = new FakeReceiver();
+            using var receiver = new FakeReceiver();
 
             var received = false;
 
             receiver.Start(async m =>
             {
                 received = true;
-                await m.AcknowledgeAsync();
+                await m.AcknowledgeAsync().ConfigureAwait(false);
             });
 
-            await receiver.MessageHandler.OnMessageReceivedAsync(receiver, new FakeReceiverMessage("Hello, world!"));
+            using var message = new FakeReceiverMessage("Hello, world!");
+            await receiver.MessageHandler.OnMessageReceivedAsync(receiver, message).ConfigureAwait(false);
 
             Assert.True(received);
         }
@@ -27,7 +27,7 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task TheCallbackPassedToStart2IsInvokedWhenAMessageIsReceived()
         {
-            var receiver = new FakeReceiver();
+            using var receiver = new FakeReceiver();
 
             var received = false;
 
@@ -39,7 +39,8 @@ namespace RockLib.Messaging.Tests
             });
 #pragma warning restore CS0618 // Type or member is obsolete
 
-            await receiver.MessageHandler.OnMessageReceivedAsync(receiver, new FakeReceiverMessage("Hello, world!"));
+            using var message = new FakeReceiverMessage("Hello, world!");
+            await receiver.MessageHandler.OnMessageReceivedAsync(receiver, message).ConfigureAwait(false);
 
             Assert.True(received);
         }
@@ -47,17 +48,18 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task TheCallbackPassedToStart3IsInvokedWhenAMessageIsReceived()
         {
-            var receiver = new FakeReceiver();
+            using var receiver = new FakeReceiver();
 
             var received = false;
 
             receiver.Start(async (r, m) =>
             {
                 received = true;
-                await m.AcknowledgeAsync();
+                await m.AcknowledgeAsync().ConfigureAwait(false);
             });
 
-            await receiver.MessageHandler.OnMessageReceivedAsync(receiver, new FakeReceiverMessage("Hello, world!"));
+            using var message = new FakeReceiverMessage("Hello, world!");
+            await receiver.MessageHandler.OnMessageReceivedAsync(receiver, message).ConfigureAwait(false);
 
             Assert.True(received);
         }
@@ -65,7 +67,7 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task TheCallbackPassedToStart4IsInvokedWhenAMessageIsReceived()
         {
-            var receiver = new FakeReceiver();
+            using var receiver = new FakeReceiver();
 
             var received = false;
 
@@ -77,7 +79,8 @@ namespace RockLib.Messaging.Tests
             });
 #pragma warning restore CS0618 // Type or member is obsolete
 
-            await receiver.MessageHandler.OnMessageReceivedAsync(receiver, new FakeReceiverMessage("Hello, world!"));
+            using var message = new FakeReceiverMessage("Hello, world!");
+            await receiver.MessageHandler.OnMessageReceivedAsync(receiver, message).ConfigureAwait(false);
 
             Assert.True(received);
         }

@@ -47,14 +47,17 @@ namespace RockLib.Messaging.Tests
             serviceProvider.ExecutionTimeOf(s => s.GetRequiredService<IReceiver>()).Should().BeLessOrEqualTo(250.Milliseconds());
         }
 
-        public class TestSenderDecorator : ISender
+#pragma warning disable CA1034 // Nested types should not be visible
+        public sealed class TestSenderDecorator : ISender
         {
             public TestSenderDecorator(string name, ISender sender) =>
                 (Name, Sender) = (name, sender);
 
             public TestSenderDecorator(string name, string senderName)
-                : this(name, MessagingScenarioFactory.CreateSender(senderName))
-            {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+					 : this(name, MessagingScenarioFactory.CreateSender(senderName))
+#pragma warning restore CA2000 // Dispose objects before losing scope
+			{
             }
 
             public string Name { get; }
@@ -67,14 +70,16 @@ namespace RockLib.Messaging.Tests
                 Sender.SendAsync(message, cancellationToken);
         }
 
-        public class TestReceiverDecorator : IReceiver
+        public sealed class TestReceiverDecorator : IReceiver
         {
             public TestReceiverDecorator(string name, IReceiver receiver) =>
                 (Name, Receiver) = (name, receiver);
 
             public TestReceiverDecorator(string name, string receiverName)
-                : this(name, MessagingScenarioFactory.CreateReceiver(receiverName))
-            {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+					 : this(name, MessagingScenarioFactory.CreateReceiver(receiverName))
+#pragma warning restore CA2000 // Dispose objects before losing scope
+			{
             }
 
             public string Name { get; }
@@ -107,6 +112,7 @@ namespace RockLib.Messaging.Tests
 
             public void Dispose() => Receiver.Dispose();
         }
+#pragma warning restore CA1034 // Nested types should not be visible
 
         #endregion
 
@@ -169,7 +175,7 @@ namespace RockLib.Messaging.Tests
 
             sender.Should().BeOfType<TestSender>();
         }
-        
+
         [Fact(DisplayName = "AddReceiver extension method 2 adds reloading receiver when reloadOnChange parameter is true")]
         public void AddReceiverExtensionMethod2HappyPath1()
         {
@@ -287,7 +293,7 @@ namespace RockLib.Messaging.Tests
             var services = new ServiceCollection();
 
             var mockOptionsMonitor = new Mock<IOptionsMonitor<TestSenderOptions>>();
-            mockOptionsMonitor.Setup(m => m.Get("MyReloadingSender")).Returns((TestSenderOptions)null);
+            mockOptionsMonitor.Setup(m => m.Get("MyReloadingSender")).Returns((TestSenderOptions)null!);
 
             services.AddSingleton(mockOptionsMonitor.Object);
 
@@ -399,7 +405,7 @@ namespace RockLib.Messaging.Tests
             var services = new ServiceCollection();
 
             var mockOptionsMonitor = new Mock<IOptionsMonitor<TestReceiverOptions>>();
-            mockOptionsMonitor.Setup(m => m.Get("MyReloadingReceiver")).Returns((TestReceiverOptions)null);
+            mockOptionsMonitor.Setup(m => m.Get("MyReloadingReceiver")).Returns((TestReceiverOptions)null!);
 
             services.AddSingleton(mockOptionsMonitor.Object);
 
@@ -459,7 +465,7 @@ namespace RockLib.Messaging.Tests
         [Fact(DisplayName = "AddSender extension method 2 throws when services parameter is null")]
         public void AddSenderExtensionMethod2SadPath1()
         {
-            IServiceCollection services = null;
+            IServiceCollection services = null!;
             string senderName = "MySender";
             Func<TestSenderOptions, IServiceProvider, ISender> createSender = (options, serviceProvider) => new TestSender("MyTestSender", options.TestSetting1, options.TestSetting2);
 
@@ -472,7 +478,7 @@ namespace RockLib.Messaging.Tests
         public void AddSenderExtensionMethod2SadPath2()
         {
             IServiceCollection services = new ServiceCollection();
-            string senderName = null;
+            string senderName = null!;
             Func<TestSenderOptions, IServiceProvider, ISender> createSender = (options, serviceProvider) => new TestSender("MyTestSender", options.TestSetting1, options.TestSetting2);
 
             Action act = () => services.AddSender(senderName, createSender);
@@ -485,7 +491,7 @@ namespace RockLib.Messaging.Tests
         {
             IServiceCollection services = new ServiceCollection();
             string senderName = "MySender";
-            Func<TestSenderOptions, IServiceProvider, ISender> createSender = null;
+            Func<TestSenderOptions, IServiceProvider, ISender> createSender = null!;
 
             Action act = () => services.AddSender(senderName, createSender);
 
@@ -495,7 +501,7 @@ namespace RockLib.Messaging.Tests
         [Fact(DisplayName = "AddReceiver extension method 2 throws when services parameter is null")]
         public void AddReceiverExtensionMethod2SadPath1()
         {
-            IServiceCollection services = null;
+            IServiceCollection services = null!;
             string receiverName = "MyReceiver";
             Func<TestReceiverOptions, IServiceProvider, IReceiver> createReceiver = (options, serviceProvider) => new TestReceiver("MyTestReceiver", options.TestSetting1, options.TestSetting2);
 
@@ -508,7 +514,7 @@ namespace RockLib.Messaging.Tests
         public void AddReceiverExtensionMethod2SadPath2()
         {
             IServiceCollection services = new ServiceCollection();
-            string receiverName = null;
+            string receiverName = null!;
             Func<TestReceiverOptions, IServiceProvider, IReceiver> createReceiver = (options, serviceProvider) => new TestReceiver("MyTestReceiver", options.TestSetting1, options.TestSetting2);
 
             Action act = () => services.AddReceiver(receiverName, createReceiver);
@@ -521,7 +527,7 @@ namespace RockLib.Messaging.Tests
         {
             IServiceCollection services = new ServiceCollection();
             string receiverName = "MyReceiver";
-            Func<TestReceiverOptions, IServiceProvider, IReceiver> createReceiver = null;
+            Func<TestReceiverOptions, IServiceProvider, IReceiver> createReceiver = null!;
 
             Action act = () => services.AddReceiver(receiverName, createReceiver);
 

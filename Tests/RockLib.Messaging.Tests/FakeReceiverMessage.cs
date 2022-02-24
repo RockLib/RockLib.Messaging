@@ -12,7 +12,7 @@ namespace RockLib.Messaging.Tests
     /// an application's <see cref="IReceiver"/> message handler implementation to be unit
     /// tested without requiring a mocking framework.
     /// </summary>
-    public class FakeReceiverMessage : IReceiverMessage
+    public sealed class FakeReceiverMessage : IReceiverMessage, IDisposable
     {
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
@@ -23,8 +23,10 @@ namespace RockLib.Messaging.Tests
         /// </summary>
         /// <param name="payload">The payload of the fake message.</param>
         public FakeReceiverMessage(string payload)
-            : this()
         {
+            var headers = new Dictionary<string, object>();
+            Headers = headers;
+            _headerDictionary = new HeaderDictionary(headers);
             StringPayload = payload ?? throw new ArgumentNullException(nameof(payload));
             BinaryPayload = Encoding.UTF8.GetBytes(payload);
         }
@@ -34,25 +36,22 @@ namespace RockLib.Messaging.Tests
         /// </summary>
         /// <param name="payload">The payload of the fake message.</param>
         public FakeReceiverMessage(byte[] payload)
-            : this()
-        {
-            BinaryPayload = payload ?? throw new ArgumentNullException(nameof(payload));
-            StringPayload = Convert.ToBase64String(payload);
-            Headers.Add(HeaderNames.IsBinaryPayload, true);
-        }
-
-        private FakeReceiverMessage()
         {
             var headers = new Dictionary<string, object>();
             Headers = headers;
             _headerDictionary = new HeaderDictionary(headers);
+            BinaryPayload = payload ?? throw new ArgumentNullException(nameof(payload));
+            StringPayload = Convert.ToBase64String(payload);
+            Headers.Add(HeaderNames.IsBinaryPayload, true);
         }
 
         /// <inheritdoc />
         public string StringPayload { get; }
 
         /// <inheritdoc />
+#pragma warning disable CA1819 // Properties should not return arrays
         public byte[] BinaryPayload { get; }
+#pragma warning restore CA1819 // Properties should not return arrays
 
         /// <summary>
         /// Gets the headers of the test message.
@@ -68,7 +67,7 @@ namespace RockLib.Messaging.Tests
         /// Gets the name of the method (Acknowledge, Rollback, or Reject) that
         /// handled the test message.
         /// </summary>
-        public string HandledBy { get; private set; }
+        public string? HandledBy { get; private set; }
 
         /// <inheritdoc />
         public async Task AcknowledgeAsync(CancellationToken cancellationToken)
@@ -118,15 +117,22 @@ namespace RockLib.Messaging.Tests
             }
         }
 
-        private void ThrowIfHandled([CallerMemberName] string callerMemberName = null)
+        private void ThrowIfHandled([CallerMemberName] string? callerMemberName = null)
         {
             if (Handled)
+            {
                 throw new InvalidOperationException($"Cannot {callerMemberName} message: the message has already been handled by {HandledBy}.");
+            }
         }
 
-        private void SetHandled([CallerMemberName] string callerMemberName = null)
+        private void SetHandled([CallerMemberName] string? callerMemberName = null)
         {
             HandledBy = callerMemberName;
+        }
+
+        public void Dispose()
+        {
+            _semaphore.Dispose();
         }
     }
 }

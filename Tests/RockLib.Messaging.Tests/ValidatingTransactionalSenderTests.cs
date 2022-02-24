@@ -13,7 +13,7 @@ namespace RockLib.Messaging.Tests
             var transactionalSender = new Mock<ITransactionalSender>().Object;
             Action<SenderMessage> validate = message => { };
 
-            var validatingTransactionalSender = new ValidatingTransactionalSender("Foo", transactionalSender, validate);
+            using var validatingTransactionalSender = new ValidatingTransactionalSender("Foo", transactionalSender, validate);
 
             validatingTransactionalSender.Name.Should().Be("Foo");
             validatingTransactionalSender.Sender.Should().BeSameAs(transactionalSender);
@@ -27,7 +27,7 @@ namespace RockLib.Messaging.Tests
             ITransactionalSender transactionalSender = new Mock<ITransactionalSender>().Object;
             Action<SenderMessage> validate = message => { };
 
-            Action act = () => new ValidatingTransactionalSender(null, transactionalSender, validate);
+            Func<ValidatingTransactionalSender> act = () => new ValidatingTransactionalSender(null!, transactionalSender, validate);
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*name*");
         }
@@ -35,10 +35,9 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public void ConstructorSadPath2()
         {
-            ITransactionalSender transactionalSender = null;
             Action<SenderMessage> validate = message => { };
 
-            Action act = () => new ValidatingTransactionalSender("Foo", transactionalSender, validate);
+            Func<ValidatingTransactionalSender> act = () => new ValidatingTransactionalSender("Foo", null!, validate);
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*sender*");
         }
@@ -47,9 +46,9 @@ namespace RockLib.Messaging.Tests
         public void ConstructorSadPath3()
         {
             ITransactionalSender transactionalSender = new Mock<ITransactionalSender>().Object;
-            Action<SenderMessage> validate = null;
+            Action<SenderMessage> validate = null!;
 
-            Action act = () => new ValidatingTransactionalSender("Foo", transactionalSender, validate);
+            Func<ValidatingTransactionalSender> act = () => new ValidatingTransactionalSender("Foo", transactionalSender, validate);
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*validate*");
         }
@@ -63,7 +62,7 @@ namespace RockLib.Messaging.Tests
             mockTransactionalSender.Setup(m => m.BeginTransaction()).Returns(senderTransaction);
             Action<SenderMessage> validate = message => { };
 
-            var validatingTransactionalSender = new ValidatingTransactionalSender("Foo", mockTransactionalSender.Object, validate);
+            using var validatingTransactionalSender = new ValidatingTransactionalSender("Foo", mockTransactionalSender.Object, validate);
 
             var actualTransaction = validatingTransactionalSender.BeginTransaction();
 

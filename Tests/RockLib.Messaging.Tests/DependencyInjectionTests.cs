@@ -353,7 +353,7 @@ namespace RockLib.Messaging.Tests
         {
             public ReceiverDecorator(IReceiver sender) => Receiver = sender;
             public IReceiver Receiver { get; }
-            public IServiceProvider ServiceProvider { get; }
+            public IServiceProvider? ServiceProvider { get; }
             public string Name => Receiver.Name;
             public IMessageHandler MessageHandler { get => Receiver.MessageHandler; set => Receiver.MessageHandler = value; }
             public event EventHandler Connected { add { Receiver.Connected += value; } remove { Receiver.Connected -= value; } }
