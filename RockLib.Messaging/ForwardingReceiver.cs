@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RockLib.Messaging
 {
@@ -42,9 +43,9 @@ namespace RockLib.Messaging
         /// <see cref="RejectForwarder"/>.
         /// </param>
         public ForwardingReceiver(string name, string receiverName,
-            string acknowledgeForwarderName = null, ForwardingOutcome acknowledgeOutcome = ForwardingOutcome.Acknowledge,
-            string rollbackForwarderName = null, ForwardingOutcome rollbackOutcome = ForwardingOutcome.Rollback,
-            string rejectForwarderName = null, ForwardingOutcome rejectOutcome = ForwardingOutcome.Reject)
+            string? acknowledgeForwarderName = null, ForwardingOutcome acknowledgeOutcome = ForwardingOutcome.Acknowledge,
+            string? rollbackForwarderName = null, ForwardingOutcome rollbackOutcome = ForwardingOutcome.Rollback,
+            string? rejectForwarderName = null, ForwardingOutcome rejectOutcome = ForwardingOutcome.Reject)
             : this(name ?? throw new ArgumentNullException(nameof(name)),
                   MessagingScenarioFactory.CreateReceiver(receiverName ?? throw new ArgumentNullException(nameof(receiverName))),
                   CreateForwarder(acknowledgeForwarderName), acknowledgeOutcome,
@@ -85,14 +86,18 @@ namespace RockLib.Messaging
         /// <see cref="RejectForwarder"/>.
         /// </param>
         public ForwardingReceiver(string name, IReceiver receiver,
-            ISender acknowledgeForwarder = null, ForwardingOutcome acknowledgeOutcome = ForwardingOutcome.Acknowledge,
-            ISender rollbackForwarder = null, ForwardingOutcome rollbackOutcome = ForwardingOutcome.Rollback,
-            ISender rejectForwarder = null, ForwardingOutcome rejectOutcome = ForwardingOutcome.Reject)
+            ISender? acknowledgeForwarder = null, ForwardingOutcome acknowledgeOutcome = ForwardingOutcome.Acknowledge,
+            ISender? rollbackForwarder = null, ForwardingOutcome rollbackOutcome = ForwardingOutcome.Rollback,
+            ISender? rejectForwarder = null, ForwardingOutcome rejectOutcome = ForwardingOutcome.Reject)
         {
-            if (receiver == null)
+            if (receiver is null)
+            {
                 throw new ArgumentNullException(nameof(receiver));
-            if (receiver.MessageHandler != null)
+            }
+            if (receiver.MessageHandler is not null)
+            {
                 throw new ArgumentException("Cannot create a ForwardingReceiver with a receiver that is already started.", nameof(receiver));
+            }
 
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Receiver = receiver;
@@ -118,7 +123,7 @@ namespace RockLib.Messaging
         /// Gets the <see cref="ISender"/> that received messages are forwarded to when
         /// their <see cref="IReceiverMessage.AcknowledgeAsync"/> method is called.
         /// </summary>
-        public ISender AcknowledgeForwarder { get; }
+        public ISender? AcknowledgeForwarder { get; }
 
         /// <summary>
         /// Gets the outcome for received messages that have been forwarded to
@@ -130,7 +135,7 @@ namespace RockLib.Messaging
         /// Gets the <see cref="ISender"/> that received messages are forwarded to when
         /// their <see cref="IReceiverMessage.RollbackAsync"/> method is called.
         /// </summary>
-        public ISender RollbackForwarder { get; }
+        public ISender? RollbackForwarder { get; }
 
         /// <summary>
         /// Gets the outcome for received messages that have been forwarded to
@@ -142,7 +147,7 @@ namespace RockLib.Messaging
         /// Gets the <see cref="ISender"/> that received messages are forwarded to when
         /// their <see cref="IReceiverMessage.RejectAsync"/> method is called.
         /// </summary>
-        public ISender RejectForwarder { get; }
+        public ISender? RejectForwarder { get; }
 
         /// <summary>
         /// Gets the outcome for received messages that have been forwarded to
@@ -163,7 +168,8 @@ namespace RockLib.Messaging
         /// </summary>
         public IMessageHandler MessageHandler
         {
-            get => ((ForwardingMessageHandler)Receiver.MessageHandler)?.MessageHandler;
+            [return: MaybeNull]
+            get => ((ForwardingMessageHandler)Receiver.MessageHandler)?.MessageHandler!;
             set => Receiver.MessageHandler = new ForwardingMessageHandler(this, value);
         }
 
@@ -219,7 +225,7 @@ namespace RockLib.Messaging
             RejectForwarder?.Dispose();
         }
 
-        private static ISender CreateForwarder(string senderName) =>
-            senderName == null ? null : MessagingScenarioFactory.CreateSender(senderName);
+        private static ISender? CreateForwarder(string? senderName) =>
+            senderName is null ? null : MessagingScenarioFactory.CreateSender(senderName);
     }
 }

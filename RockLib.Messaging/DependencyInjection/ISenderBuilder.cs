@@ -1,5 +1,4 @@
-﻿#if !NET451
-namespace RockLib.Messaging.DependencyInjection
+﻿namespace RockLib.Messaging.DependencyInjection
 {
     /// <summary>
     /// A builder used to decorate an <see cref="ISender"/>.
@@ -13,4 +12,3 @@ namespace RockLib.Messaging.DependencyInjection
         ISenderBuilder AddDecorator(SenderDecoration decoration);
     }
 }
-#endif

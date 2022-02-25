@@ -1,5 +1,4 @@
-﻿#if !NET451
-namespace RockLib.Messaging.DependencyInjection
+﻿namespace RockLib.Messaging.DependencyInjection
 {
     /// <summary>
     /// Represents a method that retrieves an <see cref="ISender"/> by its name.
@@ -22,4 +21,3 @@ namespace RockLib.Messaging.DependencyInjection
     /// <returns>The matching <see cref="IReceiver"/>.</returns>
     public delegate IReceiver ReceiverLookup(string name);
 }
-#endif

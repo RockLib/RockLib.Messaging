@@ -11,13 +11,9 @@ namespace RockLib.Messaging.Tests
 {
     public class ReloadingSenderTests
     {
-        public static readonly Type ReloadingSender;
-
-        static ReloadingSenderTests()
-        {
-            var reloadingSenderType = Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingSender`1, RockLib.Messaging", true);
-            ReloadingSender = reloadingSenderType.MakeGenericType(typeof(TestSenderOptions));
-        }
+        public static readonly Type ReloadingSender =
+            Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingSender`1, RockLib.Messaging", true)!
+                .MakeGenericType(typeof(TestSenderOptions));
 
         [Fact(DisplayName = "Constructor sets its properties")]
         public void ConstructorTest()
@@ -82,7 +78,7 @@ namespace RockLib.Messaging.Tests
             var mockOptionsMonitor = new Mock<IOptionsMonitor<TestSenderOptions>>(MockBehavior.Strict);
             var mockChangeListener = new Mock<IDisposable>(MockBehavior.Strict);
 
-            Action<TestSenderOptions, string> onChangeCallback = null;
+            Action<TestSenderOptions, string> onChangeCallback = null!;
 
             mockOptionsMonitor.Setup(m => m.Get("MyReloadingSender")).Returns(initialOptions);
             mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestSenderOptions, string>>()))
@@ -143,7 +139,7 @@ namespace RockLib.Messaging.Tests
             var mockOptionsMonitor = new Mock<IOptionsMonitor<TestSenderOptions>>(MockBehavior.Strict);
             var mockChangeListener = new Mock<IDisposable>(MockBehavior.Strict);
 
-            Action<TestSenderOptions, string> onChangeCallback = null;
+            Action<TestSenderOptions, string> onChangeCallback = null!;
 
             mockOptionsMonitor.Setup(m => m.Get("MyReloadingSender")).Returns(initialOptions);
             mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestSenderOptions, string>>()))
@@ -213,6 +209,7 @@ namespace RockLib.Messaging.Tests
             mockChangeListener.Verify(m => m.Dispose());
         }
 
+#pragma warning disable CA1034 // Nested types should not be visible
         public class TestSenderOptions
         {
             public string TestSetting1 { get; set; } = "DefaultTestSetting1";
@@ -247,5 +244,6 @@ namespace RockLib.Messaging.Tests
                 return Task.CompletedTask;
             }
         }
+#pragma warning restore CA1034 // Nested types should not be visible
     }
 }

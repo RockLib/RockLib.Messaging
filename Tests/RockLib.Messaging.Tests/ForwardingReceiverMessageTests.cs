@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using RockLib.Messaging.Testing;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -10,13 +9,13 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task AcknowledgeCallsInnerMessageAcknowledgeIfAcknowledgeForwarderIsNull()
         {
-            var receiver = new FakeReceiver();
-            var forwardingReceiver = new ForwardingReceiver("foo", receiver, acknowledgeForwarder: null);
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var receiver = new FakeReceiver();
+            using var forwardingReceiver = new ForwardingReceiver("foo", receiver, acknowledgeForwarder: null);
+            using var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.AcknowledgeAsync();
+            await forwardingMessage.AcknowledgeAsync().ConfigureAwait(false);
 
             message.HandledBy.Should().Be(nameof(IReceiverMessage.AcknowledgeAsync));
         }
@@ -24,15 +23,15 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task AcknowledgeSendsMessageToAcknowledgeForwarderWhenAcknowledgeForwarderIsNotNull()
         {
-            var forwarder = new FakeSender();
+            using var forwarder = new FakeSender();
 
-            var receiver = new FakeReceiver();
-            var forwardingReceiver = new ForwardingReceiver("foo", receiver, acknowledgeForwarder: forwarder);
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var receiver = new FakeReceiver();
+            using var forwardingReceiver = new ForwardingReceiver("foo", receiver, acknowledgeForwarder: forwarder);
+            using var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.AcknowledgeAsync();
+            await forwardingMessage.AcknowledgeAsync().ConfigureAwait(false);
 
             forwarder.SentMessages.Should().ContainSingle();
             forwarder.SentMessages[0].StringPayload.Should().Be("Hello, world!");
@@ -44,15 +43,15 @@ namespace RockLib.Messaging.Tests
         [InlineData(ForwardingOutcome.Reject)]
         public async Task AcknowledgeHandlesInnerMessageAccordingToAcknowledgeOutcomeWhenAcknowledgeForwarderIsNotNull(ForwardingOutcome outcome)
         {
-            var forwarder = new FakeSender();
+            using var forwarder = new FakeSender();
 
-            var receiver = new FakeReceiver();
-            var forwardingReceiver = new ForwardingReceiver("foo", receiver, acknowledgeForwarder: forwarder, acknowledgeOutcome: outcome);
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var receiver = new FakeReceiver();
+            using var forwardingReceiver = new ForwardingReceiver("foo", receiver, acknowledgeForwarder: forwarder, acknowledgeOutcome: outcome);
+            using var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.AcknowledgeAsync();
+            await forwardingMessage.AcknowledgeAsync().ConfigureAwait(false);
 
             message.HandledBy.Should().Be($"{outcome}Async");
         }
@@ -60,13 +59,13 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task RollbackCallsInnerMessageRollbackIfRollbackForwarderIsNull()
         {
-            var receiver = new FakeReceiver();
-            var forwardingReceiver = new ForwardingReceiver("foo", receiver, rollbackForwarder: null);
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var receiver = new FakeReceiver();
+            using var forwardingReceiver = new ForwardingReceiver("foo", receiver, rollbackForwarder: null);
+            using var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.RollbackAsync();
+            await forwardingMessage.RollbackAsync().ConfigureAwait(false);
 
             message.HandledBy.Should().Be(nameof(IReceiverMessage.RollbackAsync));
         }
@@ -74,15 +73,15 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task RollbackSendsMessageToRollbackForwarderWhenRollbackForwarderIsNotNull()
         {
-            var forwarder = new FakeSender();
+            using var forwarder = new FakeSender();
 
-            var receiver = new FakeReceiver();
-            var forwardingReceiver = new ForwardingReceiver("foo", receiver, rollbackForwarder: forwarder);
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var receiver = new FakeReceiver();
+            using var forwardingReceiver = new ForwardingReceiver("foo", receiver, rollbackForwarder: forwarder);
+            using var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.RollbackAsync();
+            await forwardingMessage.RollbackAsync().ConfigureAwait(false);
 
             forwarder.SentMessages.Should().ContainSingle();
             forwarder.SentMessages[0].StringPayload.Should().Be("Hello, world!");
@@ -94,15 +93,15 @@ namespace RockLib.Messaging.Tests
         [InlineData(ForwardingOutcome.Reject)]
         public async Task RollbackHandlesInnerMessageAccordingToRollbackOutcomeWhenRollbackForwarderIsNotNull(ForwardingOutcome outcome)
         {
-            var forwarder = new FakeSender();
+            using var forwarder = new FakeSender();
 
-            var receiver = new FakeReceiver();
-            var forwardingReceiver = new ForwardingReceiver("foo", receiver, rollbackForwarder: forwarder, rollbackOutcome: outcome);
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var receiver = new FakeReceiver();
+            using var forwardingReceiver = new ForwardingReceiver("foo", receiver, rollbackForwarder: forwarder, rollbackOutcome: outcome);
+            using var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.RollbackAsync();
+            await forwardingMessage.RollbackAsync().ConfigureAwait(false);
 
             message.HandledBy.Should().Be($"{outcome}Async");
         }
@@ -110,13 +109,13 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task RejectCallsInnerMessageRejectWhenRejectForwarderIsNull()
         {
-            var receiver = new FakeReceiver();
-            var forwardingReceiver = new ForwardingReceiver("foo", receiver, rejectForwarder: null);
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var receiver = new FakeReceiver();
+            using var forwardingReceiver = new ForwardingReceiver("foo", receiver, rejectForwarder: null);
+            using var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.RejectAsync();
+            await forwardingMessage.RejectAsync().ConfigureAwait(false);
 
             message.HandledBy.Should().Be(nameof(IReceiverMessage.RejectAsync));
         }
@@ -124,15 +123,15 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task RejectSendsMessageToRejectForwarderWhenRejectForwarderIsNotNull()
         {
-            var forwarder = new FakeSender();
+            using var forwarder = new FakeSender();
 
-            var receiver = new FakeReceiver();
-            var forwardingReceiver = new ForwardingReceiver("foo", receiver, rejectForwarder: forwarder);
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var receiver = new FakeReceiver();
+            using var forwardingReceiver = new ForwardingReceiver("foo", receiver, rejectForwarder: forwarder);
+            using var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.RejectAsync();
+            await forwardingMessage.RejectAsync().ConfigureAwait(false);
 
             forwarder.SentMessages.Should().ContainSingle();
             forwarder.SentMessages[0].StringPayload.Should().Be("Hello, world!");
@@ -144,15 +143,15 @@ namespace RockLib.Messaging.Tests
         [InlineData(ForwardingOutcome.Reject)]
         public async Task RejectHandlesInnerMessageAccordingToRejectOutcomeWhenRejectForwarderIsNotNull(ForwardingOutcome outcome)
         {
-            var forwarder = new FakeSender();
+            using var forwarder = new FakeSender();
 
-            var receiver = new FakeReceiver();
-            var forwardingReceiver = new ForwardingReceiver("foo", receiver, rejectForwarder: forwarder, rejectOutcome: outcome);
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var receiver = new FakeReceiver();
+            using var forwardingReceiver = new ForwardingReceiver("foo", receiver, rejectForwarder: forwarder, rejectOutcome: outcome);
+            using var message = new FakeReceiverMessage("Hello, world!");
 
             var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.RejectAsync();
+            await forwardingMessage.RejectAsync().ConfigureAwait(false);
 
             message.HandledBy.Should().Be($"{outcome}Async");
         }

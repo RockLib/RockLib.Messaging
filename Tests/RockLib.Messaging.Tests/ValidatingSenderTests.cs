@@ -15,7 +15,7 @@ namespace RockLib.Messaging.Tests
             var mockSender = new Mock<ISender>();
             Action<SenderMessage> validate = message => { };
 
-            var validatingSender = new ValidatingSender("Foo", mockSender.Object, validate);
+            using var validatingSender = new ValidatingSender("Foo", mockSender.Object, validate);
 
             validatingSender.Name.Should().Be("Foo");
             validatingSender.Sender.Should().BeSameAs(mockSender.Object);
@@ -28,7 +28,7 @@ namespace RockLib.Messaging.Tests
             ISender sender = new Mock<ISender>().Object;
             Action<SenderMessage> validate = message => { };
 
-            Action act = () => new ValidatingSender(null, sender, validate);
+            Func<ValidatingSender> act = () => new ValidatingSender(null!, sender, validate);
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*name*");
         }
@@ -36,10 +36,9 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public void ConstructorSadPath2()
         {
-            ISender sender = null;
             Action<SenderMessage> validate = message => { };
 
-            Action act = () => new ValidatingSender("Foo", sender, validate);
+            Func<ValidatingSender> act = () => new ValidatingSender("Foo", null!, validate);
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*sender*");
         }
@@ -48,9 +47,8 @@ namespace RockLib.Messaging.Tests
         public void ConstructorSadPath3()
         {
             ISender sender = new Mock<ISender>().Object;
-            Action<SenderMessage> validate = null;
 
-            Action act = () => new ValidatingSender("Foo", sender, validate);
+            Func<ValidatingSender> act = () => new ValidatingSender("Foo", sender, null!);
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*validate*");
         }
@@ -76,13 +74,13 @@ namespace RockLib.Messaging.Tests
             var mockSender = new Mock<ISender>();
             Action<SenderMessage> validate = message => sentMessages.Add(message);
 
-            var validatingSender = new ValidatingSender("Foo", mockSender.Object, validate);
+            using var validatingSender = new ValidatingSender("Foo", mockSender.Object, validate);
 
             var message1 = new SenderMessage("Hello, world!");
             var message2 = new SenderMessage("Good-bye, cruel world!");
 
-            await validatingSender.SendAsync(message1);
-            await validatingSender.SendAsync(message2);
+            await validatingSender.SendAsync(message1).ConfigureAwait(false);
+            await validatingSender.SendAsync(message2).ConfigureAwait(false);
 
             mockSender.Verify(m => m.SendAsync(message1, default), Times.Once());
             mockSender.Verify(m => m.SendAsync(message2, default), Times.Once());

@@ -15,14 +15,21 @@ namespace RockLib.Messaging
         /// </summary>
         /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
         /// <param name="message">The message to send.</param>
-        public static Task SendAsync(this ISender source, SenderMessage message) =>
-            source.SendAsync(message, default(CancellationToken));
+        public static Task SendAsync(this ISender source, SenderMessage message)
+        {
+            if (source is null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+            return source.SendAsync(message, default);
+        }
 
         /// <summary>
         /// Synchronously sends the specified message.
         /// </summary>
         /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
         /// <param name="message">The message to send.</param>
+        [Obsolete("Use SendAsync instead.", true)]
         public static void Send(this ISender source, SenderMessage message) =>
             source.SendSync(s => s.SendAsync(message));
 
@@ -31,6 +38,7 @@ namespace RockLib.Messaging
         /// </summary>
         /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
         /// <param name="message">The message to send.</param>
+        [Obsolete("Use SendAsync instead.", true)]
         public static void Send(this ISender source, string message) =>
             source.SendSync(s => s.SendAsync(message));
 
@@ -40,14 +48,22 @@ namespace RockLib.Messaging
         /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-        public static Task SendAsync(this ISender source, string message, CancellationToken cancellationToken = default(CancellationToken)) =>
-            source.SendAsync(new SenderMessage(message), cancellationToken);
+        public static Task SendAsync(this ISender source, string message, CancellationToken cancellationToken = default)
+        {
+            if (source is null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            return source.SendAsync(new SenderMessage(message), cancellationToken);
+        }
 
         /// <summary>
         /// Synchronously sends the specified binary message.
         /// </summary>
         /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
         /// <param name="message">The message to send.</param>
+        [Obsolete("Use SendAsync instead.", true)]
         public static void Send(this ISender source, byte[] message) =>
             source.SendSync(s => s.SendAsync(message));
 
@@ -57,12 +73,20 @@ namespace RockLib.Messaging
         /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-        public static Task SendAsync(this ISender source, byte[] message, CancellationToken cancellationToken = default(CancellationToken)) =>
-            source.SendAsync(new SenderMessage(message), cancellationToken);
+        public static Task SendAsync(this ISender source, byte[] message, CancellationToken cancellationToken = default)
+        {
+            if (source is null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            return source.SendAsync(new SenderMessage(message), cancellationToken);
+        }
 
         private static void SendSync(this ISender source, Func<ISender, Task> sendAsync)
         {
-            SynchronizationContext old = SynchronizationContext.Current;
+            var old = SynchronizationContext.Current;
+
             try
             {
                 SynchronizationContext.SetSynchronizationContext(null);

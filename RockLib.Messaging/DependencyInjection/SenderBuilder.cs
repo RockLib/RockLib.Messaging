@@ -1,5 +1,4 @@
-﻿#if !NET451
-using System;
+﻿using System;
 
 namespace RockLib.Messaging.DependencyInjection
 {
@@ -29,7 +28,9 @@ namespace RockLib.Messaging.DependencyInjection
         public ISenderBuilder AddDecorator(SenderDecoration decoration)
         {
             if (decoration is null)
+            {
                 throw new ArgumentNullException(nameof(decoration));
+            }
 
             var registration = Registration;
             Registration = serviceProvider =>
@@ -47,4 +48,3 @@ namespace RockLib.Messaging.DependencyInjection
         public ISender Build(IServiceProvider serviceProvider) => Registration(serviceProvider);
     }
 }
-#endif

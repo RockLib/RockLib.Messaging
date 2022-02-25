@@ -1,5 +1,4 @@
-﻿#if !NET451
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
 
@@ -17,10 +16,12 @@ namespace RockLib.Messaging.DependencyInjection
         /// <param name="configureOptions">A callback for configuring the <see cref="IForwardingReceiverOptions"/>.</param>
         /// <returns>The same <see cref="IReceiverBuilder"/>.</returns>
         public static IReceiverBuilder AddForwardingReceiver(this IReceiverBuilder builder,
-            Action<IForwardingReceiverOptions> configureOptions = null)
+            Action<IForwardingReceiverOptions>? configureOptions = null)
         {
-            if (builder == null)
+            if (builder is null)
+            {
                 throw new ArgumentNullException(nameof(builder));
+            }
 
             builder.AddDecorator((receiver, serviceProvider) =>
             {
@@ -38,4 +39,3 @@ namespace RockLib.Messaging.DependencyInjection
         }
     }
 }
-#endif

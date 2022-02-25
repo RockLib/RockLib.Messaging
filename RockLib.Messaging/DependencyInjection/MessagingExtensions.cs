@@ -1,5 +1,4 @@
-﻿#if !NET451
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using RockLib.Configuration;
@@ -33,14 +32,18 @@ namespace RockLib.Messaging.DependencyInjection
             ServiceLifetime lifetime = _defaultLifetime)
         {
             if (services is null)
+            {
                 throw new ArgumentNullException(nameof(services));
+            }
             if (senderName is null)
+            {
                 throw new ArgumentNullException(nameof(senderName));
+            }
 
             return services.AddSender(serviceProvider =>
             {
                 var messagingSection = GetMessagingSection(serviceProvider);
-                var resolver = new Resolver(serviceProvider.GetService, CanResolve);
+                var resolver = new Resolver(serviceProvider.GetService!, CanResolve);
 
                 return messagingSection.CreateSender(senderName, resolver: resolver);
             }, lifetime);
@@ -81,29 +84,35 @@ namespace RockLib.Messaging.DependencyInjection
         /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the sender.</param>
         /// <returns>A new <see cref="ISenderBuilder"/> for decorating the <see cref="ISender"/>.</returns>
         public static ISenderBuilder AddSender<TSenderOptions>(this IServiceCollection services, string senderName,
-            Func<TSenderOptions, IServiceProvider, ISender> createSender, Action<TSenderOptions> configureOptions = null,
+            Func<TSenderOptions, IServiceProvider, ISender> createSender, Action<TSenderOptions>? configureOptions = null,
             bool reloadOnChange = true, ServiceLifetime lifetime = _defaultLifetime)
             where TSenderOptions : class, new()
         {
             if (services is null)
+            {
                 throw new ArgumentNullException(nameof(services));
+            }
             if (senderName is null)
+            {
                 throw new ArgumentNullException(nameof(senderName));
+            }
             if (createSender is null)
+            {
                 throw new ArgumentNullException(nameof(createSender));
+            }
 
             return services.AddSender(serviceProvider =>
             {
                 var optionsMonitor = serviceProvider.GetService<IOptionsMonitor<TSenderOptions>>();
 
-                if (reloadOnChange && optionsMonitor != null)
+                if (reloadOnChange && optionsMonitor is not null)
                 {
                     return new ReloadingSender<TSenderOptions>(senderName,
                         options => createSender.Invoke(options, serviceProvider),
                         optionsMonitor, configureOptions);
                 }
 
-                var senderOptions = optionsMonitor.GetOptions(senderName, configureOptions);
+                var senderOptions = optionsMonitor!.GetOptions(senderName, configureOptions);
                 return createSender.Invoke(senderOptions, serviceProvider);
             }, lifetime);
         }
@@ -121,9 +130,13 @@ namespace RockLib.Messaging.DependencyInjection
             ServiceLifetime lifetime = _defaultLifetime)
         {
             if (services is null)
+            {
                 throw new ArgumentNullException(nameof(services));
+            }
             if (registration is null)
+            {
                 throw new ArgumentNullException(nameof(registration));
+            }
 
             var builder = new SenderBuilder(registration);
 
@@ -148,14 +161,18 @@ namespace RockLib.Messaging.DependencyInjection
             ServiceLifetime lifetime = _defaultLifetime)
         {
             if (services is null)
+            {
                 throw new ArgumentNullException(nameof(services));
+            }
             if (senderName is null)
+            {
                 throw new ArgumentNullException(nameof(senderName));
+            }
 
             return services.AddTransactionalSender(serviceProvider =>
             {
                 var messagingSection = GetMessagingSection(serviceProvider);
-                var resolver = new Resolver(serviceProvider.GetService, CanResolve);
+                var resolver = new Resolver(serviceProvider.GetService!, CanResolve);
 
                 return (ITransactionalSender)messagingSection.CreateSender(senderName, resolver: resolver);
             }, lifetime);
@@ -179,9 +196,13 @@ namespace RockLib.Messaging.DependencyInjection
             TransactionalSenderRegistration registration, ServiceLifetime lifetime = _defaultLifetime)
         {
             if (services is null)
+            {
                 throw new ArgumentNullException(nameof(services));
+            }
             if (registration is null)
+            {
                 throw new ArgumentNullException(nameof(registration));
+            }
 
             var builder = new TransactionalSenderBuilder(registration);
 
@@ -207,14 +228,18 @@ namespace RockLib.Messaging.DependencyInjection
             ServiceLifetime lifetime = _defaultLifetime)
         {
             if (services is null)
+            {
                 throw new ArgumentNullException(nameof(services));
+            }
             if (receiverName is null)
+            {
                 throw new ArgumentNullException(nameof(receiverName));
+            }
 
             return services.AddReceiver(serviceProvider =>
             {
                 var messagingSection = GetMessagingSection(serviceProvider);
-                var resolver = new Resolver(serviceProvider.GetService, CanResolve);
+                var resolver = new Resolver(serviceProvider.GetService!, CanResolve);
 
                 return messagingSection.CreateReceiver(receiverName, resolver: resolver);
             }, lifetime);
@@ -254,29 +279,35 @@ namespace RockLib.Messaging.DependencyInjection
         /// <param name="lifetime">The <see cref="ServiceLifetime"/> of the receiver.</param>
         /// <returns>A new <see cref="IReceiverBuilder"/> for decorating the <see cref="IReceiver"/>.</returns>
         public static IReceiverBuilder AddReceiver<TReceiverOptions>(this IServiceCollection services, string receiverName,
-            Func<TReceiverOptions, IServiceProvider, IReceiver> createReceiver, Action<TReceiverOptions> configureOptions = null,
+            Func<TReceiverOptions, IServiceProvider, IReceiver> createReceiver, Action<TReceiverOptions>? configureOptions = null,
             bool reloadOnChange = true, ServiceLifetime lifetime = _defaultLifetime)
             where TReceiverOptions : class, new()
         {
             if (services is null)
+            {
                 throw new ArgumentNullException(nameof(services));
+            }
             if (receiverName is null)
+            {
                 throw new ArgumentNullException(nameof(receiverName));
+            }
             if (createReceiver is null)
+            {
                 throw new ArgumentNullException(nameof(createReceiver));
+            }
 
             return services.AddReceiver(serviceProvider =>
             {
                 var optionsMonitor = serviceProvider.GetService<IOptionsMonitor<TReceiverOptions>>();
 
-                if (reloadOnChange && optionsMonitor != null)
+                if (reloadOnChange && optionsMonitor is not null)
                 {
                     return new ReloadingReceiver<TReceiverOptions>(receiverName,
                         options => createReceiver.Invoke(options, serviceProvider),
                         optionsMonitor, configureOptions);
                 }
 
-                var receiverOptions = optionsMonitor.GetOptions(receiverName, configureOptions);
+                var receiverOptions = optionsMonitor!.GetOptions(receiverName, configureOptions);
                 return createReceiver.Invoke(receiverOptions, serviceProvider);
             }, lifetime);
         }
@@ -294,9 +325,13 @@ namespace RockLib.Messaging.DependencyInjection
             ServiceLifetime lifetime = _defaultLifetime)
         {
             if (services is null)
+            {
                 throw new ArgumentNullException(nameof(services));
+            }
             if (registration is null)
+            {
                 throw new ArgumentNullException(nameof(registration));
+            }
 
             var builder = new ReceiverBuilder(registration);
 
@@ -307,7 +342,7 @@ namespace RockLib.Messaging.DependencyInjection
         }
 
         internal static TOptions GetOptions<TOptions>(this IOptionsMonitor<TOptions> optionsMonitor,
-            string name, Action<TOptions> configureOptions)
+            string name, Action<TOptions>? configureOptions)
             where TOptions : class, new()
         {
             var options = optionsMonitor?.Get(name) ?? new TOptions();
@@ -324,10 +359,14 @@ namespace RockLib.Messaging.DependencyInjection
         private static bool NamesEqual(string messagingServiceName, string lookupName)
         {
             if (string.Equals(messagingServiceName, lookupName, StringComparison.OrdinalIgnoreCase))
+            {
                 return true;
+            }
 
             if (lookupName is null)
+            {
                 return string.Equals(messagingServiceName, "default", StringComparison.OrdinalIgnoreCase);
+            }
 
             return false;
         }
@@ -335,9 +374,13 @@ namespace RockLib.Messaging.DependencyInjection
         private static void SetSenderLookupDescriptor(this IServiceCollection services)
         {
             // Clear the existing SenderLookup descriptor, if it exists.
-            for (int i = 0; i < services.Count; i++)
+            for (var i = 0; i < services.Count; i++)
+            {
                 if (services[i].ServiceType == typeof(SenderLookup))
+                {
                     services.RemoveAt(i--);
+                }
+            }
 
             // Capture which senders and which transactional senders are singleton according to index.
             IReadOnlyList<bool> isSingletonSender = services.Where(service => service.ServiceType == typeof(ISender))
@@ -353,31 +396,43 @@ namespace RockLib.Messaging.DependencyInjection
                 var senders = serviceProvider.GetServices<ISender>().ToArray();
                 var selectedSender = senders.FirstOrDefault(sender => NamesEqual(sender.Name, name));
 
-                if (selectedSender != null)
+                if (selectedSender is not null)
                 {
                     // Immediately dispose any non-singleton senders that weren't selected.
-                    for (int i = 0; i < senders.Length; i++)
+                    for (var i = 0; i < senders.Length; i++)
+                    {
                         if (!isSingletonSender[i] && !ReferenceEquals(senders[i], selectedSender))
+                        {
                             senders[i].Dispose();
+                        }
+                    }
                 }
                 else
                 {
                     // Immediately dispose of all non-singleton senders, since none were selected.
-                    for (int i = 0; i < senders.Length; i++)
+                    for (var i = 0; i < senders.Length; i++)
+                    {
                         if (!isSingletonSender[i])
+                        {
                             senders[i].Dispose();
+                        }
+                    }
 
                     // Find the first transactional sender that has a matching name.
                     var transactionalSenders = serviceProvider.GetServices<ITransactionalSender>().ToArray();
                     selectedSender = transactionalSenders.FirstOrDefault(sender => NamesEqual(sender.Name, name));
 
                     // Immediately dispose any non-singleton transactional senders that weren't selected.
-                    for (int i = 0; i < transactionalSenders.Length; i++)
+                    for (var i = 0; i < transactionalSenders.Length; i++)
+                    {
                         if (!isSingletonTransactionalSender[i] && !ReferenceEquals(transactionalSenders[i], selectedSender))
+                        {
                             transactionalSenders[i].Dispose();
+                        }
+                    }
                 }
 
-                return selectedSender;
+                return selectedSender!;
             };
 
             services.AddSingleton(SenderFactory);
@@ -386,9 +441,13 @@ namespace RockLib.Messaging.DependencyInjection
         private static void SetTransactionalSenderLookupDescriptor(this IServiceCollection services)
         {
             // Clear the existing TransactionalSenderLookup descriptor, if it exists.
-            for (int i = 0; i < services.Count; i++)
+            for (var i = 0; i < services.Count; i++)
+            {
                 if (services[i].ServiceType == typeof(TransactionalSenderLookup))
+                {
                     services.RemoveAt(i--);
+                }
+            }
 
             // Capture which transactional senders are singleton according to index.
             IReadOnlyList<bool> isSingletonTransactionalSender = services.Where(service => service.ServiceType == typeof(ITransactionalSender))
@@ -402,11 +461,15 @@ namespace RockLib.Messaging.DependencyInjection
                 var selectedTransactionalSender = transactionalSenders.FirstOrDefault(sender => NamesEqual(sender.Name, name));
 
                 // Immediately dispose any non-singleton transactional senders that weren't selected.
-                for (int i = 0; i < transactionalSenders.Length; i++)
+                for (var i = 0; i < transactionalSenders.Length; i++)
+                {
                     if (!isSingletonTransactionalSender[i] && !ReferenceEquals(transactionalSenders[i], selectedTransactionalSender))
+                    {
                         transactionalSenders[i].Dispose();
+                    }
+                }
 
-                return selectedTransactionalSender;
+                return selectedTransactionalSender!;
             };
 
             services.AddSingleton(TransactionalSenderFactory);
@@ -415,9 +478,13 @@ namespace RockLib.Messaging.DependencyInjection
         private static void SetReceiverLookupDescriptor(this IServiceCollection services)
         {
             // Clear the existing ReceiverLookup descriptor, if it exists.
-            for (int i = 0; i < services.Count; i++)
+            for (var i = 0; i < services.Count; i++)
+            {
                 if (services[i].ServiceType == typeof(ReceiverLookup))
+                {
                     services.RemoveAt(i--);
+                }
+            }
 
             // Capture which receivers are singleton according to index.
             IReadOnlyList<bool> isSingletonReceiver = services.Where(service => service.ServiceType == typeof(IReceiver))
@@ -431,15 +498,18 @@ namespace RockLib.Messaging.DependencyInjection
                 var selectedReceiver = receivers.FirstOrDefault(receiver => NamesEqual(receiver.Name, name));
 
                 // Immediately dispose any non-singleton receivers that weren't selected.
-                for (int i = 0; i < receivers.Length; i++)
+                for (var i = 0; i < receivers.Length; i++)
+                {
                     if (!isSingletonReceiver[i] && !ReferenceEquals(receivers[i], selectedReceiver))
+                    {
                         receivers[i].Dispose();
+                    }
+                }
 
-                return selectedReceiver;
+                return selectedReceiver!;
             };
 
             services.AddSingleton(ReceiverLookupFactory);
         }
     }
 }
-#endif

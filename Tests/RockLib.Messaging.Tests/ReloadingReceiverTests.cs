@@ -9,13 +9,9 @@ namespace RockLib.Messaging.Tests
 {
     public class ReloadingReceiverTests
     {
-        public static readonly Type ReloadingReceiver;
-
-        static ReloadingReceiverTests()
-        {
-            var reloadingReceiverType = Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingReceiver`1, RockLib.Messaging", true);
-            ReloadingReceiver = reloadingReceiverType.MakeGenericType(typeof(TestReceiverOptions));
-        }
+        public static readonly Type ReloadingReceiver =
+            Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingReceiver`1, RockLib.Messaging", true)!
+                .MakeGenericType(typeof(TestReceiverOptions));
 
         [Fact(DisplayName = "Constructor sets its properties")]
         public void ConstructorTest()
@@ -80,7 +76,7 @@ namespace RockLib.Messaging.Tests
             var mockOptionsMonitor = new Mock<IOptionsMonitor<TestReceiverOptions>>(MockBehavior.Strict);
             var mockChangeListener = new Mock<IDisposable>(MockBehavior.Strict);
 
-            Action<TestReceiverOptions, string> onChangeCallback = null;
+            Action<TestReceiverOptions, string> onChangeCallback = null!;
 
             mockOptionsMonitor.Setup(m => m.Get("MyReloadingReceiver")).Returns(initialOptions);
             mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestReceiverOptions, string>>()))
@@ -129,9 +125,9 @@ namespace RockLib.Messaging.Tests
             onChangeCallback(newOptions, "MyReloadingReceiver");
 
             TestReceiver newTestReceiver = r.Receiver;
-            
+
             newTestReceiver.Should().NotBeSameAs(initialTestReceiver);
-            
+
             newTestReceiver.Name.Should().Be("MyTestReceiver");
             newTestReceiver.TestSetting1.Should().Be("NewTestSetting1");
             newTestReceiver.TestSetting2.Should().Be("ConfiguredTestSetting2");
@@ -161,8 +157,8 @@ namespace RockLib.Messaging.Tests
             var mockOptionsMonitor = new Mock<IOptionsMonitor<TestReceiverOptions>>(MockBehavior.Strict);
             var mockChangeListener = new Mock<IDisposable>(MockBehavior.Strict);
 
-            Action<TestReceiverOptions, string> onChangeCallback = null;
-            
+            Action<TestReceiverOptions, string> onChangeCallback = null!;
+
             mockOptionsMonitor.Setup(m => m.Get("MyReloadingReceiver")).Returns(initialOptions);
             mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestReceiverOptions, string>>()))
                 .Callback<Action<TestReceiverOptions, string>>(onChange => onChangeCallback = onChange)
@@ -215,7 +211,7 @@ namespace RockLib.Messaging.Tests
                 .Returns(mockChangeListener.Object);
 
             Action<TestReceiverOptions> configureOptions = options => { };
-            
+
             IReceiver receiver = ReloadingReceiver.New("MyReloadingReceiver",
                 createReceiver, mockOptionsMonitor.Object, configureOptions);
 
@@ -230,6 +226,7 @@ namespace RockLib.Messaging.Tests
             mockChangeListener.Verify(m => m.Dispose());
         }
 
+#pragma warning disable CA1034 // Nested types should not be visible
         public class TestReceiverOptions
         {
             public string TestSetting1 { get; set; } = "DefaultTestSetting1";
@@ -244,6 +241,7 @@ namespace RockLib.Messaging.Tests
                 Name = name;
                 TestSetting1 = testSetting1;
                 TestSetting2 = testSetting2;
+                MessageHandler = null!;
             }
 
             public string Name { get; }
@@ -272,11 +270,11 @@ namespace RockLib.Messaging.Tests
                 remove { ErrorHandler -= value; }
             }
 
-            public EventHandler ConnectedHandler { get; private set; }
+            public EventHandler? ConnectedHandler { get; private set; }
 
-            public EventHandler<DisconnectedEventArgs> DisconnectedHandler { get; private set; }
+            public EventHandler<DisconnectedEventArgs>? DisconnectedHandler { get; private set; }
 
-            public EventHandler<ErrorEventArgs> ErrorHandler { get; private set; }
+            public EventHandler<ErrorEventArgs>? ErrorHandler { get; private set; }
 
             public bool Disposed { get; private set; }
 
@@ -285,5 +283,6 @@ namespace RockLib.Messaging.Tests
                 Disposed = true;
             }
         }
+#pragma warning restore CA1034 // Nested types should not be visible
     }
 }

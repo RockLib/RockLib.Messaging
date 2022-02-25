@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace RockLib.Messaging
@@ -36,9 +37,9 @@ namespace RockLib.Messaging
         /// can be converted to type <typeparamref name="T"/>; otherwise false.
         /// </returns>
         /// <typeparam name="T">The type to convert the value to.</typeparam>
-        public bool TryGetValue<T>(string key, out T value)
+        public bool TryGetValue<T>(string key, [MaybeNullWhen(false)] out T value)
         {
-            if (_headers.TryGetValue(key, out object objectValue))
+            if (_headers.TryGetValue(key, out var objectValue))
             {
                 switch (objectValue)
                 {
@@ -62,27 +63,15 @@ namespace RockLib.Messaging
                 var converter = TypeDescriptor.GetConverter(typeof(T));
                 if (converter.CanConvertFrom(objectValue.GetType()))
                 {
-                    try
-                    {
-                        value = (T)converter.ConvertFrom(objectValue);
-                        return true;
-                    }
-                    catch
-                    {
-                    }
+                    value = (T)converter.ConvertFrom(objectValue)!;
+                    return true;
                 }
 
                 converter = TypeDescriptor.GetConverter(objectValue);
                 if (converter.CanConvertTo(typeof(T)))
                 {
-                    try
-                    {
-                        value = (T)converter.ConvertTo(objectValue, typeof(T));
-                        return true;
-                    }
-                    catch
-                    {
-                    }
+                    value = (T)converter.ConvertTo(objectValue, typeof(T))!;
+                    return true;
                 }
             }
 
@@ -109,8 +98,10 @@ namespace RockLib.Messaging
         /// </exception>
         public T GetValue<T>(string key)
         {
-            if (!_headers.TryGetValue(key, out object objectValue))
+            if (!_headers.TryGetValue(key, out var objectValue))
+            {
                 throw new KeyNotFoundException($"The specified header, '{key}', was not found.");
+            }
 
             switch (objectValue)
             {
@@ -123,25 +114,13 @@ namespace RockLib.Messaging
             var converter = TypeDescriptor.GetConverter(typeof(T));
             if (converter.CanConvertFrom(objectValue.GetType()))
             {
-                try
-                {
-                    return (T)converter.ConvertFrom(objectValue);
-                }
-                catch
-                {
-                }
+                return (T)converter.ConvertFrom(objectValue)!;
             }
 
             converter = TypeDescriptor.GetConverter(objectValue);
             if (converter.CanConvertTo(typeof(T)))
             {
-                try
-                {
-                    return (T)converter.ConvertTo(objectValue, typeof(T));
-                }
-                catch
-                {
-                }
+                return (T)converter.ConvertTo(objectValue, typeof(T))!;
             }
 
             throw new InvalidCastException($"The specified header, '{key}', has a value, {objectValue} (with type {objectValue.GetType().FullName}), that cannot be converted to target type {typeof(T).FullName}.");
@@ -193,7 +172,11 @@ namespace RockLib.Messaging
         /// <returns>
         /// True if the dictionary contains a header with the specified name; otherwise false.
         /// </returns>
+#if NET48
         public bool TryGetValue(string key, out object value) => _headers.TryGetValue(key, out value);
+#else
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value) => _headers.TryGetValue(key, out value);
+#endif
 
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_headers).GetEnumerator();
     }

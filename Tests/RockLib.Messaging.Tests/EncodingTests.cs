@@ -15,7 +15,7 @@ namespace RockLib.Messaging.Tests
         {
             var originalPayload = GetStringExample();
             var senderMessage = new SenderMessage(originalPayload);
-            var receiverMessage = new TestReceiverMessage(senderMessage.StringPayload, senderMessage.Headers);
+            using var receiverMessage = new TestReceiverMessage(senderMessage.StringPayload, senderMessage.Headers);
             receiverMessage.StringPayload.Should().Be(originalPayload);
             var senderCopy = new SenderMessage(receiverMessage);
             senderCopy.StringPayload.Should().Be(senderMessage.StringPayload);
@@ -27,7 +27,7 @@ namespace RockLib.Messaging.Tests
         {
             var originalPayload = GetStringExample();
             var senderMessage = new SenderMessage(originalPayload, compress: true);
-            var receiverMessage = new TestReceiverMessage(senderMessage.StringPayload, senderMessage.Headers);
+            using var receiverMessage = new TestReceiverMessage(senderMessage.StringPayload, senderMessage.Headers);
             receiverMessage.StringPayload.Should().Be(originalPayload);
             var senderCopy = new SenderMessage(receiverMessage);
             senderCopy.StringPayload.Should().Be(senderMessage.StringPayload);
@@ -39,7 +39,7 @@ namespace RockLib.Messaging.Tests
         {
             var originalPayload = GetStringExample();
             var senderMessage = new SenderMessage(originalPayload);
-            var receiverMessage = new TestReceiverMessage(senderMessage.StringPayload, senderMessage.Headers);
+            using var receiverMessage = new TestReceiverMessage(senderMessage.StringPayload, senderMessage.Headers);
             receiverMessage.BinaryPayload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(originalPayload));
             var senderCopy = new SenderMessage(receiverMessage);
             senderCopy.StringPayload.Should().Be(senderMessage.StringPayload);
@@ -51,7 +51,7 @@ namespace RockLib.Messaging.Tests
         {
             var originalPayload = GetStringExample();
             var senderMessage = new SenderMessage(originalPayload, compress: true);
-            var receiverMessage = new TestReceiverMessage(senderMessage.StringPayload, senderMessage.Headers);
+            using var receiverMessage = new TestReceiverMessage(senderMessage.StringPayload, senderMessage.Headers);
             receiverMessage.BinaryPayload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(originalPayload));
             var senderCopy = new SenderMessage(receiverMessage);
             senderCopy.StringPayload.Should().Be(senderMessage.StringPayload);
@@ -63,7 +63,7 @@ namespace RockLib.Messaging.Tests
         {
             var originalPayload = GetStringExample();
             var senderMessage = new SenderMessage(originalPayload);
-            var receiverMessage = new TestReceiverMessage(senderMessage.BinaryPayload, senderMessage.Headers);
+            using var receiverMessage = new TestReceiverMessage(senderMessage.BinaryPayload, senderMessage.Headers);
             receiverMessage.StringPayload.Should().Be(originalPayload);
             var senderCopy = new SenderMessage(receiverMessage);
             senderCopy.StringPayload.Should().Be(senderMessage.StringPayload);
@@ -75,7 +75,7 @@ namespace RockLib.Messaging.Tests
         {
             var originalPayload = GetStringExample();
             var senderMessage = new SenderMessage(originalPayload, compress: true);
-            var receiverMessage = new TestReceiverMessage(senderMessage.BinaryPayload, senderMessage.Headers);
+            using var receiverMessage = new TestReceiverMessage(senderMessage.BinaryPayload, senderMessage.Headers);
             receiverMessage.StringPayload.Should().Be(originalPayload);
             var senderCopy = new SenderMessage(receiverMessage);
             senderCopy.StringPayload.Should().Be(senderMessage.StringPayload);
@@ -87,7 +87,7 @@ namespace RockLib.Messaging.Tests
         {
             var originalPayload = GetStringExample();
             var senderMessage = new SenderMessage(originalPayload);
-            var receiverMessage = new TestReceiverMessage(senderMessage.BinaryPayload, senderMessage.Headers);
+            using var receiverMessage = new TestReceiverMessage(senderMessage.BinaryPayload, senderMessage.Headers);
             receiverMessage.BinaryPayload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(originalPayload));
             var senderCopy = new SenderMessage(receiverMessage);
             senderCopy.StringPayload.Should().Be(senderMessage.StringPayload);
@@ -99,7 +99,7 @@ namespace RockLib.Messaging.Tests
         {
             var originalPayload = GetStringExample();
             var senderMessage = new SenderMessage(originalPayload, compress: true);
-            var receiverMessage = new TestReceiverMessage(senderMessage.BinaryPayload, senderMessage.Headers);
+            using var receiverMessage = new TestReceiverMessage(senderMessage.BinaryPayload, senderMessage.Headers);
             receiverMessage.BinaryPayload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(originalPayload));
             var senderCopy = new SenderMessage(receiverMessage);
             senderCopy.StringPayload.Should().Be(senderMessage.StringPayload);
@@ -111,7 +111,7 @@ namespace RockLib.Messaging.Tests
         {
             var originalPayload = GetBinaryExample();
             var senderMessage = new SenderMessage(originalPayload);
-            var receiverMessage = new TestReceiverMessage(senderMessage.StringPayload, senderMessage.Headers);
+            using var receiverMessage = new TestReceiverMessage(senderMessage.StringPayload, senderMessage.Headers);
             receiverMessage.StringPayload.Should().Be(Convert.ToBase64String(originalPayload));
             var senderCopy = new SenderMessage(receiverMessage);
             senderCopy.StringPayload.Should().Be(senderMessage.StringPayload);
@@ -123,7 +123,7 @@ namespace RockLib.Messaging.Tests
         {
             var originalPayload = GetBinaryExample();
             var senderMessage = new SenderMessage(originalPayload, compress: true);
-            var receiverMessage = new TestReceiverMessage(senderMessage.StringPayload, senderMessage.Headers);
+            using var receiverMessage = new TestReceiverMessage(senderMessage.StringPayload, senderMessage.Headers);
             receiverMessage.StringPayload.Should().Be(Convert.ToBase64String(originalPayload));
             var senderCopy = new SenderMessage(receiverMessage);
             senderCopy.StringPayload.Should().Be(senderMessage.StringPayload);
@@ -135,7 +135,7 @@ namespace RockLib.Messaging.Tests
         {
             var originalPayload = GetBinaryExample();
             var senderMessage = new SenderMessage(originalPayload);
-            var receiverMessage = new TestReceiverMessage(senderMessage.StringPayload, senderMessage.Headers);
+            using var receiverMessage = new TestReceiverMessage(senderMessage.StringPayload, senderMessage.Headers);
             receiverMessage.BinaryPayload.Should().BeEquivalentTo(originalPayload);
             var senderCopy = new SenderMessage(receiverMessage);
             senderCopy.StringPayload.Should().Be(senderMessage.StringPayload);
@@ -147,7 +147,7 @@ namespace RockLib.Messaging.Tests
         {
             var originalPayload = GetBinaryExample();
             var senderMessage = new SenderMessage(originalPayload, compress: true);
-            var receiverMessage = new TestReceiverMessage(senderMessage.StringPayload, senderMessage.Headers);
+            using var receiverMessage = new TestReceiverMessage(senderMessage.StringPayload, senderMessage.Headers);
             receiverMessage.BinaryPayload.Should().BeEquivalentTo(originalPayload);
             var senderCopy = new SenderMessage(receiverMessage);
             senderCopy.StringPayload.Should().Be(senderMessage.StringPayload);
@@ -159,7 +159,7 @@ namespace RockLib.Messaging.Tests
         {
             var originalPayload = GetBinaryExample();
             var senderMessage = new SenderMessage(originalPayload);
-            var receiverMessage = new TestReceiverMessage(senderMessage.BinaryPayload, senderMessage.Headers);
+            using var receiverMessage = new TestReceiverMessage(senderMessage.BinaryPayload, senderMessage.Headers);
             receiverMessage.StringPayload.Should().Be(Convert.ToBase64String(originalPayload));
             var senderCopy = new SenderMessage(receiverMessage);
             senderCopy.StringPayload.Should().Be(senderMessage.StringPayload);
@@ -171,7 +171,7 @@ namespace RockLib.Messaging.Tests
         {
             var originalPayload = GetBinaryExample();
             var senderMessage = new SenderMessage(originalPayload, compress: true);
-            var receiverMessage = new TestReceiverMessage(senderMessage.BinaryPayload, senderMessage.Headers);
+            using var receiverMessage = new TestReceiverMessage(senderMessage.BinaryPayload, senderMessage.Headers);
             receiverMessage.StringPayload.Should().Be(Convert.ToBase64String(originalPayload));
             var senderCopy = new SenderMessage(receiverMessage);
             senderCopy.StringPayload.Should().Be(senderMessage.StringPayload);
@@ -183,7 +183,7 @@ namespace RockLib.Messaging.Tests
         {
             var originalPayload = GetBinaryExample();
             var senderMessage = new SenderMessage(originalPayload);
-            var receiverMessage = new TestReceiverMessage(senderMessage.BinaryPayload, senderMessage.Headers);
+            using var receiverMessage = new TestReceiverMessage(senderMessage.BinaryPayload, senderMessage.Headers);
             receiverMessage.BinaryPayload.Should().BeEquivalentTo(originalPayload);
             var senderCopy = new SenderMessage(receiverMessage);
             senderCopy.StringPayload.Should().Be(senderMessage.StringPayload);
@@ -195,7 +195,7 @@ namespace RockLib.Messaging.Tests
         {
             var originalPayload = GetBinaryExample();
             var senderMessage = new SenderMessage(originalPayload, compress: true);
-            var receiverMessage = new TestReceiverMessage(senderMessage.BinaryPayload, senderMessage.Headers);
+            using var receiverMessage = new TestReceiverMessage(senderMessage.BinaryPayload, senderMessage.Headers);
             receiverMessage.BinaryPayload.Should().BeEquivalentTo(originalPayload);
             var senderCopy = new SenderMessage(receiverMessage);
             senderCopy.StringPayload.Should().Be(senderMessage.StringPayload);

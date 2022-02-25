@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RockLib.Messaging
 {
@@ -8,7 +9,7 @@ namespace RockLib.Messaging
     public abstract class Receiver : IReceiver
     {
         private bool _disposed;
-        private IMessageHandler _messageHandler;
+        private IMessageHandler? _messageHandler;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Receiver"/> class.
@@ -31,11 +32,14 @@ namespace RockLib.Messaging
         /// </summary>
         public IMessageHandler MessageHandler
         {
-            get => _messageHandler;
+            [return: MaybeNull]
+            get => _messageHandler!;
             set
             {
-                if (_messageHandler != null)
+                if (_messageHandler is not null)
+                {
                     throw new InvalidOperationException("The receiver is already started.");
+                }
 
                 _messageHandler = value ?? throw new ArgumentNullException(nameof(value));
                 Start();
@@ -45,17 +49,17 @@ namespace RockLib.Messaging
         /// <summary>
         /// Occurs when a connection is established.
         /// </summary>
-        public event EventHandler Connected;
+        public event EventHandler? Connected;
 
         /// <summary>
         /// Occurs when a connection is lost.
         /// </summary>
-        public event EventHandler<DisconnectedEventArgs> Disconnected;
+        public event EventHandler<DisconnectedEventArgs>? Disconnected;
 
         /// <summary>
         /// Occurs when an error happens.
         /// </summary>
-        public event EventHandler<ErrorEventArgs> Error;
+        public event EventHandler<ErrorEventArgs>? Error;
 
         /// <summary>
         /// Frees resources and stops receiving messages.
@@ -101,7 +105,9 @@ namespace RockLib.Messaging
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
+            {
                 return;
+            }
 
             if (disposing)
             {

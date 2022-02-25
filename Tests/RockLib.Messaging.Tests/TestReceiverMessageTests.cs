@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using RockLib.Messaging.Testing;
 using System;
 using System.Text;
 using Xunit;
@@ -12,7 +11,7 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public void StringPayloadIsSetFromStringPayload()
         {
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var message = new FakeReceiverMessage("Hello, world!");
 
             message.StringPayload.Should().BeSameAs("Hello, world!");
         }
@@ -20,7 +19,7 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public void BinaryPayloadIsSetFromUTF8EncodedStringPayload()
         {
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var message = new FakeReceiverMessage("Hello, world!");
 
             message.BinaryPayload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes("Hello, world!"), x => x.WithStrictOrdering());
         }
@@ -30,7 +29,7 @@ namespace RockLib.Messaging.Tests
         {
             var payload = new byte[] { 1, 2, 3, 4, 5 };
 
-            var message = new FakeReceiverMessage(payload);
+            using var message = new FakeReceiverMessage(payload);
 
             message.BinaryPayload.Should().BeSameAs(payload);
         }
@@ -40,7 +39,7 @@ namespace RockLib.Messaging.Tests
         {
             var payload = new byte[] { 1, 2, 3, 4, 5 };
 
-            var message = new FakeReceiverMessage(payload);
+            using var message = new FakeReceiverMessage(payload);
 
             message.StringPayload.Should().Be(Convert.ToBase64String(payload));
         }
@@ -48,7 +47,7 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public void PublicHeaderPropertyIsNotTheSameAsExplicitInterfaceHeaderProperty()
         {
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var message = new FakeReceiverMessage("Hello, world!");
 
             ((object)message.Headers).Should().NotBeSameAs(((IReceiverMessage)message).Headers);
         }
@@ -56,7 +55,7 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public void PublicHeaderPropertyHasSameContentsAsExplicitInterfaceHeaderProperty()
         {
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var message = new FakeReceiverMessage("Hello, world!");
 
             message.Headers.Add("foo", "abc");
             message.Headers.Add("bar", 123);
@@ -73,7 +72,7 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public void HandledIsFalseBeforeMessageIsHandled()
         {
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var message = new FakeReceiverMessage("Hello, world!");
 
             message.Handled.Should().BeFalse();
         }
@@ -81,7 +80,7 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public void HandledByIsNullBeforeMessageIsHandled()
         {
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var message = new FakeReceiverMessage("Hello, world!");
 
             message.HandledBy.Should().BeNull();
         }
@@ -89,9 +88,9 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task HandledIsTrueAfterAcknowledgeIsCalled()
         {
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.AcknowledgeAsync();
+            await message.AcknowledgeAsync().ConfigureAwait(false);
 
             message.Handled.Should().BeTrue();
         }
@@ -99,9 +98,9 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task HandledByIsAcknowledgeAfterAcknowledgeIsCalled()
         {
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.AcknowledgeAsync();
+            await message.AcknowledgeAsync().ConfigureAwait(false);
 
             message.HandledBy.Should().Be(nameof(message.AcknowledgeAsync));
         }
@@ -109,9 +108,9 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task HandledIsTrueAfterRollbackIsCalled()
         {
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.RollbackAsync();
+            await message.RollbackAsync().ConfigureAwait(false);
 
             message.Handled.Should().BeTrue();
         }
@@ -119,9 +118,9 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task HandledByIsRollbackAfterRollbackIsCalled()
         {
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.RollbackAsync();
+            await message.RollbackAsync().ConfigureAwait(false);
 
             message.HandledBy.Should().Be(nameof(message.RollbackAsync));
         }
@@ -129,9 +128,9 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task HandledIsTrueAfterRejectIsCalled()
         {
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.RejectAsync();
+            await message.RejectAsync().ConfigureAwait(false);
 
             message.Handled.Should().BeTrue();
         }
@@ -139,9 +138,9 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task HandledByIsRejectAfterRejectIsCalled()
         {
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.RejectAsync();
+            await message.RejectAsync().ConfigureAwait(false);
 
             message.HandledBy.Should().Be(nameof(message.RejectAsync));
         }
@@ -149,40 +148,40 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public async Task AcknowledgeThrowsIfHandledIsTrue()
         {
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.AcknowledgeAsync();
+            await message.AcknowledgeAsync().ConfigureAwait(false);
 
             Func<Task> act = () => message.AcknowledgeAsync();
 
-            act.Should().Throw<InvalidOperationException>()
-                .WithMessage($"Cannot {nameof(message.AcknowledgeAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.");
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage($"Cannot {nameof(message.AcknowledgeAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.").ConfigureAwait(false);
         }
 
         [Fact]
         public async Task RollbackThrowsIfHandledIsTrue()
         {
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.AcknowledgeAsync();
+            await message.AcknowledgeAsync().ConfigureAwait(false);
 
             Func<Task> act = () => message.RollbackAsync();
 
-            act.Should().Throw<InvalidOperationException>()
-                .WithMessage($"Cannot {nameof(message.RollbackAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.");
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage($"Cannot {nameof(message.RollbackAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.").ConfigureAwait(false);
         }
 
         [Fact]
         public async Task RejectThrowsIfHandledIsTrue()
         {
-            var message = new FakeReceiverMessage("Hello, world!");
+            using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.AcknowledgeAsync();
+            await message.AcknowledgeAsync().ConfigureAwait(false);
 
             Func<Task> act = () => message.RejectAsync();
 
-            act.Should().Throw<InvalidOperationException>()
-                .WithMessage($"Cannot {nameof(message.RejectAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.");
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage($"Cannot {nameof(message.RejectAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.").ConfigureAwait(false);
         }
     }
 }

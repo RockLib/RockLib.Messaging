@@ -1,5 +1,4 @@
-﻿#if !NET451
-using System;
+﻿using System;
 
 namespace RockLib.Messaging.DependencyInjection
 {
@@ -33,4 +32,3 @@ namespace RockLib.Messaging.DependencyInjection
     /// <returns>An <see cref="IReceiver"/>.</returns>
     public delegate IReceiver ReceiverRegistration(IServiceProvider serviceProvider);
 }
-#endif

@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
 using System.Reflection;
 using System.Text;
@@ -30,10 +31,12 @@ namespace RockLib.Messaging
         /// convert it to another type that is valid. If a value cannot be converted, the
         /// function should throw an exception.
         /// </param>
-        public SenderMessage(string payload, bool compress = false, Func<object, object> validateHeaderValue = null)
+        public SenderMessage(string payload, bool compress = false, Func<object, object>? validateHeaderValue = null)
         {
-            if (payload == null)
+            if (payload is null)
+            {
                 throw new ArgumentNullException(nameof(payload));
+            }
 
             _headers = new HeaderDictionary(validateHeaderValue);
             InitAsString(payload, compress, out _stringPayload, out _binaryPayload);
@@ -50,10 +53,12 @@ namespace RockLib.Messaging
         /// convert it to another type that is valid. If a value cannot be converted, the
         /// function should throw an exception.
         /// </param>
-        public SenderMessage(byte[] payload, bool compress = false, Func<object, object> validateHeaderValue = null)
+        public SenderMessage(byte[] payload, bool compress = false, Func<object, object>? validateHeaderValue = null)
         {
-            if (payload == null)
+            if (payload is null)
+            {
                 throw new ArgumentNullException(nameof(payload));
+            }
 
             _headers = new HeaderDictionary(validateHeaderValue, isBinary: true);
             InitAsBinary(payload, compress, out _stringPayload, out _binaryPayload);
@@ -70,21 +75,31 @@ namespace RockLib.Messaging
         /// convert it to another type that is valid. If a value cannot be converted, the
         /// function should throw an exception.
         /// </param>
-        public SenderMessage(IReceiverMessage receiverMessage, Func<object, object> validateHeaderValue = null)
+        public SenderMessage(IReceiverMessage receiverMessage, Func<object, object>? validateHeaderValue = null)
         {
-            if (receiverMessage == null)
+            if (receiverMessage is null)
+            {
                 throw new ArgumentNullException(nameof(receiverMessage));
+            }
 
             _headers = new HeaderDictionary(validateHeaderValue);
 
             if (receiverMessage.IsBinary())
+            {
                 InitAsBinary(receiverMessage.BinaryPayload, receiverMessage.IsCompressed(), out _stringPayload, out _binaryPayload);
+            }
             else
+            {
                 InitAsString(receiverMessage.StringPayload, receiverMessage.IsCompressed(), out _stringPayload, out _binaryPayload);
+            }
 
             foreach (var header in receiverMessage.Headers)
+            {
                 if (header.Key != HeaderNames.MessageId) // Don't copy the message id
+                {
                     _headers[header.Key] = header.Value;
+                }
+            }
         }
 
         /// <summary>
@@ -95,7 +110,9 @@ namespace RockLib.Messaging
         /// <summary>
         /// Gets the payload of the message as a byte array.
         /// </summary>
+#pragma warning disable CA1819 // Properties should not return arrays
         public byte[] BinaryPayload => _binaryPayload.Value;
+#pragma warning restore CA1819 // Properties should not return arrays
 
         /// <summary>
         /// Gets or sets the headers of the message.
@@ -106,16 +123,21 @@ namespace RockLib.Messaging
             set
             {
                 _headers.Clear();
-                if (value != null)
+
+                if (value is not null)
+                {
                     foreach (var header in value)
+                    {
                         _headers.Add(header);
+                    }
+                }
             }
         }
 
         /// <summary>
         /// Gets the ID of the message.
         /// </summary>
-        public string MessageId => Headers.TryGetValue(HeaderNames.MessageId, out var value)
+        public string? MessageId => Headers.TryGetValue(HeaderNames.MessageId, out var value)
             && value is string messageId
                 ? messageId
                 : null;
@@ -126,7 +148,7 @@ namespace RockLib.Messaging
         public bool IsCompressed =>
             Headers.TryGetValue(HeaderNames.IsCompressedPayload, out var value)
                 && ((value is bool isCompressed && isCompressed)
-                    || value is string isCompressedString && isCompressedString.ToLowerInvariant() == "true");
+                    || value is string isCompressedString && isCompressedString.ToUpperInvariant() == "TRUE");
 
         /// <summary>
         /// Gets a value indicating whether the message was constructed with a byte array
@@ -135,16 +157,17 @@ namespace RockLib.Messaging
         public bool IsBinary =>
             Headers.TryGetValue(HeaderNames.IsBinaryPayload, out var value)
                 && ((value is bool isBinary && isBinary)
-                    || value is string isBinaryString && isBinaryString.ToLowerInvariant() == "true");
+                    || value is string isBinaryString && isBinaryString.ToUpperInvariant() == "TRUE");
 
         /// <summary>
         /// Gets or sets the originating system of the message.
         /// </summary>
         public string OriginatingSystem
         {
+            [return: MaybeNull]
             get => Headers.TryGetValue(HeaderNames.OriginatingSystem, out var value) && value is string originatingSystem
                 ? originatingSystem
-                : null;
+                : null!;
             set => Headers[HeaderNames.OriginatingSystem] = value;
         }
 
@@ -154,7 +177,9 @@ namespace RockLib.Messaging
             binaryPayload = new Lazy<byte[]>(() => Encoding.UTF8.GetBytes(payload));
 
             if (compress)
+            {
                 Compress(ref stringPayload, ref binaryPayload);
+            }
         }
 
         private void InitAsBinary(byte[] payload, bool compress, out Lazy<string> stringPayload, out Lazy<byte[]> binaryPayload)
@@ -163,7 +188,9 @@ namespace RockLib.Messaging
             binaryPayload = new Lazy<byte[]>(() => payload);
 
             if (compress)
+            {
                 Compress(ref stringPayload, ref binaryPayload);
+            }
         }
 
         private void Compress(ref Lazy<string> stringPayload, ref Lazy<byte[]> binaryPayload)
@@ -181,26 +208,47 @@ namespace RockLib.Messaging
 
         private static object DefaultValidateHeaderValue(object value)
         {
-            if (value == null)
+            if (value is null)
+            {
                 throw new ArgumentNullException(nameof(value), "Value cannot be null.");
+            }
+
             if (value is bool b)
+            {
                 return b ? "true" : "false";
-            if (value is string || value is decimal || value.GetType().GetTypeInfo().IsPrimitive)
+            }
+            if (value is string || value is decimal || value.GetType().IsPrimitive)
+            {
                 return value;
+            }
             if (value is Enum e)
+            {
                 return e.ToString();
+            }
             if (value is DateTime dateTime)
+            {
                 return dateTime.ToString("O");
+            }
             if (value is TimeSpan timeSpan)
+            {
                 return timeSpan.ToString("c");
+            }
             if (value is Guid guid)
+            {
                 return guid.ToString("D");
+            }
             if (value is Uri uri)
+            {
                 return uri.ToString();
+            }
             if (value is DateTimeOffset dateTimeOffset)
+            {
                 return dateTimeOffset.ToString("O");
+            }
             if (value is ContentType contentType)
+            {
                 return contentType.ToString();
+            }
             throw new ArgumentException("Header value must be primitive or enum type or one of: String, Decimal, DateTime, TimeSpan, Guid, Uri, or DateTimeOffset.", nameof(value));
         }
 
@@ -214,12 +262,14 @@ namespace RockLib.Messaging
             /// <see cref="Guid"/>. If the <paramref name="isBinary"/> parameter is true,
             /// then the <see cref="HeaderNames.IsBinaryPayload"/> header is set to true.
             /// </summary>
-            public HeaderDictionary(Func<object, object> validateValue, bool isBinary = false)
+            public HeaderDictionary(Func<object, object>? validateValue, bool isBinary = false)
             {
                 ValidateValue = validateValue ?? DefaultValidateHeaderValue;
                 this[HeaderNames.MessageId] = Guid.NewGuid();
                 if (isBinary)
+                {
                     this[HeaderNames.IsBinaryPayload] = true;
+                }
             }
 
             public void Clear()
@@ -253,7 +303,11 @@ namespace RockLib.Messaging
             public IEnumerator<KeyValuePair<string, object>> GetEnumerator() => _headers.GetEnumerator();
             public bool Remove(string key) => _headers.Remove(key);
             public bool Remove(KeyValuePair<string, object> item) => _headers.Remove(item);
+#if NET48
             public bool TryGetValue(string key, out object value) => _headers.TryGetValue(key, out value);
+#else
+            public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value) => _headers.TryGetValue(key, out value);
+#endif
             IEnumerator IEnumerable.GetEnumerator() => _headers.GetEnumerator();
         }
     }

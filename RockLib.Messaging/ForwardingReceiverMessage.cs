@@ -12,9 +12,9 @@ namespace RockLib.Messaging
     /// </summary>
     public class ForwardingReceiverMessage : IReceiverMessage
     {
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _semaphore = new(1, 1);
 
-        private string _handledBy;
+        private string? _handledBy;
 
         internal ForwardingReceiverMessage(ForwardingReceiver forwardingReceiver, IReceiverMessage message)
         {
@@ -45,7 +45,9 @@ namespace RockLib.Messaging
         /// Gets the <see cref="IReceiverMessage.BinaryPayload"/> of the actual
         /// <see cref="IReceiverMessage"/> that was received.
         /// </summary>
+#pragma warning disable CA1819 // Properties should not return arrays
         public byte[] BinaryPayload => Message.BinaryPayload;
+#pragma warning restore CA1819 // Properties should not return arrays
 
         /// <summary>
         /// Gets the <see cref="IReceiverMessage.Headers"/> of the actual
@@ -58,7 +60,7 @@ namespace RockLib.Messaging
         /// <see cref="AcknowledgeAsync"/>, <see cref="RollbackAsync"/> or <see cref="RejectAsync"/>
         /// methods.
         /// </summary>
-        public bool Handled => _handledBy != null;
+        public bool Handled => _handledBy is not null;
 
         /// <summary>
         /// Indicates that the message was successfully processed and should not
@@ -77,7 +79,7 @@ namespace RockLib.Messaging
             try
             {
                 ThrowIfHandled();
-                if (ForwardingReceiver.AcknowledgeForwarder != null)
+                if (ForwardingReceiver.AcknowledgeForwarder is not null)
                 {
                     await ForwardingReceiver.AcknowledgeForwarder.SendAsync(Message.ToSenderMessage(), cancellationToken).ConfigureAwait(false);
                     await HandleForwardedMessageAsync(ForwardingReceiver.AcknowledgeOutcome, cancellationToken).ConfigureAwait(false);
@@ -111,7 +113,7 @@ namespace RockLib.Messaging
             try
             {
                 ThrowIfHandled();
-                if (ForwardingReceiver.RollbackForwarder != null)
+                if (ForwardingReceiver.RollbackForwarder is not null)
                 {
                     await ForwardingReceiver.RollbackForwarder.SendAsync(Message.ToSenderMessage(), cancellationToken).ConfigureAwait(false);
                     await HandleForwardedMessageAsync(ForwardingReceiver.RollbackOutcome, cancellationToken).ConfigureAwait(false);
@@ -145,7 +147,7 @@ namespace RockLib.Messaging
             try
             {
                 ThrowIfHandled();
-                if (ForwardingReceiver.RejectForwarder != null)
+                if (ForwardingReceiver.RejectForwarder is not null)
                 {
                     await ForwardingReceiver.RejectForwarder.SendAsync(Message.ToSenderMessage(), cancellationToken).ConfigureAwait(false);
                     await HandleForwardedMessageAsync(ForwardingReceiver.RejectOutcome, cancellationToken).ConfigureAwait(false);
@@ -164,26 +166,24 @@ namespace RockLib.Messaging
 
         private Task HandleForwardedMessageAsync(ForwardingOutcome outcome, CancellationToken cancellationToken)
         {
-            switch (outcome)
+            return outcome switch
             {
-                case ForwardingOutcome.Acknowledge:
-                    return Message.AcknowledgeAsync(cancellationToken);
-                case ForwardingOutcome.Rollback:
-                    return Message.RollbackAsync(cancellationToken);
-                case ForwardingOutcome.Reject:
-                    return Message.RejectAsync(cancellationToken);
-                default:
-                    throw new InvalidOperationException("Invalid ForwardingOutcome value.");
+                ForwardingOutcome.Acknowledge => Message.AcknowledgeAsync(cancellationToken),
+                ForwardingOutcome.Rollback => Message.RollbackAsync(cancellationToken),
+                ForwardingOutcome.Reject => Message.RejectAsync(cancellationToken),
+                _ => throw new InvalidOperationException("Invalid ForwardingOutcome value."),
+            };
+        }
+
+        private void ThrowIfHandled([CallerMemberName] string? callerMemberName = null)
+        {
+            if (Handled)
+            {
+                throw new InvalidOperationException($"Cannot {callerMemberName} message: the message has already been handled by {_handledBy}.");
             }
         }
 
-        private void ThrowIfHandled([CallerMemberName] string callerMemberName = null)
-        {
-            if (Handled)
-                throw new InvalidOperationException($"Cannot {callerMemberName} message: the message has already been handled by {_handledBy}.");
-        }
-
-        private void SetHandled([CallerMemberName] string callerMemberName = null)
+        private void SetHandled([CallerMemberName] string? callerMemberName = null)
         {
             _handledBy = callerMemberName;
         }

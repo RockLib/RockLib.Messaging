@@ -1,5 +1,4 @@
-﻿#if !NET451
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,7 +9,7 @@ namespace RockLib.Messaging.DependencyInjection
         where TSenderOptions : class, new()
     {
         public ReloadingSender(string name, Func<TSenderOptions, ISender> createSender,
-            IOptionsMonitor<TSenderOptions> optionsMonitor, Action<TSenderOptions> configureOptions)
+            IOptionsMonitor<TSenderOptions> optionsMonitor, Action<TSenderOptions>? configureOptions)
         {
             Name = name;
             CreateSender = createSender;
@@ -27,7 +26,7 @@ namespace RockLib.Messaging.DependencyInjection
 
         public Func<TSenderOptions, ISender> CreateSender { get; }
 
-        public Action<TSenderOptions> ConfigureOptions { get; }
+        public Action<TSenderOptions>? ConfigureOptions { get; }
 
         public IDisposable ChangeListener { get; }
 
@@ -55,4 +54,3 @@ namespace RockLib.Messaging.DependencyInjection
         }
     }
 }
-#endif

@@ -8,8 +8,8 @@ namespace RockLib.Messaging.Tests
         [Fact]
         public void SettingMessageHandlerSetsTheMessageHandlerOfTheReceiverToAForwardingMessageHandler()
         {
-            var receiver = new FakeReceiver();
-            var forwardingReceiver = new ForwardingReceiver("foo", receiver);
+            using var receiver = new FakeReceiver();
+            using var forwardingReceiver = new ForwardingReceiver("foo", receiver);
 
             var messageHandler = new FakeMessageHandler();
 
