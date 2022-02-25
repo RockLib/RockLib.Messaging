@@ -13,6 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Changed
 - Supported targets: net6.0, netcoreapp3.1, and net48.
 - As the package now uses nullable reference types, some method parameters now specify if they can accept nullable values.
+- Sync-over-async or synchronous methods that have asynchronous counterparts have now been marked with `[Obsolete]` such that it's an error to use that member. This includes:
+  - `OnMessageReceivedDelegate`
+  - `ReceiverExtensions.Start`
+  - `ReceiverMessageExtensions.Acknowledge`
+  - `ReceiverMessageExtensions.Rollback`
+  - `ReceiverMessageExtensions.Reject`
+  - `SenderExtensions.Send`
 
 ## 2.5.3 - 2021-08-12
 

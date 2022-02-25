@@ -217,7 +217,7 @@ namespace RockLib.Messaging
             {
                 return b ? "true" : "false";
             }
-            if (value is string || value is decimal || value.GetType().GetTypeInfo().IsPrimitive)
+            if (value is string || value is decimal || value.GetType().IsPrimitive)
             {
                 return value;
             }

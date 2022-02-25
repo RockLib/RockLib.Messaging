@@ -48,7 +48,7 @@ namespace RockLib.Messaging
         /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-        public static Task SendAsync(this ISender source, string message, CancellationToken cancellationToken = default(CancellationToken))
+        public static Task SendAsync(this ISender source, string message, CancellationToken cancellationToken = default)
         {
             if (source is null)
             {
@@ -73,7 +73,7 @@ namespace RockLib.Messaging
         /// <param name="source">The <see cref="ISender"/> from which to send the message.</param>
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-        public static Task SendAsync(this ISender source, byte[] message, CancellationToken cancellationToken = default(CancellationToken))
+        public static Task SendAsync(this ISender source, byte[] message, CancellationToken cancellationToken = default)
         {
             if (source is null)
             {

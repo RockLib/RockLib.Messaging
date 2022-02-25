@@ -24,7 +24,7 @@ namespace RockLib.Messaging.Tests
         {
             var services = new ServiceCollection();
 
-            services.AddSingleton(Config.Root);
+            services.AddSingleton(Config.Root!);
 
             services.AddSender("MyTestSenderDecorator");
 
@@ -38,7 +38,7 @@ namespace RockLib.Messaging.Tests
         {
             var services = new ServiceCollection();
 
-            services.AddSingleton(Config.Root);
+            services.AddSingleton(Config.Root!);
 
             services.AddReceiver("MyTestReceiverDecorator");
 

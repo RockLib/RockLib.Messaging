@@ -219,7 +219,7 @@ namespace RockLib.Messaging.Tests
 #pragma warning disable CA1812
         private class TestReceiver : Receiver
         {
-            public TestReceiver(Point location = default(Point), ITestDependency? dependency = null)
+            public TestReceiver(Point location = default, ITestDependency? dependency = null)
                 : base(nameof(TestReceiver))
             {
                 Location = location;
@@ -237,7 +237,7 @@ namespace RockLib.Messaging.Tests
 
         private class TestSender : ISender
         {
-            public TestSender(Point location = default(Point), ITestDependency? dependency = null)
+            public TestSender(Point location = default, ITestDependency? dependency = null)
             {
                 Name = nameof(TestSender);
                 Location = location;

@@ -43,7 +43,7 @@ namespace RockLib.Messaging.DependencyInjection
             return services.AddSender(serviceProvider =>
             {
                 var messagingSection = GetMessagingSection(serviceProvider);
-                var resolver = new Resolver(serviceProvider.GetService, CanResolve);
+                var resolver = new Resolver(serviceProvider.GetService!, CanResolve);
 
                 return messagingSection.CreateSender(senderName, resolver: resolver);
             }, lifetime);
@@ -172,7 +172,7 @@ namespace RockLib.Messaging.DependencyInjection
             return services.AddTransactionalSender(serviceProvider =>
             {
                 var messagingSection = GetMessagingSection(serviceProvider);
-                var resolver = new Resolver(serviceProvider.GetService, CanResolve);
+                var resolver = new Resolver(serviceProvider.GetService!, CanResolve);
 
                 return (ITransactionalSender)messagingSection.CreateSender(senderName, resolver: resolver);
             }, lifetime);
@@ -239,7 +239,7 @@ namespace RockLib.Messaging.DependencyInjection
             return services.AddReceiver(serviceProvider =>
             {
                 var messagingSection = GetMessagingSection(serviceProvider);
-                var resolver = new Resolver(serviceProvider.GetService, CanResolve);
+                var resolver = new Resolver(serviceProvider.GetService!, CanResolve);
 
                 return messagingSection.CreateReceiver(receiverName, resolver: resolver);
             }, lifetime);

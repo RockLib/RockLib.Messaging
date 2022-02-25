@@ -17,7 +17,7 @@ namespace RockLib.Messaging
     public static class MessagingScenarioFactory
     {
         private static readonly Semimutable<IConfiguration> _configuration =
-            new Semimutable<IConfiguration>(() => Config.Root.GetCompositeSection("RockLib_Messaging", "RockLib.Messaging"));
+            new Semimutable<IConfiguration>(() => Config.Root!.GetCompositeSection("RockLib_Messaging", "RockLib.Messaging"));
 
         /// <summary>
         /// Sets the value of the <see cref="Configuration"/> property. Note that this
@@ -31,7 +31,7 @@ namespace RockLib.Messaging
         /// Gets the instance of <see cref="IConfiguration"/> used by
         /// <see cref="MessagingScenarioFactory"/> to construct messaging scenarios.
         /// </summary>
-        public static IConfiguration Configuration => _configuration.Value;
+        public static IConfiguration Configuration => _configuration.Value!;
 
         /// <summary>
         /// Creates an instance of the <see cref="ISender"/> interface identified by
@@ -197,7 +197,7 @@ namespace RockLib.Messaging
                     {
                         return reloadOnConfigChange
                             ? child.CreateReloadingProxy<T>(defaultTypes, valueConverters, resolver)
-                            : child.Create<T>(defaultTypes, valueConverters, resolver);
+                            : child.Create<T>(defaultTypes, valueConverters, resolver)!;
                     }
                 }
             }
@@ -205,7 +205,7 @@ namespace RockLib.Messaging
             {
                 return reloadOnConfigChange
                     ? section.CreateReloadingProxy<T>(defaultTypes, valueConverters, resolver)
-                    : section.Create<T>(defaultTypes, valueConverters, resolver);
+                    : section.Create<T>(defaultTypes, valueConverters, resolver)!;
             }
 
             throw new KeyNotFoundException($"No {sectionName} were found matching the name '{scenarioName}'.");
