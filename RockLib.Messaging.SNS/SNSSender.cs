@@ -12,6 +12,8 @@ namespace RockLib.Messaging.SNS
     /// </summary>
     public class SNSSender : ISender
     {
+        private bool disposedValue;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SNSSender"/> class.
         /// Uses a default implementation of the <see cref="IAmazonSimpleNotificationService"/> to
@@ -20,8 +22,8 @@ namespace RockLib.Messaging.SNS
         /// <param name="name">The name of the sender.</param>
         /// <param name="topicArn">The arn of the SNS topic.</param>
         /// <param name="region">The region of the SNS topic.</param>
-        public SNSSender(string name, string topicArn, string region = null)
-            : this(region == null ? new AmazonSimpleNotificationServiceClient() : new AmazonSimpleNotificationServiceClient(RegionEndpoint.GetBySystemName(region)), name, topicArn)
+        public SNSSender(string name, string topicArn, string? region = null)
+            : this(region is null ? new AmazonSimpleNotificationServiceClient() : new AmazonSimpleNotificationServiceClient(RegionEndpoint.GetBySystemName(region)), name, topicArn)
         {
         }
 
@@ -61,8 +63,15 @@ namespace RockLib.Messaging.SNS
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
         {
-            if (message.OriginatingSystem == null)
+            if (message is null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            if (message.OriginatingSystem is null)
+            {
                 message.OriginatingSystem = "SNS";
+            }
 
             var publishMessage = new PublishRequest(TopicArn, message.StringPayload);
 
@@ -76,11 +85,29 @@ namespace RockLib.Messaging.SNS
         }
 
         /// <summary>
+        /// Disposes managed resources
+        /// </summary>
+        /// <param name="disposing">Is this being disposed from <see cref="Dispose()"/> or the finalizer?</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    SnsClient.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        /// <summary>
         /// Disposes the backing <see cref="IAmazonSimpleNotificationService"/> field.
         /// </summary>
         public void Dispose()
         {
-            SnsClient.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

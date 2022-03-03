@@ -1,6 +1,6 @@
-﻿#if !NET451
-using RockLib.Messaging.SNS;
+﻿using RockLib.Messaging.SNS;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RockLib.Messaging.DependencyInjection
 {
@@ -9,21 +9,20 @@ namespace RockLib.Messaging.DependencyInjection
     /// </summary>
     public class SNSSenderOptions
     {
-        private string _topicArn;
+        private string? _topicArn;
 
         /// <summary>
         /// Gets or sets the arn of the SNS topic.
         /// </summary>
         public string TopicArn
         {
-            get => _topicArn;
+            [return: MaybeNull] get => _topicArn!;
             set => _topicArn = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>
         /// Gets or sets the region of the SNS topic.
         /// </summary>
-        public string Region { get; set; }
+        public string? Region { get; set; }
     }
 }
-#endif

@@ -8,10 +8,10 @@ using Xunit;
 
 namespace RockLib.Messaging.SNS.Tests
 {
-    public class DependencyInjectionTests
+    public static class DependencyInjectionTests
     {
         [Fact]
-        public void SNSSenderTest1()
+        public static void SendViaSNSSender()
         {
             var services = new ServiceCollection();
             services.Configure<SNSSenderOptions>(options => { });
@@ -34,9 +34,9 @@ namespace RockLib.Messaging.SNS.Tests
         }
 
         [Fact]
-        public void SNSSenderTest2()
+        public static void SendViaReloadingSender()
         {
-            var reloadingSenderType = Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingSender`1, RockLib.Messaging", true)
+            var reloadingSenderType = Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingSender`1, RockLib.Messaging", true)!
                .MakeGenericType(typeof(SNSSenderOptions));
 
             var services = new ServiceCollection();
