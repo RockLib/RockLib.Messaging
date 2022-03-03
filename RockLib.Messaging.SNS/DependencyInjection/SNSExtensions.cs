@@ -1,5 +1,4 @@
-﻿#if !NET451
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using RockLib.Messaging.SNS;
 using System;
 
@@ -22,7 +21,7 @@ namespace RockLib.Messaging.DependencyInjection
         /// </param>
         /// <returns>A builder allowing the sender to be decorated.</returns>
         public static ISenderBuilder AddSNSSender(this IServiceCollection services, string name,
-            Action<SNSSenderOptions> configureOptions = null, bool reloadOnChange = true)
+            Action<SNSSenderOptions>? configureOptions = null, bool reloadOnChange = true)
         {
             return services.AddSender(name, CreateSNSSender, configureOptions, reloadOnChange);
 
@@ -42,4 +41,3 @@ namespace RockLib.Messaging.DependencyInjection
             services.AddSNSSender(name, configureOptions, true);
     }
 }
-#endif
