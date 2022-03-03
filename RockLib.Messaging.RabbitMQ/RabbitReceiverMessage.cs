@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
+using System;
 
 namespace RockLib.Messaging.RabbitMQ
 {
@@ -13,8 +14,6 @@ namespace RockLib.Messaging.RabbitMQ
     /// </summary>
     public sealed class RabbitReceiverMessage : ReceiverMessage
     {
-        private static readonly Task CompletedTask = Task.FromResult(0);
-
         private readonly BasicDeliverEventArgs _args;
         private readonly IModel _channel;
         private readonly bool _autoAck;
@@ -30,15 +29,26 @@ namespace RockLib.Messaging.RabbitMQ
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
+            if (headers is null) 
+            { 
+                throw new ArgumentNullException(nameof(headers)); 
+            }
+
             if (_args.BasicProperties?.Headers == null)
+            {
                 return;
+            }
 
             foreach (var header in _args.BasicProperties.Headers)
             {
                 if (header.Value is byte[] binary)
+                {
                     headers.Add(header.Key, Encoding.UTF8.GetString(binary));
+                }
                 else
+                {
                     headers.Add(header);
+                }
             }
         }
 
@@ -46,24 +56,30 @@ namespace RockLib.Messaging.RabbitMQ
         protected override Task AcknowledgeMessageAsync(CancellationToken cancellationToken)
         {
             if (!_autoAck)
+            {
                 _channel.BasicAck(_args.DeliveryTag, false);
-            return CompletedTask;
+            }
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
         protected override Task RollbackMessageAsync(CancellationToken cancellationToken)
         {
             if (!_autoAck)
+            {
                 _channel.BasicNack(_args.DeliveryTag, false, true);
-            return CompletedTask;
+            }
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
         protected override Task RejectMessageAsync(CancellationToken cancellationToken)
         {
             if (!_autoAck)
+            {
                 _channel.BasicNack(_args.DeliveryTag, false, false);
-            return CompletedTask;
+            }
+            return Task.CompletedTask;
         }
     }
 }

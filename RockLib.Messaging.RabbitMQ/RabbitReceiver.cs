@@ -44,7 +44,7 @@ namespace RockLib.Messaging.RabbitMQ
         /// </param>
         public RabbitReceiver(string name,
             [DefaultType(typeof(ConnectionFactory))] IConnectionFactory connection,
-            string queue = null, string exchange = null, IReadOnlyCollection<string> routingKeys = null,
+            string? queue = null, string? exchange = null, IReadOnlyCollection<string>? routingKeys = null,
             ushort? prefetchCount = null, bool autoAck = false)
             : base(name)
         {
@@ -63,13 +63,21 @@ namespace RockLib.Messaging.RabbitMQ
                 if (!string.IsNullOrEmpty(Exchange))
                 {
                     if (string.IsNullOrEmpty(Queue))
+                    {
                         Queue = channel.QueueDeclare().QueueName;
+                    }
 
                     if (RoutingKeys == null || RoutingKeys.Count == 0)
+                    {
                         channel.QueueBind(Queue, Exchange, "");
+                    }
                     else
+                    {
                         foreach (var routingKey in RoutingKeys)
+                        {
                             channel.QueueBind(Queue, Exchange, routingKey ?? "");
+                        }
+                    }
                 }
 
                 return channel;
@@ -79,17 +87,17 @@ namespace RockLib.Messaging.RabbitMQ
         /// <summary>
         /// Gets the name of the queue to receive messages from.
         /// </summary>
-        public string Queue { get; private set; }
+        public string? Queue { get; private set; }
 
         /// <summary>
         /// Gets the name of the exchange to bind the queue to.
         /// </summary>
-        public string Exchange { get; }
+        public string? Exchange { get; }
 
         /// <summary>
         /// Gets the collection of routing keys used to bind the queue and exchange.
         /// </summary>
-        public IReadOnlyCollection<string> RoutingKeys { get; }
+        public IReadOnlyCollection<string>? RoutingKeys { get; }
 
         /// <summary>
         /// Gets the maximum number of messages that the server will deliver to the
@@ -117,7 +125,9 @@ namespace RockLib.Messaging.RabbitMQ
         protected override void Start()
         {
             if (PrefetchCount.HasValue)
+            {
                 Channel.BasicQos(0, PrefetchCount.Value, false);
+            }
 
             var consumer = new EventingBasicConsumer(Channel);
             consumer.Received += OnReceived;
@@ -125,14 +135,17 @@ namespace RockLib.Messaging.RabbitMQ
             Channel.BasicConsume(Queue, AutoAck, consumer);
         }
 
-        private async void OnReceived(object s, BasicDeliverEventArgs e)
+        private async void OnReceived(object? s, BasicDeliverEventArgs e)
         {
             try
             {
-                var message = new RabbitReceiverMessage(e, Channel, AutoAck);
-                await MessageHandler.OnMessageReceivedAsync(this, message).ConfigureAwait(false);
+                using var message = new RabbitReceiverMessage(e, Channel, AutoAck);
+                await MessageHandler!.OnMessageReceivedAsync(this, message).ConfigureAwait(false);
             }
+            // We'd love to do better exception handling here, but...
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 OnError("Error in message handler.", ex);
             }
@@ -144,10 +157,14 @@ namespace RockLib.Messaging.RabbitMQ
             base.Dispose(disposing);
 
             if (_channel.IsValueCreated)
+            {
                 Channel.Dispose();
+            }
 
             if (_connection.IsValueCreated)
+            {
                 Connection.Dispose();
+            }
         }
     }
 }

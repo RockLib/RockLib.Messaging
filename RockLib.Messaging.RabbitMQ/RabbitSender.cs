@@ -11,8 +11,6 @@ namespace RockLib.Messaging.RabbitMQ
     /// </summary>
     public sealed class RabbitSender : ISender
     {
-        private static readonly Task CompletedTask = Task.FromResult(0);
-
         private readonly Lazy<IConnection> _connection;
         private readonly Lazy<IModel> _channel;
 
@@ -31,9 +29,9 @@ namespace RockLib.Messaging.RabbitMQ
         /// <param name="persistent">
         /// Whether the RabbitMQ server should save the message to disk upon receipt.
         /// </param>
-        public RabbitSender(string name, 
+        public RabbitSender(string name,
             [DefaultType(typeof(ConnectionFactory))] IConnectionFactory connection,
-            string exchange = null, string routingKey = null, string routingKeyHeaderName = null, bool persistent = true)
+            string? exchange = null, string? routingKey = null, string? routingKeyHeaderName = null, bool persistent = true)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Exchange = exchange ?? "";
@@ -54,22 +52,31 @@ namespace RockLib.Messaging.RabbitMQ
         /// </param>
         public Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
         {
-            if (message.OriginatingSystem == null)
+            if (message is null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            if (message.OriginatingSystem is null)
+            {
                 message.OriginatingSystem = "RabbitMQ";
+            }
 
             var properties = Channel.CreateBasicProperties();
 
             properties.Headers = message.Headers;
 
             if (Persistent)
+            {
                 properties.Persistent = true;
+            }
 
             // TODO: Should we set any properties (e.g. ContentType, ContentEncoding) on properties here?
             // TODO: Should we support having a different routing key per message (possibly embedded in Headers)?
 
             Channel.BasicPublish(Exchange, GetRoutingKey(message), properties, message.BinaryPayload);
 
-            return CompletedTask;
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -92,7 +99,7 @@ namespace RockLib.Messaging.RabbitMQ
         /// messages. Each message sent that has a header with this name will be sent with a
         /// routing key of the header value.
         /// </summary>
-        public string RoutingKeyHeaderName { get; }
+        public string? RoutingKeyHeaderName { get; }
 
         /// <summary>
         /// Gets a value indicating whether the RabbitMQ server should save the message to
@@ -116,15 +123,19 @@ namespace RockLib.Messaging.RabbitMQ
         public void Dispose()
         {
             if (_channel.IsValueCreated)
+            {
                 Channel.Dispose();
+            }
 
             if (_connection.IsValueCreated)
+            {
                 Connection.Dispose();
+            }
         }
 
         private string GetRoutingKey(SenderMessage message)
         {
-            if (RoutingKeyHeaderName != null && message.Headers.TryGetValue(RoutingKeyHeaderName, out var value))
+            if (RoutingKeyHeaderName is not null && message.Headers.TryGetValue(RoutingKeyHeaderName, out var value))
             {
                 switch (value)
                 {
@@ -133,7 +144,7 @@ namespace RockLib.Messaging.RabbitMQ
                     case null:
                         break;
                     default:
-                        return value.ToString();
+                        return value.ToString()!;
                 }
             }
 

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29926.136
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32126.317
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging", "RockLib.Messaging\RockLib.Messaging.csproj", "{E1860FD3-54D8-4EDB-82E0-E61ED8725F20}"
 EndProject
@@ -77,6 +77,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Application.Testing", "Examples\Example.Application.Testing\Example.Application.Testing.csproj", "{7221DFC0-ED53-4F4D-8CB7-163FEEF1E5F8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{E0DCFF2B-2FF3-47DD-AB84-322B34873554}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockLib.Messaging.RabbitMQ.Tests", "RockLib.Messaging.RabbitMQ.Tests\RockLib.Messaging.RabbitMQ.Tests.csproj", "{5A9B2950-BD39-4ED6-8B52-CB5638B7A0A4}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -189,6 +191,10 @@ Global
 		{7221DFC0-ED53-4F4D-8CB7-163FEEF1E5F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7221DFC0-ED53-4F4D-8CB7-163FEEF1E5F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7221DFC0-ED53-4F4D-8CB7-163FEEF1E5F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A9B2950-BD39-4ED6-8B52-CB5638B7A0A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A9B2950-BD39-4ED6-8B52-CB5638B7A0A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A9B2950-BD39-4ED6-8B52-CB5638B7A0A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A9B2950-BD39-4ED6-8B52-CB5638B7A0A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -211,6 +217,7 @@ Global
 		{B7B9E920-3251-4AE6-AA83-5147EC3403E6} = {E0DCFF2B-2FF3-47DD-AB84-322B34873554}
 		{13418188-1DFE-48F4-9103-B592B34023B2} = {4D9FDDA2-CE7E-4B49-AADE-20745A52064C}
 		{7221DFC0-ED53-4F4D-8CB7-163FEEF1E5F8} = {4D9FDDA2-CE7E-4B49-AADE-20745A52064C}
+		{5A9B2950-BD39-4ED6-8B52-CB5638B7A0A4} = {E0DCFF2B-2FF3-47DD-AB84-322B34873554}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3FEE2AF4-936B-474F-A3C0-7118F5655DCC}
