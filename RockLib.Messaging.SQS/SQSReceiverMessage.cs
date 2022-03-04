@@ -44,27 +44,36 @@ namespace RockLib.Messaging.SQS
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
-            if (TryGetSNSMessage(Message.Body, _unpackSns, out var snsMessage))
+            if (headers is null)
             {
-                headers["TopicARN"] = snsMessage.TopicARN;
-
-                foreach (var attribute in snsMessage.MessageAttributes)
-                    headers[attribute.Key] = attribute.Value.Value;
+                throw new ArgumentNullException(nameof(headers));
             }
             else
             {
-                foreach (var attribute in Message.Attributes)
-                    headers[$"SQS.{attribute.Key}"] = attribute.Value;
+                if (TryGetSNSMessage(Message.Body, _unpackSns, out var snsMessage))
+                {
+               
+                
+                    headers["TopicARN"] = snsMessage.TopicARN!;
 
-                foreach (var attribute in Message.MessageAttributes)
-                    headers[attribute.Key] = attribute.Value.StringValue;
+                    foreach (var attribute in snsMessage.MessageAttributes)
+                        headers[attribute.Key] = attribute.Value.Value!;
+                }
+                else
+                {
+                    foreach (var attribute in Message.Attributes)
+                        headers[$"SQS.{attribute.Key}"] = attribute.Value;
+
+                    foreach (var attribute in Message.MessageAttributes)
+                        headers[attribute.Key] = attribute.Value.StringValue;
+                }
             }
         }
 
         private static string GetRawPayload(string messageBody, bool unpackSNS)
         {
             if (TryGetSNSMessage(messageBody, unpackSNS, out var snsMessage))
-                return snsMessage.Message;
+                return snsMessage.Message!;
 
             return messageBody;
         }
@@ -75,27 +84,29 @@ namespace RockLib.Messaging.SQS
             {
                 try
                 {
-                    snsMessage = JsonConvert.DeserializeObject<SNSMessage>(messageBody);
-                    if (snsMessage.TopicARN != null && snsMessage.TopicARN.StartsWith("arn:"))
+                    snsMessage = JsonConvert.DeserializeObject<SNSMessage>(messageBody)!;
+                    if (snsMessage.TopicARN is not null && snsMessage.TopicARN.StartsWith("arn:", StringComparison.InvariantCultureIgnoreCase))
                         return true;
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
             }
 
-            snsMessage = null;
+            snsMessage = null!;
             return false;
         }
 
         private class SNSMessage
         {
-            public string TopicARN { get; set; }
-            public string Message { get; set; }
+            public string? TopicARN { get; set; }
+            public string? Message { get; set; }
             public Dictionary<string, MessageAttribute> MessageAttributes { get; } = new Dictionary<string, MessageAttribute>();
         }
 
         private class MessageAttribute
         {
-            public string Value { get; set; }
+            public string? Value { get; set; }
         }
     }
 }

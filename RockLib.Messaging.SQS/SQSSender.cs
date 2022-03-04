@@ -12,6 +12,8 @@ namespace RockLib.Messaging.SQS
     /// </summary>
     public class SQSSender : ISender
     {
+        private bool disposedValue;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SQSReceiver"/> class.
         /// Uses a default implementation of the <see cref="AmazonSQSClient"/> to
@@ -20,8 +22,8 @@ namespace RockLib.Messaging.SQS
         /// <param name="name">The name of the sender.</param>
         /// <param name="queueUrl">The url of the SQS queue.</param>
         /// <param name="region">The region of the SQS queue.</param>
-        public SQSSender(string name, string queueUrl, string region)
-            : this(name, queueUrl, region, null)
+        public SQSSender(string name, Uri queueUrl, string region)
+            : this(name, queueUrl, region, null!)
         {
         }
 
@@ -43,8 +45,8 @@ namespace RockLib.Messaging.SQS
         /// fashion.
         /// <para>This parameter applies only to FIFO (first-in-first-out) queues.</para>
         /// </param>
-        public SQSSender(string name, string queueUrl, string region = null, string messageGroupId = null)
-           : this(region == null ? new AmazonSQSClient() : new AmazonSQSClient(RegionEndpoint.GetBySystemName(region)), name, queueUrl, messageGroupId)
+        public SQSSender(string name, Uri queueUrl, string? region = null, string? messageGroupId = null)
+           : this(region is null ? new AmazonSQSClient() : new AmazonSQSClient(RegionEndpoint.GetBySystemName(region)), name, queueUrl, messageGroupId!)
         {
         }
 
@@ -54,8 +56,8 @@ namespace RockLib.Messaging.SQS
         /// <param name="sqs">An object that communicates with SQS.</param>
         /// <param name="name">The name of the sender.</param>
         /// <param name="queueUrl">The url of the SQS queue.</param>
-        public SQSSender(IAmazonSQS sqs, string name, string queueUrl)
-            : this(sqs, name, queueUrl, null)
+        public SQSSender(IAmazonSQS sqs, string name, Uri queueUrl)
+            : this(sqs, name, queueUrl, null!)
         {
         }
 
@@ -75,7 +77,7 @@ namespace RockLib.Messaging.SQS
         /// fashion.
         /// <para>This parameter applies only to FIFO (first-in-first-out) queues.</para>
         /// </param>
-        public SQSSender(IAmazonSQS sqs, string name, string queueUrl, string messageGroupId)
+        public SQSSender(IAmazonSQS sqs, string name, Uri queueUrl, string messageGroupId)
         {
             SQSClient = sqs ?? throw new ArgumentNullException(nameof(sqs));
             Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -91,7 +93,7 @@ namespace RockLib.Messaging.SQS
         /// <summary>
         /// Gets the url of the SQS queue.
         /// </summary>
-        public string QueueUrl { get; }
+        public Uri QueueUrl { get; }
 
         /// <summary>
         /// Gets the tag that specifies that a message belongs to a specific message group.
@@ -117,38 +119,62 @@ namespace RockLib.Messaging.SQS
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
         {
-            if (message.OriginatingSystem == null)
-                message.OriginatingSystem = "SQS";
-
-            var sendMessageRequest = new SendMessageRequest(QueueUrl, message.StringPayload);
-
-            if (message.Headers.TryGetValue("SQS.MessageGroupId", out var value) && value != null)
+            if (message is null)
             {
-                sendMessageRequest.MessageGroupId = value.ToString();
-                message.Headers.Remove("SQS.MessageGroupId");
+                throw new ArgumentNullException(nameof(message));
             }
-            else if (MessageGroupId != null)
-                sendMessageRequest.MessageGroupId = MessageGroupId;
+            else
+            { 
+                if (message.OriginatingSystem is null)
+                    message.OriginatingSystem = "SQS";
 
-            if (message.Headers.TryGetValue("SQS.MessageDeduplicationId", out value) && value != null)
+                var sendMessageRequest = new SendMessageRequest(QueueUrl.OriginalString, message.StringPayload);
+
+                if (message.Headers.TryGetValue("SQS.MessageGroupId", out var value) && value is not null)
+                {
+                    sendMessageRequest.MessageGroupId = value.ToString();
+                    message.Headers.Remove("SQS.MessageGroupId");
+                }
+                else if (MessageGroupId is not null)
+                    sendMessageRequest.MessageGroupId = MessageGroupId;
+
+                if (message.Headers.TryGetValue("SQS.MessageDeduplicationId", out value) && value is not null)
+                {
+                    sendMessageRequest.MessageDeduplicationId = value.ToString();
+                    message.Headers.Remove("SQS.MessageDeduplicationId");
+                }
+
+                if (message.Headers.TryGetValue("SQS.DelaySeconds", out value) && value is not null)
+                {
+                    sendMessageRequest.DelaySeconds = (int)value;
+                    message.Headers.Remove("SQS.DelaySeconds");
+                }
+
+                foreach (var header in message.Headers)
+                {
+                    sendMessageRequest.MessageAttributes[header.Key] =
+                        new MessageAttributeValue { StringValue = header.Value.ToString(), DataType = "String" };
+                }
+
+                return SQSClient.SendMessageAsync(sendMessageRequest, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// Disposes managed resources
+        /// </summary>
+        /// <param name="disposing">Is this being disposed from <see cref="Dispose()"/> or the finalizer?</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
             {
-                sendMessageRequest.MessageDeduplicationId = value.ToString();
-                message.Headers.Remove("SQS.MessageDeduplicationId");
-            }
+                if (disposing)
+                {
+                    SQSClient.Dispose();
+                }
 
-            if (message.Headers.TryGetValue("SQS.DelaySeconds", out value) && value != null)
-            {
-                sendMessageRequest.DelaySeconds = (int)value;
-                message.Headers.Remove("SQS.DelaySeconds");
+                disposedValue = true;
             }
-
-            foreach (var header in message.Headers)
-            {
-                sendMessageRequest.MessageAttributes[header.Key] =
-                    new MessageAttributeValue { StringValue = header.Value.ToString(), DataType = "String" };
-            }
-
-            return SQSClient.SendMessageAsync(sendMessageRequest, cancellationToken);
         }
 
         /// <summary>
@@ -156,7 +182,8 @@ namespace RockLib.Messaging.SQS
         /// </summary>
         public void Dispose()
         {
-            SQSClient.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

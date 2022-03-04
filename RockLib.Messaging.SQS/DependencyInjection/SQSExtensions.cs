@@ -1,5 +1,4 @@
-﻿#if !NET451
-using Amazon;
+﻿using Amazon;
 using Amazon.SQS;
 using Microsoft.Extensions.DependencyInjection;
 using RockLib.Messaging.SQS;
@@ -24,18 +23,18 @@ namespace RockLib.Messaging.DependencyInjection
         /// </param>
         /// <returns>A builder allowing the sender to be decorated.</returns>
         public static ISenderBuilder AddSQSSender(this IServiceCollection services, string name,
-            Action<SQSSenderOptions> configureOptions = null, bool reloadOnChange = true)
+            Action<SQSSenderOptions>? configureOptions = null, bool reloadOnChange = true)
         {
             return services.AddSender(name, CreateSQSSender, configureOptions, reloadOnChange);
 
             ISender CreateSQSSender(SQSSenderOptions options, IServiceProvider serviceProvider)
             {
                 var sqsClient = options.SqsClient
-                    ?? (options.Region != null
+                    ?? (options.Region is not null
                         ? new AmazonSQSClient(RegionEndpoint.GetBySystemName(options.Region))
                         : serviceProvider.GetService<IAmazonSQS>() ?? new AmazonSQSClient());
 
-                return new SQSSender(sqsClient, name, options.QueueUrl, options.MessageGroupId);
+                return new SQSSender(sqsClient, name, options.QueueUrl!, options.MessageGroupId!);
             }
         }
 
@@ -62,18 +61,18 @@ namespace RockLib.Messaging.DependencyInjection
         /// </param>
         /// <returns>A builder allowing the receiver to be decorated.</returns>
         public static IReceiverBuilder AddSQSReceiver(this IServiceCollection services, string name,
-            Action<SQSReceiverOptions> configureOptions = null, bool reloadOnChange = true)
+            Action<SQSReceiverOptions>? configureOptions = null, bool reloadOnChange = true)
         {
             return services.AddReceiver(name, CreateSQSReceiver, configureOptions, reloadOnChange);
 
             IReceiver CreateSQSReceiver(SQSReceiverOptions options, IServiceProvider serviceProvider)
             {
                 var sqsClient = options.SqsClient
-                    ?? (options.Region != null
+                    ?? (options.Region is not null
                         ? new AmazonSQSClient(RegionEndpoint.GetBySystemName(options.Region))
                         : serviceProvider.GetService<IAmazonSQS>() ?? new AmazonSQSClient());
 
-                return new SQSReceiver(sqsClient, name, options.QueueUrl, options.MaxMessages,
+                return new SQSReceiver(sqsClient, name, options.QueueUrl!, options.MaxMessages,
                     options.AutoAcknowledge, options.WaitTimeSeconds, options.UnpackSNS,
                     options.TerminateMessageVisibilityTimeoutOnRollback);
             }
@@ -91,4 +90,3 @@ namespace RockLib.Messaging.DependencyInjection
             services.AddSQSReceiver(name, configureOptions, true);
     }
 }
-#endif
