@@ -138,9 +138,13 @@ namespace RockLib.Messaging.SQS
             : base(name)
         {
             if (maxMessages < 1 || maxMessages > 10)
+            {
                 throw new ArgumentOutOfRangeException(nameof(maxMessages), "Value must be from 1 to 10, inclusive.");
+            }
             if (waitTimeSeconds < 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(waitTimeSeconds), "Value cannot be negative.");
+            }
 
             SQSClient = sqs ?? throw new ArgumentNullException(nameof(sqs));
             QueueUrl = queueUrl ?? throw new ArgumentNullException(nameof(queueUrl));
@@ -292,9 +296,13 @@ namespace RockLib.Messaging.SQS
                         string GetErrorMessage()
                         {
                             if (exception is not null)
+                            {
                                 return $"{exception.GetType().Name}: {exception.Message}";
+                            }
                             if (response is null)
+                            { 
                                 return "Null response returned from IAmazonSQS.ReceiveMessageAsync method.";
+                            }
                             return $"Unsuccessful response returned from IAmazonSQS.ReceiveMessageAsync method: {(int)response.HttpStatusCode} {response.HttpStatusCode}";
                         }
 
@@ -314,7 +322,9 @@ namespace RockLib.Messaging.SQS
         private async Task HandleAsync(Message message)
         {
             if (_stopped)
+            {
                 return;
+            }
 
             var receiptHandle = message.ReceiptHandle;
 
@@ -369,7 +379,9 @@ namespace RockLib.Messaging.SQS
         private Task RollbackAsync(string receiptHandle, CancellationToken cancellationToken)
         {
             if (!TerminateMessageVisibilityTimeoutOnRollback)
+            {
                 return Task.FromResult(0);
+            }
 
             return ExecuteWithRetry(async () =>
             {
@@ -392,12 +404,16 @@ namespace RockLib.Messaging.SQS
                 {
                     var response = await funcToExecute().ConfigureAwait(false);
                     if (response.HttpStatusCode == HttpStatusCode.OK)
+                    {
                         return;
+                    }
                 }
                 catch
                 {
                     if (i++ >= _maxAcknowledgeAttempts)
+                    {
                         throw;
+                    }
                 }
             }
         }
@@ -409,10 +425,12 @@ namespace RockLib.Messaging.SQS
         {
             _stopped = true;
             if (_receiveMessagesTask.IsValueCreated)
+            {
                 try { _receiveMessagesTask.Value.Wait(); }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch { }
 #pragma warning restore CA1031 // Do not catch general exception types
+            }
             SQSClient.Dispose();
             base.Dispose(disposing);
         }

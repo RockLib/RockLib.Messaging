@@ -123,41 +123,43 @@ namespace RockLib.Messaging.SQS
             {
                 throw new ArgumentNullException(nameof(message));
             }
-            else
-            { 
-                if (message.OriginatingSystem is null)
-                    message.OriginatingSystem = "SQS";
 
-                var sendMessageRequest = new SendMessageRequest(QueueUrl.OriginalString, message.StringPayload);
-
-                if (message.Headers.TryGetValue("SQS.MessageGroupId", out var value) && value is not null)
-                {
-                    sendMessageRequest.MessageGroupId = value.ToString();
-                    message.Headers.Remove("SQS.MessageGroupId");
-                }
-                else if (MessageGroupId is not null)
-                    sendMessageRequest.MessageGroupId = MessageGroupId;
-
-                if (message.Headers.TryGetValue("SQS.MessageDeduplicationId", out value) && value is not null)
-                {
-                    sendMessageRequest.MessageDeduplicationId = value.ToString();
-                    message.Headers.Remove("SQS.MessageDeduplicationId");
-                }
-
-                if (message.Headers.TryGetValue("SQS.DelaySeconds", out value) && value is not null)
-                {
-                    sendMessageRequest.DelaySeconds = (int)value;
-                    message.Headers.Remove("SQS.DelaySeconds");
-                }
-
-                foreach (var header in message.Headers)
-                {
-                    sendMessageRequest.MessageAttributes[header.Key] =
-                        new MessageAttributeValue { StringValue = header.Value.ToString(), DataType = "String" };
-                }
-
-                return SQSClient.SendMessageAsync(sendMessageRequest, cancellationToken);
+            if (message.OriginatingSystem is null)
+            {
+                message.OriginatingSystem = "SQS";
             }
+
+            var sendMessageRequest = new SendMessageRequest(QueueUrl.OriginalString, message.StringPayload);
+
+            if (message.Headers.TryGetValue("SQS.MessageGroupId", out var value) && value is not null)
+            {
+                sendMessageRequest.MessageGroupId = value.ToString();
+                message.Headers.Remove("SQS.MessageGroupId");
+            }
+            else if (MessageGroupId is not null)
+            {
+                sendMessageRequest.MessageGroupId = MessageGroupId;
+            }
+
+            if (message.Headers.TryGetValue("SQS.MessageDeduplicationId", out value) && value is not null)
+            {
+                sendMessageRequest.MessageDeduplicationId = value.ToString();
+                message.Headers.Remove("SQS.MessageDeduplicationId");
+            }
+
+            if (message.Headers.TryGetValue("SQS.DelaySeconds", out value) && value is not null)
+            {
+                sendMessageRequest.DelaySeconds = (int)value;
+                message.Headers.Remove("SQS.DelaySeconds");
+            }
+
+            foreach (var header in message.Headers)
+            {
+                sendMessageRequest.MessageAttributes[header.Key] =
+                    new MessageAttributeValue { StringValue = header.Value.ToString(), DataType = "String" };
+            }
+
+            return SQSClient.SendMessageAsync(sendMessageRequest, cancellationToken);
         }
 
         /// <summary>

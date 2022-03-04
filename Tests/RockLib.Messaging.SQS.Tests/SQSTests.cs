@@ -1,7 +1,7 @@
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using Moq;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
@@ -11,15 +11,19 @@ using Xunit;
 
 namespace RockLib.Messaging.SQS.Tests
 {
-    public class SQSTests
+    public static class SQSTests
     {
         [Fact]
-        public void SQSSenderSendsMessagesToItsIAmazonSQS()
+        public static async Task SQSSenderSendsMessagesToItsIAmazonSQS()
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
-            using (var sender = new SQSSender(mockSqs.Object, "foo", "http://url.com/foo"))
-                sender.Send(new SenderMessage("Hello, world!") { Headers = { { "bar", "abc" } } });
+            using (var sender = new SQSSender("testName", new Uri("http://url.com/foo"), "foo"))
+            {
+                await sender.SendAsync(
+                    new SenderMessage("Hello, world!") { Headers = { { "bar", "abc" } } })
+                    .ConfigureAwait(false);
+            }
 
             mockSqs.Verify(m => m.SendMessageAsync(
                 It.Is<SendMessageRequest>(r => r.MessageBody == "Hello, world!"
@@ -29,12 +33,16 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void SQSSenderSetsMessageGroupIdWhenSpecifiedInHeader()
+        public static async Task SQSSenderSetsMessageGroupIdWhenSpecifiedInHeader()
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
-            using (var sender = new SQSSender(mockSqs.Object, "foo", "http://url.com/foo"))
-                sender.Send(new SenderMessage("") { Headers = { { "SQS.MessageGroupId", "abc" } } });
+            using (var sender = new SQSSender("testName", new Uri("http://url.com/foo"), "foo"))
+            {
+                await sender.SendAsync(
+                    new SenderMessage("") { Headers = { { "SQS.MessageGroupId", "abc" } } })
+                    .ConfigureAwait(false);
+            }
 
             mockSqs.Verify(m => m.SendMessageAsync(
                 It.Is<SendMessageRequest>(r =>
@@ -44,12 +52,16 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void SQSSenderSetsMessageGroupIdWhenSpecifiedInConstructor()
+        public static async Task SQSSenderSetsMessageGroupIdWhenSpecifiedInConstructor()
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
-            using (var sender = new SQSSender(mockSqs.Object, "foo", "http://url.com/foo", "abc"))
-                sender.Send(new SenderMessage(""));
+            using (var sender = new SQSSender("testName", new Uri("http://url.com/foo"), "foo", "abc"))
+            {
+                await sender.SendAsync(
+                    new SenderMessage(""))
+                    .ConfigureAwait(false);
+            }
 
             mockSqs.Verify(m => m.SendMessageAsync(
                 It.Is<SendMessageRequest>(r => r.MessageGroupId == "abc"),
@@ -57,14 +69,18 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void SQSSenderSetsMessageGroupIdToHeaderValueWhenSpecifiedInBothHeaderAndConstructor()
+        public static async Task SQSSenderSetsMessageGroupIdToHeaderValueWhenSpecifiedInBothHeaderAndConstructor()
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
-            using (var sender = new SQSSender(mockSqs.Object, "foo", "http://url.com/foo", "abc"))
-                sender.Send(new SenderMessage("") { Headers = { { "SQS.MessageGroupId", "xyz" } } });
+            using (var sender = new SQSSender("testName", new Uri("http://url.com/foo"), "foo", "abc"))
+            {
+                await sender.SendAsync(
+                    new SenderMessage("") { Headers = { { "SQS.MessageGroupId", "xyz" } } })
+                    .ConfigureAwait(false);
+            }
 
-            mockSqs.Verify(m => m.SendMessageAsync(
+                mockSqs.Verify(m => m.SendMessageAsync(
                 It.Is<SendMessageRequest>(r =>
                     !r.MessageAttributes.ContainsKey("SQS.MessageGroupId")
                     && r.MessageGroupId == "xyz"),
@@ -72,12 +88,16 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void SQSSenderSetsMessageDeduplicationIdWhenSpecifiedInHeader()
+        public static async Task SQSSenderSetsMessageDeduplicationIdWhenSpecifiedInHeader()
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
-            using (var sender = new SQSSender(mockSqs.Object, "foo", "http://url.com/foo"))
-                sender.Send(new SenderMessage("") { Headers = { { "SQS.MessageDeduplicationId", "abc" } } });
+                using (var sender = new SQSSender("testName", new Uri("http://url.com/foo"), "foo"))
+                {
+                    await sender.SendAsync(
+                        new SenderMessage("") { Headers = { { "SQS.MessageDeduplicationId", "abc" } } })
+                        .ConfigureAwait(false);
+                }
 
             mockSqs.Verify(m => m.SendMessageAsync(
                 It.Is<SendMessageRequest>(r =>
@@ -88,12 +108,16 @@ namespace RockLib.Messaging.SQS.Tests
 
 
         [Fact]
-        public void SQSSenderSetsMessageDelayWhenSpecifiedInHeader()
+        public static async Task SQSSenderSetsMessageDelayWhenSpecifiedInHeader()
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
-            using (var sender = new SQSSender(mockSqs.Object, "foo", "http://url.com/foo"))
-                sender.Send(new SenderMessage("") { Headers = { { "SQS.DelaySeconds", 123 } } });
+            using (var sender = new SQSSender("testName", new Uri("http://url.com/foo"), "foo"))
+            {
+                await sender.SendAsync(
+                    new SenderMessage("") { Headers = { { "SQS.DelaySeconds", 123 } } })
+                    .ConfigureAwait(false);
+            }
 
             mockSqs.Verify(m => m.SendMessageAsync(
                 It.Is<SendMessageRequest>(r =>
@@ -103,21 +127,22 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void SQSReceiverReceivesMessagesFromItsIAmazonSQS()
+        public static void SQSReceiverReceivesMessagesFromItsIAmazonSQS()
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
             SetupReceiveMessageAsync(mockSqs);
 
-            var waitHandle = new AutoResetEvent(false);
+            using var waitHandle = new AutoResetEvent(false);
 
-            string receivedMessage = null;
-            string quxHeader = null;
+            string? receivedMessage = null;
+            string? quxHeader = null;
 
-            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false))
+            using (var receiver = new SQSReceiver("testName", new Uri("http://url.com/foo"), "foo", autoAcknowledge: false))
             {
                 receiver.Start(async m =>
                 {
+                    await m.AcknowledgeAsync().ConfigureAwait(false);
                     receivedMessage = m.StringPayload;
                     quxHeader = m.Headers.GetValue<string>("qux");
                     waitHandle.Set();
@@ -138,20 +163,20 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void AcknowledgeDeletesTheMessageByReceiptHandleWithItsIAmazonSQS()
+        public static void AcknowledgeDeletesTheMessageByReceiptHandleWithItsIAmazonSQS()
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
             SetupReceiveMessageAsync(mockSqs);
             SetupDeleteMessageAsync(mockSqs);
 
-            var waitHandle = new AutoResetEvent(false);
+            using var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false))
+            using (var receiver = new SQSReceiver("testName", new Uri("http://url.com/foo"), "foo", autoAcknowledge: false))
             {
                 receiver.Start(async m =>
                 {
-                    await m.AcknowledgeAsync();
+                    await m.AcknowledgeAsync().ConfigureAwait(false);
                     waitHandle.Set();
                 });
 
@@ -167,20 +192,20 @@ namespace RockLib.Messaging.SQS.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void RollbackDoesNotDeleteTheMessageByReceiptHandleWithItsIAmazonSQS(bool terminateMessageVisibilityTimeoutOnRollback)
+        public static void RollbackDoesNotDeleteTheMessageByReceiptHandleWithItsIAmazonSQS(bool terminateMessageVisibilityTimeoutOnRollback)
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
             SetupReceiveMessageAsync(mockSqs);
             SetupChangeMessageVisibilityAsync(mockSqs);
 
-            var waitHandle = new AutoResetEvent(false);
+            using var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false, terminateMessageVisibilityTimeoutOnRollback: terminateMessageVisibilityTimeoutOnRollback))
+            using (var receiver = new SQSReceiver("testName", new Uri("http://url.com/foo"), "foo", autoAcknowledge: false, terminateMessageVisibilityTimeoutOnRollback: terminateMessageVisibilityTimeoutOnRollback))
             {
                 receiver.Start(async m =>
                 {
-                    await m.RollbackAsync();
+                    await m.RollbackAsync().ConfigureAwait(false);
                     waitHandle.Set();
                 });
 
@@ -194,20 +219,20 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void WhenTerminateMessageVisibilityTimeoutOnRollbackIsFalseRollbackDoesNotChangeMessageVisibilityByReceiptHandleWithItsIAmazonSQS()
+        public static void WhenTerminateMessageVisibilityTimeoutOnRollbackIsFalseRollbackDoesNotChangeMessageVisibilityByReceiptHandleWithItsIAmazonSQS()
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
             SetupReceiveMessageAsync(mockSqs);
             SetupChangeMessageVisibilityAsync(mockSqs);
 
-            var waitHandle = new AutoResetEvent(false);
+            using var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false, terminateMessageVisibilityTimeoutOnRollback: false))
+            using (var receiver = new SQSReceiver("testName", new Uri("http://url.com/foo"), "foo", autoAcknowledge: false, terminateMessageVisibilityTimeoutOnRollback: false))
             {
                 receiver.Start(async m =>
                 {
-                    await m.RollbackAsync();
+                    await m.RollbackAsync().ConfigureAwait(false);
                     waitHandle.Set();
                 });
 
@@ -221,20 +246,20 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void WhenTerminateMessageVisibilityTimeoutOnRollbackIsTrueRollbackChangesMessageVisibilityToZeroByReceiptHandleWithItsIAmazonSQS()
+        public static void WhenTerminateMessageVisibilityTimeoutOnRollbackIsTrueRollbackChangesMessageVisibilityToZeroByReceiptHandleWithItsIAmazonSQS()
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
             SetupReceiveMessageAsync(mockSqs);
             SetupChangeMessageVisibilityAsync(mockSqs);
 
-            var waitHandle = new AutoResetEvent(false);
+            using var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false, terminateMessageVisibilityTimeoutOnRollback: true))
+            using (var receiver = new SQSReceiver("testName", new Uri("http://url.com/foo"), "foo", autoAcknowledge: false, terminateMessageVisibilityTimeoutOnRollback: true))
             {
                 receiver.Start(async m =>
                 {
-                    await m.RollbackAsync();
+                    await m.RollbackAsync().ConfigureAwait(false);
                     waitHandle.Set();
                 });
 
@@ -247,20 +272,20 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void RejectDeletesTheMessageByReceiptHandleWithItsIAmazonSQS()
+        public static void RejectDeletesTheMessageByReceiptHandleWithItsIAmazonSQS()
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
             SetupReceiveMessageAsync(mockSqs);
             SetupDeleteMessageAsync(mockSqs);
 
-            var waitHandle = new AutoResetEvent(false);
+            using var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: false))
+            using (var receiver = new SQSReceiver("testName", new Uri("http://url.com/foo"), "foo", autoAcknowledge: false))
             {
                 receiver.Start(async m =>
                 {
-                    await m.RejectAsync();
+                    await m.RejectAsync().ConfigureAwait(false);
                     waitHandle.Set();
                 });
 
@@ -274,19 +299,20 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void WhenAutoAcknowledgeIsTrueMessagesAreAutomaticallyDeleted()
+        public static void WhenAutoAcknowledgeIsTrueMessagesAreAutomaticallyDeleted()
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
             SetupReceiveMessageAsync(mockSqs);
             SetupDeleteMessageAsync(mockSqs);
 
-            var waitHandle = new AutoResetEvent(false);
+            using var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: true))
+            using (var receiver = new SQSReceiver("testName", new Uri("http://url.com/foo"), "foo", autoAcknowledge: true))
             {
                 receiver.Start(async m =>
                 {
+                    await m.AcknowledgeAsync().ConfigureAwait(false);
                     waitHandle.Set();
                 });
 
@@ -300,20 +326,20 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void WhenAutoAcknowledgeIsTrueMessagesAreNotDeletedIfExplicitlyHandled()
+        public static void WhenAutoAcknowledgeIsTrueMessagesAreNotDeletedIfExplicitlyHandled()
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
             SetupReceiveMessageAsync(mockSqs);
             SetupDeleteMessageAsync(mockSqs);
 
-            var waitHandle = new AutoResetEvent(false);
+            using var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", "http://url.com/foo", autoAcknowledge: true))
+            using (var receiver = new SQSReceiver("testName", new Uri("http://url.com/foo"), "foo", autoAcknowledge: true))
             {
                 receiver.Start(async m =>
                 {
-                    await m.RollbackAsync();
+                    await m.RollbackAsync().ConfigureAwait(false);
                     waitHandle.Set();
                 });
 
@@ -328,7 +354,7 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void SQSReceiverMessageWithUnpackSNSTrueCorrectlyUnpacksSNSMessage()
+        public static void SQSReceiverMessageWithUnpackSNSTrueCorrectlyUnpacksSNSMessage()
         {
             var snsMessage = @"{
   ""Type"" : ""Notification"",
@@ -351,7 +377,7 @@ namespace RockLib.Messaging.SQS.Tests
                 Body = snsMessage
             };
 
-            var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), c => Task.FromResult(0), unpackSNS: true);
+            using var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), c => Task.FromResult(0), unpackSNS: true);
 
             sqsReceiverMessage.StringPayload.Should().Be("This is a better test message");
             sqsReceiverMessage.Headers["TopicARN"].Should().Be("arn:PutARealARNHere");
@@ -360,7 +386,7 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void SQSReceiverMessageWithUnpackSNSTrueCorrectlyUnpacksSNSMessageWithNoMessageAttributes()
+        public static void SQSReceiverMessageWithUnpackSNSTrueCorrectlyUnpacksSNSMessageWithNoMessageAttributes()
         {
             var snsMessage = @"{
   ""Type"" : ""Notification"",
@@ -379,7 +405,7 @@ namespace RockLib.Messaging.SQS.Tests
                 Body = snsMessage
             };
 
-            var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), c => Task.FromResult(0), unpackSNS: true);
+            using var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), c => Task.FromResult(0), unpackSNS: true);
 
             sqsReceiverMessage.StringPayload.Should().Be("This is a better test message");
             sqsReceiverMessage.Headers["TopicARN"].Should().Be("arn:PutARealARNHere");
@@ -425,4 +451,3 @@ namespace RockLib.Messaging.SQS.Tests
         }
     }
 }
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously

@@ -48,32 +48,31 @@ namespace RockLib.Messaging.SQS
             {
                 throw new ArgumentNullException(nameof(headers));
             }
-            else
+            if (TryGetSNSMessage(Message.Body, _unpackSns, out var snsMessage))
             {
-                if (TryGetSNSMessage(Message.Body, _unpackSns, out var snsMessage))
-                {
                
                 
-                    headers["TopicARN"] = snsMessage.TopicARN!;
+                headers["TopicARN"] = snsMessage.TopicARN!;
 
-                    foreach (var attribute in snsMessage.MessageAttributes)
-                        headers[attribute.Key] = attribute.Value.Value!;
-                }
-                else
-                {
-                    foreach (var attribute in Message.Attributes)
-                        headers[$"SQS.{attribute.Key}"] = attribute.Value;
+                foreach (var attribute in snsMessage.MessageAttributes)
+                    headers[attribute.Key] = attribute.Value.Value!;
+            }
+            else
+            {
+                foreach (var attribute in Message.Attributes)
+                    headers[$"SQS.{attribute.Key}"] = attribute.Value;
 
-                    foreach (var attribute in Message.MessageAttributes)
-                        headers[attribute.Key] = attribute.Value.StringValue;
-                }
+                foreach (var attribute in Message.MessageAttributes)
+                    headers[attribute.Key] = attribute.Value.StringValue;
             }
         }
 
         private static string GetRawPayload(string messageBody, bool unpackSNS)
         {
             if (TryGetSNSMessage(messageBody, unpackSNS, out var snsMessage))
+            {
                 return snsMessage.Message!;
+            }
 
             return messageBody;
         }
@@ -86,7 +85,9 @@ namespace RockLib.Messaging.SQS
                 {
                     snsMessage = JsonConvert.DeserializeObject<SNSMessage>(messageBody)!;
                     if (snsMessage.TopicARN is not null && snsMessage.TopicARN.StartsWith("arn:", StringComparison.InvariantCultureIgnoreCase))
+                    {
                         return true;
+                    }
                 }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch { }

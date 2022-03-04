@@ -44,7 +44,9 @@ namespace RockLib.Messaging.DependencyInjection
             set
             {
                 if (value < 1 || value > 10)
+                {
                     throw new ArgumentOutOfRangeException(nameof(value), "Value must be from 1 to 10, inclusive.");
+                }
                 _maxMessages = value;
             }
         }
@@ -67,7 +69,9 @@ namespace RockLib.Messaging.DependencyInjection
             set
             {
                 if (value < 0)
+                {
                     throw new ArgumentOutOfRangeException(nameof(value), "Value cannot be negative.");
+                }
                 _waitTimeSeconds = value;
             }
         }
