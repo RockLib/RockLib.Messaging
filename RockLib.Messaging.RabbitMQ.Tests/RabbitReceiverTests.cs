@@ -4,6 +4,7 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -33,6 +34,7 @@ namespace RockLib.Messaging.RabbitMQ.Tests
                 receiver.Exchange.Should().Be("exchange");
                 receiver.PrefetchCount.Should().Be(20);
                 receiver.AutoAck.Should().Be(true);
+                receiver.RoutingKeys!.Count.Should().Be(0);
                 receiver.Connection.Should().Be(connection.Object);
                 receiver.Channel.Should().Be(model.Object);
             }
@@ -64,6 +66,8 @@ namespace RockLib.Messaging.RabbitMQ.Tests
                 receiver.Exchange.Should().Be("exchange");
                 receiver.PrefetchCount.Should().Be(20);
                 receiver.AutoAck.Should().Be(true);
+                receiver.RoutingKeys!.Count.Should().Be(1);
+                receiver.RoutingKeys!.First().Should().Be("routingKey");
                 receiver.Connection.Should().Be(connection.Object);
                 receiver.Channel.Should().Be(model.Object);
             }
