@@ -18,7 +18,7 @@ namespace RockLib.Messaging.SQS.Tests
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
-            using (var sender = new SQSSender("testName", new Uri("http://url.com/foo"), "foo"))
+            using (var sender = new SQSSender(mockSqs.Object, "foo", new Uri("http://url.com/foo")))
             {
                 await sender.SendAsync(
                     new SenderMessage("Hello, world!") { Headers = { { "bar", "abc" } } })
@@ -37,7 +37,7 @@ namespace RockLib.Messaging.SQS.Tests
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
-            using (var sender = new SQSSender("testName", new Uri("http://url.com/foo"), "foo"))
+            using (var sender = new SQSSender(mockSqs.Object, "foo", new Uri("http://url.com/foo")))
             {
                 await sender.SendAsync(
                     new SenderMessage("") { Headers = { { "SQS.MessageGroupId", "abc" } } })
@@ -56,7 +56,7 @@ namespace RockLib.Messaging.SQS.Tests
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
-            using (var sender = new SQSSender("testName", new Uri("http://url.com/foo"), "foo", "abc"))
+            using (var sender = new SQSSender(mockSqs.Object, "foo", new Uri("http://url.com/foo"), "abc"))
             {
                 await sender.SendAsync(
                     new SenderMessage(""))
@@ -73,7 +73,7 @@ namespace RockLib.Messaging.SQS.Tests
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
-            using (var sender = new SQSSender("testName", new Uri("http://url.com/foo"), "foo", "abc"))
+            using (var sender = new SQSSender(mockSqs.Object, "foo", new Uri("http://url.com/foo"), "abc"))
             {
                 await sender.SendAsync(
                     new SenderMessage("") { Headers = { { "SQS.MessageGroupId", "xyz" } } })
@@ -92,7 +92,7 @@ namespace RockLib.Messaging.SQS.Tests
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
-                using (var sender = new SQSSender("testName", new Uri("http://url.com/foo"), "foo"))
+                using (var sender = new SQSSender(mockSqs.Object, "foo", new Uri("http://url.com/foo")))
                 {
                     await sender.SendAsync(
                         new SenderMessage("") { Headers = { { "SQS.MessageDeduplicationId", "abc" } } })
@@ -112,7 +112,7 @@ namespace RockLib.Messaging.SQS.Tests
         {
             var mockSqs = new Mock<IAmazonSQS>();
 
-            using (var sender = new SQSSender("testName", new Uri("http://url.com/foo"), "foo"))
+            using (var sender = new SQSSender(mockSqs.Object, "foo", new Uri("http://url.com/foo")))
             {
                 await sender.SendAsync(
                     new SenderMessage("") { Headers = { { "SQS.DelaySeconds", 123 } } })
@@ -138,11 +138,12 @@ namespace RockLib.Messaging.SQS.Tests
             string? receivedMessage = null;
             string? quxHeader = null;
 
-            using (var receiver = new SQSReceiver("testName", new Uri("http://url.com/foo"), "foo", autoAcknowledge: false))
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", new Uri("http://url.com/foo"), autoAcknowledge: false))
             {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
                 receiver.Start(async m =>
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
                 {
-                    await m.AcknowledgeAsync().ConfigureAwait(false);
                     receivedMessage = m.StringPayload;
                     quxHeader = m.Headers.GetValue<string>("qux");
                     waitHandle.Set();
@@ -172,7 +173,7 @@ namespace RockLib.Messaging.SQS.Tests
 
             using var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSReceiver("testName", new Uri("http://url.com/foo"), "foo", autoAcknowledge: false))
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", new Uri("http://url.com/foo"), autoAcknowledge: false))
             {
                 receiver.Start(async m =>
                 {
@@ -201,7 +202,7 @@ namespace RockLib.Messaging.SQS.Tests
 
             using var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSReceiver("testName", new Uri("http://url.com/foo"), "foo", autoAcknowledge: false, terminateMessageVisibilityTimeoutOnRollback: terminateMessageVisibilityTimeoutOnRollback))
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", new Uri("http://url.com/foo"), autoAcknowledge: false, terminateMessageVisibilityTimeoutOnRollback: terminateMessageVisibilityTimeoutOnRollback))
             {
                 receiver.Start(async m =>
                 {
@@ -228,7 +229,7 @@ namespace RockLib.Messaging.SQS.Tests
 
             using var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSReceiver("testName", new Uri("http://url.com/foo"), "foo", autoAcknowledge: false, terminateMessageVisibilityTimeoutOnRollback: false))
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", new Uri("http://url.com/foo"), autoAcknowledge: false, terminateMessageVisibilityTimeoutOnRollback: false))
             {
                 receiver.Start(async m =>
                 {
@@ -255,7 +256,7 @@ namespace RockLib.Messaging.SQS.Tests
 
             using var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSReceiver("testName", new Uri("http://url.com/foo"), "foo", autoAcknowledge: false, terminateMessageVisibilityTimeoutOnRollback: true))
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", new Uri("http://url.com/foo"), autoAcknowledge: false, terminateMessageVisibilityTimeoutOnRollback: true))
             {
                 receiver.Start(async m =>
                 {
@@ -281,7 +282,7 @@ namespace RockLib.Messaging.SQS.Tests
 
             using var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSReceiver("testName", new Uri("http://url.com/foo"), "foo", autoAcknowledge: false))
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", new Uri("http://url.com/foo"), autoAcknowledge: false))
             {
                 receiver.Start(async m =>
                 {
@@ -308,7 +309,7 @@ namespace RockLib.Messaging.SQS.Tests
 
             using var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSReceiver("testName", new Uri("http://url.com/foo"), "foo", autoAcknowledge: true))
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", new Uri("http://url.com/foo"), autoAcknowledge: false))
             {
                 receiver.Start(async m =>
                 {
@@ -335,7 +336,7 @@ namespace RockLib.Messaging.SQS.Tests
 
             using var waitHandle = new AutoResetEvent(false);
 
-            using (var receiver = new SQSReceiver("testName", new Uri("http://url.com/foo"), "foo", autoAcknowledge: true))
+            using (var receiver = new SQSReceiver(mockSqs.Object, "foo", new Uri("http://url.com/foo"), autoAcknowledge: false))
             {
                 receiver.Start(async m =>
                 {
