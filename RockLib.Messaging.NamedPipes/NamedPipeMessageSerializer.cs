@@ -1,68 +1,69 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 
 namespace RockLib.Messaging.NamedPipes
 {
-    internal class NamedPipeMessageSerializer
+    internal static class NamedPipeMessageSerializer
     {
-        public static readonly NamedPipeMessageSerializer Instance = new NamedPipeMessageSerializer();
-
-        private NamedPipeMessageSerializer()
-        {
-        }
-
         private const string _stringValueHeader = @"{""StringValue"":""";
         private const string _messageFormatHeader = @""",""MessageFormat"":""";
         private const string _priorityHeader = @""",""Priority"":";
         private const string _headersHeader = @",""Headers"":{";
-        private const string _quote = @"""";
+        private const char _quote = '"';
         private const string _headerSeparator = @""":""";
 
         // This is the default encoding that the StreamWriter class uses.
         private static readonly Encoding _defaultEncoding = new UTF8Encoding(false, true);
 
-        public void SerializeToStream<T>(Stream stream, T value)
+        public static void SerializeToStream<T>(Stream stream, T value)
         {
+            if (value is null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             SerializeToStream(stream, value, typeof(T));
         }
 
-        public void SerializeToStream(Stream stream, object item, Type type)
+        public static void SerializeToStream(Stream stream, object item, Type type)
         {
-            using (var writer = new StreamWriter(stream, _defaultEncoding, 1024, true))
-            {
-                writer.Write(SerializeToString(item, type));
-            }
+            using var writer = new StreamWriter(stream, _defaultEncoding, 1024, true);
+            writer.Write(SerializeToString(item, type));
         }
 
-        public T DeserializeFromStream<T>(Stream stream)
+        public static T DeserializeFromStream<T>(Stream stream)
         {
             return (T)DeserializeFromStream(stream, typeof(T));
         }
 
-        public object DeserializeFromStream(Stream stream, Type type)
+        public static object DeserializeFromStream(Stream stream, Type type)
         {
-            using (var reader = new StreamReader(stream, Encoding.UTF8, true, 1024, true))
-            {
-                return DeserializeFromString(reader.ReadToEnd(), type);
-            }
+            using var reader = new StreamReader(stream, Encoding.UTF8, true, 1024, true);
+            return DeserializeFromString(reader.ReadToEnd(), type);
         }
 
-        public string SerializeToString<T>(T item)
+        public static string SerializeToString<T>(T item)
         {
+            if(item is null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
             return SerializeToString(item, typeof(T));
         }
 
-        public string SerializeToString(object item, Type type)
+        public static string SerializeToString(object item, Type type)
         {
             var message = (NamedPipeMessage)item;
 
-            var sb = new StringBuilder();
+            var builder = new StringBuilder();
 
-            sb.Append(_stringValueHeader)
+            builder.Append(_stringValueHeader)
                 .Append(Escape(message.StringValue))
                 .Append(_messageFormatHeader) // For backwards
                 .Append("Text")               // compatibility, send
@@ -70,7 +71,7 @@ namespace RockLib.Messaging.NamedPipes
                 .Append("null")               // format and priority.
                 .Append(_headersHeader);
 
-            if (message.Headers != null)
+            if (message.Headers is not null)
             {
                 var first = true;
 
@@ -82,10 +83,10 @@ namespace RockLib.Messaging.NamedPipes
                     }
                     else
                     {
-                        sb.Append(",");
+                        builder.Append(',');
                     }
 
-                    sb.Append(_quote)
+                    builder.Append(_quote)
                         .Append(Escape(header.Key))
                         .Append(_headerSeparator)
                         .Append(Escape(header.Value))
@@ -93,17 +94,17 @@ namespace RockLib.Messaging.NamedPipes
                 }
             }
 
-            sb.Append(@"}}");
+            builder.Append(@"}}");
 
-            return sb.ToString();
+            return builder.ToString();
         }
 
-        public T DeserializeFromString<T>(string data)
+        public static T DeserializeFromString<T>(string data)
         {
             return (T)DeserializeFromString(data, typeof(T));
         }
 
-        public object DeserializeFromString(string data, Type type)
+        public static object DeserializeFromString(string data, Type type)
         {
             var enumerator = data.AsEnumerable().GetEnumerator();
 
@@ -135,7 +136,7 @@ namespace RockLib.Messaging.NamedPipes
                 var key = Unescape(GetStringValue(enumerator));
                 Skip(enumerator, _headerSeparator.Length - 1);
                 var value = Unescape(GetStringValue(enumerator));
-                Skip(enumerator, _quote.Length);
+                Skip(enumerator, 1); // Skipping a quote, which is one length
 
                 if (enumerator.Current == ',')
                 {
@@ -156,7 +157,7 @@ namespace RockLib.Messaging.NamedPipes
 
         private static string GetStringValue(IEnumerator<char> enumerator)
         {
-            var sb = new StringBuilder();
+            var builder = new StringBuilder();
 
             var wasPrevBackslash = false;
 
@@ -168,22 +169,22 @@ namespace RockLib.Messaging.NamedPipes
                 {
                     if (wasPrevBackslash)
                     {
-                        sb.Append(@"""");
+                        builder.Append(_quote);
                         wasPrevBackslash = false;
                     }
                     else
                     {
-                        return sb.ToString();
+                        return builder.ToString();
                     }
                 }
                 else if (enumerator.Current == '\\')
                 {
-                    sb.Append('\\');
+                    builder.Append('\\');
                     wasPrevBackslash = !wasPrevBackslash;
                 }
                 else
                 {
-                    sb.Append(enumerator.Current);
+                    builder.Append(enumerator.Current);
                     wasPrevBackslash = false;
                 }
             }
@@ -200,104 +201,110 @@ namespace RockLib.Messaging.NamedPipes
                 return null;
             }
 
-            var sb = new StringBuilder();
-            sb.Append(enumerator.Current);
+            var builder = new StringBuilder();
+            builder.Append(enumerator.Current);
             enumerator.MoveNext(); // Move past first digit (to second digit, if present)
             if (enumerator.Current != ',')
             {
-                sb.Append(enumerator.Current);
+                builder.Append(enumerator.Current);
                 enumerator.MoveNext(); // Move past second digit (to third digit, if present)
                 if (enumerator.Current != ',')
                 {
-                    sb.Append(enumerator.Current); // Move past third digit (because we *always* move past the last digit)
+                    builder.Append(enumerator.Current); // Move past third digit (because we *always* move past the last digit)
                     enumerator.MoveNext();
                 }
             }
 
-            return byte.Parse(sb.ToString());
+            return byte.Parse(builder.ToString(), CultureInfo.InvariantCulture);
         }
 
-        private static string Escape(string value)
+        private static string Escape(string? value)
         {
-            var sb = new StringBuilder();
+            var builder = new StringBuilder();
 
-            foreach (var c in value)
+            if(value is not null)
             {
-                switch (c)
+                foreach (var c in value)
                 {
-                    case '\\':
-                        sb.Append(@"\\");
-                        break;
-                    case '"':
-                        sb.Append(@"\""");
-                        break;
-                    case '\r':
-                        sb.Append(@"\r");
-                        break;
-                    case '\n':
-                        sb.Append(@"\n");
-                        break;
-                    case '\t':
-                        sb.Append(@"\t");
-                        break;
-                    default:
-                        sb.Append(c);
-                        break;
+                    switch (c)
+                    {
+                        case '\\':
+                            builder.Append(@"\\");
+                            break;
+                        case '"':
+                            builder.Append(@"\""");
+                            break;
+                        case '\r':
+                            builder.Append(@"\r");
+                            break;
+                        case '\n':
+                            builder.Append(@"\n");
+                            break;
+                        case '\t':
+                            builder.Append(@"\t");
+                            break;
+                        default:
+                            builder.Append(c);
+                            break;
+                    }
                 }
             }
 
-            return sb.ToString();
+            return builder.ToString();
         }
 
-        private static string Unescape(string value)
+        private static string Unescape(string? value)
         {
-            var sb = new StringBuilder();
+            var builder = new StringBuilder();
 
-            bool wasPrevBackslash = false;
+            var wasPrevBackslash = false;
 
-            foreach (var c in value)
+            if(value is not null)
             {
-                switch (c)
+                foreach (var c in value)
                 {
-                    case '\\':
-                        if (wasPrevBackslash)
-                        {
-                            sb.Append('\\');
+                    switch (c)
+                    {
+                        case '\\':
+                            if (wasPrevBackslash)
+                            {
+                                builder.Append('\\');
+                                wasPrevBackslash = false;
+                            }
+                            else
+                            {
+                                wasPrevBackslash = true;
+                            }
+                            break;
+                        case '"':
+                            builder.Append('"');
                             wasPrevBackslash = false;
-                        }
-                        else
-                        {
-                            wasPrevBackslash = true;
-                        }
-                        break;
-                    case '"':
-                        sb.Append('"');
-                        wasPrevBackslash = false;
-                        break;
-                    case 'r':
-                        sb.Append(wasPrevBackslash ? '\r' : c);
-                        wasPrevBackslash = false;
-                        break;
-                    case 'n':
-                        sb.Append(wasPrevBackslash ? '\n' : c);
-                        wasPrevBackslash = false;
-                        break;
-                    case 't':
-                        sb.Append(wasPrevBackslash ? '\t' : c);
-                        wasPrevBackslash = false;
-                        break;
-                    default:
-                        if (wasPrevBackslash)
-                        {
-                            sb.Append('\\');
-                        }
-                        sb.Append(c);
-                        wasPrevBackslash = false;
-                        break;
+                            break;
+                        case 'r':
+                            builder.Append(wasPrevBackslash ? '\r' : c);
+                            wasPrevBackslash = false;
+                            break;
+                        case 'n':
+                            builder.Append(wasPrevBackslash ? '\n' : c);
+                            wasPrevBackslash = false;
+                            break;
+                        case 't':
+                            builder.Append(wasPrevBackslash ? '\t' : c);
+                            wasPrevBackslash = false;
+                            break;
+                        default:
+                            if (wasPrevBackslash)
+                            {
+                                builder.Append('\\');
+                            }
+                            builder.Append(c);
+                            wasPrevBackslash = false;
+                            break;
+                    }
                 }
             }
 
-            return sb.ToString();
+            return builder.ToString();
         }
     }
 }

@@ -30,7 +30,7 @@ namespace RockLib.Messaging.NamedPipes.Tests
         [Fact]
         public void NamedPipeSenderTest2()
         {
-            var reloadingSenderType = Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingSender`1, RockLib.Messaging", true)
+            var reloadingSenderType = Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingSender`1, RockLib.Messaging", true)!
                 .MakeGenericType(typeof(NamedPipeOptions));
 
             var services = new ServiceCollection();
@@ -71,7 +71,7 @@ namespace RockLib.Messaging.NamedPipes.Tests
         [Fact]
         public void NamedPipeReceiverTest2()
         {
-            var reloadingReceiverType = Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingReceiver`1, RockLib.Messaging", true)
+            var reloadingReceiverType = Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingReceiver`1, RockLib.Messaging", true)!
                 .MakeGenericType(typeof(NamedPipeOptions));
 
             var services = new ServiceCollection();

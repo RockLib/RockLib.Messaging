@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,25 +18,35 @@ namespace RockLib.Messaging.NamedPipes
         /// </summary>
         /// <param name="namedPipeMessage">The message that was sent.</param>
         internal NamedPipeReceiverMessage(NamedPipeMessage namedPipeMessage)
-            : base(() => namedPipeMessage.StringValue)
+            : base(() => namedPipeMessage.StringValue!)
         {
             _namedPipeMessage = namedPipeMessage;
         }
 
         /// <inheritdoc />
-        protected override Task AcknowledgeMessageAsync(CancellationToken cancellationToken) => Task.FromResult(0);
+        protected override Task AcknowledgeMessageAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
         /// <inheritdoc />
-        protected override Task RollbackMessageAsync(CancellationToken cancellationToken) => Task.FromResult(0);
+        protected override Task RollbackMessageAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
         /// <inheritdoc />
-        protected override Task RejectMessageAsync(CancellationToken cancellationToken) => Task.FromResult(0);
+        protected override Task RejectMessageAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
-            foreach (var header in _namedPipeMessage.Headers)
-                headers.Add(header.Key, header.Value);
+            if (headers is null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
+            if (_namedPipeMessage.Headers is not null)
+            {
+                foreach (var header in _namedPipeMessage.Headers)
+                {
+                    headers.Add(header.Key, header.Value);
+                }
+            }
         }
     }
 }
