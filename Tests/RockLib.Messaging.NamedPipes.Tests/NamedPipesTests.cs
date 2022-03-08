@@ -4,10 +4,10 @@ using Xunit;
 
 namespace RockLib.Messaging.NamedPipes.Tests
 {
-    public class NamedPipesTests
+    public static class NamedPipesTests
     {
         [Fact]
-        public async Task NamedPipeMessagesAreSentAndReceived()
+        public static async Task NamedPipeMessagesAreSentAndReceived()
         {
             using var waitHandle = new AutoResetEvent(false);
 
