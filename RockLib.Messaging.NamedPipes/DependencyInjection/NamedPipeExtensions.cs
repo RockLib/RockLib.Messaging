@@ -1,5 +1,4 @@
-﻿#if !NET451
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using RockLib.Messaging.NamedPipes;
 using System;
 
@@ -22,7 +21,7 @@ namespace RockLib.Messaging.DependencyInjection
         /// </param>
         /// <returns>A builder allowing the sender to be decorated.</returns>
         public static ISenderBuilder AddNamedPipeSender(this IServiceCollection services, string name,
-            Action<NamedPipeOptions> configureOptions = null, bool reloadOnChange = true)
+            Action<NamedPipeOptions>? configureOptions = null, bool reloadOnChange = true)
         {
             return services.AddSender(name, CreateNamedPipeSender, configureOptions, reloadOnChange);
 
@@ -53,7 +52,7 @@ namespace RockLib.Messaging.DependencyInjection
         /// </param>
         /// <returns>A builder allowing the receiver to be decorated.</returns>
         public static IReceiverBuilder AddNamedPipeReceiver(this IServiceCollection services, string name,
-            Action<NamedPipeOptions> configureOptions = null, bool reloadOnChange = true)
+            Action<NamedPipeOptions>? configureOptions = null, bool reloadOnChange = true)
         {
             return services.AddReceiver(name, CreateNamedPipeReceiver, configureOptions, reloadOnChange);
 
@@ -73,4 +72,3 @@ namespace RockLib.Messaging.DependencyInjection
             services.AddNamedPipeReceiver(name, configureOptions, true);
     }
 }
-#endif

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.IO.Pipes;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging.NamedPipes
 {
@@ -11,23 +12,23 @@ namespace RockLib.Messaging.NamedPipes
     /// </summary>
     public class NamedPipeReceiver : Receiver
     {
-        private readonly BlockingCollection<NamedPipeMessage> _messages = new BlockingCollection<NamedPipeMessage>();
-        private readonly Thread _consumerThread;
-        private readonly NamedPipeMessageSerializer _serializer = NamedPipeMessageSerializer.Instance;
-        private NamedPipeServerStream _pipeServer;
+        private readonly BlockingCollection<NamedPipeMessage> _messages = new();
+        private NamedPipeServerStream? _pipeServer;
 
         private bool _disposed;
+        private Task? _consumer;
+        private CancellationTokenSource _consumerCancellation;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NamedPipeReceiver"/> class.
         /// </summary>
         /// <param name="name">The name of this instance of <see cref="NamedPipeReceiver"/>.</param>
         /// <param name="pipeName">Name of the named pipe.</param>
-        public NamedPipeReceiver(string name, string pipeName = null)
+        public NamedPipeReceiver(string name, string? pipeName = null)
             : base(name)
         {
             PipeName = pipeName ?? name;
-            _consumerThread = new Thread(Consume) { IsBackground = true };
+            _consumerCancellation = new CancellationTokenSource();
         }
 
         /// <summary>
@@ -40,63 +41,83 @@ namespace RockLib.Messaging.NamedPipes
         /// </summary>
         protected override void Start()
         {
-            if (_pipeServer == null)
+            if (_pipeServer is null)
             {
                 StartNewPipeServer();
-                _consumerThread.Start();
+                _consumer = Task.Factory.StartNew(async () => await ConsumeAsync(_consumerCancellation.Token).ConfigureAwait(false),
+                    _consumerCancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             }
         }
 
         private void StartNewPipeServer()
         {
+#pragma warning disable CA1416 // Validate platform compatibility
             _pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In, 254, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
+#pragma warning restore CA1416 // Validate platform compatibility
             _pipeServer.BeginWaitForConnection(WaitForConnectionCallBack, null);
         }
         
         private void WaitForConnectionCallBack(IAsyncResult result)
         {
+            // We can assume _pipeServer will always be non-null here.
             try
             {
-                _pipeServer.EndWaitForConnection(result);
+                _pipeServer!.EndWaitForConnection(result);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 if (!_disposed)
+                {
                     StartNewPipeServer();
+                }
                 return;
             }
 
             try
             {
-                var sentMessage = _serializer.DeserializeFromStream<NamedPipeMessage>(_pipeServer);
+                var sentMessage = NamedPipeMessageSerializer.DeserializeFromStream<NamedPipeMessage>(_pipeServer);
 
-                if (sentMessage != null)
+                if (sentMessage is not null)
                 {
                     _messages.Add(sentMessage);
                 }
             }
             finally
             {
-                // docs say to call dispose vs close.  Dispose also works across standard/framework
-                try { _pipeServer.Dispose(); } // ReSharper disable once EmptyGeneralCatchClause
+                try 
+                { 
+                    _pipeServer.Dispose(); 
+                }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
                 StartNewPipeServer();
             }
         }
 
-        private void Consume()
+        private async Task ConsumeAsync(CancellationToken cancellationToken)
         {
-            foreach (var sentMessage in _messages.GetConsumingEnumerable())
+            try
             {
-                try
+                foreach (var sentMessage in _messages.GetConsumingEnumerable(cancellationToken))
                 {
-                    MessageHandler.OnMessageReceivedAsync(this, new NamedPipeReceiverMessage(sentMessage)).GetAwaiter().GetResult();
-                }
-                catch (Exception ex)
-                {
-                    OnError("Error in MessageHandler.OnMessageReceivedAsync.", ex);
+                    try
+                    {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                        await MessageHandler!.OnMessageReceivedAsync(this, new NamedPipeReceiverMessage(sentMessage)).ConfigureAwait(false);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        OnError("Error in MessageHandler.OnMessageReceivedAsync.", ex);
+                    }
                 }
             }
+            catch (OperationCanceledException) { }
         }
 
         /// <summary>
@@ -105,18 +126,27 @@ namespace RockLib.Messaging.NamedPipes
         protected override void Dispose(bool disposing)
         {
             if (_disposed)
+            {
                 return;
+            }
 
             _disposed = true;
 
-            if (_pipeServer != null)
+            if (_pipeServer is not null)
             {
+                _consumerCancellation.Cancel();
+
                 _messages.CompleteAdding();
-                // docs say to call dispose vs close.  Dispose also works across standard/framework
-                try { _pipeServer.Dispose(); } // ReSharper disable once EmptyGeneralCatchClause
-                catch { }
-                try { _consumerThread.Join(); } // ReSharper disable once EmptyGeneralCatchClause
-                catch { }
+                _messages.Dispose();
+
+                _pipeServer.Dispose();
+
+                _consumerCancellation.Dispose();
+
+                if(_consumer?.IsCompleted ?? false)
+                {
+                    _consumer?.Dispose();
+                }
             }
 
             base.Dispose(disposing);

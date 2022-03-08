@@ -12,26 +12,28 @@ namespace RockLib.Messaging.NamedPipes
     /// An implementation of <see cref="ISender"/> that uses named pipes as
     /// its communication mechanism.
     /// </summary>
+#pragma warning disable CA1063 // Implement IDisposable Correctly
     public class NamedPipeSender : ISender
+#pragma warning restore CA1063 // Implement IDisposable Correctly
     {
-        private readonly NamedPipeMessageSerializer _serializer = NamedPipeMessageSerializer.Instance;
-        private readonly BlockingCollection<WorkItem> _workItems;
-        private readonly Thread _runThread;
+        private readonly BlockingCollection<string> _workItems;
+        private Task _sender;
+        private CancellationTokenSource _senderCancellation;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NamedPipeSender"/> class.
         /// </summary>
         /// <param name="name">The name of this instance of <see cref="NamedPipeSender"/>.</param>
         /// <param name="pipeName">Name of the named pipe.</param>
-        public NamedPipeSender(string name, string pipeName = null)
+        public NamedPipeSender(string name, string? pipeName = null)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             PipeName = pipeName ?? Name;
 
-            _workItems = new BlockingCollection<WorkItem>();
-
-            _runThread = new Thread(Run) { IsBackground = true };
-            _runThread.Start();
+            _workItems = new BlockingCollection<string>();
+            _senderCancellation = new CancellationTokenSource();
+            _sender = Task.Factory.StartNew(() => Run(_senderCancellation.Token), _senderCancellation.Token, 
+                TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
         /// <summary>
@@ -51,8 +53,15 @@ namespace RockLib.Messaging.NamedPipes
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
         {
-            if (message.OriginatingSystem == null)
+            if (message is null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            if (message.OriginatingSystem is null)
+            {
                 message.OriginatingSystem = "NamedPipe";
+            }
 
             var namedPipeMessage = new NamedPipeMessage
             {
@@ -61,75 +70,62 @@ namespace RockLib.Messaging.NamedPipes
             };
 
             foreach (var header in message.Headers)
-                namedPipeMessage.Headers.Add(header.Key, header.Value.ToString());
+            {
+                namedPipeMessage.Headers.Add(header.Key, header.Value.ToString()!);
+            }
 
-            var messageString = _serializer.SerializeToString(namedPipeMessage);
-            var completion = new TaskCompletionSource<bool>();
+            var messageString = NamedPipeMessageSerializer.SerializeToString(namedPipeMessage);
 
-            _workItems.Add(new WorkItem { Message = messageString, Completion = completion, CancellationToken = cancellationToken });
+            _workItems.Add(messageString, cancellationToken);
 
-            return completion.Task;
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
+#pragma warning disable CA1063 // Implement IDisposable Correctly
+#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
         public void Dispose()
+#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
+#pragma warning restore CA1063 // Implement IDisposable Correctly
         {
+            _senderCancellation.Cancel();
+
             _workItems.CompleteAdding();
-            _runThread.Join();
-        }
+            _workItems.Dispose();
 
-        private void Run()
-        {
-            foreach (var workItem in _workItems.GetConsumingEnumerable())
+            _senderCancellation.Dispose();
+
+            if(_sender.IsCompleted)
             {
-                if (workItem.CancellationToken.IsCancellationRequested)
-                {
-                    workItem.Completion.SetCanceled();
-                    continue;
-                }
-
-                try
-                {
-                    using (var pipe = new NamedPipeClientStream(".", PipeName, PipeDirection.Out, PipeOptions.Asynchronous))
-                    {
-                        try
-                        {
-                            pipe.Connect(0);
-                        }
-                        catch (TimeoutException ex)
-                        {
-                            workItem.Completion.SetException(ex);
-                            continue;
-                        }
-
-                        if (workItem.CancellationToken.IsCancellationRequested)
-                        {
-                            workItem.Completion.SetCanceled();
-                            continue;
-                        }
-
-                        using (var writer = new StreamWriter(pipe))
-                        {
-                            writer.WriteLine(workItem.Message);
-                        }
-
-                        workItem.Completion.SetResult(true);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    workItem.Completion.SetException(ex);
-                }
+                _sender.Dispose();
             }
         }
 
-        private struct WorkItem
+        private void Run(CancellationToken token)
         {
-            public string Message;
-            public TaskCompletionSource<bool> Completion;
-            public CancellationToken CancellationToken;
+            try
+            {
+                foreach (var workItem in _workItems.GetConsumingEnumerable(token))
+                {
+
+                    using var pipe = new NamedPipeClientStream(".", PipeName, PipeDirection.Out, PipeOptions.Asynchronous);
+
+                    try
+                    {
+                        pipe.Connect(0);
+                    }
+                    catch (TimeoutException)
+                    {
+                        continue;
+                    }
+
+                    using var writer = new StreamWriter(pipe);
+                    writer.WriteLine(workItem);
+                }
+            }
+            catch (OperationCanceledException) { }
         }
     }
 }

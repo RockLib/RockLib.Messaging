@@ -1,47 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFrameworks>net5.0;netstandard2.0;net451;net462</TargetFrameworks>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <PackageId>RockLib.Messaging.NamedPipes</PackageId>
-    <PackageVersion>2.2.8</PackageVersion>
-    <Authors>RockLib</Authors>
-    <Description>Implementation of RockLib.Messaging API that sends and receives messages to a local named pipe.</Description>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>A changelog is available at https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging.NamedPipes/CHANGELOG.md.</PackageReleaseNotes>
-    <PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
-    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <PackageIcon>icon.png</PackageIcon>
-    <Copyright>Copyright 2018-2021 (c) Rocket Mortgage. All rights reserved.</Copyright>
-    <PackageTags>rocklib messaging</PackageTags>
-    <Version>2.0.0</Version>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <PublishRepositoryUrl>True</PublishRepositoryUrl>
-    <EmbedUntrackedSources>True</EmbedUntrackedSources>
-    <DebugType>Embedded</DebugType>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(PackageId).xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\LICENSE.md" Pack="true" PackagePath="" />
-    <None Include="..\icon.png" Pack="true" PackagePath="" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="RockLib.Messaging" Version="2.5.3" />
-  </ItemGroup>
-
+	<PropertyGroup>
+		<DebugType>Embedded</DebugType>
+		<Description>Implementation of RockLib.Messaging API that sends and receives messages to a local named pipe.</Description>
+		<EmbedUntrackedSources>True</EmbedUntrackedSources>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageId>RockLib.Messaging.NamedPipes</PackageId>
+		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+		<PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
+		<PackageReleaseNotes>A changelog is available at https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging.NamedPipes/CHANGELOG.md.</PackageReleaseNotes>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<PackageTags>rocklib messaging</PackageTags>
+		<PackageVersion>2.2.8</PackageVersion>
+		<PublishRepositoryUrl>True</PublishRepositoryUrl>
+		<Version>2.0.0</Version>
+	</PropertyGroup>
+	<PropertyGroup>
+		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(PackageId).xml</DocumentationFile>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+		<PackageReference Include="RockLib.Messaging" Version="3.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="..\LICENSE.md" Pack="true" PackagePath="" />
+		<None Include="..\icon.png" Pack="true" PackagePath="" />
+	</ItemGroup>
 </Project>

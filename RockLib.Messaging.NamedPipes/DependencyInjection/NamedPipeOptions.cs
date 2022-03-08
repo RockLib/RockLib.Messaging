@@ -1,5 +1,4 @@
-﻿#if !NET451
-using RockLib.Messaging.NamedPipes;
+﻿using RockLib.Messaging.NamedPipes;
 
 namespace RockLib.Messaging.DependencyInjection
 {
@@ -13,7 +12,6 @@ namespace RockLib.Messaging.DependencyInjection
         /// Gets or sets the pipe name. If null, the name of the sender or receiver is used as
         /// the pipe name.
         /// </summary>
-        public string PipeName { get; set; }
+        public string? PipeName { get; set; }
     }
 }
-#endif

@@ -7,10 +7,10 @@ using Xunit;
 
 namespace RockLib.Messaging.NamedPipes.Tests
 {
-    public class DependencyInjectionTests
+    public static class DependencyInjectionTests
     {
         [Fact]
-        public void NamedPipeSenderTest1()
+        public static void GetSenderWithoutReload()
         {
             var services = new ServiceCollection();
             services.Configure<NamedPipeOptions>(options => { });
@@ -28,9 +28,9 @@ namespace RockLib.Messaging.NamedPipes.Tests
         }
 
         [Fact]
-        public void NamedPipeSenderTest2()
+        public static void GetSenderWithReload()
         {
-            var reloadingSenderType = Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingSender`1, RockLib.Messaging", true)
+            var reloadingSenderType = Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingSender`1, RockLib.Messaging", true)!
                 .MakeGenericType(typeof(NamedPipeOptions));
 
             var services = new ServiceCollection();
@@ -51,7 +51,7 @@ namespace RockLib.Messaging.NamedPipes.Tests
         }
 
         [Fact]
-        public void NamedPipeReceiverTest1()
+        public static void GetReceiverWithoutReload()
         {
             var services = new ServiceCollection();
             services.Configure<NamedPipeOptions>(options => { });
@@ -69,9 +69,9 @@ namespace RockLib.Messaging.NamedPipes.Tests
         }
 
         [Fact]
-        public void NamedPipeReceiverTest2()
+        public static void GetReceiverWithReload()
         {
-            var reloadingReceiverType = Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingReceiver`1, RockLib.Messaging", true)
+            var reloadingReceiverType = Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingReceiver`1, RockLib.Messaging", true)!
                 .MakeGenericType(typeof(NamedPipeOptions));
 
             var services = new ServiceCollection();
