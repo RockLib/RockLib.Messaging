@@ -109,8 +109,17 @@ namespace RockLib.Messaging.NamedPipes
             {
                 foreach (var workItem in _workItems.GetConsumingEnumerable(token))
                 {
+
                     using var pipe = new NamedPipeClientStream(".", PipeName, PipeDirection.Out, PipeOptions.Asynchronous);
-                    pipe.Connect(0);
+
+                    try
+                    {
+                        pipe.Connect(0);
+                    }
+                    catch (TimeoutException)
+                    {
+                        continue;
+                    }
 
                     using var writer = new StreamWriter(pipe);
                     writer.WriteLine(workItem);
