@@ -15,13 +15,17 @@ namespace RockLib.Messaging.Kafka
         /// </summary>
         /// <param name="receiverMessage">The <see cref="IReceiverMessage"/>.</param>
         /// <returns>The Key of the Kafka message.</returns>
-        public static string GetKafkaKey(this IReceiverMessage receiverMessage)
+        public static string? GetKafkaKey(this IReceiverMessage receiverMessage)
         {
             if (receiverMessage is null)
+            {
                 throw new ArgumentNullException(nameof(receiverMessage));
+            }
 
             if (receiverMessage.Headers.TryGetValue(KafkaKeyHeader, out string kafkaKey))
+            {
                 return kafkaKey;
+            }
 
             return null;
         }
@@ -37,12 +41,18 @@ namespace RockLib.Messaging.Kafka
         public static void SetKafkaKey(this SenderMessage senderMessage, string kafkaKey)
         {
             if (senderMessage is null)
+            {
                 throw new ArgumentNullException(nameof(senderMessage));
+            }
 
             if (!string.IsNullOrEmpty(kafkaKey))
+            {
                 senderMessage.Headers[KafkaKeyHeader] = kafkaKey;
+            }
             else
+            {
                 senderMessage.Headers.Remove(KafkaKeyHeader);
+            }
         }
     }
 }

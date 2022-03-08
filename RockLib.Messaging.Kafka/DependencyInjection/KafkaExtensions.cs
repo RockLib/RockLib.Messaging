@@ -1,5 +1,4 @@
-﻿#if !NET451
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using RockLib.Messaging.DependencyInjection;
 using System;
 
@@ -26,7 +25,7 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         /// </param>
         /// <returns>A builder allowing the sender to be decorated.</returns>
         public static ISenderBuilder AddKafkaSender(this IServiceCollection services, string name,
-            Action<KafkaSenderOptions> configureOptions = null, bool reloadOnChange = true)
+            Action<KafkaSenderOptions>? configureOptions = null, bool reloadOnChange = true)
         {
             return services.AddSender(name, CreateKafkaSender, configureOptions, reloadOnChange);
 
@@ -50,7 +49,7 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         /// </param>
         /// <returns>A builder allowing the receiver to be decorated.</returns>
         public static IReceiverBuilder AddKafkaReceiver(this IServiceCollection services, string name,
-            Action<KafkaReceiverOptions> configureOptions = null, bool reloadOnChange = true)
+            Action<KafkaReceiverOptions>? configureOptions = null, bool reloadOnChange = true)
         {
             return services.AddReceiver(name, CreateKafkaReceiver, configureOptions, reloadOnChange);
 
@@ -59,4 +58,3 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         }
     }
 }
-#endif
