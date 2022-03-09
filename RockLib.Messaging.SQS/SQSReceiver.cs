@@ -57,14 +57,14 @@ namespace RockLib.Messaging.SQS
         /// is called. Terminating the message visibility timeout allows the message to immediately
         /// become available for queue consumers to process.</param>
         public SQSReceiver(string name,
-            string queueUrl,
-            string region = null,
+            Uri queueUrl,
+            string? region = null,
             int maxMessages = DefaultMaxMessages,
             bool autoAcknowledge = true,
             int waitTimeSeconds = DefaultWaitTimeSeconds,
             bool unpackSNS = false,
             bool terminateMessageVisibilityTimeoutOnRollback = false)
-            : this(region == null ? new AmazonSQSClient() : new AmazonSQSClient(RegionEndpoint.GetBySystemName(region)), name, queueUrl, maxMessages, autoAcknowledge, waitTimeSeconds, unpackSNS, terminateMessageVisibilityTimeoutOnRollback)
+            : this(region is null ? new AmazonSQSClient() : new AmazonSQSClient(RegionEndpoint.GetBySystemName(region)), name, queueUrl, maxMessages, autoAcknowledge, waitTimeSeconds, unpackSNS, terminateMessageVisibilityTimeoutOnRollback)
         {
         }
 
@@ -92,7 +92,7 @@ namespace RockLib.Messaging.SQS
         /// </param>
         /// <param name="unpackSNS">Whether to attempt to unpack the message body as an SNS message.</param>
         public SQSReceiver(string name,
-            string queueUrl,
+            Uri queueUrl,
             string region,
             int maxMessages,
             bool autoAcknowledge,
@@ -129,7 +129,7 @@ namespace RockLib.Messaging.SQS
         /// become available for queue consumers to process.</param>
         public SQSReceiver(IAmazonSQS sqs,
             string name,
-            string queueUrl,
+            Uri queueUrl,
             int maxMessages = DefaultMaxMessages,
             bool autoAcknowledge = true,
             int waitTimeSeconds = DefaultWaitTimeSeconds,
@@ -138,9 +138,13 @@ namespace RockLib.Messaging.SQS
             : base(name)
         {
             if (maxMessages < 1 || maxMessages > 10)
+            {
                 throw new ArgumentOutOfRangeException(nameof(maxMessages), "Value must be from 1 to 10, inclusive.");
+            }
             if (waitTimeSeconds < 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(waitTimeSeconds), "Value cannot be negative.");
+            }
 
             SQSClient = sqs ?? throw new ArgumentNullException(nameof(sqs));
             QueueUrl = queueUrl ?? throw new ArgumentNullException(nameof(queueUrl));
@@ -176,7 +180,7 @@ namespace RockLib.Messaging.SQS
         /// <param name="unpackSNS">Whether to attempt to unpack the message body as an SNS message.</param>
         public SQSReceiver(IAmazonSQS sqs,
             string name,
-            string queueUrl,
+            Uri queueUrl,
             int maxMessages,
             bool autoAcknowledge,
             int waitTimeSeconds,
@@ -188,7 +192,7 @@ namespace RockLib.Messaging.SQS
         /// <summary>
         /// Gets the url of the SQS queue.
         /// </summary>
-        public string QueueUrl { get; }
+        public Uri? QueueUrl { get; }
 
         /// <summary>
         /// Gets the maximum number of messages to return with each call to the SQS endpoint.
@@ -252,14 +256,14 @@ namespace RockLib.Messaging.SQS
                 var receiveMessageRequest = new ReceiveMessageRequest
                 {
                     MaxNumberOfMessages = MaxMessages,
-                    QueueUrl = QueueUrl,
+                    QueueUrl = QueueUrl?.OriginalString,
                     MessageAttributeNames = new List<string> { "*" },
                     WaitTimeSeconds = WaitTimeSeconds,
                     AttributeNames = new List<string> { "All" }
                 };
 
-                ReceiveMessageResponse response = null;
-                Exception exception = null;
+                ReceiveMessageResponse? response = null;
+                Exception? exception = null;
 
                 for (int i = 0; i < _maxReceiveAttempts; i++)
                 {
@@ -279,22 +283,28 @@ namespace RockLib.Messaging.SQS
                             break;
                         }
                     }
+#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         exception = ex;
                     }
                 }
 
-                if (exception != null || response == null || response.HttpStatusCode != HttpStatusCode.OK)
+                if (exception is not null || response is null || response.HttpStatusCode != HttpStatusCode.OK)
                 {
                     if (connected != false)
                     {
                         string GetErrorMessage()
                         {
-                            if (exception != null)
+                            if (exception is not null)
+                            {
                                 return $"{exception.GetType().Name}: {exception.Message}";
-                            if (response == null)
+                            }
+                            if (response is null)
+                            { 
                                 return "Null response returned from IAmazonSQS.ReceiveMessageAsync method.";
+                            }
                             return $"Unsuccessful response returned from IAmazonSQS.ReceiveMessageAsync method: {(int)response.HttpStatusCode} {response.HttpStatusCode}";
                         }
 
@@ -302,7 +312,7 @@ namespace RockLib.Messaging.SQS
                         OnDisconnected(GetErrorMessage());
                     }
 
-                    OnError($"Unable to receive SQS messages from AWS. Additional Information - {GetAdditionalInformation(response, null)}", exception);
+                    OnError($"Unable to receive SQS messages from AWS. Additional Information - {GetAdditionalInformation(response, null)}", exception!);
                     continue;
                 }
 
@@ -314,7 +324,9 @@ namespace RockLib.Messaging.SQS
         private async Task HandleAsync(Message message)
         {
             if (_stopped)
+            {
                 return;
+            }
 
             var receiptHandle = message.ReceiptHandle;
 
@@ -324,13 +336,15 @@ namespace RockLib.Messaging.SQS
             Task RollbackMessageAsync(CancellationToken cancellationToken = default(CancellationToken)) =>
                 RollbackAsync(receiptHandle, cancellationToken);
 
-            var receiverMessage = new SQSReceiverMessage(message, DeleteMessageAsync, RollbackMessageAsync, UnpackSNS);
+            using var receiverMessage = new SQSReceiverMessage(message, DeleteMessageAsync, RollbackMessageAsync, UnpackSNS);
 
             try
             {
-                await MessageHandler.OnMessageReceivedAsync(this, receiverMessage).ConfigureAwait(false);
+                await MessageHandler!.OnMessageReceivedAsync(this, receiverMessage).ConfigureAwait(false);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 OnError("Error in MessageHandler.OnMessageReceivedAsync.", ex);
             }
@@ -342,7 +356,9 @@ namespace RockLib.Messaging.SQS
                     {
                         await DeleteMessageAsync().ConfigureAwait(false);
                     }
+#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         OnError("Error in AutoAcknowledge.", ex);
                     }
@@ -356,7 +372,7 @@ namespace RockLib.Messaging.SQS
             {
                 return await SQSClient.DeleteMessageAsync(new DeleteMessageRequest
                 {
-                    QueueUrl = QueueUrl,
+                    QueueUrl = QueueUrl?.OriginalString,
                     ReceiptHandle = receiptHandle
                 }, cancellationToken).ConfigureAwait(false);
             });
@@ -365,14 +381,16 @@ namespace RockLib.Messaging.SQS
         private Task RollbackAsync(string receiptHandle, CancellationToken cancellationToken)
         {
             if (!TerminateMessageVisibilityTimeoutOnRollback)
+            {
                 return Task.FromResult(0);
+            }
 
             return ExecuteWithRetry(async () =>
             {
                 return await SQSClient.ChangeMessageVisibilityAsync(new ChangeMessageVisibilityRequest
                 {
                     VisibilityTimeout = 0,
-                    QueueUrl = QueueUrl,
+                    QueueUrl = QueueUrl?.OriginalString,
                     ReceiptHandle = receiptHandle
                 }, cancellationToken).ConfigureAwait(false);
             });
@@ -386,14 +404,18 @@ namespace RockLib.Messaging.SQS
             {
                 try
                 {
-                    var response = await funcToExecute();
+                    var response = await funcToExecute().ConfigureAwait(false);
                     if (response.HttpStatusCode == HttpStatusCode.OK)
+                    {
                         return;
+                    }
                 }
                 catch
                 {
                     if (i++ >= _maxAcknowledgeAttempts)
+                    {
                         throw;
+                    }
                 }
             }
         }
@@ -405,27 +427,31 @@ namespace RockLib.Messaging.SQS
         {
             _stopped = true;
             if (_receiveMessagesTask.IsValueCreated)
+            {
                 try { _receiveMessagesTask.Value.Wait(); }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch { }
+#pragma warning restore CA1031 // Do not catch general exception types
+            }
             SQSClient.Dispose();
             base.Dispose(disposing);
         }
 
-        private static string GetAdditionalInformation(AmazonWebServiceResponse response, string receiptHandle)
+        private static string? GetAdditionalInformation(AmazonWebServiceResponse? response, string? receiptHandle)
         {
-            if (response == null && receiptHandle == null)
+            if (response is null && receiptHandle is null)
             {
                 return null;
             }
 
-            if (response == null)
+            if (response is null)
             {
                 return $@"{{
    ""receiptHandle"": ""{receiptHandle}""
 }}";
             }
 
-            if (receiptHandle != null)
+            if (receiptHandle is not null)
             {
                 receiptHandle = $@",
    ""receiptHandle"": ""{receiptHandle}""";
@@ -433,11 +459,11 @@ namespace RockLib.Messaging.SQS
 
             var responseMetadata = "null";
 
-            if (response.ResponseMetadata != null)
+            if (response.ResponseMetadata is not null)
             {
                 var metadata = "null";
 
-                if (response.ResponseMetadata.Metadata != null)
+                if (response.ResponseMetadata.Metadata is not null)
                 {
                     if (response.ResponseMetadata.Metadata.Count == 0)
                     {
@@ -454,7 +480,7 @@ namespace RockLib.Messaging.SQS
 
                 var requestId = "null";
 
-                if (response.ResponseMetadata.RequestId != null)
+                if (response.ResponseMetadata.RequestId is not null)
                 {
                     requestId = $@"""{response.ResponseMetadata.RequestId}""";
                 }

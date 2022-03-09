@@ -1,5 +1,4 @@
-﻿#if !NET451
-using Amazon.SQS;
+﻿using Amazon.SQS;
 using RockLib.Messaging.SQS;
 using System;
 using System.Threading;
@@ -11,19 +10,19 @@ namespace RockLib.Messaging.DependencyInjection
     /// </summary>
     public class SQSReceiverOptions
     {
-        private string _queueUrl;
+        private Uri? _queueUrl;
         private int _maxMessages = SQSReceiver.DefaultMaxMessages;
         private int _waitTimeSeconds = SQSReceiver.DefaultWaitTimeSeconds;
 
         /// <summary>
         /// Gets or sets the object that communicates with SQS.
         /// </summary>
-        public IAmazonSQS SqsClient { get; set; }
+        public IAmazonSQS? SqsClient { get; set; }
 
         /// <summary>
         /// Gets or sets the url of the SQS queue.
         /// </summary>
-        public string QueueUrl
+        public Uri? QueueUrl
         {
             get => _queueUrl;
             set => _queueUrl = value ?? throw new ArgumentNullException(nameof(value));
@@ -32,7 +31,7 @@ namespace RockLib.Messaging.DependencyInjection
         /// <summary>
         /// Gets or sets the region of the SQS client.
         /// </summary>
-        public string Region { get; set; }
+        public string? Region { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum number of messages to return with each call to the SQS
@@ -45,7 +44,9 @@ namespace RockLib.Messaging.DependencyInjection
             set
             {
                 if (value < 1 || value > 10)
+                {
                     throw new ArgumentOutOfRangeException(nameof(value), "Value must be from 1 to 10, inclusive.");
+                }
                 _maxMessages = value;
             }
         }
@@ -68,7 +69,9 @@ namespace RockLib.Messaging.DependencyInjection
             set
             {
                 if (value < 0)
+                {
                     throw new ArgumentOutOfRangeException(nameof(value), "Value cannot be negative.");
+                }
                 _waitTimeSeconds = value;
             }
         }
@@ -88,4 +91,3 @@ namespace RockLib.Messaging.DependencyInjection
         public bool TerminateMessageVisibilityTimeoutOnRollback { get; set; }
     }
 }
-#endif

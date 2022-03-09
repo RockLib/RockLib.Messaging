@@ -1,5 +1,4 @@
-﻿#if !NET451
-using Amazon.SQS;
+﻿using Amazon.SQS;
 using RockLib.Messaging.SQS;
 using System;
 
@@ -10,12 +9,12 @@ namespace RockLib.Messaging.DependencyInjection
     /// </summary>
     public class SQSSenderOptions
     {
-        private string _queueUrl;
+        private Uri? _queueUrl;
 
         /// <summary>
         /// Gets or sets the url of the SQS queue.
         /// </summary>
-        public string QueueUrl
+        public Uri? QueueUrl
         {
             get => _queueUrl;
             set => _queueUrl = value ?? throw new ArgumentNullException(nameof(value));
@@ -24,12 +23,12 @@ namespace RockLib.Messaging.DependencyInjection
         /// <summary>
         /// Gets or sets the object that communicates with SQS.
         /// </summary>
-        public IAmazonSQS SqsClient { get; set; }
+        public IAmazonSQS? SqsClient { get; set; }
 
         /// <summary>
         /// Gets or sets the region of the SQS client.
         /// </summary>
-        public string Region { get; set; }
+        public string? Region { get; set; }
 
         /// <summary>
         /// Gets or sets the tag that specifies that a message belongs to a specific message
@@ -41,7 +40,6 @@ namespace RockLib.Messaging.DependencyInjection
         /// fashion.
         /// <para>This parameter applies only to FIFO (first-in-first-out) queues.</para>
         /// </summary>
-        public string MessageGroupId { get; set; }
+        public string? MessageGroupId { get; set; }
     }
 }
-#endif

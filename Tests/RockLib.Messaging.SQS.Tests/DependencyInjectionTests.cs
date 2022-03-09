@@ -12,14 +12,14 @@ namespace RockLib.Messaging.SQS.Tests
     public class DependencyInjectionTests
     {
         [Fact]
-        public void SQSSenderTest1()
+        public void SendViaSQSSender()
         {
             var services = new ServiceCollection();
             services.Configure<SQSSenderOptions>(options => { });
 
             services.AddSQSSender("mySender", options =>
             {
-                options.QueueUrl = "http://example.com";
+                options.QueueUrl = new Uri("http://example.com");
                 options.Region = "us-west-2";
                 options.MessageGroupId = "myMessageGroupId";
             }, false);
@@ -31,15 +31,15 @@ namespace RockLib.Messaging.SQS.Tests
             var sqsSender = sender.Should().BeOfType<SQSSender>().Subject;
 
             sqsSender.Name.Should().Be("mySender");
-            sqsSender.QueueUrl.Should().Be("http://example.com");
+            sqsSender.QueueUrl.OriginalString.Should().Be("http://example.com");
             sqsSender.SQSClient.Config.RegionEndpoint.Should().Be(RegionEndpoint.USWest2);
             sqsSender.MessageGroupId.Should().Be("myMessageGroupId");
         }
 
         [Fact]
-        public void SQSSenderTest2()
+        public void SendViaReloadingSender()
         {
-            var reloadingSenderType = Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingSender`1, RockLib.Messaging", true)
+            var reloadingSenderType = Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingSender`1, RockLib.Messaging", true)?
                .MakeGenericType(typeof(SQSSenderOptions));
 
             var services = new ServiceCollection();
@@ -47,7 +47,7 @@ namespace RockLib.Messaging.SQS.Tests
 
             services.AddSQSSender("mySender", options =>
             {
-                options.QueueUrl = "http://example.com";
+                options.QueueUrl = new Uri("http://example.com");
                 options.Region = "us-west-2";
                 options.MessageGroupId = "myMessageGroupId";
             }, true);
@@ -61,7 +61,7 @@ namespace RockLib.Messaging.SQS.Tests
             var sqsSender = (SQSSender)sender.Unlock().Sender;
 
             sqsSender.Name.Should().Be("mySender");
-            sqsSender.QueueUrl.Should().Be("http://example.com");
+            sqsSender.QueueUrl.OriginalString.Should().Be("http://example.com");
             sqsSender.SQSClient.Config.RegionEndpoint.Should().Be(RegionEndpoint.USWest2);
             sqsSender.MessageGroupId.Should().Be("myMessageGroupId");
         }
@@ -71,12 +71,12 @@ namespace RockLib.Messaging.SQS.Tests
         {
             var services = new ServiceCollection();
 
-            var sqsClient = new AmazonSQSClient(RegionEndpoint.USEast2);
+            using var sqsClient = new AmazonSQSClient(RegionEndpoint.USEast2);
             services.AddSingleton<IAmazonSQS>(sqsClient);
 
             services.AddSQSSender("mySender", options =>
             {
-                options.QueueUrl = "http://example.com";
+                options.QueueUrl = new Uri("http://example.com");
             });
 
             var serviceProvider = services.BuildServiceProvider();
@@ -90,14 +90,14 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void SQSReceiverTest1()
+        public void RetrieveViaSQSReceiver()
         {
             var services = new ServiceCollection();
             services.Configure<SQSReceiverOptions>(options => { });
 
             services.AddSQSReceiver("myReceiver", options =>
             {
-                options.QueueUrl = "http://example.com";
+                options.QueueUrl = new Uri("http://example.com");
                 options.Region = "us-west-2";
                 options.MaxMessages = 5;
                 options.AutoAcknowledge = false;
@@ -113,7 +113,7 @@ namespace RockLib.Messaging.SQS.Tests
             var sqsReceiver = receiver.Should().BeOfType<SQSReceiver>().Subject;
 
             sqsReceiver.Name.Should().Be("myReceiver");
-            sqsReceiver.QueueUrl.Should().Be("http://example.com");
+            sqsReceiver.QueueUrl!.OriginalString.Should().Be("http://example.com");
             sqsReceiver.SQSClient.Config.RegionEndpoint.Should().Be(RegionEndpoint.USWest2);
             sqsReceiver.MaxMessages.Should().Be(5);
             sqsReceiver.AutoAcknwoledge.Should().BeFalse();
@@ -123,9 +123,9 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void SQSReceiverTest2()
+        public void RetrieveViaReloadingReceiver()
         {
-            var reloadingReceiverType = Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingReceiver`1, RockLib.Messaging", true)
+            var reloadingReceiverType = Type.GetType("RockLib.Messaging.DependencyInjection.ReloadingReceiver`1, RockLib.Messaging", true)?
                .MakeGenericType(typeof(SQSReceiverOptions));
 
             var services = new ServiceCollection();
@@ -133,7 +133,7 @@ namespace RockLib.Messaging.SQS.Tests
 
             services.AddSQSReceiver("myReceiver", options =>
             {
-                options.QueueUrl = "http://example.com";
+                options.QueueUrl = new Uri("http://example.com");
                 options.Region = "us-west-2";
                 options.MaxMessages = 5;
                 options.AutoAcknowledge = false;
@@ -151,7 +151,7 @@ namespace RockLib.Messaging.SQS.Tests
             var sqsReceiver = (SQSReceiver)receiver.Unlock().Receiver;
 
             sqsReceiver.Name.Should().Be("myReceiver");
-            sqsReceiver.QueueUrl.Should().Be("http://example.com");
+            sqsReceiver.QueueUrl!.OriginalString.Should().Be("http://example.com");
             sqsReceiver.SQSClient.Config.RegionEndpoint.Should().Be(RegionEndpoint.USWest2);
             sqsReceiver.MaxMessages.Should().Be(5);
             sqsReceiver.AutoAcknwoledge.Should().BeFalse();
@@ -165,12 +165,12 @@ namespace RockLib.Messaging.SQS.Tests
         {
             var services = new ServiceCollection();
 
-            var sqsClient = new AmazonSQSClient(RegionEndpoint.USEast2);
+            using var sqsClient = new AmazonSQSClient(RegionEndpoint.USEast2);
             services.AddSingleton<IAmazonSQS>(sqsClient);
 
             services.AddSQSReceiver("myReceiver", options =>
             {
-                options.QueueUrl = "http://example.com";
+                options.QueueUrl = new Uri("http://example.com");
             });
 
             var serviceProvider = services.BuildServiceProvider();
