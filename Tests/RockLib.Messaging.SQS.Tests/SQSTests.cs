@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
-using System;
 
 namespace RockLib.Messaging.SQS.Tests
 {
@@ -414,7 +413,7 @@ namespace RockLib.Messaging.SQS.Tests
         }
 
         [Fact]
-        public void SQSReceiverMessageHasSQSMessageIDSetCorrectly()
+        public static void SQSReceiverMessageHasSQSMessageIDSetCorrectly()
         {
             var message = new Message
             {
@@ -427,10 +426,12 @@ namespace RockLib.Messaging.SQS.Tests
             var messageId = sqsReceiverMessage.Headers.GetValue<string>("SQS.MessageID");
 
             messageId.Should().NotBeNull();
+
+            sqsReceiverMessage.Dispose();
         }
 
         [Fact]
-        public void SQSReceiverMessageDoesNotHaveSQSMessageIDHeaderWhenSNS()
+        public static void SQSReceiverMessageDoesNotHaveSQSMessageIDHeaderWhenSNS()
         {
 
             var snsMessage = @"{
@@ -456,6 +457,8 @@ namespace RockLib.Messaging.SQS.Tests
 
             //var messageId = 
             Assert.Throws<KeyNotFoundException>(() => sqsReceiverMessage.Headers.GetValue<string>("SQS.MessageID"));
+
+            sqsReceiverMessage.Dispose();
 
         }
 
