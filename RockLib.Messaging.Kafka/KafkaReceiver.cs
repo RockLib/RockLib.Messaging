@@ -13,9 +13,11 @@ namespace RockLib.Messaging.Kafka
     {
         private readonly Lazy<Thread> _pollingThread;
         private readonly Lazy<IConsumer<string, byte[]>> _consumer;
+#pragma warning disable CA2213 // Disposable fields should be disposed
         private readonly CancellationTokenSource _disposeSource = new CancellationTokenSource();
-        private readonly BlockingCollection<Task> _trackingCollection;
-        private readonly Lazy<Thread> _trackingThread;
+        private readonly BlockingCollection<Task>? _trackingCollection;
+#pragma warning restore CA2213 // Disposable fields should be disposed
+        private readonly Lazy<Thread>? _trackingThread;
 
         private readonly bool _schemaIdRequired;
         private bool _stopped;
@@ -183,7 +185,9 @@ namespace RockLib.Messaging.Kafka
         /// Occurs when the Kafka consumer emits statistics. The statistics is a JSON formatted string as defined here:
         /// <a href="https://github.com/edenhill/librdkafka/blob/master/STATISTICS.md">https://github.com/edenhill/librdkafka/blob/master/STATISTICS.md</a>
         /// </summary>
-        public event EventHandler<string> StatisticsEmitted; 
+#pragma warning disable CA1003 // Use generic event handler instances
+        public event EventHandler<string>? StatisticsEmitted;
+#pragma warning restore CA1003 // Use generic event handler instances
 
         /// <summary>
         /// Starts the background threads and subscribes to the topic.
@@ -242,13 +246,15 @@ namespace RockLib.Messaging.Kafka
                     }
 
                     var task = MessageHandler.OnMessageReceivedAsync(this, message);
-                    _trackingCollection.Add(task);
+                    _trackingCollection!.Add(task);
                 }
                 catch (OperationCanceledException) when (_disposeSource.IsCancellationRequested)
                 {
                     return;
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     OnError("Error in polling loop.", ex);
                     // TODO: Delay the loop?
@@ -258,13 +264,15 @@ namespace RockLib.Messaging.Kafka
 
         private void TrackMessageHandling()
         {
-            foreach (var task in _trackingCollection.GetConsumingEnumerable())
+            foreach (var task in _trackingCollection!.GetConsumingEnumerable())
             {
                 try
                 {
                     task.GetAwaiter().GetResult();
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     OnError("Error while tracking message handler task.", ex);
                 }
@@ -293,7 +301,9 @@ namespace RockLib.Messaging.Kafka
                 {
                     return;
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     OnError("Error in polling loop.", ex);
                     // TODO: Delay the loop?

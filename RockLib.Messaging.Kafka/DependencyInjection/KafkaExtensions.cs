@@ -30,7 +30,7 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
             return services.AddSender(name, CreateKafkaSender, configureOptions, reloadOnChange);
 
             ISender CreateKafkaSender(KafkaSenderOptions options, IServiceProvider serviceProvider) =>
-                new KafkaSender(name, options.Topic, options);
+                new KafkaSender(name, options.Topic!, options);
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
             return services.AddReceiver(name, CreateKafkaReceiver, configureOptions, reloadOnChange);
 
             IReceiver CreateKafkaReceiver(KafkaReceiverOptions options, IServiceProvider serviceProvider) =>
-                new KafkaReceiver(name, options.Topic, options, options.SynchronousProcessing, options.SchemaIdRequired);
+                new KafkaReceiver(name, options.Topic!, options, options.SynchronousProcessing, options.SchemaIdRequired);
         }
     }
 }

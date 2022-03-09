@@ -13,7 +13,9 @@ namespace RockLib.Messaging.Kafka
     /// <summary>
     /// An implementation of <see cref="ISender"/> that sends messages to Kafka.
     /// </summary>
+#pragma warning disable CA1063 // Implement IDisposable Correctly
     public class KafkaSender : ISender
+#pragma warning restore CA1063 // Implement IDisposable Correctly
     {
         private static readonly char[] _quoteChar = { '"' };
 
@@ -243,7 +245,11 @@ namespace RockLib.Messaging.Kafka
         /// <summary>
         /// Flushes the producer and disposes it.
         /// </summary>
+#pragma warning disable CA1063 // Implement IDisposable Correctly
+#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
         public void Dispose()
+#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
+#pragma warning restore CA1063 // Implement IDisposable Correctly
         {
             if (_producer.IsValueCreated)
             {
