@@ -421,13 +421,12 @@ namespace RockLib.Messaging.SQS.Tests
                 Body = @"{""TestMessageItem"":""ThisIsAFakeItem""}"
             };
 
-            var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), c => Task.FromResult(0), unpackSNS: false);
+            using (var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), c => Task.FromResult(0), unpackSNS: false))
+            {
+                var messageId = sqsReceiverMessage.Headers.GetValue<string>("SQS.MessageID");
 
-            var messageId = sqsReceiverMessage.Headers.GetValue<string>("SQS.MessageID");
-
-            messageId.Should().NotBeNull();
-
-            sqsReceiverMessage.Dispose();
+                messageId.Should().NotBeNull();
+            }
         }
 
         [Fact]
@@ -452,12 +451,11 @@ namespace RockLib.Messaging.SQS.Tests
                 Body = snsMessage
             };
 
-            var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), c => Task.FromResult(0), unpackSNS: true);
+            using (var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), c => Task.FromResult(0), unpackSNS: true))
+            {
+                Assert.Throws<KeyNotFoundException>(() => sqsReceiverMessage.Headers.GetValue<string>("SQS.MessageID"));
+            }
  
-            Assert.Throws<KeyNotFoundException>(() => sqsReceiverMessage.Headers.GetValue<string>("SQS.MessageID"));
-
-            sqsReceiverMessage.Dispose();
-
         }
 
         private static void SetupDeleteMessageAsync(Mock<IAmazonSQS> mockSqs, HttpStatusCode httpStatusCode = HttpStatusCode.OK)
