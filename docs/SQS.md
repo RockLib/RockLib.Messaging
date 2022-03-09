@@ -16,7 +16,7 @@ The SQSSender class can be directly instantiated and has the following parameter
   - The tag that specifies that a message belongs to a specific message group. Messages that belong to the same message group are processed in a FIFO manner (however, messages in different message groups might be processed out of order). To interleave multiple ordered streams within a single queue, use MessageGroupId values (for example, session data for multiple users). In this scenario, multiple consumers can process the queue, but the session data of each user is processed in a FIFO fashion. This parameter applies only to FIFO (first-in-first-out) queues.
 
 ```c#
-ISender sender = new SQSSender("MySender", "https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name",
+ISender sender = new SQSSender("MySender", new Uri("https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name"),
     region: "us-west-2", messageGroupId: null);
 ```
 
@@ -28,7 +28,7 @@ To add an SQSSender to a service collection for dependency injection, use the `A
 services.AddSQSSender("MySender", options =>
 {
     options.Region = "us-west-2";
-    options.QueueUrl = "https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name";
+    options.QueueUrl = new Uri("https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name");
     options.MessageGroupId = null;
 });
 ```
@@ -46,7 +46,7 @@ public void ConfigureServices(IServiceCollection services)
 {
   "MySQSSender": {
     "Region": "us-west-2",
-    "QueueUrl": "https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name"
+    "QueueUrl": new Uri("https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name")
   }
 }
 */
@@ -63,7 +63,7 @@ MessagingScenarioFactory can be configured with an `SQSSender` named "commands" 
             "Type": "RockLib.Messaging.SQS.SQSSender, RockLib.Messaging.SQS",
             "Value": {
                 "Name": "commands",
-                "QueueUrl": "https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name",
+                "QueueUrl": new Uri("https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name"),
                 "Region": "us-west-2"
             }
         }
@@ -108,7 +108,7 @@ The SQSReceiver class can be directly instantiated and has the following paramet
   - Whether to terminate the message visibility timeout when SQSReceiverMessage.RollbackMessageAsync is called. Terminating the message visibility timeout allows the message to immediately become available for queue consumers to process.
 
 ```c#
-IReceiver receiver = new SQSReceiver("MyReceiver", "https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name",
+IReceiver receiver = new SQSReceiver("MyReceiver", new Uri("https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name"),
     region:"us-west-2", maxMessages: 3, autoAcknowledge: true, waitTimeSeconds: 0, unpackSNS: false, terminateMessageVisibilityTimeoutOnRollback: false);
 ```
 
@@ -120,7 +120,7 @@ To add an SQSReceiver to a service collection for dependency injection, use the 
 services.AddSQSReceiver("MySender", options =>
 {
     options.Region = "us-west-2";
-    options.QueueUrl = "https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name";
+    options.QueueUrl = new Uri("https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name");
     options.MaxMessages = 3;
     options.AutoAcknowledge = true;
     options.WaitTimeSeconds = 0;
@@ -142,7 +142,7 @@ public void ConfigureServices(IServiceCollection services)
 {
   "MySQSReceiver": {
     "Region": "us-west-2",
-    "QueueUrl": "https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name",
+    "QueueUrl": new Uri("https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name"),
     "MaxMessages": 3,
     "AutoAcknowledge": true,
     "WaitTimeSeconds": 0,
@@ -164,7 +164,7 @@ MessagingScenarioFactory can be configured with an `SQSReceiver` named "commands
             "Type": "RockLib.Messaging.SQS.SQSReceiver, RockLib.Messaging.SQS",
             "Value": {
                 "Name": "commands",
-                "QueueUrl": "https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name",
+                "QueueUrl": new Uri("https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name"),
                 "Region": "us-west-2",
                 "MaxMessages": 3,
                 "AutoAcknowledge": true,
