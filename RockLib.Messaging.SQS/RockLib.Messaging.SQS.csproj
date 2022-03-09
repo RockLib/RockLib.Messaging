@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.SQS" Version="3.7.2.28" />
+    <PackageReference Include="AWSSDK.SQS" Version="3.7.2.29" />
     <PackageReference Include="RockLib.Messaging" Version="3.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>

@@ -283,7 +283,9 @@ namespace RockLib.Messaging.SQS
                             break;
                         }
                     }
-                    catch (OverLimitException ex)
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         exception = ex;
                     }
@@ -310,7 +312,7 @@ namespace RockLib.Messaging.SQS
                         OnDisconnected(GetErrorMessage());
                     }
 
-                    OnError($"Unable to receive SQS messages from AWS. Additional Information - {GetAdditionalInformation(response!, null!)}", exception!);
+                    OnError($"Unable to receive SQS messages from AWS. Additional Information - {GetAdditionalInformation(response, null)}", exception!);
                     continue;
                 }
 
@@ -435,11 +437,11 @@ namespace RockLib.Messaging.SQS
             base.Dispose(disposing);
         }
 
-        private static string GetAdditionalInformation(AmazonWebServiceResponse response, string receiptHandle)
+        private static string? GetAdditionalInformation(AmazonWebServiceResponse? response, string? receiptHandle)
         {
             if (response is null && receiptHandle is null)
             {
-                return null!;
+                return null;
             }
 
             if (response is null)

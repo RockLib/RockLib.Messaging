@@ -19,7 +19,7 @@ namespace RockLib.Messaging.SQS
 
         internal SQSReceiverMessage(Message message, Func<CancellationToken, Task> deleteMessageAsync, 
             Func<CancellationToken, Task> rollbackMessageAsync, bool unpackSNS)
-            : base(() => GetRawPayload(message.Body, unpackSNS))
+            : base(() => GetRawPayload(message.Body, unpackSNS)!)
         {
             Message = message;
             _deleteMessageAsync = deleteMessageAsync;
@@ -50,11 +50,10 @@ namespace RockLib.Messaging.SQS
             }
             if (TryGetSNSMessage(Message.Body, _unpackSns, out var snsMessage))
             {
-               
-                
-                headers["TopicARN"] = snsMessage.TopicARN!;
 
-                foreach (var attribute in snsMessage.MessageAttributes)
+                headers["TopicARN"] = snsMessage?.TopicARN!;
+
+                foreach (var attribute in snsMessage?.MessageAttributes!)
                     headers[attribute.Key] = attribute.Value.Value!;
             }
             else
@@ -67,17 +66,17 @@ namespace RockLib.Messaging.SQS
             }
         }
 
-        private static string GetRawPayload(string messageBody, bool unpackSNS)
+        private static string? GetRawPayload(string messageBody, bool unpackSNS)
         {
             if (TryGetSNSMessage(messageBody, unpackSNS, out var snsMessage))
             {
-                return snsMessage.Message!;
+                return snsMessage?.Message;
             }
 
             return messageBody;
         }
 
-        private static bool TryGetSNSMessage(string messageBody, bool unpackSNS, out SNSMessage snsMessage)
+        private static bool TryGetSNSMessage(string messageBody, bool unpackSNS, out SNSMessage? snsMessage)
         {
             if (unpackSNS)
             {
@@ -94,7 +93,7 @@ namespace RockLib.Messaging.SQS
 #pragma warning restore CA1031 // Do not catch general exception types
             }
 
-            snsMessage = null!;
+            snsMessage = null;
             return false;
         }
 
@@ -102,7 +101,7 @@ namespace RockLib.Messaging.SQS
         {
             public string? TopicARN { get; set; }
             public string? Message { get; set; }
-            public Dictionary<string, MessageAttribute> MessageAttributes { get; } = new Dictionary<string, MessageAttribute>();
+            public Dictionary<string, MessageAttribute>? MessageAttributes { get; } = new();
         }
 
         private class MessageAttribute
