@@ -453,9 +453,7 @@ namespace RockLib.Messaging.SQS.Tests
             };
 
             var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), c => Task.FromResult(0), unpackSNS: true);
-
-
-            //var messageId = 
+ 
             Assert.Throws<KeyNotFoundException>(() => sqsReceiverMessage.Headers.GetValue<string>("SQS.MessageID"));
 
             sqsReceiverMessage.Dispose();

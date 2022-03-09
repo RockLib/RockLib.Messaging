@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 	
 #### Added
 - Added `.editorconfig` and `Directory.Build.props` files to ensure consistency.
+- Added "SQS.MessageID" as header to SQSReceiverMessages when the not attempting to unpack as an SNS message
 
 #### Changed
 - Supported targets: net6.0, netcoreapp3.1, and net48.
