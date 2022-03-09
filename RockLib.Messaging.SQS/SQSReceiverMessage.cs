@@ -44,7 +44,6 @@ namespace RockLib.Messaging.SQS
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
-            
             if (TryGetSNSMessage(Message.Body, _unpackSns, out var snsMessage))
             {
                 headers["TopicARN"] = snsMessage.TopicARN;
