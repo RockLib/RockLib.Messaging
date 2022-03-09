@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
+using System;
 
 namespace RockLib.Messaging.SQS.Tests
 {
@@ -383,6 +384,52 @@ namespace RockLib.Messaging.SQS.Tests
 
             sqsReceiverMessage.StringPayload.Should().Be("This is a better test message");
             sqsReceiverMessage.Headers["TopicARN"].Should().Be("arn:PutARealARNHere");
+        }
+
+        [Fact]
+        public void SQSReceiverMessageHasSQSMessageIDSetCorrectly()
+        {
+            var message = new Message
+            {
+                MessageId = (new Guid()).ToString(),
+                Body = @"{""TestMessageItem"":""ThisIsAFakeItem""}"
+            };
+
+            var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), c => Task.FromResult(0), unpackSNS: false);
+
+            var messageId = sqsReceiverMessage.Headers.GetValue<string>("SQS.MessageID");
+
+            messageId.Should().NotBeNull();
+        }
+
+        [Fact]
+        public void SQSReceiverMessageDoesNotHaveSQSMessageIDHeaderWhenSNS()
+        {
+
+            var snsMessage = @"{
+  ""Type"" : ""Notification"",
+  ""MessageId"" : ""f5129dcc-0bb0-5e18-9431-c95b6a9b32d9"",
+  ""TopicArn"" : ""arn:PutARealARNHere"",
+  ""Message"" : ""This is a better test message"",
+  ""Timestamp"" : ""2018-12-21T21:45:15.114Z"",
+  ""SignatureVersion"" : ""1"",
+  ""Signature"" : ""SomeSignatureValue"",
+  ""SigningCertURL"" : ""SomeUrl"",
+  ""UnsubscribeURL"" : ""SomeOtherUrl""
+}";
+
+            var message = new Message
+            {
+                MessageId = (new Guid()).ToString(),
+                Body = snsMessage
+            };
+
+            var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), c => Task.FromResult(0), unpackSNS: true);
+
+
+            //var messageId = 
+            Assert.Throws<KeyNotFoundException>(() => sqsReceiverMessage.Headers.GetValue<string>("SQS.MessageID"));
+
         }
 
         private static void SetupDeleteMessageAsync(Mock<IAmazonSQS> mockSqs, HttpStatusCode httpStatusCode = HttpStatusCode.OK)
