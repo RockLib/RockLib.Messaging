@@ -13,7 +13,7 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         public KafkaSenderOptions()
             : base()
         {
-            MessageTimeoutMs = 10000;
+            MessageTimeoutMs = Constants.DefaultTimeout;
         }
 
         /// <summary>

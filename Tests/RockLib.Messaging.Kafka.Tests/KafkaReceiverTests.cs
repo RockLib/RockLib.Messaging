@@ -75,19 +75,17 @@ namespace RockLib.Messaging.Kafka.Tests
                 AutoOffsetReset = autoOffsetReset
             };
 
-            using (var receiver = new KafkaReceiver(name, topic, consumer, schemaIdRequired: schemaIdRequired))
-            {
-                receiver.Name.Should().Be(name);
-                receiver.Topic.Should().Be(topic);
-                receiver.GroupId.Should().Be(groupId);
-                receiver.BootstrapServers.Should().Be(servers);
-                receiver.EnableAutoOffsetStore.Should().Be(enableOffsetRestore);
-                receiver.AutoOffsetReset.Should().Be(autoOffsetReset);
-                receiver.Consumer.Should().NotBeNull();
+            using var receiver = new KafkaReceiver(name, topic, consumer, schemaIdRequired: schemaIdRequired);
+            receiver.Name.Should().Be(name);
+            receiver.Topic.Should().Be(topic);
+            receiver.GroupId.Should().Be(groupId);
+            receiver.BootstrapServers.Should().Be(servers);
+            receiver.EnableAutoOffsetStore.Should().Be(enableOffsetRestore);
+            receiver.AutoOffsetReset.Should().Be(autoOffsetReset);
+            receiver.Consumer.Should().NotBeNull();
 
-                var unlockedReceiver = receiver.Unlock();
-                Assert.Equal(schemaIdRequired, unlockedReceiver._schemaIdRequired);
-            }
+            var unlockedReceiver = receiver.Unlock();
+            Assert.Equal(schemaIdRequired, unlockedReceiver._schemaIdRequired);
         }
 
         [Fact(DisplayName = "KafkaReceiver constructor 2 throws on null topic")]

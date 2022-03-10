@@ -17,8 +17,8 @@ namespace RockLib.Messaging.Kafka
     public class KafkaSender : ISender
 #pragma warning restore CA1063 // Implement IDisposable Correctly
     {
-        private static readonly char[] _quoteChar = { '"' };
-
+        private const char Quote = '"';
+        private bool _disposed;
         private readonly Lazy<IProducer<string, byte[]>> _producer;
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace RockLib.Messaging.Kafka
         /// The statistics emit interval in milliseconds. Granularity is 1,000ms. An event handler must be attached to the
         /// <see cref="StatisticsEmitted"/> event to receive the statistics data. Setting to 0 disables statistics. 
         /// </param>
-        public KafkaSender(string name, string topic, string bootstrapServers, int messageTimeoutMs = 10000,
+        public KafkaSender(string name, string topic, string bootstrapServers, int messageTimeoutMs = Constants.DefaultTimeout,
             int statisticsIntervalMs = 0)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -102,7 +102,7 @@ namespace RockLib.Messaging.Kafka
         /// The statistics emit interval in milliseconds. Granularity is 1,000ms. An event handler must be attached to the
         /// <see cref="StatisticsEmitted"/> event to receive the statistics data. Setting to 0 disables statistics.
         /// </param>
-        public KafkaSender(string name, string topic, int schemaId, string bootstrapServers, int messageTimeoutMs = 10000,
+        public KafkaSender(string name, string topic, int schemaId, string bootstrapServers, int messageTimeoutMs = Constants.DefaultTimeout,
             int statisticsIntervalMs = 0)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -245,17 +245,30 @@ namespace RockLib.Messaging.Kafka
         /// <summary>
         /// Flushes the producer and disposes it.
         /// </summary>
-#pragma warning disable CA1063 // Implement IDisposable Correctly
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-        public void Dispose()
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-#pragma warning restore CA1063 // Implement IDisposable Correctly
+        protected virtual void Dispose(bool disposing)
         {
-            if (_producer.IsValueCreated)
+            if(!_disposed)
             {
-                _producer.Value.Flush(TimeSpan.FromSeconds(10));
-                _producer.Value.Dispose();
+                if(disposing)
+                {
+                    if (_producer.IsValueCreated)
+                    {
+                        _producer.Value.Flush(TimeSpan.FromSeconds(10));
+                        _producer.Value.Dispose();
+                    }
+                }
+
+                _disposed = true;
             }
+        }
+
+        /// <summary>
+        /// Disposes the object
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         private void OnError(IProducer<string, byte[]> producer, Error error) => 
@@ -273,7 +286,7 @@ namespace RockLib.Messaging.Kafka
                 return null;
             }
 
-            return JsonConvert.SerializeObject(value).Trim(_quoteChar);
+            return JsonConvert.SerializeObject(value).Trim(Quote);
         }
 
         private static byte[]? Encode(string? value)

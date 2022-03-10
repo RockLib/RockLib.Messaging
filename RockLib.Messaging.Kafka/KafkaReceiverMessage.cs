@@ -59,7 +59,7 @@ namespace RockLib.Messaging.Kafka
                 headers[KafkaSchemaIdHeader] = schemaId;
             }
 
-            if (Result.Message?.Headers != null)
+            if (Result.Message?.Headers is not null)
             {
                 foreach (var header in Result.Message.Headers)
                 {
