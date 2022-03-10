@@ -11,16 +11,10 @@ namespace RockLib.Messaging.Kafka
     /// </summary>
     public class KafkaReceiver : Receiver
     {
-        //private readonly Lazy<Thread> _pollingThread;
         private Task? _kafkaPolling;
         private readonly Lazy<IConsumer<string, byte[]>> _consumer;
-
-#pragma warning disable CA2213 // Disposable fields should be disposed
         private readonly CancellationTokenSource _consumerCancellation = new();
         private readonly BlockingCollection<KafkaReceiverMessage>? _trackingCollection;
-#pragma warning restore CA2213 // Disposable fields should be disposed
-
-        //private readonly Lazy<Thread>? _trackingThread;
         private Task? _tracking;
 
         private readonly bool _schemaIdRequired;
@@ -80,8 +74,6 @@ namespace RockLib.Messaging.Kafka
 
             _consumer = new Lazy<IConsumer<string, byte[]>>(() => builder.Build());
             _trackingCollection = new BlockingCollection<KafkaReceiverMessage>();
-            //_trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
-            //_pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
 
             _schemaIdRequired = schemaIdRequired;
         }
@@ -125,8 +117,6 @@ namespace RockLib.Messaging.Kafka
             builder.SetStatisticsHandler(OnStatisticsEmitted);
 
             _consumer = new Lazy<IConsumer<string, byte[]>>(() => builder.Build());
-            //_pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
-            //_trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
             _trackingCollection = new BlockingCollection<KafkaReceiverMessage>();
 
             _schemaIdRequired = schemaIdRequired;
