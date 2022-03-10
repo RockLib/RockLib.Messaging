@@ -22,7 +22,7 @@ namespace RockLib.Messaging.Kafka
                 throw new ArgumentNullException(nameof(receiverMessage));
             }
 
-            if (receiverMessage.Headers.TryGetValue(KafkaKeyHeader, out string kafkaKey))
+            if (receiverMessage.Headers.TryGetValue(KafkaKeyHeader, out string? kafkaKey))
             {
                 return kafkaKey;
             }

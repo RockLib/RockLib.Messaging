@@ -257,7 +257,7 @@ namespace RockLib.Messaging.Kafka
             {
                 try
                 {
-                    await MessageHandler.OnMessageReceivedAsync(this, message).ConfigureAwait(false);
+                    await MessageHandler!.OnMessageReceivedAsync(this, message).ConfigureAwait(false);
                 }
                 // We don't want to break out of the while loop with an exception,
                 // hence the "catch all"
