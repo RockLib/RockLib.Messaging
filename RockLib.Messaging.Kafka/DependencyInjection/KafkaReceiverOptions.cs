@@ -23,12 +23,6 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         public string? Topic { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the kafka receiver should process messages
-        /// synchronously.
-        /// </summary>
-        public bool SynchronousProcessing { get; set; }
-        
-        /// <summary>
         /// Gets or sets whether the kafka receiver expects schema information in the payload 
         /// </summary>
         public bool SchemaIdRequired { get; set; }

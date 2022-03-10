@@ -8,30 +8,30 @@ namespace RockLib.Messaging.Kafka.Tests
 {
     public static class StatisticsExtensionsTests
     {
-        [Fact(DisplayName = "Throws argument null exception for null receiver")]
-        public static void ReceiverAddStatisticsEmittedHandlerSadPath1()
+        [Fact]
+        public static void CallAddStatisticsEmittedHandlerForReceiverWithNullTarget()
         {
             Action action = () => ((IReceiver)null!).AddStatisticsEmittedHandler((sender, s) => { });
             action.Should().Throw<ArgumentNullException>();
         }
         
-        [Fact(DisplayName = "Throws argument null exception for null event handler")]
-        public static void ReceiverAddStatisticsEmittedHandlerSadPath2()
+        [Fact]
+        public static void CallAddStatisticsEmittedHandlerForReceiverWithNull()
         {
             using var receiver = new KafkaReceiver("NAME", "TOPIC", "GROUPID", "SERVERS");
             Action action = () => receiver.AddStatisticsEmittedHandler(null!);
             action.Should().Throw<ArgumentNullException>();
         }
         
-        [Fact(DisplayName = "Throws argument exception for non-KafkaReceiver")]
-        public static void ReceiverAddStatisticsEmittedHandlerSadPath3()
+        [Fact]
+        public static void CallAddStatisticsEmittedHandlerForReceiverForNonKafkaReceiver()
         {
             Action action = () => new Mock<IReceiver>().Object.AddStatisticsEmittedHandler((sender, s) => { });
             action.Should().Throw<ArgumentException>();
         }
 
-        [Fact(DisplayName = "Adds event handler to given KafkaReceiver")]
-        public static void ReceiverAddStatisticsEmittedHandlerHappyPath()
+        [Fact]
+        public static void CallAddStatisticsEmittedHandlerForReceiver()
         {
             using var receiver = new KafkaReceiver("NAME", "TOPIC", "GROUPID", "SERVERS");
             var statsData = "STATS!";
@@ -50,30 +50,30 @@ namespace RockLib.Messaging.Kafka.Tests
             callCount.Should().Be(1, "Event handler should have been called");
         }
         
-        [Fact(DisplayName = "Throws argument null exception for null sender")]
-        public static void SenderAddStatisticsEmittedHandlerSadPath1()
+        [Fact]
+        public static void CallAddStatisticsEmittedHandlerForSenderWithNullTarget()
         {
             Action action = () => ((ISender)null!).AddStatisticsEmittedHandler((sender, s) => { });
             action.Should().Throw<ArgumentNullException>();
         }
         
-        [Fact(DisplayName = "Throws argument null exception for null event handler")]
-        public static void SenderAddStatisticsEmittedHandlerSadPath2()
+        [Fact]
+        public static void CallAddStatisticsEmittedHandlerForSenderWithNull()
         {
             using var sender = new KafkaSender("NAME", "TOPIC", 1, "SERVERS");
             Action action = () => sender.AddStatisticsEmittedHandler(null!);
             action.Should().Throw<ArgumentNullException>();
         }
         
-        [Fact(DisplayName = "Throws argument exception for non-KafkaSender")]
-        public static void SenderAddStatisticsEmittedHandlerSadPath3()
+        [Fact]
+        public static void CallAddStatisticsEmittedHandlerForSenderForNonKafkaSender()
         {
             Action action = () => new Mock<ISender>().Object.AddStatisticsEmittedHandler((sender, s) => { });
             action.Should().Throw<ArgumentException>();
         }
         
-        [Fact(DisplayName = "Adds event handler to given KafkaSender")]
-        public static void SenderAddStatisticsEmittedHandlerHappyPath()
+        [Fact]
+        public static void CallAddStatisticsEmittedHandlerForSender()
         {
             using var sender = new KafkaSender("NAME", "TOPIC", 1, "SERVERS");
             var statsData = "STATS!";

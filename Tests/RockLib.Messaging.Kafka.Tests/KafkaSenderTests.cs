@@ -14,7 +14,7 @@ namespace RockLib.Messaging.Kafka.Tests
     public static class KafkaSenderTests
     {
         [Fact(DisplayName = "KafkaSender constructor 1 sets appropriate properties")]
-        public static void KafkaSenderConstructor1HappyPath()
+        public static void Create()
         {
             var name = "name";
             var topic = "topic";
@@ -31,7 +31,7 @@ namespace RockLib.Messaging.Kafka.Tests
         }
 
         [Fact(DisplayName = "KafkaSender constructor 2 sets appropriate properties")]
-        public static void KafkaSenderConstructor2HappyPath()
+        public static void CreateWithConfig()
         {
             var name = "name";
             var topic = "topic";
@@ -53,7 +53,7 @@ namespace RockLib.Messaging.Kafka.Tests
         }
         
         [Fact(DisplayName = "KafkaSender constructor 3 sets appropriate properties")]
-        public static void KafkaSenderConstructor3HappyPath()
+        public static void CreateWithSchemaId()
         {
             var name = "name";
             var topic = "topic";
@@ -71,7 +71,7 @@ namespace RockLib.Messaging.Kafka.Tests
         }
         
         [Fact(DisplayName = "KafkaSender constructor 4 sets appropriate properties")]
-        public static void KafkaSenderConstructor4HappyPath()
+        public static void CreateWithSchemaIdAndConfig()
         {
             var name = "name";
             var topic = "topic";
@@ -93,107 +93,100 @@ namespace RockLib.Messaging.Kafka.Tests
             sender.SchemaId.Should().Be(schemaId);
         }
 
-        [Fact(DisplayName = "KafkaSender constructor throws on null name")]
-        public static void KafkaSenderConstructorSadPath1()
+        [Fact]
+        public static void CreateWithNullName()
         {
             Func<KafkaSender> action = () => new KafkaSender(null!, "topic", "boostrapServers");
             action.Should().Throw<ArgumentNullException>();
         }
 
-        [Fact(DisplayName = "KafkaSender constructor throws on null topic")]
-        public static void KafkaSenderConstructorSadPath2()
+        [Fact]
+        public static void CreateWithNullTopic()
         {
             Func<KafkaSender> action = () => new KafkaSender("name", null!, "boostrapServers");
             action.Should().Throw<ArgumentNullException>();
         }
 
-        [Fact(DisplayName = "KafkaSender constructor throws on null bootstrapServers")]
-        public static void KafkaSenderConstructorSadPath3()
+        [Fact]
+        public static void CreateWithNullBootstrapServers()
         {
             Func<KafkaSender> action = () => new KafkaSender("name", "topic", null!);
             action.Should().Throw<ArgumentNullException>();
         }
 
-        [Fact(DisplayName = "KafkaSender constructor 2 throws on null name")]
-        public static void KafkaSenderConstructor2SadPath1()
+        [Fact]
+        public static void CreateWithConfigAndNullName()
         {
             Func<KafkaSender> action = () => new KafkaSender(null!, "topic", new ProducerConfig());
             action.Should().Throw<ArgumentNullException>();
         }
 
-        [Fact(DisplayName = "KafkaSender constructor 2 throws on null topic")]
-        public static void KafkaSenderConstructor2SadPath2()
+        [Fact]
+        public static void CreateWithConfigAndNullTopic()
         {
             Func<KafkaSender> action = () => new KafkaSender("name", null!, new ProducerConfig());
             action.Should().Throw<ArgumentNullException>();
         }
 
-        [Fact(DisplayName = "KafkaSender constructor 2 throws on null producer config")]
-        public static void KafkaSenderConstructor2SadPath3()
+        [Fact]
+        public static void CreateWithNullConfig()
         {
             Func<KafkaSender> action = () => new KafkaSender("name", "topic", null!);
             action.Should().Throw<ArgumentNullException>();
         }
-        
-        [Fact(DisplayName = "KafkaSender constructor 3 throws on null name")]
-        public static void KafkaSenderConstructor3SadPath1()
+
+        [Fact]
+        public static void CreateWithSchemaIdAndNullName()
         {
             Func<KafkaSender> action = () => new KafkaSender(null!, "topic", 10, "boostrapServers");
             action.Should().Throw<ArgumentNullException>();
         }
 
-        [Fact(DisplayName = "KafkaSender constructor 3 throws on null topic")]
-        public static void KafkaSenderConstructor3SadPath2()
+        [Fact]
+        public static void CreateWithSchemaIdAndNullTopic()
         {
             Func<KafkaSender> action = () => new KafkaSender("name", null!, 10, "boostrapServers");
             action.Should().Throw<ArgumentNullException>();
         }
 
-        
-        [Fact(DisplayName = "KafkaSender constructor 3 throws on negative schemaId")]
-        public static void KafkaSenderConstructor3SadPath4()
+
+        [Fact]
+        public static void CreateWithNegativeSchemaId()
         {
             Func<KafkaSender> action = () => new KafkaSender("name", "topic", -1, "bootstrapServers");
             action.Should().Throw<ArgumentOutOfRangeException>();
         }
-        
-        [Fact(DisplayName = "KafkaSender constructor 3 throws on null bootstrapServers")]
-        public static void KafkaSenderConstructor3SadPath3()
+
+        [Fact]
+        public static void CreateWithSchemaIdAndNullBootstrapServers()
         {
             Func<KafkaSender> action = () => new KafkaSender("name", "topic", 10, null!);
             action.Should().Throw<ArgumentNullException>();
         }
-        
-        [Fact(DisplayName = "KafkaSender constructor 4 throws on null name")]
-        public static void KafkaSenderConstructor4SadPath1()
+
+        [Fact]
+        public static void CreateWithSchemaIdAndConfigAndNullName()
         {
             Func<KafkaSender> action = () => new KafkaSender(null!, "topic", 1, new ProducerConfig());
             action.Should().Throw<ArgumentNullException>();
         }
 
-        [Fact(DisplayName = "KafkaSender constructor 4 throws on null topic")]
-        public static void KafkaSenderConstructor4SadPath2()
+        [Fact]
+        public static void CreateWithSchemaIdAndConfigAndNullTopic()
         {
             Func<KafkaSender> action = () => new KafkaSender("name", null!, 1, new ProducerConfig());
             action.Should().Throw<ArgumentNullException>();
         }
         
-        [Fact(DisplayName = "KafkaSender constructor 4 throws on invalid schema ID")]
-        public static void KafkaSenderConstructor4SadPath3()
+        [Fact]
+        public static void CreateWithInvalidSchemaIdAndConfig()
         {
             Func<KafkaSender> action = () => new KafkaSender("name", "topic", 0, new ProducerConfig());
             action.Should().Throw<ArgumentOutOfRangeException>();
         }
 
-        [Fact(DisplayName = "KafkaSender constructor 4 throws on null producer config")]
-        public static void KafkaSenderConstructor4SadPath4()
-        {
-            Func<KafkaSender> action = () => new KafkaSender("name", "topic", 1, null!);
-            action.Should().Throw<ArgumentNullException>();
-        }
-
-        [Fact(DisplayName = "KafkaSender SendAsync sets OriginatingSystem to Kafka and sets message")]
-        public static async Task KafkaSenderSendAsyncHappyPath1()
+        [Fact]
+        public static async Task KafkaSenderSendAsyncSettingOriginatingSystemToKafka()
         {
             var message = "This is a message";
             var producerMock = new Mock<IProducer<string, byte[]>>();
@@ -211,8 +204,8 @@ namespace RockLib.Messaging.Kafka.Tests
                 It.IsAny<CancellationToken>()));
         }
         
-        [Fact(DisplayName = "KafkaSender SendAsync adds schema ID to message payload when available")]
-        public static async Task KafkaSenderSendAsyncHappyPath2()
+        [Fact]
+        public static async Task KafkaSenderSendAsyncAddsSchemaIdToPayload()
         {
             var message = "This is a message";
             var schemaId = 100;
@@ -236,7 +229,7 @@ namespace RockLib.Messaging.Kafka.Tests
             Assert.Equal("Kafka", Encoding.UTF8.GetString(sentMessage.Headers[1].GetValueBytes()));
         }
 
-        [Fact(DisplayName = "KafkaSender Dispose calls Flush and Dispose on producer")]
+        [Fact]
         public static void KafkaSenderDispose()
         {
             var producerMock = new Mock<IProducer<string, byte[]>>();
