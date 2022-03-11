@@ -58,6 +58,7 @@ namespace RockLib.Messaging.SQS
             }
             else
             {
+                headers["SQS.MessageID"] = Message.MessageId;
                 foreach (var attribute in Message.Attributes)
                     headers[$"SQS.{attribute.Key}"] = attribute.Value;
 

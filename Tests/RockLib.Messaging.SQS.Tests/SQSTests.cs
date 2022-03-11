@@ -358,20 +358,20 @@ namespace RockLib.Messaging.SQS.Tests
         public static void SQSReceiverMessageWithUnpackSNSTrueCorrectlyUnpacksSNSMessage()
         {
             var snsMessage = @"{
-  ""Type"" : ""Notification"",
-  ""MessageId"" : ""f5129dcc-0bb0-5e18-9431-c95b6a9b32d9"",
-  ""TopicArn"" : ""arn:PutARealARNHere"",
-  ""Message"" : ""This is a better test message"",
-  ""Timestamp"" : ""2018-12-21T21:45:15.114Z"",
-  ""SignatureVersion"" : ""1"",
-  ""Signature"" : ""SomeSignatureValue"",
-  ""SigningCertURL"" : ""SomeUrl"",
-  ""UnsubscribeURL"" : ""SomeOtherUrl"",
-  ""MessageAttributes"" : {
-    ""core_internal_id"" : {""Type"":""String"",""Value"":""18c4ef1f-62d1-4bd9-aba0-f008a0ac481d""},
-    ""core_originating_system"" : {""Type"":""String"",""Value"":""SNS""}
-  }
-}";
+              ""Type"" : ""Notification"",
+              ""MessageId"" : ""f5129dcc-0bb0-5e18-9431-c95b6a9b32d9"",
+              ""TopicArn"" : ""arn:PutARealARNHere"",
+              ""Message"" : ""This is a better test message"",
+              ""Timestamp"" : ""2018-12-21T21:45:15.114Z"",
+              ""SignatureVersion"" : ""1"",
+              ""Signature"" : ""SomeSignatureValue"",
+              ""SigningCertURL"" : ""SomeUrl"",
+              ""UnsubscribeURL"" : ""SomeOtherUrl"",
+              ""MessageAttributes"" : {
+                ""core_internal_id"" : {""Type"":""String"",""Value"":""18c4ef1f-62d1-4bd9-aba0-f008a0ac481d""},
+                ""core_originating_system"" : {""Type"":""String"",""Value"":""SNS""}
+              }
+            }";
 
             var message = new Message
             {
@@ -390,16 +390,16 @@ namespace RockLib.Messaging.SQS.Tests
         public static void SQSReceiverMessageWithUnpackSNSTrueCorrectlyUnpacksSNSMessageWithNoMessageAttributes()
         {
             var snsMessage = @"{
-  ""Type"" : ""Notification"",
-  ""MessageId"" : ""f5129dcc-0bb0-5e18-9431-c95b6a9b32d9"",
-  ""TopicArn"" : ""arn:PutARealARNHere"",
-  ""Message"" : ""This is a better test message"",
-  ""Timestamp"" : ""2018-12-21T21:45:15.114Z"",
-  ""SignatureVersion"" : ""1"",
-  ""Signature"" : ""SomeSignatureValue"",
-  ""SigningCertURL"" : ""SomeUrl"",
-  ""UnsubscribeURL"" : ""SomeOtherUrl""
-}";
+              ""Type"" : ""Notification"",
+              ""MessageId"" : ""f5129dcc-0bb0-5e18-9431-c95b6a9b32d9"",
+              ""TopicArn"" : ""arn:PutARealARNHere"",
+              ""Message"" : ""This is a better test message"",
+              ""Timestamp"" : ""2018-12-21T21:45:15.114Z"",
+              ""SignatureVersion"" : ""1"",
+              ""Signature"" : ""SomeSignatureValue"",
+              ""SigningCertURL"" : ""SomeUrl"",
+              ""UnsubscribeURL"" : ""SomeOtherUrl""
+            }";
 
             var message = new Message
             {
@@ -410,6 +410,52 @@ namespace RockLib.Messaging.SQS.Tests
 
             sqsReceiverMessage.StringPayload.Should().Be("This is a better test message");
             sqsReceiverMessage.Headers["TopicARN"].Should().Be("arn:PutARealARNHere");
+        }
+
+        [Fact]
+        public static void SQSReceiverMessageHasSQSMessageIDSetCorrectly()
+        {
+            var message = new Message
+            {
+                MessageId = (new Guid()).ToString(),
+                Body = @"{""TestMessageItem"":""ThisIsAFakeItem""}"
+            };
+
+            using (var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), c => Task.FromResult(0), unpackSNS: false))
+            {
+                var messageId = sqsReceiverMessage.Headers.GetValue<string>("SQS.MessageID");
+
+                messageId.Should().NotBeNull();
+            }
+        }
+
+        [Fact]
+        public static void SQSReceiverMessageDoesNotHaveSQSMessageIDHeaderWhenSNS()
+        {
+
+            var snsMessage = @"{
+              ""Type"" : ""Notification"",
+              ""MessageId"" : ""f5129dcc-0bb0-5e18-9431-c95b6a9b32d9"",
+              ""TopicArn"" : ""arn:PutARealARNHere"",
+              ""Message"" : ""This is a better test message"",
+              ""Timestamp"" : ""2018-12-21T21:45:15.114Z"",
+              ""SignatureVersion"" : ""1"",
+              ""Signature"" : ""SomeSignatureValue"",
+              ""SigningCertURL"" : ""SomeUrl"",
+              ""UnsubscribeURL"" : ""SomeOtherUrl""
+            }";
+
+            var message = new Message
+            {
+                MessageId = (new Guid()).ToString(),
+                Body = snsMessage
+            };
+
+            using (var sqsReceiverMessage = new SQSReceiverMessage(message, c => Task.FromResult(0), c => Task.FromResult(0), unpackSNS: true))
+            {
+                Assert.Throws<KeyNotFoundException>(() => sqsReceiverMessage.Headers.GetValue<string>("SQS.MessageID"));
+            }
+ 
         }
 
         private static void SetupDeleteMessageAsync(Mock<IAmazonSQS> mockSqs, HttpStatusCode httpStatusCode = HttpStatusCode.OK)
