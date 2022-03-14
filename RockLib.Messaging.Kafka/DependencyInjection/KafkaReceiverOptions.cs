@@ -1,5 +1,4 @@
-﻿#if !NET451
-using Confluent.Kafka;
+﻿using Confluent.Kafka;
 
 namespace RockLib.Messaging.Kafka.DependencyInjection
 {
@@ -21,18 +20,11 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         /// <summary>
         /// Gets or sets the topic to subscribe to.
         /// </summary>
-        public string Topic { get; set; }
+        public string? Topic { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the kafka receiver should process messages
-        /// synchronously.
-        /// </summary>
-        public bool SynchronousProcessing { get; set; }
-        
         /// <summary>
         /// Gets or sets whether the kafka receiver expects schema information in the payload 
         /// </summary>
         public bool SchemaIdRequired { get; set; }
     }
 }
-#endif

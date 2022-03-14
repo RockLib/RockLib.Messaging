@@ -18,12 +18,12 @@ namespace RockLib.Messaging.Kafka
     public class KafkaReceiverMessage : ReceiverMessage
     {
         private const int HeaderSize = sizeof(byte) + sizeof(int);
-        
+
         private readonly bool _enableAutoOffsetStore;
         private readonly bool _containsSchemaId;
 
         internal KafkaReceiverMessage(IConsumer<string, byte[]> consumer, ConsumeResult<string, byte[]> result, bool enableAutoOffsetStore, bool containsSchemaId)
-            : base(() => GetRawPayload(result.Message?.Value ?? new byte[0], containsSchemaId))
+            : base(() => GetRawPayload(result.Message?.Value ?? Array.Empty<byte>(), containsSchemaId))
         {
             Consumer = consumer;
             Result = result;
@@ -44,29 +44,45 @@ namespace RockLib.Messaging.Kafka
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
+            if (headers is null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
+
             if (Result.Message?.Key is string key)
+            {
                 headers[KafkaKeyHeader] = key;
+            }
 
-            if (TryGetSchemaId(Result.Message?.Value, _containsSchemaId, out var schemaId))
+            if (TryGetSchemaId(Result.Message?.Value ?? Array.Empty<byte>(), _containsSchemaId, out var schemaId))
+            {
                 headers[KafkaSchemaIdHeader] = schemaId;
+            }
 
-            if (Result.Message?.Headers != null)
+            if (Result.Message?.Headers is not null)
+            {
                 foreach (var header in Result.Message.Headers)
+                {
                     headers[header.Key] = Encoding.UTF8.GetString(header.GetValueBytes());
+                }
+            }
         }
 
         private static byte[] GetRawPayload(byte[] payload, bool containsSchemaId)
         {
-            if (!containsSchemaId) return payload;
-            
+            if (!containsSchemaId)
+            {
+                return payload;
+            }
+
             CheckPayloadLength(payload);
-            
-#if NET5_0_OR_GREATER
-            return payload[HeaderSize..];
-#else
+
+#if NET48
             var body = new byte[payload.Length - HeaderSize];
             Array.Copy(payload, HeaderSize, body, 0, body.Length);
             return body;
+#else
+            return payload[HeaderSize..];
 #endif
         }
 
@@ -77,7 +93,7 @@ namespace RockLib.Messaging.Kafka
                 throw new InvalidMessageException($"Expected payload greater than {HeaderSize} bytes but payload is {payload.Length} bytes");
             }
         }
-        
+
         private static bool TryGetSchemaId(byte[] payload, bool containsSchemaId, out int schemaId)
         {
             if (!containsSchemaId)
@@ -93,13 +109,13 @@ namespace RockLib.Messaging.Kafka
                 throw new InvalidMessageException($"Expected schema registry data frame. Magic byte was {payload[0]} instead of {SchemaIdLeadingByte}");
             }
 
-            using (var ms = new MemoryStream(payload))
-            using (var reader = new BinaryReader(ms))
+            using (var stream = new MemoryStream(payload))
+            using (var reader = new BinaryReader(stream))
             {
                 reader.ReadByte(); //move past leading magic byte
                 schemaId = IPAddress.NetworkToHostOrder(reader.ReadInt32());
             }
-            
+
             return true;
         }
 
@@ -110,14 +126,16 @@ namespace RockLib.Messaging.Kafka
         protected override Task AcknowledgeMessageAsync(CancellationToken cancellationToken) => StoreOffsetAsync();
 
         /// <inheritdoc />
-        protected override Task RollbackMessageAsync(CancellationToken cancellationToken) => Tasks.CompletedTask;
+        protected override Task RollbackMessageAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
         private Task StoreOffsetAsync()
         {
             if (_enableAutoOffsetStore is false)
+            {
                 Consumer.StoreOffset(Result);
+            }
 
-            return Tasks.CompletedTask;
+            return Task.CompletedTask;
         }
     }
 }

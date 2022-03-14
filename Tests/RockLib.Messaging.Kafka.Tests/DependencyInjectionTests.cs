@@ -5,10 +5,10 @@ using RockLib.Messaging.Kafka.DependencyInjection;
 
 namespace RockLib.Messaging.Kafka.Tests
 {
-    public class DependencyInjectionTests
+    public static class DependencyInjectionTests
     {
         [Fact]
-        public void KafkaSenderTest()
+        public static void KafkaSenderTest()
         {
             var services = new ServiceCollection();
 
@@ -31,7 +31,7 @@ namespace RockLib.Messaging.Kafka.Tests
         }
 
         [Fact]
-        public void KafkaReceiverTest()
+        public static void KafkaReceiverTest()
         {
             var services = new ServiceCollection();
 

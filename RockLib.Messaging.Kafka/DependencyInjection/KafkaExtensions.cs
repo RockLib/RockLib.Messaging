@@ -1,5 +1,4 @@
-﻿#if !NET451
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using RockLib.Messaging.DependencyInjection;
 using System;
 
@@ -26,12 +25,12 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         /// </param>
         /// <returns>A builder allowing the sender to be decorated.</returns>
         public static ISenderBuilder AddKafkaSender(this IServiceCollection services, string name,
-            Action<KafkaSenderOptions> configureOptions = null, bool reloadOnChange = true)
+            Action<KafkaSenderOptions>? configureOptions = null, bool reloadOnChange = true)
         {
             return services.AddSender(name, CreateKafkaSender, configureOptions, reloadOnChange);
 
             ISender CreateKafkaSender(KafkaSenderOptions options, IServiceProvider serviceProvider) =>
-                new KafkaSender(name, options.Topic, options);
+                new KafkaSender(name, options.Topic!, options);
         }
 
         /// <summary>
@@ -50,13 +49,12 @@ namespace RockLib.Messaging.Kafka.DependencyInjection
         /// </param>
         /// <returns>A builder allowing the receiver to be decorated.</returns>
         public static IReceiverBuilder AddKafkaReceiver(this IServiceCollection services, string name,
-            Action<KafkaReceiverOptions> configureOptions = null, bool reloadOnChange = true)
+            Action<KafkaReceiverOptions>? configureOptions = null, bool reloadOnChange = true)
         {
             return services.AddReceiver(name, CreateKafkaReceiver, configureOptions, reloadOnChange);
 
             IReceiver CreateKafkaReceiver(KafkaReceiverOptions options, IServiceProvider serviceProvider) =>
-                new KafkaReceiver(name, options.Topic, options, options.SynchronousProcessing, options.SchemaIdRequired);
+                new KafkaReceiver(name, options.Topic!, options, options.SchemaIdRequired);
         }
     }
 }
-#endif

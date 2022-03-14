@@ -11,11 +11,11 @@ namespace RockLib.Messaging.Kafka
     /// </summary>
     public class KafkaReceiver : Receiver
     {
-        private readonly Lazy<Thread> _pollingThread;
+        private Task? _kafkaPolling;
         private readonly Lazy<IConsumer<string, byte[]>> _consumer;
-        private readonly CancellationTokenSource _disposeSource = new CancellationTokenSource();
-        private readonly BlockingCollection<Task> _trackingCollection;
-        private readonly Lazy<Thread> _trackingThread;
+        private readonly CancellationTokenSource _consumerCancellation = new();
+        private readonly BlockingCollection<KafkaReceiverMessage>? _trackingCollection;
+        private Task? _tracking;
 
         private readonly bool _schemaIdRequired;
         private bool _stopped;
@@ -47,9 +47,6 @@ namespace RockLib.Messaging.Kafka
         /// the largest offset, 'error' - trigger an error which is retrieved by consuming
         /// messages and checking 'message->err'.
         /// </param>
-        /// <param name="synchronousProcessing">
-        /// Whether the kafka receiver should process messages synchronously.
-        /// </param>
         /// <param name="schemaIdRequired">Whether the Kafka receiver expects schema information to be present.
         /// When true the first 5 bytes are expected to contain the schema ID according
         /// to the Confluent
@@ -61,7 +58,7 @@ namespace RockLib.Messaging.Kafka
         /// </param>
         public KafkaReceiver(string name, string topic, string groupId, string bootstrapServers,
             bool enableAutoOffsetStore = false, AutoOffsetReset autoOffsetReset = Confluent.Kafka.AutoOffsetReset.Latest,
-            bool synchronousProcessing = false, bool schemaIdRequired = false, int statisticsIntervalMs = 0)
+            bool schemaIdRequired = false, int statisticsIntervalMs = 0)
             : base(name)
         {
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
@@ -76,17 +73,7 @@ namespace RockLib.Messaging.Kafka
             builder.SetStatisticsHandler(OnStatisticsEmitted);
 
             _consumer = new Lazy<IConsumer<string, byte[]>>(() => builder.Build());
-
-            if (synchronousProcessing)
-            {
-                _pollingThread = new Lazy<Thread>(() => new Thread(SynchronousPollForMessages) { IsBackground = true });
-            }
-            else
-            {
-                _trackingCollection = new BlockingCollection<Task>();
-                _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
-                _pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
-            }
+            _trackingCollection = new BlockingCollection<KafkaReceiverMessage>();
 
             _schemaIdRequired = schemaIdRequired;
         }
@@ -101,23 +88,23 @@ namespace RockLib.Messaging.Kafka
         /// cluster). A regex must be front anchored to be recognized as a regex. e.g. ^myregex
         /// </param>
         /// <param name="consumerConfig">The configuration used in creation of the Kafka consumer.</param>
-        /// <param name="synchronousProcessing">
-        /// Whether the kafka receiver should process messages synchronously.
-        /// </param>
         /// <param name="schemaIdRequired">Whether the Kafka receiver expects schema information to be present.
         /// When true the first 5 bytes are expected to contain the schema ID according
         /// to the Confluent
         /// <a href="https://docs.confluent.io/platform/current/schema-registry/serdes-develop/index.html#wire-format">wire format</a>
         /// </param>
-        public KafkaReceiver(string name, string topic, ConsumerConfig consumerConfig, bool synchronousProcessing = false, 
-            bool schemaIdRequired = false)
+        public KafkaReceiver(string name, string topic, ConsumerConfig consumerConfig, bool schemaIdRequired = false)
             : base(name)
         {
             if (consumerConfig is null)
+            {
                 throw new ArgumentNullException(nameof(consumerConfig));
+            }
 
             if (consumerConfig.EnableAutoCommit is false)
+            {
                 throw new ArgumentOutOfRangeException(nameof(consumerConfig), "The 'EnableAutoCommit' setting must be true.");
+            }
 
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
             GroupId = consumerConfig.GroupId;
@@ -130,17 +117,7 @@ namespace RockLib.Messaging.Kafka
             builder.SetStatisticsHandler(OnStatisticsEmitted);
 
             _consumer = new Lazy<IConsumer<string, byte[]>>(() => builder.Build());
-
-            if (synchronousProcessing)
-            {
-                _pollingThread = new Lazy<Thread>(() => new Thread(SynchronousPollForMessages) { IsBackground = true });
-            }
-            else
-            {
-                _pollingThread = new Lazy<Thread>(() => new Thread(PollForMessages) { IsBackground = true });
-                _trackingThread = new Lazy<Thread>(() => new Thread(TrackMessageHandling) { IsBackground = true });
-                _trackingCollection = new BlockingCollection<Task>();
-            }
+            _trackingCollection = new BlockingCollection<KafkaReceiverMessage>();
 
             _schemaIdRequired = schemaIdRequired;
         }
@@ -183,16 +160,20 @@ namespace RockLib.Messaging.Kafka
         /// Occurs when the Kafka consumer emits statistics. The statistics is a JSON formatted string as defined here:
         /// <a href="https://github.com/edenhill/librdkafka/blob/master/STATISTICS.md">https://github.com/edenhill/librdkafka/blob/master/STATISTICS.md</a>
         /// </summary>
-        public event EventHandler<string> StatisticsEmitted; 
+#pragma warning disable CA1003 // Use generic event handler instances
+        public event EventHandler<string>? StatisticsEmitted;
+#pragma warning restore CA1003 // Use generic event handler instances
 
         /// <summary>
         /// Starts the background threads and subscribes to the topic.
         /// </summary>
         protected override void Start()
         {
-            _trackingThread?.Value.Start();
+            _tracking = Task.Factory.StartNew(async () => await TrackMessageHandlingAsync().ConfigureAwait(false),
+                _consumerCancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             _consumer.Value.Subscribe(Topic);
-            _pollingThread.Value.Start();
+            _kafkaPolling = Task.Factory.StartNew(() => PollForMessages(),
+                _consumerCancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
         /// <summary>
@@ -202,20 +183,32 @@ namespace RockLib.Messaging.Kafka
         protected override void Dispose(bool disposing)
         {
             if (_disposed)
+            {
                 return;
+            }
 
             _disposed = true;
-
             _stopped = true;
-            _disposeSource.Cancel();
 
-            if (_pollingThread.IsValueCreated)
-                _pollingThread.Value.Join();
+            if(_connected is true)
+            {
+                _consumerCancellation.Cancel();
 
-            _trackingCollection?.CompleteAdding();
+                _trackingCollection!.CompleteAdding();
+                _trackingCollection.Dispose();
 
-            if (_trackingThread?.IsValueCreated is true)
-                _trackingThread.Value.Join();
+                _consumerCancellation.Dispose();
+
+                if (_kafkaPolling?.IsCompleted ?? false)
+                {
+                    _kafkaPolling?.Dispose();
+                }
+
+                if (_tracking?.IsCompleted ?? false)
+                {
+                    _tracking?.Dispose();
+                }
+            }
 
             if (_consumer.IsValueCreated)
             {
@@ -232,7 +225,7 @@ namespace RockLib.Messaging.Kafka
             {
                 try
                 {
-                    var result = _consumer.Value.Consume(_disposeSource.Token);
+                    var result = _consumer.Value.Consume(_consumerCancellation.Token);
                     var message = new KafkaReceiverMessage(_consumer.Value, result, EnableAutoOffsetStore ?? false, _schemaIdRequired);
 
                     if (_connected != true)
@@ -241,62 +234,38 @@ namespace RockLib.Messaging.Kafka
                         OnConnected();
                     }
 
-                    var task = MessageHandler.OnMessageReceivedAsync(this, message);
-                    _trackingCollection.Add(task);
+                    _trackingCollection!.Add(message);
                 }
-                catch (OperationCanceledException) when (_disposeSource.IsCancellationRequested)
+                catch (OperationCanceledException) when (_consumerCancellation.IsCancellationRequested)
                 {
                     return;
                 }
+                // We don't want to break out of the while loop with an exception,
+                // hence the "catch all"
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     OnError("Error in polling loop.", ex);
-                    // TODO: Delay the loop?
                 }
             }
         }
 
-        private void TrackMessageHandling()
+        private async Task TrackMessageHandlingAsync()
         {
-            foreach (var task in _trackingCollection.GetConsumingEnumerable())
+            foreach (var message in _trackingCollection!.GetConsumingEnumerable(_consumerCancellation.Token))
             {
                 try
                 {
-                    task.GetAwaiter().GetResult();
+                    await MessageHandler!.OnMessageReceivedAsync(this, message).ConfigureAwait(false);
                 }
+                // We don't want to break out of the while loop with an exception,
+                // hence the "catch all"
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     OnError("Error while tracking message handler task.", ex);
-                }
-            }
-        }
-
-        private void SynchronousPollForMessages()
-        {
-            while (!_stopped)
-            {
-                try
-                {
-                    var result = _consumer.Value.Consume(_disposeSource.Token);
-                    var message = new KafkaReceiverMessage(_consumer.Value, result, EnableAutoOffsetStore ?? false, _schemaIdRequired);
-
-                    if (_connected != true)
-                    {
-                        _connected = true;
-                        OnConnected();
-                    }
-
-                    var task = MessageHandler.OnMessageReceivedAsync(this, message);
-                    task.GetAwaiter().GetResult();
-                }
-                catch (OperationCanceledException) when (_disposeSource.IsCancellationRequested)
-                {
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    OnError("Error in polling loop.", ex);
-                    // TODO: Delay the loop?
                 }
             }
         }

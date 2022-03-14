@@ -8,6 +8,11 @@ namespace RockLib.Messaging.Kafka
     public static class Constants
     {
         /// <summary>
+        /// The default timeout value.
+        /// </summary>
+        public const int DefaultTimeout = 10_000;
+
+        /// <summary>
         /// The name of the header where a Kafka message's Key is stored.
         /// <para>If a <see cref="SenderMessage"/> has a header with this name and a <see cref=
         /// "KafkaSender"/> sends it, then the Key of the outgoing Kafka <see cref=
