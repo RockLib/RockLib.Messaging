@@ -46,7 +46,7 @@ public void ConfigureServices(IServiceCollection services)
 {
   "MySQSSender": {
     "Region": "us-west-2",
-    "QueueUrl": new Uri("https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name")
+    "QueueUrl": "https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name"
   }
 }
 */
@@ -63,7 +63,7 @@ MessagingScenarioFactory can be configured with an `SQSSender` named "commands" 
             "Type": "RockLib.Messaging.SQS.SQSSender, RockLib.Messaging.SQS",
             "Value": {
                 "Name": "commands",
-                "QueueUrl": new Uri("https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name"),
+                "QueueUrl": "https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name",
                 "Region": "us-west-2"
             }
         }
@@ -142,7 +142,7 @@ public void ConfigureServices(IServiceCollection services)
 {
   "MySQSReceiver": {
     "Region": "us-west-2",
-    "QueueUrl": new Uri("https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name"),
+    "QueueUrl": "https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name",
     "MaxMessages": 3,
     "AutoAcknowledge": true,
     "WaitTimeSeconds": 0,
@@ -164,7 +164,7 @@ MessagingScenarioFactory can be configured with an `SQSReceiver` named "commands
             "Type": "RockLib.Messaging.SQS.SQSReceiver, RockLib.Messaging.SQS",
             "Value": {
                 "Name": "commands",
-                "QueueUrl": new Uri("https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name"),
+                "QueueUrl": "https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name",
                 "Region": "us-west-2",
                 "MaxMessages": 3,
                 "AutoAcknowledge": true,
