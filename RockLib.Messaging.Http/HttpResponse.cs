@@ -14,8 +14,8 @@ namespace RockLib.Messaging.Http
         /// <param name="statusCode">The http status code of the response.</param>
         /// <param name="statusDescription">The http status description of the response.</param>
         /// <param name="content">The string content of the response.</param>
-        public HttpResponse(int statusCode, string content = null, string statusDescription = null)
-            : this(statusCode, statusDescription, (object)content)
+        public HttpResponse(int statusCode, string? content = null, string? statusDescription = null)
+            : this(statusCode, statusDescription, (object)content!)
         {
         }
 
@@ -25,12 +25,12 @@ namespace RockLib.Messaging.Http
         /// <param name="statusCode">The http status code of the response.</param>
         /// <param name="statusDescription">The http status description of the response.</param>
         /// <param name="content">The binary content of the response.</param>
-        public HttpResponse(int statusCode, byte[] content, string statusDescription = null)
-            : this(statusCode, statusDescription, (object)content)
+        public HttpResponse(int statusCode, byte[] content, string? statusDescription = null)
+            : this(statusCode, statusDescription, content)
         {
         }
 
-        private HttpResponse(int statusCode, string statusDescription, object content)
+        private HttpResponse(int statusCode, string? statusDescription, object? content)
         {
             if (statusCode < 100 || statusCode > 999)
                 throw new ArgumentException("statusCode cannot be less than 100 or greater than 999.", nameof(statusCode));
@@ -47,12 +47,12 @@ namespace RockLib.Messaging.Http
         /// <summary>
         /// Gets the status description of the response.
         /// </summary>
-        public string StatusDescription { get; }
+        public string? StatusDescription { get; }
 
         /// <summary>
         /// Gets the content of the response.
         /// </summary>
-        public object Content { get; }
+        public object? Content { get; }
 
         /// <summary>
         /// Gets a dictionary representing the headers of the response.

@@ -39,6 +39,10 @@
     <PackageReference Include="RockLib.Messaging" Version="3.0.0" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)'=='net48'">
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>
+
   <Import Project="..\RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.projitems" Label="Shared" />
 
 </Project>

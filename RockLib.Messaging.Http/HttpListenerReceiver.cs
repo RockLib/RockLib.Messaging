@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 
@@ -57,11 +56,11 @@ namespace RockLib.Messaging.Http
         /// The HTTP headers that incoming requests are required to match in order to be handled.
         /// Any request that does not have match the required headers will receive a 4xx response.
         /// </param>
-        public HttpListenerReceiver(string name, string url,
+        public HttpListenerReceiver(string name, Uri url,
             int acknowledgeStatusCode = DefaultAcknowledgeStatusCode,
             int rollbackStatusCode = DefaultRollbackStatusCode,
             int rejectStatusCode = DefaultRejectStatusCode,
-            string method = DefaultMethod, RequiredHttpRequestHeaders requiredHeaders = null)
+            string method = DefaultMethod, RequiredHttpRequestHeaders? requiredHeaders = null)
             : this(name, url,
                   new DefaultHttpResponseGenerator(acknowledgeStatusCode, rollbackStatusCode, rejectStatusCode),
                   method, requiredHeaders)
@@ -102,7 +101,7 @@ namespace RockLib.Messaging.Http
             int acknowledgeStatusCode = DefaultAcknowledgeStatusCode,
             int rollbackStatusCode = DefaultRollbackStatusCode,
             int rejectStatusCode = DefaultRejectStatusCode,
-            string method = DefaultMethod, RequiredHttpRequestHeaders requiredHeaders = null)
+            string method = DefaultMethod, RequiredHttpRequestHeaders? requiredHeaders = null)
             : this(name, prefixes, path,
                 new DefaultHttpResponseGenerator(acknowledgeStatusCode, rollbackStatusCode, rejectStatusCode),
                 method, requiredHeaders)
@@ -130,8 +129,8 @@ namespace RockLib.Messaging.Http
         /// The HTTP headers that incoming requests are required to match in order to be handled.
         /// Any request that does not have match the required headers will receive a 4xx response.
         /// </param>
-        public HttpListenerReceiver(string name, string url,
-            IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod, RequiredHttpRequestHeaders requiredHeaders = null)
+        public HttpListenerReceiver(string name, Uri url,
+            IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod, RequiredHttpRequestHeaders? requiredHeaders = null)
             : this(name, GetPrefixes(url), GetPath(url), httpResponseGenerator, method, requiredHeaders)
         {
         }
@@ -162,15 +161,19 @@ namespace RockLib.Messaging.Http
         /// Any request that does not have match the required headers will receive a 4xx response.
         /// </param>
         public HttpListenerReceiver(string name, IReadOnlyList<string> prefixes, string path,
-            IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod, RequiredHttpRequestHeaders requiredHeaders = null)
+            IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod, RequiredHttpRequestHeaders? requiredHeaders = null)
             : base(name)
         {
-            if (path == null)
+            if (path is null)
+            {
                 throw new ArgumentNullException(nameof(path));
+            }
 
             Prefixes = prefixes ?? throw new ArgumentNullException(nameof(prefixes));
             foreach (var prefix in Prefixes)
+            {
                 _listener.Prefixes.Add(prefix);
+            }
 
             Path = path.Trim('/');
             var pathTokens = new List<string>();
@@ -204,7 +207,7 @@ namespace RockLib.Messaging.Http
         /// Gets the HTTP headers that incoming requests are required to match in order to be handled.
         /// Any request that does not have match the required headers will receive a 4xx response.
         /// </summary>
-        public RequiredHttpRequestHeaders RequiredHeaders { get; }
+        public RequiredHttpRequestHeaders? RequiredHeaders { get; }
 
         /// <summary>
         /// Gets the URI prefixes handled by the <see cref="HttpListener"/>. See
@@ -217,7 +220,7 @@ namespace RockLib.Messaging.Http
         /// Gets the path that requests must match in order to be handled. Any request whose
         /// path does not match this value will receive a 404 Not Found response.
         /// </summary>
-        public string Path { get; }
+        public string? Path { get; }
 
         /// <inheritdoc />
         protected override void Start()
@@ -229,13 +232,15 @@ namespace RockLib.Messaging.Http
         private void CompleteGetContext(IAsyncResult result)
         {
             if (_disposed)
+            {
                 return;
+            }
 
             var context = _listener.EndGetContext(result);
 
             _listener.BeginGetContext(CompleteGetContext, null);
 
-            if (!_pathRegex.IsMatch(context.Request.Url.AbsolutePath))
+            if (!_pathRegex.IsMatch(context.Request.Url!.AbsolutePath))
             {
                 context.Response.StatusCode = 404;
                 context.Response.Close();
@@ -249,7 +254,7 @@ namespace RockLib.Messaging.Http
                 return;
             }
 
-            if (RequiredHeaders != null)
+            if (RequiredHeaders is not null)
             {
                 if (!RequiredHeaders.AllowsContentType(context.Request.ContentType))
                 {
@@ -268,10 +273,12 @@ namespace RockLib.Messaging.Http
 
             try
             {
-                var receiverMessage = new HttpListenerReceiverMessage(context, HttpResponseGenerator, _pathRegex, _pathTokens);
-                MessageHandler.OnMessageReceivedAsync(this, receiverMessage).GetAwaiter().GetResult();
+                using var receiverMessage = new HttpListenerReceiverMessage(context, HttpResponseGenerator, _pathRegex, _pathTokens);
+                MessageHandler?.OnMessageReceivedAsync(this, receiverMessage).GetAwaiter().GetResult();
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 OnError("Error in MessageHandler.OnMessageReceivedAsync.", ex);
             }
@@ -281,29 +288,33 @@ namespace RockLib.Messaging.Http
         protected override void Dispose(bool disposing)
         {
             if (_disposed)
+            {
+                _disposed = true;
+                _listener.Stop();
+                base.Dispose(disposing);
+                _listener.Close();
                 return;
-            _disposed = true;
-            _listener.Stop();
-            base.Dispose(disposing);
-            _listener.Close();
+            }
         }
 
-        private static IReadOnlyList<string> GetPrefixes(string url)
+        private static IReadOnlyList<string> GetPrefixes(Uri url)
         {
-            if (url == null)
+            if (url is null)
+            {
                 throw new ArgumentNullException(nameof(url));
+            }
 
-            var match = Regex.Match(url, ".*?(?={[^}]+})");
+            var match = Regex.Match(url.OriginalString, ".*?(?={[^}]+})");
 
             return match.Success 
                 ? new[] { match.Value } 
-                : new[] { url.Trim('/') + '/' };
+                : new[] { url.OriginalString.Trim('/') + '/' };
         }
 
-        private static string GetPath(string url)
+        private static string GetPath(Uri url)
         {
-            var uri = new Uri(url.Replace('*', '-').Replace('+', '-'));
-            return uri.LocalPath;
+            var uri = new Uri(url.OriginalString.Replace('*', '-').Replace('+', '-'));
+            return url.LocalPath;
         }
     }
 }

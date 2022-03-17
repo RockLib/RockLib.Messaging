@@ -13,12 +13,16 @@ namespace RockLib.Messaging.Http
     /// An implementation of <see cref="ISender" /> that sends messages with an
     /// <see cref="HttpClient"/>.
     /// </summary>
+#pragma warning disable CS1069
     public class HttpClientSender : ISender
+#pragma warning restore CS1069
     {
-        private readonly HttpContentHeaders _defaultContentHeaders = new ByteArrayContent(new byte[0]).Headers;
+        private readonly HttpContentHeaders _defaultContentHeaders = new ByteArrayContent(Array.Empty<byte>()).Headers;
         private readonly HttpRequestHeaders _defaultRequestHeaders = new HttpRequestMessage().Headers;
 
         private readonly HttpClient _client;
+
+        private bool disposedValue;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientSender"/> class.
@@ -27,7 +31,7 @@ namespace RockLib.Messaging.Http
         /// <param name="url">The url to send messages to.</param>
         /// <param name="method">The http method to use when sending messages.</param>
         /// <param name="defaultHeaders">Default headers that are added to each http request.</param>
-        public HttpClientSender(string name, string url, string method = "POST", IReadOnlyDictionary<string, string> defaultHeaders = null)
+        public HttpClientSender(string name, Uri url, string method = "POST", IReadOnlyDictionary<string, string>? defaultHeaders = null)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Url = url ?? throw new ArgumentNullException(nameof(url));
@@ -35,14 +39,18 @@ namespace RockLib.Messaging.Http
 
             _client = new HttpClient();
 
-            if (defaultHeaders != null)
+            if (defaultHeaders is not null)
             {
                 foreach (var header in defaultHeaders)
                 {
                     if (IsContentHeader(header.Key))
+                    {
                         AddHeader(_defaultContentHeaders, header.Key, header.Value);
+                    }
                     else
+                    {
                         AddHeader(_defaultRequestHeaders, header.Key, header.Value);
+                    }
                 }
             }
         }
@@ -55,7 +63,7 @@ namespace RockLib.Messaging.Http
         /// <summary>
         /// Gets the url that messages are sent to.
         /// </summary>
-        public string Url { get; }
+        public Uri Url { get; }
 
         /// <summary>
         /// Gets the http method that is used when sending messages.
@@ -63,11 +71,29 @@ namespace RockLib.Messaging.Http
         public HttpMethod Method { get; }
 
         /// <summary>
+        /// Disposes managed resources
+        /// </summary>
+        /// <param name="disposing">Is this being disposed from <see cref="Dispose()"/> or the finalizer?</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _client.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        /// <summary>
         /// Disposes the <see cref="HttpClient"/>.
         /// </summary>
         public void Dispose()
         {
-            _client.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -77,35 +103,51 @@ namespace RockLib.Messaging.Http
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public async Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
         {
-            if (message.OriginatingSystem == null)
+            if(message is null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+            if (message.OriginatingSystem is null)
+            {
                 message.OriginatingSystem = "HTTP";
+            }
 
             var headers = new Dictionary<string, object>(message.Headers);
 
             var url = GetUrl(headers);
 
-            var request = new HttpRequestMessage(Method, url)
+            using var request = new HttpRequestMessage(Method, url)
             {
                 Content = new ByteArrayContent(message.BinaryPayload)
             };
 
             foreach (var defaultContentHeader in _defaultContentHeaders)
+            {
                 if (!message.Headers.ContainsKey(defaultContentHeader.Key))
+                {
                     request.Content.Headers.Add(defaultContentHeader.Key, defaultContentHeader.Value);
+                }
+            }
 
             foreach (var defaultRequestHeader in _defaultRequestHeaders)
+            {
                 if (!message.Headers.ContainsKey(defaultRequestHeader.Key))
+                {
                     request.Headers.Add(defaultRequestHeader.Key, defaultRequestHeader.Value);
+                }
+            }
 
             foreach (var header in message.Headers)
             {
                 if (IsContentHeader(header.Key))
-                    AddHeader(request.Content.Headers, header.Key, header.Value?.ToString());
+                {
+                    AddHeader(request.Content.Headers, header.Key, header.Value?.ToString()!);
+                }
                 else
-                    AddHeader(request.Headers, header.Key, header.Value?.ToString());
+                {
+                    AddHeader(request.Headers, header.Key, header.Value?.ToString()!);
+                }
             }
-
-            // TODO: if the message is compressed, add an http compression header?
 
             var response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
@@ -118,7 +160,7 @@ namespace RockLib.Messaging.Http
         /// </summary>
         private string GetUrl(Dictionary<string, object> headers)
         {
-            return Regex.Replace(Url, "{([^}]+)}", match =>
+            return Regex.Replace(Url.OriginalString, "{([^}]+)}", match =>
             {
                 var token = match.Groups[1].Value;
 
@@ -126,7 +168,7 @@ namespace RockLib.Messaging.Http
                 {
                     var value = headers[token];
                     headers.Remove(token);
-                    return value?.ToString();
+                    return value?.ToString()!;
                 }
 
                 throw new InvalidOperationException($"The url for this {nameof(HttpClientSender)} contains a token, '{token}', that is not present in the headers of the sender message.");

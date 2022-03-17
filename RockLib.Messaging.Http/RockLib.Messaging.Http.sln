@@ -1,13 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2047
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.Http", "RockLib.Messaging.Http.csproj", "{C74A231E-DDE2-413F-BBF2-673AE2DB9B51}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.Http.Tests", "..\Tests\RockLib.Messaging.Http.Tests\RockLib.Messaging.Http.Tests.csproj", "{BA8E64C8-2F6F-468D-91CD-225D0357A43E}"
 EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.projitems*{c74a231e-dde2-413f-bbf2-673ae2db9b51}*SharedItemsImports = 5
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU

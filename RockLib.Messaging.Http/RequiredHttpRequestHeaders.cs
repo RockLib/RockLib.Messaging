@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 
@@ -11,8 +12,8 @@ namespace RockLib.Messaging.Http
     /// </summary>
     public class RequiredHttpRequestHeaders
     {
-        private readonly IReadOnlyCollection<string> _contentTypeMediaTypes;
-        private readonly IReadOnlyCollection<string> _acceptMediaTypes;
+        private readonly IReadOnlyCollection<string?>? _contentTypeMediaTypes;
+        private readonly IReadOnlyCollection<string?>? _acceptMediaTypes;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RequiredHttpRequestHeaders"/> class.
@@ -30,7 +31,7 @@ namespace RockLib.Messaging.Http
         /// matches this value will immediately receive a <c>406 Not Acceptable</c> response. When
         /// this value is null, HTTP requests are not filtered according to their <c>Accept</c> header.
         /// </param>
-        public RequiredHttpRequestHeaders(string contentType = null, string accept = null)
+        public RequiredHttpRequestHeaders(string? contentType = null, string? accept = null)
         {
             _contentTypeMediaTypes = contentType?.Split(',').Select(ct => MediaTypeHeaderValue.Parse(ct).MediaType).ToList();
             _acceptMediaTypes = accept?.Split(',').Select(ct => MediaTypeWithQualityHeaderValue.Parse(ct).MediaType).ToList();
@@ -46,7 +47,7 @@ namespace RockLib.Messaging.Http
         /// response. When this value is null, HTTP requests are not filtered according to their
         /// <c>Content-Type</c> header.
         /// </summary>
-        public string ContentType { get; }
+        public string? ContentType { get; }
 
         /// <summary>
         /// Gets the <c>Accept</c> header value(s) that incoming HTTP requests must match in order to
@@ -54,40 +55,54 @@ namespace RockLib.Messaging.Http
         /// matches this value will immediately receive a <c>406 Not Acceptable</c> response. When this
         /// value is null, HTTP requests are not filtered according to their <c>Accept</c> header.
         /// </summary>
-        public string Accept { get; }
+        public string? Accept { get; }
 
-        internal bool AllowsContentType(string requestContentType)
+        internal bool AllowsContentType(string? requestContentType)
         {
-            if (_contentTypeMediaTypes == null)
+            if (_contentTypeMediaTypes is null)
+            {
                 return true;
+            }
 
             try
             {
                 var contentType = MediaTypeHeaderValue.Parse(requestContentType);
                 return _contentTypeMediaTypes.Any(mediaType => contentType.MediaType == mediaType);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
             }
 
             return false;
         }
 
-        internal bool AllowsAccept(string[] requestAcceptTypes)
+        internal bool AllowsAccept(string[]? requestAcceptTypes)
         {
-            if (_acceptMediaTypes == null)
+            if (_acceptMediaTypes is null)
+            {
                 return true;
+            }
 
             try
             {
+                if (requestAcceptTypes is null)
+                {
+                    throw new ArgumentNullException(nameof(requestAcceptTypes));
+                }
                 foreach (var requestAcceptType in requestAcceptTypes)
                 {
                     var accept = MediaTypeWithQualityHeaderValue.Parse(requestAcceptType);
                     if (_acceptMediaTypes.Any(mediaType => accept.MediaType == mediaType))
+                    {
                         return true;
+                    }
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch
+#pragma warning restore CA1031 // Do not catch general exception types
             {
             }
 

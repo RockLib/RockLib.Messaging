@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System;
 
 namespace RockLib.Messaging.Http
 {
@@ -69,15 +70,25 @@ namespace RockLib.Messaging.Http
                 case string stringContent:
                     Context.Response.ContentEncoding = Encoding.UTF8;
                     var buffer = Encoding.UTF8.GetBytes(stringContent);
+#if NET48
                     await Context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
+#else
+                    await Context.Response.OutputStream.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
+#endif
                     break;
                 case byte[] binaryContent:
+#if NET48
                     await Context.Response.OutputStream.WriteAsync(binaryContent, 0, binaryContent.Length, cancellationToken).ConfigureAwait(false);
+#else
+                    await Context.Response.OutputStream.WriteAsync(binaryContent, cancellationToken).ConfigureAwait(false);
+#endif
                     break;
             }
 
             foreach (var header in response.Headers)
+            {
                 Context.Response.Headers.Add(header.Key, header.Value);
+            }
 
             Context.Response.Close();
         }
@@ -85,15 +96,23 @@ namespace RockLib.Messaging.Http
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
+            if(headers is null)
+            {
+                throw new ArgumentNullException(nameof(headers));
+            }
             foreach (var key in Context.Request.Headers.AllKeys)
-                headers.Add(key, Context.Request.Headers[key]);
+            {
+                headers.Add(key!, Context.Request.Headers[key]!);
+            }
 
             foreach (var key in Context.Request.QueryString.AllKeys)
-                headers.Add(key, Context.Request.QueryString[key]);
+            {
+                headers.Add(key!, Context.Request.QueryString[key]!);
+            }
 
             if (_pathTokens.Count > 0)
             {
-                var match = _pathRegex.Match(Context.Request.Url.AbsolutePath);
+                var match = _pathRegex.Match(Context.Request.Url!.AbsolutePath);
                 foreach (var token in _pathTokens)
                     headers.Add(token, match.Groups[token].Value);
             }
