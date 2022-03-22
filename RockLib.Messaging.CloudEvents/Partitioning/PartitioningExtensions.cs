@@ -20,7 +20,7 @@ namespace RockLib.Messaging.CloudEvents.Partitioning
         /// <exception cref="ArgumentNullException">
         /// If <paramref name="cloudEvent"/> is <see langword="null"/>.
         /// </exception>
-        public static string GetPartitionKey(this CloudEvent cloudEvent)
+        public static string? GetPartitionKey(this CloudEvent cloudEvent)
         {
             if (cloudEvent is null)
                 throw new ArgumentNullException(nameof(cloudEvent));

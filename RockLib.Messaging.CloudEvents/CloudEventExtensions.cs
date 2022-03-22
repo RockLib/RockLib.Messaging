@@ -456,7 +456,7 @@ namespace RockLib.Messaging.CloudEvents
                 _dataObjects.Remove(cloudEvent);
         }
 
-        private static object GetDataObject<T>(this CloudEvent cloudEvent, DataSerialization serialization)
+        private static object? GetDataObject<T>(this CloudEvent cloudEvent, DataSerialization serialization)
             where T : class
         {
             return _dataObjects.GetValue(cloudEvent, evt =>
@@ -469,12 +469,12 @@ namespace RockLib.Messaging.CloudEvents
                         stringData = Encoding.UTF8.GetString(evt.BinaryData);
 
                     if (string.IsNullOrEmpty(stringData))
-                        return null;
+                        return null!;
                 }
 
                 return serialization == DataSerialization.Json
-                    ? JsonDeserialize<T>(stringData)
-                    : XmlDeserialize<T>(stringData);
+                    ? JsonDeserialize<T>(stringData)!
+                    : XmlDeserialize<T>(stringData)!;
             });
         }
 
@@ -484,10 +484,10 @@ namespace RockLib.Messaging.CloudEvents
         private static string JsonSerialize(object data) =>
             JsonConvert.SerializeObject(data);
 
-        private static T JsonDeserialize<T>(string data) =>
+        private static T? JsonDeserialize<T>(string data) =>
             JsonConvert.DeserializeObject<T>(data);
 
-        private static string XmlSerialize(object data)
+        private static string? XmlSerialize(object data)
         {
             if (data == null)
                 return null;
@@ -499,7 +499,7 @@ namespace RockLib.Messaging.CloudEvents
             return sb.ToString();
         }
 
-        private static T XmlDeserialize<T>(string data)
+        private static T? XmlDeserialize<T>(string data)
             where T : class
         {
             if (data == null)

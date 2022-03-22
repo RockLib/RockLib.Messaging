@@ -14,7 +14,7 @@ namespace RockLib.Messaging.CloudEvents.Sequencing
         /// </summary>
         /// <param name="cloudEvent">The cloud event.</param>
         /// <returns>The Sequence of the event.</returns>
-        public static string GetSequence(this CloudEvent cloudEvent)
+        public static string? GetSequence(this CloudEvent cloudEvent)
         {
             if (cloudEvent is null)
                 throw new ArgumentNullException(nameof(cloudEvent));
@@ -51,7 +51,7 @@ namespace RockLib.Messaging.CloudEvents.Sequencing
         /// </summary>
         /// <param name="cloudEvent">The cloud event.</param>
         /// <returns>The Sequence Type of the event.</returns>
-        public static string GetSequenceType(this CloudEvent cloudEvent)
+        public static string? GetSequenceType(this CloudEvent cloudEvent)
         {
             if (cloudEvent is null)
                 throw new ArgumentNullException(nameof(cloudEvent));

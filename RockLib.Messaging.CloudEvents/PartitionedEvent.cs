@@ -78,7 +78,7 @@ namespace RockLib.Messaging.CloudEvents
         /// attribute might change, or even be removed, due to protocol semantics or business
         /// processing logic within each hop.
         /// </summary>
-        public string PartitionKey
+        public string? PartitionKey
         {
             get => this.GetPartitionKey();
             set => this.SetPartitionKey(value);

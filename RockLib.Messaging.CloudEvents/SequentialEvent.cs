@@ -83,7 +83,7 @@ namespace RockLib.Messaging.CloudEvents
         /// REQUIRED. Value expressing the relative order of the event. This enables interpretation of
         /// data supercedence.
         /// </summary>
-        public string Sequence
+        public string? Sequence
         {
             get => this.GetSequence();
             set => this.SetSequence(value);
@@ -93,7 +93,7 @@ namespace RockLib.Messaging.CloudEvents
         /// Specifies the semantics of the sequence attribute. See the <see cref="SequenceTypes"/> class
         /// for known values of this attribute.
         /// </summary>
-        public string SequenceType
+        public string? SequenceType
         {
             get => this.GetSequenceType();
             set => this.SetSequenceType(value);

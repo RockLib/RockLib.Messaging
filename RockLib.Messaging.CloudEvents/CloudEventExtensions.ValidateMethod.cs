@@ -36,7 +36,7 @@ namespace RockLib.Messaging.CloudEvents
                 });
             }
 
-            public static ValidateMethod Create(Type type)
+            public static ValidateMethod? Create(Type type)
             {
                 var validateMethod = GetValidateMethod(type);
 
@@ -49,7 +49,7 @@ namespace RockLib.Messaging.CloudEvents
             public void Invoke(SenderMessage senderMessage, IProtocolBinding protocolBinding) =>
                 _invokeValidateMethod(senderMessage, protocolBinding);
 
-            private static MethodInfo GetValidateMethod(Type type) =>
+            private static MethodInfo? GetValidateMethod(Type type) =>
                 type.GetMethod(nameof(CloudEvent.Validate), _publicStaticFlags, null, _validateMethodParameters, null);
         }
     }

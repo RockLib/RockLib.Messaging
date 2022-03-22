@@ -35,7 +35,7 @@ namespace RockLib.Messaging.CloudEvents
                 });
             }
 
-            public static MessageConstructor Create(Type type)
+            public static MessageConstructor? Create(Type type)
             {
                 var constructor = GetConstructor(type);
                 
@@ -51,7 +51,7 @@ namespace RockLib.Messaging.CloudEvents
             public object Invoke(IReceiverMessage receiverMessage, IProtocolBinding? protocolBinding) =>
                 _invokeConstructor(receiverMessage, protocolBinding);
 
-            private static ConstructorInfo GetConstructor(Type type) =>
+            private static ConstructorInfo? GetConstructor(Type type) =>
                 type.GetConstructor(_constructorParameters);
         }
     }

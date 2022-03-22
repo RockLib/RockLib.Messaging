@@ -200,7 +200,7 @@ namespace RockLib.Messaging.CloudEvents
         /// encoded in the URI is defined by the event producer.
         /// <para>Must be a valid relative or absolute URI.</para>
         /// </summary>
-        public string Source
+        public string? Source
         {
             get => Attributes.TryGetValue(SourceAttribute, out var value) && value is string source
                 ? source
@@ -229,7 +229,7 @@ namespace RockLib.Messaging.CloudEvents
         /// enforcement, etc. The format of this is producer defined and might include information
         /// such as the version of the type.
         /// </summary>
-        public string Type
+        public string? Type
         {
             get => Attributes.TryGetValue(TypeAttribute, out var value) && value is string type
                 ? type
@@ -247,7 +247,7 @@ namespace RockLib.Messaging.CloudEvents
         /// Content type of data value.
         /// <para>Must be a valid Content-Type value according to RFC 2616.</para>
         /// </summary>
-        public string DataContentType
+        public string? DataContentType
         {
             get => Attributes.TryGetValue(DataContentTypeAttribute, out var value) && value is string dataContentType
                 ? dataContentType
@@ -270,7 +270,7 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>
         /// Content type of data value as a <see cref="MediaTypeHeaderValue"/>.
         /// </summary>
-        public MediaTypeHeaderValue ContentType
+        public MediaTypeHeaderValue? ContentType
         {
             get
             {
@@ -288,7 +288,7 @@ namespace RockLib.Messaging.CloudEvents
         /// reflected by a different URI.
         /// <para>Must be a valid relative or absolute URI.</para>
         /// </summary>
-        public string DataSchema
+        public string? DataSchema
         {
             get => Attributes.TryGetValue(DataSchemaAttribute, out var value) && value is string dataSchema
                 ? dataSchema
@@ -317,7 +317,7 @@ namespace RockLib.Messaging.CloudEvents
         /// interested in blobs with names ending with '.jpg' or '.jpeg' and the subject attribute allows
         /// for constructing a simple and efficient string-suffix filter for that subset of events.</para>
         /// </summary>
-        public string Subject
+        public string? Subject
         {
             get => Attributes.TryGetValue(SubjectAttribute, out var value) && value is string subject
                 ? subject
@@ -369,7 +369,7 @@ namespace RockLib.Messaging.CloudEvents
         /// .SetData{TCloudEvent}(TCloudEvent, string)"/> or <see cref="CloudEventExtensions
         /// .SetData{TCloudEvent, T}(TCloudEvent, T, DataSerialization)"/> extension method.</para>
         /// </summary>
-        public string StringData => _data as string;
+        public string? StringData => _data as string;
 
         /// <summary>
         /// Domain-specific information about the occurrence (i.e. the payload) as a byte array.
@@ -378,7 +378,7 @@ namespace RockLib.Messaging.CloudEvents
         /// <para>To set this value, call the <see cref="CloudEventExtensions.SetData{TCloudEvent}(
         /// TCloudEvent, byte[])"/> extension method.</para>
         /// </summary>
-        public byte[] BinaryData => _data as byte[];
+        public byte[]? BinaryData => _data as byte[];
 
         /// <summary>
         /// Converts the cloud event to a string in the
@@ -615,7 +615,7 @@ namespace RockLib.Messaging.CloudEvents
         /// </summary>
         /// <param name="cloudEvent">The <see cref="CloudEvent"/> to convert to a <see cref="SenderMessage"/>.</param>
         public static implicit operator SenderMessage(CloudEvent cloudEvent) =>
-            cloudEvent?.ToSenderMessage();
+            cloudEvent?.ToSenderMessage()!;
 
         /// <summary>
         /// Ensures that the cloud event is valid - throws a <see cref="CloudEventValidationException"/>
