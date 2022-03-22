@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 
@@ -30,6 +31,8 @@ namespace RockLib.Messaging.Http
 
         private bool _disposed;
 
+        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpListenerReceiver"/> class.
         /// </summary>
@@ -57,6 +60,68 @@ namespace RockLib.Messaging.Http
         /// Any request that does not have match the required headers will receive a 4xx response.
         /// </param>
         public HttpListenerReceiver(string name, Uri url,
+            int acknowledgeStatusCode = DefaultAcknowledgeStatusCode,
+            int rollbackStatusCode = DefaultRollbackStatusCode,
+            int rejectStatusCode = DefaultRejectStatusCode,
+            string method = DefaultMethod, RequiredHttpRequestHeaders? requiredHeaders = null) : base(name)
+        {
+            if (url is null)
+            {
+                throw new ArgumentNullException(nameof(url));
+            }
+
+            Prefixes = GetPrefixes(url.OriginalString);
+            foreach (var prefix in Prefixes)
+            {
+                _listener.Prefixes.Add(prefix);
+            }
+
+            Path = url.AbsolutePath.Trim('/');
+
+            var pathTokens = new List<string>();
+            var pathPattern = "^/?" + Regex.Replace(Path ?? "", "{([^}]+)}", m =>
+            {
+                var token = m.Groups[1].Value;
+                pathTokens.Add(token);
+                return $"(?<{token}>[^/]+)";
+            }) + "/?$";
+            _pathRegex = new Regex(pathPattern, RegexOptions.IgnoreCase);
+            _pathTokens = pathTokens;
+
+            HttpResponseGenerator = new DefaultHttpResponseGenerator(acknowledgeStatusCode, rollbackStatusCode, rejectStatusCode);
+            Method = method ?? throw new ArgumentNullException(nameof(method));
+            RequiredHeaders = requiredHeaders;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpListenerReceiver"/> class.
+        /// </summary>
+        /// <param name="name">The name of the receiver.</param>
+        /// /// <param name="url">
+        /// The url that the <see cref="HttpListener"/> should listen to. See
+        /// https://docs.microsoft.com/en-us/dotnet/api/system.net.httplistener for
+        /// more information.
+        /// </param>
+        /// <param name="acknowledgeStatusCode">
+        /// The status code to be returned to the client when a message is acknowledged.
+        /// </param>
+        /// <param name="rollbackStatusCode">
+        /// The status code to be returned to the client when a message is rolled back.
+        /// </param>
+        /// <param name="rejectStatusCode">
+        /// The status code to be returned to the client when a message is acknowledged.
+        /// </param>
+        /// <param name="method">
+        /// The http method that requests must have in order to be handled. Any request
+        /// that does not have this method will receive a 405 Method Not Allowed response.
+        /// </param>
+        /// <param name="requiredHeaders">
+        /// The HTTP headers that incoming requests are required to match in order to be handled.
+        /// Any request that does not have match the required headers will receive a 4xx response.
+        /// </param>
+#pragma warning disable CA1054 // URI-like parameters should not be strings
+        public HttpListenerReceiver(string name, string url,
+#pragma warning restore CA1054 // URI-like parameters should not be strings
             int acknowledgeStatusCode = DefaultAcknowledgeStatusCode,
             int rollbackStatusCode = DefaultRollbackStatusCode,
             int rejectStatusCode = DefaultRejectStatusCode,
@@ -129,7 +194,9 @@ namespace RockLib.Messaging.Http
         /// The HTTP headers that incoming requests are required to match in order to be handled.
         /// Any request that does not have match the required headers will receive a 4xx response.
         /// </param>
-        public HttpListenerReceiver(string name, Uri url,
+#pragma warning disable CA1054 // URI-like parameters should not be strings
+        public HttpListenerReceiver(string name, string url,
+#pragma warning restore CA1054 // URI-like parameters should not be strings
             IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod, RequiredHttpRequestHeaders? requiredHeaders = null)
             : this(name, GetPrefixes(url), GetPath(url), httpResponseGenerator, method, requiredHeaders)
         {
@@ -254,7 +321,7 @@ namespace RockLib.Messaging.Http
                 return;
             }
 
-            if (RequiredHeaders is not null)
+            if (RequiredHeaders != null)
             {
                 if (!RequiredHeaders.AllowsContentType(context.Request.ContentType))
                 {
@@ -283,38 +350,38 @@ namespace RockLib.Messaging.Http
                 OnError("Error in MessageHandler.OnMessageReceivedAsync.", ex);
             }
         }
-        
+
         /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
             if (_disposed)
             {
-                _disposed = true;
-                _listener.Stop();
-                base.Dispose(disposing);
-                _listener.Close();
                 return;
             }
+            _disposed = true;
+            _listener.Stop();
+            base.Dispose(disposing);
+            _listener.Close();
         }
 
-        private static IReadOnlyList<string> GetPrefixes(Uri url)
+        private static IReadOnlyList<string> GetPrefixes(string url)
         {
             if (url is null)
             {
                 throw new ArgumentNullException(nameof(url));
             }
 
-            var match = Regex.Match(url.OriginalString, ".*?(?={[^}]+})");
+            var match = Regex.Match(url, ".*?(?={[^}]+})");
 
-            return match.Success 
-                ? new[] { match.Value } 
-                : new[] { url.OriginalString.Trim('/') + '/' };
+            return match.Success
+                ? new[] { match.Value }
+                : new[] { url.Trim('/') + '/' };
         }
 
-        private static string GetPath(Uri url)
+        private static string GetPath(string url)
         {
-            var uri = new Uri(url.OriginalString.Replace('*', '-').Replace('+', '-'));
-            return url.LocalPath;
+            var uri = new Uri(url.Replace('*', '-').Replace('+', '-'));
+            return uri.LocalPath;
         }
     }
 }

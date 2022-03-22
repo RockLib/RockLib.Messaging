@@ -34,6 +34,37 @@ namespace RockLib.Messaging.Http
         public HttpClientSender(string name, Uri url, string method = "POST", IReadOnlyDictionary<string, string>? defaultHeaders = null)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
+            Url = url is not null ? url.OriginalString : throw new ArgumentNullException(nameof(url));
+            Method = new HttpMethod(method ?? throw new ArgumentNullException(nameof(method)));
+
+            _client = new HttpClient();
+
+            if (defaultHeaders is not null)
+            {
+                foreach (var header in defaultHeaders)
+                {
+                    if (IsContentHeader(header.Key))
+                    {
+                        AddHeader(_defaultContentHeaders, header.Key, header.Value);
+                    }
+                    else
+                    {
+                        AddHeader(_defaultRequestHeaders, header.Key, header.Value);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpClientSender"/> class.
+        /// </summary>
+        /// <param name="name">The name of the sender.</param>
+        /// <param name="url">The url to send messages to.</param>
+        /// <param name="method">The http method to use when sending messages.</param>
+        /// <param name="defaultHeaders">Default headers that are added to each http request.</param>
+        public HttpClientSender(string name, string url, string method = "POST", IReadOnlyDictionary<string, string>? defaultHeaders = null)
+        {
+            Name = name ?? throw new ArgumentNullException(nameof(name));
             Url = url ?? throw new ArgumentNullException(nameof(url));
             Method = new HttpMethod(method ?? throw new ArgumentNullException(nameof(method)));
 
@@ -63,7 +94,9 @@ namespace RockLib.Messaging.Http
         /// <summary>
         /// Gets the url that messages are sent to.
         /// </summary>
-        public Uri Url { get; }
+#pragma warning disable CA1056 // URI-like properties should not be strings
+        public string Url { get; }
+#pragma warning restore CA1056 // URI-like properties should not be strings
 
         /// <summary>
         /// Gets the http method that is used when sending messages.
@@ -160,7 +193,7 @@ namespace RockLib.Messaging.Http
         /// </summary>
         private string GetUrl(Dictionary<string, object> headers)
         {
-            return Regex.Replace(Url.OriginalString, "{([^}]+)}", match =>
+            return Regex.Replace(Url, "{([^}]+)}", match =>
             {
                 var token = match.Groups[1].Value;
 
