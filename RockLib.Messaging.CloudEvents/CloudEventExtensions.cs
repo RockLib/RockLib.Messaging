@@ -341,7 +341,7 @@ namespace RockLib.Messaging.CloudEvents
         /// with the exact parameters <c>(<see cref="IReceiverMessage"/>, <see cref=
         /// "IProtocolBinding"/>)</c>.
         /// </exception>
-        public static TCloudEvent To<TCloudEvent>(this IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)
+        public static TCloudEvent To<TCloudEvent>(this IReceiverMessage receiverMessage, IProtocolBinding? protocolBinding = null)
             where TCloudEvent : CloudEvent
         {
             if (receiverMessage is null)
@@ -380,7 +380,7 @@ namespace RockLib.Messaging.CloudEvents
         /// "IProtocolBinding"/>)</c>.
         /// </exception>
         public static void Start<TCloudEvent>(this IReceiver receiver,
-            Func<TCloudEvent, IReceiverMessage, Task> onEventReceivedAsync, IProtocolBinding protocolBinding = null)
+            Func<TCloudEvent, IReceiverMessage, Task> onEventReceivedAsync, IProtocolBinding? protocolBinding = null)
             where TCloudEvent : CloudEvent
         {
             if (receiver is null)
@@ -419,7 +419,7 @@ namespace RockLib.Messaging.CloudEvents
         /// named "Validate" with the exact parameters <c>(<see cref="SenderMessage"/>, <see cref=
         /// "IProtocolBinding"/>)</c>.
         /// </exception>
-        public static ISenderBuilder AddValidation<TCloudEvent>(this ISenderBuilder builder, IProtocolBinding protocolBinding = null)
+        public static ISenderBuilder AddValidation<TCloudEvent>(this ISenderBuilder builder, IProtocolBinding? protocolBinding = null)
             where TCloudEvent : CloudEvent
         {
             if (builder is null)

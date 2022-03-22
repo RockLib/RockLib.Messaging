@@ -61,11 +61,11 @@ namespace RockLib.Messaging.CloudEvents
 
         private const string _specVersion1_0 = "1.0";
 
-        private static IProtocolBinding _defaultProtocolBinding;
-        private IProtocolBinding _protocolBinding;
+        private static IProtocolBinding _defaultProtocolBinding = ProtocolBindings.Default;
+        private IProtocolBinding? _protocolBinding;
 
-        private object _data;
-        private MediaTypeHeaderValue _contentType;
+        private object? _data;
+        private MediaTypeHeaderValue? _contentType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CloudEvent"/> class.
@@ -106,7 +106,7 @@ namespace RockLib.Messaging.CloudEvents
         /// CloudEvent attributes. If <see langword="null"/>, then <see cref="DefaultProtocolBinding"/>
         /// is used instead.
         /// </param>
-        public CloudEvent(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)
+        public CloudEvent(IReceiverMessage receiverMessage, IProtocolBinding? protocolBinding = null)
         {
             if (receiverMessage is null)
                 throw new ArgumentNullException(nameof(receiverMessage));
@@ -149,7 +149,7 @@ namespace RockLib.Messaging.CloudEvents
         /// </summary>
         public static IProtocolBinding DefaultProtocolBinding
         {
-            get => _defaultProtocolBinding ?? (_defaultProtocolBinding = ProtocolBindings.Default);
+            get => _defaultProtocolBinding;
             set => _defaultProtocolBinding = value ?? throw new ArgumentNullException(nameof(value));
         }
 
@@ -160,7 +160,7 @@ namespace RockLib.Messaging.CloudEvents
         /// </summary>
         public IProtocolBinding ProtocolBinding
         {
-            get => _protocolBinding ?? (_protocolBinding = DefaultProtocolBinding);
+            get => _protocolBinding ?? _defaultProtocolBinding;
             set => _protocolBinding = value ?? throw new ArgumentNullException(nameof(value));
         }
 
@@ -520,7 +520,7 @@ namespace RockLib.Messaging.CloudEvents
             return senderMessage;
         }
 
-        private void FromReceiverMessage(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding)
+        private void FromReceiverMessage(IReceiverMessage receiverMessage, IProtocolBinding? protocolBinding)
         {
             ProtocolBinding = protocolBinding ?? DefaultProtocolBinding;
 
@@ -569,7 +569,7 @@ namespace RockLib.Messaging.CloudEvents
         /// to render in Binary Mode.
         /// </param>
         /// <returns>The mapped <see cref="HttpRequestMessage"/>.</returns>
-        public HttpRequestMessage ToHttpRequestMessage(string requestUri = null, bool structuredMode = false) =>
+        public HttpRequestMessage ToHttpRequestMessage(string? requestUri = null, bool structuredMode = false) =>
             ToHttpRequestMessage(HttpMethod.Get, requestUri, structuredMode);
 
         /// <summary>
@@ -582,7 +582,7 @@ namespace RockLib.Messaging.CloudEvents
         /// to render in Binary Mode.
         /// </param>
         /// <returns>The mapped <see cref="HttpRequestMessage"/>.</returns>
-        public HttpRequestMessage ToHttpRequestMessage(HttpMethod method, string requestUri = null, bool structuredMode = false)
+        public HttpRequestMessage ToHttpRequestMessage(HttpMethod method, string? requestUri = null, bool structuredMode = false)
         {
             if (method is null)
                 throw new ArgumentNullException(nameof(method));
@@ -648,7 +648,7 @@ namespace RockLib.Messaging.CloudEvents
         /// <exception cref="CloudEventValidationException">
         /// If the <see cref="SenderMessage"/> is not valid.
         /// </exception>
-        public static void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null)
+        public static void Validate(SenderMessage senderMessage, IProtocolBinding? protocolBinding = null)
         {
             if (senderMessage is null)
                 throw new ArgumentNullException(nameof(senderMessage));

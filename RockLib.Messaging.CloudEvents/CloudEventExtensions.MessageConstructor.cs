@@ -11,7 +11,7 @@ namespace RockLib.Messaging.CloudEvents
         {
             private static readonly Type[] _constructorParameters = new[] { typeof(IReceiverMessage), typeof(IProtocolBinding) };
 
-            private Func<IReceiverMessage, IProtocolBinding, object> _invokeConstructor;
+            private Func<IReceiverMessage, IProtocolBinding?, object> _invokeConstructor;
 
             private MessageConstructor(ConstructorInfo constructor)
             {
@@ -48,7 +48,7 @@ namespace RockLib.Messaging.CloudEvents
             public static bool Exists(Type type) =>
                 GetConstructor(type) != null;
 
-            public object Invoke(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding) =>
+            public object Invoke(IReceiverMessage receiverMessage, IProtocolBinding? protocolBinding) =>
                 _invokeConstructor(receiverMessage, protocolBinding);
 
             private static ConstructorInfo GetConstructor(Type type) =>

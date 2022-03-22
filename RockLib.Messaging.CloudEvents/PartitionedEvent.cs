@@ -52,7 +52,7 @@ namespace RockLib.Messaging.CloudEvents
         /// to CloudEvent attributes. If <see langword="null"/>, then <see cref=
         /// "CloudEvent.DefaultProtocolBinding"/> is used instead.
         /// </param>
-        public PartitionedEvent(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)
+        public PartitionedEvent(IReceiverMessage receiverMessage, IProtocolBinding? protocolBinding = null)
             : base(receiverMessage, protocolBinding)
         {
         }
@@ -105,7 +105,7 @@ namespace RockLib.Messaging.CloudEvents
         /// <exception cref="CloudEventValidationException">
         /// If the <see cref="SenderMessage"/> is not valid.
         /// </exception>
-        public static new void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null)
+        public static new void Validate(SenderMessage senderMessage, IProtocolBinding? protocolBinding = null)
         {
             if (protocolBinding is null)
                 protocolBinding = DefaultProtocolBinding;
