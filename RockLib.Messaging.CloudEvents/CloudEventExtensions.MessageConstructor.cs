@@ -17,7 +17,7 @@ namespace RockLib.Messaging.CloudEvents
             {
                 // The initial function uses regular reflection.
                 _invokeConstructor = (receiverMessage, protocolBinding) =>
-                    constructor.Invoke(new object[] { receiverMessage, protocolBinding });
+                    constructor.Invoke(new object[] { receiverMessage, protocolBinding! });
 
                 // Compile the optimized function in the background.
                 ThreadPool.QueueUserWorkItem(_ =>

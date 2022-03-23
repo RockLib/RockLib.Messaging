@@ -466,7 +466,7 @@ namespace RockLib.Messaging.CloudEvents
                         $"Invalid '{SpecVersionAttribute}' attribute. Expected '{_specVersion1_0}', but was '{attribute.Value}'.");
                 }
 
-                if (attribute.Value is JValue jvalue)
+                if (attribute.Value is JValue jvalue && jvalue.Value is not null)
                     Attributes[attribute.Key] = jvalue.Value;
                 else
                     throw new CloudEventValidationException(

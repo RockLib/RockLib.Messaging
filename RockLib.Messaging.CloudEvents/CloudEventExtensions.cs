@@ -478,7 +478,7 @@ namespace RockLib.Messaging.CloudEvents
             });
         }
 
-        internal static bool TryGetDataObject(this CloudEvent cloudEvent, out object data) =>
+        internal static bool TryGetDataObject(this CloudEvent cloudEvent, out object? data) =>
             _dataObjects.TryGetValue(cloudEvent, out data);
 
         private static string JsonSerialize(object data) =>
