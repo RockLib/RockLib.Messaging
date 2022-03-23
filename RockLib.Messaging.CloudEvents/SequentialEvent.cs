@@ -1,4 +1,5 @@
 ﻿using RockLib.Messaging.CloudEvents.Sequencing;
+using System.Globalization;
 
 namespace RockLib.Messaging.CloudEvents
 {
@@ -43,7 +44,7 @@ namespace RockLib.Messaging.CloudEvents
             if (SequenceType == SequenceTypes.Integer
                 && int.TryParse(source.Sequence, out int sequence))
             {
-                Sequence = unchecked(sequence + 1).ToString();
+                Sequence = unchecked(sequence + 1).ToString(CultureInfo.CurrentCulture);
             }
         }
 
