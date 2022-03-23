@@ -207,7 +207,7 @@ namespace RockLib.Messaging.CloudEvents
                 return data;
 
             throw new InvalidCastException(
-                $"Unable to cast the CloudEvent's data of type '{dataObject.GetType().FullName}' to type '{typeof(T).FullName}'.");
+                $"Unable to cast the CloudEvent's data of type '{dataObject?.GetType().FullName}' to type '{typeof(T).FullName}'.");
         }
 
         /// <summary>

@@ -470,7 +470,7 @@ namespace RockLib.Messaging.CloudEvents
                     Attributes[attribute.Key] = jvalue.Value;
                 else
                     throw new CloudEventValidationException(
-                        $"Invalid value for '{attribute.Key}' member: {attribute.Value.ToString(Formatting.Indented)}");
+                        $"Invalid value for '{attribute.Key}' member: {attribute.Value?.ToString(Formatting.Indented)}");
             }
         }
 
