@@ -23,7 +23,7 @@ namespace RockLib.Messaging.CloudEvents
                     var cloudEventParameter = Expression.Parameter(typeof(CloudEvent), "cloudEvent");
 
                     var body = Expression.New(constructor,
-                        Expression.Convert(cloudEventParameter, constructor.DeclaringType));
+                        Expression.Convert(cloudEventParameter, constructor.DeclaringType!));
 
                     var lamda = Expression.Lambda<Func<CloudEvent, CloudEvent>>(
                         body, cloudEventParameter);

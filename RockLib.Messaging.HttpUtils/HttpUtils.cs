@@ -8,7 +8,7 @@ namespace RockLib.Messaging
 {
     internal static class HttpUtils
     {
-        public static void AddHeader(HttpHeaders headers, string headerName, string headerValue)
+        public static void AddHeader(HttpHeaders headers, string headerName, string? headerValue)
         {
             if (headerValue == null)
                 return;
@@ -70,7 +70,7 @@ namespace RockLib.Messaging
             }
         }
 
-        private static IEnumerable<string> SplitByComma(string headerValue)
+        private static IEnumerable<string> SplitByComma(string? headerValue)
         {
             string value;
 #if NET48

@@ -798,9 +798,9 @@ namespace RockLib.Messaging.CloudEvents
             return false;
         }
 
-        internal void SetDataField(string data) => _data = data;
+        internal void SetDataField(string? data) => _data = data;
 
-        internal void SetDataField(byte[] data) => _data = data;
+        internal void SetDataField(byte[]? data) => _data = data;
 
         internal void ClearDataField() => _data = null;
 

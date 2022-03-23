@@ -39,7 +39,7 @@ namespace RockLib.Messaging.CloudEvents
         /// <exception cref="ArgumentNullException">
         /// If <paramref name="cloudEvent"/> is <see langword="null"/>.
         /// </exception>
-        public static TCloudEvent SetData<TCloudEvent>(this TCloudEvent cloudEvent, string data)
+        public static TCloudEvent SetData<TCloudEvent>(this TCloudEvent cloudEvent, string? data)
             where TCloudEvent : CloudEvent
         {
             if (cloudEvent is null)
@@ -71,7 +71,7 @@ namespace RockLib.Messaging.CloudEvents
         /// <exception cref="ArgumentNullException">
         /// If <paramref name="cloudEvent"/> is <see langword="null"/>.
         /// </exception>
-        public static TCloudEvent SetData<TCloudEvent>(this TCloudEvent cloudEvent, byte[] data)
+        public static TCloudEvent SetData<TCloudEvent>(this TCloudEvent cloudEvent, byte[]? data)
             where TCloudEvent : CloudEvent
         {
             if (cloudEvent is null)
@@ -428,7 +428,7 @@ namespace RockLib.Messaging.CloudEvents
             var validateMethod = _validateMethods.GetOrAdd(typeof(TCloudEvent), ValidateMethod.Create)
                 ?? throw MissingValidateMethod(typeof(TCloudEvent));
 
-            return builder.AddValidation(message => validateMethod.Invoke(message, protocolBinding));
+            return builder.AddValidation(message => validateMethod.Invoke(message, protocolBinding!));
         }
 
         private static MissingMemberException MissingReceiverConstructor(Type cloudEventType) =>
@@ -481,7 +481,7 @@ namespace RockLib.Messaging.CloudEvents
         internal static bool TryGetDataObject(this CloudEvent cloudEvent, out object? data) =>
             _dataObjects.TryGetValue(cloudEvent, out data);
 
-        private static string JsonSerialize(object data) =>
+        private static string? JsonSerialize(object data) =>
             JsonConvert.SerializeObject(data);
 
         private static T? JsonDeserialize<T>(string data) =>
