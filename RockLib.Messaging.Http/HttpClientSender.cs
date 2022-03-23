@@ -134,10 +134,11 @@ namespace RockLib.Messaging.Http
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public async Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
         {
-            if(message is null)
+            if (message is null)
             {
                 throw new ArgumentNullException(nameof(message));
             }
+
             if (message.OriginatingSystem is null)
             {
                 message.OriginatingSystem = "HTTP";

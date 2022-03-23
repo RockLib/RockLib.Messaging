@@ -64,15 +64,10 @@ namespace RockLib.Messaging.Http
                 return true;
             }
 
-            try
+            var validContentType = MediaTypeHeaderValue.TryParse(requestContentType, out var contentType);
+            if (validContentType)
             {
-                var contentType = MediaTypeHeaderValue.Parse(requestContentType);
-                return _contentTypeMediaTypes.Any(mediaType => contentType.MediaType == mediaType);
-            }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
+                return _contentTypeMediaTypes.Any(mediaType => contentType?.MediaType == mediaType);
             }
 
             return false;
@@ -85,25 +80,18 @@ namespace RockLib.Messaging.Http
                 return true;
             }
 
-            try
+            if (requestAcceptTypes is null)
             {
-                if (requestAcceptTypes is null)
-                {
-                    throw new ArgumentNullException(nameof(requestAcceptTypes));
-                }
-                foreach (var requestAcceptType in requestAcceptTypes)
-                {
-                    var accept = MediaTypeWithQualityHeaderValue.Parse(requestAcceptType);
-                    if (_acceptMediaTypes.Any(mediaType => accept.MediaType == mediaType))
-                    {
-                        return true;
-                    }
-                }
+                throw new ArgumentNullException(nameof(requestAcceptTypes));
             }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch
-#pragma warning restore CA1031 // Do not catch general exception types
+
+            foreach (var requestAcceptType in requestAcceptTypes)
             {
+                var validAccept = MediaTypeWithQualityHeaderValue.TryParse(requestAcceptType, out var accept);
+                if (_acceptMediaTypes.Any(mediaType => accept?.MediaType == mediaType))
+                {
+                    return true;
+                }
             }
 
             return false;
