@@ -13,9 +13,7 @@ namespace RockLib.Messaging.Http
     /// An implementation of <see cref="ISender" /> that sends messages with an
     /// <see cref="HttpClient"/>.
     /// </summary>
-#pragma warning disable CS1069
     public class HttpClientSender : ISender
-#pragma warning restore CS1069
     {
         private readonly HttpContentHeaders _defaultContentHeaders = new ByteArrayContent(Array.Empty<byte>()).Headers;
         private readonly HttpRequestHeaders _defaultRequestHeaders = new HttpRequestMessage().Headers;
