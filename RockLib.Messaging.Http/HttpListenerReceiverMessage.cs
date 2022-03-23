@@ -62,8 +62,10 @@ namespace RockLib.Messaging.Http
         {
             Context.Response.StatusCode = response.StatusCode;
 
-            if (response.StatusDescription != null)
+            if (response.StatusDescription is not null)
+            {
                 Context.Response.StatusDescription = response.StatusDescription;
+            }
 
             switch (response.Content)
             {
@@ -100,6 +102,7 @@ namespace RockLib.Messaging.Http
             {
                 throw new ArgumentNullException(nameof(headers));
             }
+
             foreach (var key in Context.Request.Headers.AllKeys)
             {
                 headers.Add(key!, Context.Request.Headers[key]!);

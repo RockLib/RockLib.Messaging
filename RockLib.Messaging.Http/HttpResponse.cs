@@ -33,7 +33,9 @@ namespace RockLib.Messaging.Http
         private HttpResponse(int statusCode, string? statusDescription, object? content)
         {
             if (statusCode < 100 || statusCode > 999)
+            {
                 throw new ArgumentException("statusCode cannot be less than 100 or greater than 999.", nameof(statusCode));
+            }
             StatusCode = statusCode;
             StatusDescription = statusDescription;
             Content = content;
