@@ -73,6 +73,12 @@ namespace RockLib.Messaging
         private static IEnumerable<string> SplitByComma(string? headerValue)
         {
             string value;
+
+            if (headerValue is null)
+            {
+                yield break;
+            }
+
 #if NET48
             if (!headerValue.Contains(','))
 #else
