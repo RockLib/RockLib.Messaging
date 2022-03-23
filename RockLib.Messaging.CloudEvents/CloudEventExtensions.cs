@@ -507,7 +507,7 @@ namespace RockLib.Messaging.CloudEvents
 
             var serializer = new XmlSerializer(typeof(T));
             using (var reader = new StringReader(data))
-                return (T)serializer.Deserialize(reader);
+                return (T)serializer.Deserialize(reader)!;
         }
     }
 }

@@ -132,10 +132,10 @@ namespace RockLib.Messaging.CloudEvents
             CloudEvent.Validate(senderMessage, protocolBinding);
 
             var sequenceHeader = protocolBinding.GetHeaderName(SequenceAttribute);
-            if (TryGetHeaderValue(senderMessage, sequenceHeader, out string sequence))
+            if (TryGetHeaderValue(senderMessage, sequenceHeader, out string? sequence))
             {
                 var sequenceTypeHeader = protocolBinding.GetHeaderName(SequenceTypeAttribute);
-                if (TryGetHeaderValue(senderMessage, sequenceTypeHeader, out string sequenceType)
+                if (TryGetHeaderValue(senderMessage, sequenceTypeHeader, out string? sequenceType)
                     && sequenceType == SequenceTypes.Integer
                     && !int.TryParse(sequence, out _))
                 {

@@ -744,7 +744,7 @@ namespace RockLib.Messaging.CloudEvents
         /// <typeparamref name="T"/> or a type convertible to <typeparamref name="T"/>; otherwise,
         /// <see langword="false"/>.
         /// </returns>
-        protected static bool TryGetHeaderValue<T>(SenderMessage senderMessage, string headerName, out T value)
+        protected static bool TryGetHeaderValue<T>(SenderMessage senderMessage, string headerName, out T? value)
         {
             if (senderMessage.Headers.TryGetValue(headerName, out var objectValue))
             {
@@ -772,7 +772,7 @@ namespace RockLib.Messaging.CloudEvents
                 {
                     try
                     {
-                        value = (T)converter.ConvertFrom(objectValue);
+                        value = (T)converter.ConvertFrom(objectValue)!;
                         return true;
                     }
                     catch
@@ -785,7 +785,7 @@ namespace RockLib.Messaging.CloudEvents
                 {
                     try
                     {
-                        value = (T)converter.ConvertTo(objectValue, typeof(T));
+                        value = (T)converter.ConvertTo(objectValue, typeof(T))!;
                         return true;
                     }
                     catch
@@ -809,8 +809,8 @@ namespace RockLib.Messaging.CloudEvents
         private static DateTime CurrentTime() => DateTime.UtcNow;
 
         private static bool IsStructuredMode(IReceiverMessage receiverMessage) =>
-            receiverMessage.Headers.TryGetValue(StructuredModeContentTypeHeader, out string contentType)
-                && contentType.StartsWith(StructuredModeMediaTypePrefix);
+            receiverMessage.Headers.TryGetValue(StructuredModeContentTypeHeader, out string? contentType)
+            && contentType is not null && contentType.StartsWith(StructuredModeMediaTypePrefix);
 
     }
 }

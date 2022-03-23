@@ -77,7 +77,7 @@ namespace RockLib.Messaging.CloudEvents
 
             public void Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent)
             {
-                if (fromReceiverMessage.Headers.TryGetValue(KafkaKeyHeader, out string kafkaKey))
+                if (fromReceiverMessage.Headers.TryGetValue(KafkaKeyHeader, out string? kafkaKey))
                 {
                     toCloudEvent.Attributes.Remove(KafkaKeyHeader);
                     toCloudEvent.SetPartitionKey(kafkaKey);
