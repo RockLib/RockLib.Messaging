@@ -16,14 +16,14 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             mockProtocolBinding.Setup(m => m.GetAttributeName(It.IsAny<string>(), out It.Ref<bool>.IsAny))
                 .Callback(new GetAttributeNameCallback(TestGetAttributeNameCallback))
-                .Returns(new GetAttributeNameDelegate(TestGetAttributeName));
+                .Returns(new GetAttributeName(TestGetAttributeName));
 
             return mockProtocolBinding;
         }
 
         public delegate void GetAttributeNameCallback(string headerName, out bool isCloudEventAttribute);
 
-        public delegate string GetAttributeNameDelegate(string headerName, out bool isCloudEventAttribute);
+        public delegate string GetAttributeName(string headerName, out bool isCloudEventAttribute);
 
         public static void TestGetAttributeNameCallback(string headerName, out bool isCloudEventAttribute)
         {
