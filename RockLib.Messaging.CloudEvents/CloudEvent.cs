@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using static RockLib.Messaging.HttpUtils;
 
 namespace RockLib.Messaging.CloudEvents
@@ -410,8 +411,14 @@ namespace RockLib.Messaging.CloudEvents
             else if (_data is string stringData)
             {
                 JToken dataToken;
-                try { dataToken = JToken.Parse(stringData); }
-                catch { dataToken = new JValue(stringData); }
+                try
+                {
+                    dataToken = JToken.Parse(stringData);
+                }
+                catch (Exception ex) when (ex is JsonReaderException)
+                {
+                    dataToken = new JValue(stringData);
+                }
                 jobject["data"] = dataToken;
             }
 
@@ -718,7 +725,9 @@ namespace RockLib.Messaging.CloudEvents
                         converter.ConvertFrom(objectValue);
                         return true;
                     }
-                    catch { }
+                    catch (Exception ex) when (ex is NotSupportedException)
+                    {
+                    }
 
                 converter = TypeDescriptor.GetConverter(objectValue);
                 if (converter.CanConvertTo(typeof(T)))
@@ -727,7 +736,9 @@ namespace RockLib.Messaging.CloudEvents
                         converter.ConvertTo(objectValue, typeof(T));
                         return true;
                     }
-                    catch { }
+                    catch (Exception ex) when (ex is NotSupportedException)
+                    {
+                    }
             }
 
             return false;
@@ -781,7 +792,7 @@ namespace RockLib.Messaging.CloudEvents
                         value = (T)converter.ConvertFrom(objectValue)!;
                         return true;
                     }
-                    catch
+                    catch (Exception ex) when (ex is NotSupportedException)
                     {
                     }
                 }
@@ -794,7 +805,7 @@ namespace RockLib.Messaging.CloudEvents
                         value = (T)converter.ConvertTo(objectValue, typeof(T))!;
                         return true;
                     }
-                    catch
+                    catch (Exception ex) when (ex is NotSupportedException)
                     {
                     }
                 }

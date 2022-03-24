@@ -269,7 +269,9 @@ namespace RockLib.Messaging.CloudEvents
                     return true;
                 }
             }
-            catch { }
+            catch (Exception ex) when (ex is JsonException || ex is InvalidOperationException)
+            {
+            }
 
             data = default;
             return false;
