@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace RockLib.Messaging.CloudEvents
@@ -506,8 +507,8 @@ namespace RockLib.Messaging.CloudEvents
                 return null;
 
             var serializer = new XmlSerializer(typeof(T));
-            using (var reader = new StringReader(data))
-                return (T)serializer.Deserialize(reader)!;
+            using var reader = XmlReader.Create(new StringReader(data));
+            return (T)serializer.Deserialize(reader)!;
         }
     }
 }
