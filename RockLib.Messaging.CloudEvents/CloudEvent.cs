@@ -84,13 +84,19 @@ namespace RockLib.Messaging.CloudEvents
         public CloudEvent(CloudEvent source)
         {
             if (source is null)
+            {
                 throw new ArgumentNullException(nameof(source));
+            }
 
             ProtocolBinding = source.ProtocolBinding;
 
             foreach (var additionalAttribute in source.Attributes)
+            {
                 if (additionalAttribute.Key != IdAttribute && additionalAttribute.Key != TimeAttribute)
+                {
                     Attributes.Add(additionalAttribute);
+                }
+            }
         }
 
         /// <summary>
@@ -109,7 +115,9 @@ namespace RockLib.Messaging.CloudEvents
         public CloudEvent(IReceiverMessage receiverMessage, IProtocolBinding? protocolBinding = null)
         {
             if (receiverMessage is null)
+            {
                 throw new ArgumentNullException(nameof(receiverMessage));
+            }
 
             FromReceiverMessage(receiverMessage, protocolBinding);
         }
@@ -126,7 +134,9 @@ namespace RockLib.Messaging.CloudEvents
         public CloudEvent(string jsonFormattedCloudEvent)
         {
             if (string.IsNullOrEmpty(jsonFormattedCloudEvent))
+            {
                 throw new ArgumentNullException(nameof(jsonFormattedCloudEvent));
+            }
 
             FromJson(jsonFormattedCloudEvent);
         }
@@ -179,7 +189,9 @@ namespace RockLib.Messaging.CloudEvents
             get
             {
                 if (Attributes.TryGetValue(IdAttribute, out var value) && value is string id)
+                {
                     return id;
+                }
 
                 id = NewId();
                 Attributes[IdAttribute] = id;
@@ -188,7 +200,10 @@ namespace RockLib.Messaging.CloudEvents
             set
             {
                 if (string.IsNullOrEmpty(value))
+                {
                     throw new ArgumentNullException(nameof(value));
+                }
+
                 Attributes[IdAttribute] = value;
             }
         }
@@ -216,7 +231,9 @@ namespace RockLib.Messaging.CloudEvents
                     Attributes[SourceAttribute] = value;
                 }
                 else
+                {
                     Attributes.Remove(SourceAttribute);
+                }
             }
         }
 
@@ -240,9 +257,13 @@ namespace RockLib.Messaging.CloudEvents
             set
             {
                 if (value is not null)
+                {
                     Attributes[TypeAttribute] = value;
+                }
                 else
+                {
                     Attributes.Remove(TypeAttribute);
+                }
             }
         }
 
@@ -278,9 +299,15 @@ namespace RockLib.Messaging.CloudEvents
             get
             {
                 if (_contentType is not null)
+                {
                     return _contentType;
+                }
+
                 if (string.IsNullOrEmpty(DataContentType))
+                {
                     return null;
+                }
+
                 _contentType = MediaTypeHeaderValue.Parse(DataContentType);
                 return _contentType;
             }
@@ -307,7 +334,9 @@ namespace RockLib.Messaging.CloudEvents
                     Attributes[DataSchemaAttribute] = value;
                 }
                 else
+                {
                     Attributes.Remove(DataSchemaAttribute);
+                }
             }
         }
 
@@ -331,9 +360,13 @@ namespace RockLib.Messaging.CloudEvents
             set
             {
                 if (value is not null)
+                {
                     Attributes[SubjectAttribute] = value;
+                }
                 else
+                {
                     Attributes.Remove(SubjectAttribute);
+                }
             }
         }
 
@@ -347,7 +380,10 @@ namespace RockLib.Messaging.CloudEvents
                 if (Attributes.TryGetValue(TimeAttribute, out var value))
                 {
                     if (value is DateTime time)
+                    {
                         return time;
+                    }
+
                     if (value is string timeString && DateTime.TryParse(timeString, null, DateTimeStyles.RoundtripKind, out time))
                     {
                         Attributes[TimeAttribute] = time;
@@ -405,10 +441,14 @@ namespace RockLib.Messaging.CloudEvents
             };
 
             foreach (var attribute in Attributes)
+            {
                 jobject.Add(attribute.Key, JToken.FromObject(attribute.Value));
+            }
 
             if (_data is byte[] binaryData)
+            {
                 jobject["data_base64"] = Convert.ToBase64String(binaryData);
+            }
             else if (_data is string stringData)
             {
                 JToken dataToken;
@@ -435,18 +475,33 @@ namespace RockLib.Messaging.CloudEvents
                 if (token is JValue jvalue)
                 {
                     if (jvalue.Value is string stringValue)
-                        try { _data = Convert.FromBase64String(stringValue); }
-                        catch (Exception ex) { throw new CloudEventValidationException("'data_base64' must have a valid base-64 encoded binary value.", ex); }
+                    {
+                        try
+                        {
+                            _data = Convert.FromBase64String(stringValue);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new CloudEventValidationException(
+                                "'data_base64' must have a valid base-64 encoded binary value.", ex);
+                        }
+                    }
                     else if (jvalue.Value is not null)
+                    {
                         throw new CloudEventValidationException("'data_base64' must have a string value.");
+                    }
                 }
                 else
+                {
                     throw new CloudEventValidationException("'data_base64' must have a string value.");
+                }
 
                 if (_data is not null
                     && jobject.TryGetValue("data", out token)
                     && (!(token is JValue jv) || jv.Value is not null))
+                {
                     throw new CloudEventValidationException("'data_base64' and 'data' cannot both have values.");
+                }
             }
             
             if (jobject.TryGetValue("data", out token))
@@ -454,37 +509,55 @@ namespace RockLib.Messaging.CloudEvents
                 if (token is JValue jvalue)
                 {
                     if (jvalue.Value is string stringValue)
+                    {
                         _data = stringValue;
+                    }
                     else if (jvalue.Value is DateTime dateTime)
+                    {
                         _data = dateTime.ToString("O");
+                    }
                     else if (jvalue.Value is bool b)
+                    {
                         _data = b ? "true" : "false";
+                    }
                     else
+                    {
                         _data = jvalue.Value?.ToString();
+                    }
                 }
                 else
+                {
                     _data = token.ToString(IndentDataFromJson ? Formatting.Indented : Formatting.None);
+                }
             }
 
             foreach (var attribute in jobject)
             {
                 if (attribute.Key == "data" || attribute.Key == "data_base64")
+                {
                     continue;
+                }
 
                 if (attribute.Key == "specversion")
                 {
                     if (attribute.Value is JValue jv && jv.Value?.ToString() == "1.0")
+                    {
                         continue;
+                    }
 
                     throw new CloudEventValidationException(
                         $"Invalid '{SpecVersionAttribute}' attribute. Expected '{_specVersion1_0}', but was '{attribute.Value}'.");
                 }
 
                 if (attribute.Value is JValue jvalue && jvalue.Value is not null)
+                {
                     Attributes[attribute.Key] = jvalue.Value;
+                }
                 else
+                {
                     throw new CloudEventValidationException(
                         $"Invalid value for '{attribute.Key}' member: {attribute.Value?.ToString(Formatting.Indented)}");
+                }
             }
         }
 
@@ -507,26 +580,38 @@ namespace RockLib.Messaging.CloudEvents
             {
                 senderMessage = new SenderMessage(ToJson(IndentStructuredMode));
                 senderMessage.Headers[StructuredModeContentTypeHeader] = StructuredModeJsonMediaType;
-                
+
                 foreach (var header in Headers)
+                {
                     senderMessage.Headers[header.Key] = header.Value;
+                }
             }
             else
             {
                 if (_data is string stringData)
+                {
                     senderMessage = new SenderMessage(stringData);
+                }
                 else if (_data is byte[] binaryData)
+                {
                     senderMessage = new SenderMessage(binaryData);
+                }
                 else
+                {
                     senderMessage = new SenderMessage("");
+                }
 
                 senderMessage.Headers[ProtocolBinding.GetHeaderName(SpecVersionAttribute)] = CloudEvent.SpecVersion;
 
                 foreach (var attribute in Attributes)
+                {
                     senderMessage.Headers[ProtocolBinding.GetHeaderName(attribute.Key)] = attribute.Value;
+                }
 
                 foreach (var header in Headers)
+                {
                     senderMessage.Headers[header.Key] = header.Value;
+                }
 
                 ProtocolBinding.Bind(this, senderMessage); 
             }
@@ -543,8 +628,12 @@ namespace RockLib.Messaging.CloudEvents
                 FromJson(receiverMessage.StringPayload);
 
                 foreach (var header in receiverMessage.Headers)
+                {
                     if (header.Key != StructuredModeContentTypeHeader)
+                    {
                         Headers.Add(header);
+                    }
+                }
             }
             else
             {
@@ -557,16 +646,23 @@ namespace RockLib.Messaging.CloudEvents
                     var attributeName = ProtocolBinding.GetAttributeName(header.Key, out bool isCloudEventAttribute);
 
                     if (isCloudEventAttribute)
+                    {
                         Attributes.Add(attributeName, header.Value);
+                    }
                     else
+                    {
                         Headers.Add(attributeName, header.Value);
+                    }
                 }
 
                 if (Attributes.TryGetValue(SpecVersionAttribute, out var value) && value is string specVersion)
                 {
                     if (specVersion != _specVersion1_0)
+                    {
                         throw new CloudEventValidationException(
                             $"Invalid '{SpecVersionAttribute}' attribute. Expected '{_specVersion1_0}', but was '{specVersion}'.");
+                    }
+
                     Attributes.Remove(SpecVersionAttribute);
                 }
 
@@ -599,18 +695,26 @@ namespace RockLib.Messaging.CloudEvents
         public HttpRequestMessage ToHttpRequestMessage(HttpMethod method, Uri? requestUri = null, bool structuredMode = false)
         {
             if (method is null)
+            {
                 throw new ArgumentNullException(nameof(method));
+            }
 
             var message = ToSenderMessage(structuredMode);
             var request = new HttpRequestMessage(method, requestUri);
 
             if (message.IsBinary)
+            {
                 request.Content = new ByteArrayContent(message.BinaryPayload);
+            }
             else
+            {
                 request.Content = new StringContent(message.StringPayload);
+            }
 
             if (DataContentType is not null)
+            {
                 request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(DataContentType);
+            }
 
             foreach (var header in message.Headers)
             {
@@ -642,10 +746,14 @@ namespace RockLib.Messaging.CloudEvents
             _ = Id;
 
             if (Source is null)
+            {
                 throw new CloudEventValidationException("Source cannot be null.");
+            }
 
             if (string.IsNullOrEmpty(Type))
+            {
                 throw new CloudEventValidationException("Type cannot be null or empty.");
+            }
 
             // Ensure that the time attribute exists.
             _ = Time;
@@ -665,32 +773,51 @@ namespace RockLib.Messaging.CloudEvents
         public static void Validate(SenderMessage senderMessage, IProtocolBinding? protocolBinding = null)
         {
             if (senderMessage is null)
+            {
                 throw new ArgumentNullException(nameof(senderMessage));
+            }
 
             if (protocolBinding is null)
+            {
                 protocolBinding = DefaultProtocolBinding;
+            }
 
             var specVersionHeader = protocolBinding.GetHeaderName(SpecVersionAttribute);
             if (!TryGetHeaderValue<string>(senderMessage, specVersionHeader, out var specVersion))
-                throw new CloudEventValidationException($"The '{specVersionHeader}' header is missing from the SenderMessage.");
+            {
+                throw new CloudEventValidationException(
+                    $"The '{specVersionHeader}' header is missing from the SenderMessage.");
+            }
             else if (specVersion != _specVersion1_0)
+            {
                 throw new CloudEventValidationException($"The '{specVersionHeader}' header must have a value of '{_specVersion1_0}'.");
+            }
 
             var idHeader = protocolBinding.GetHeaderName(IdAttribute);
             if (!ContainsHeader<string>(senderMessage, idHeader))
+            {
                 senderMessage.Headers[idHeader] = NewId();
+            }
 
             var sourceHeader = protocolBinding.GetHeaderName(SourceAttribute);
             if (!ContainsHeader<Uri>(senderMessage, sourceHeader))
-                throw new CloudEventValidationException($"The '{sourceHeader}' header is missing from the SenderMessage.");
+            {
+                throw new CloudEventValidationException(
+                    $"The '{sourceHeader}' header is missing from the SenderMessage.");
+            }
 
             var typeHeader = protocolBinding.GetHeaderName(TypeAttribute);
             if (!ContainsHeader<string>(senderMessage, typeHeader))
-                throw new CloudEventValidationException($"The '{typeHeader}' header is missing from the SenderMessage.");
+            {
+                throw new CloudEventValidationException(
+                    $"The '{typeHeader}' header is missing from the SenderMessage.");
+            }
 
             var timeHeader = protocolBinding.GetHeaderName(TimeAttribute);
             if (!ContainsHeader<DateTime>(senderMessage, timeHeader))
+            {
                 senderMessage.Headers[timeHeader] = CurrentTime();
+            }
         }
 
         /// <summary>
@@ -721,6 +848,7 @@ namespace RockLib.Messaging.CloudEvents
 
                 var converter = TypeDescriptor.GetConverter(typeof(T));
                 if (converter.CanConvertFrom(objectValue.GetType()))
+                {
                     try
                     {
                         converter.ConvertFrom(objectValue);
@@ -729,9 +857,11 @@ namespace RockLib.Messaging.CloudEvents
                     catch (Exception ex) when (ex is NotSupportedException)
                     {
                     }
+                }
 
                 converter = TypeDescriptor.GetConverter(objectValue);
                 if (converter.CanConvertTo(typeof(T)))
+                {
                     try
                     {
                         converter.ConvertTo(objectValue, typeof(T));
@@ -740,6 +870,7 @@ namespace RockLib.Messaging.CloudEvents
                     catch (Exception ex) when (ex is NotSupportedException)
                     {
                     }
+                }
             }
 
             return false;

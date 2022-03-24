@@ -703,9 +703,13 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var jsonString = cloudEvent.ToJson(indent);
 
             if (indent)
+            {
                 jsonString.Should().Contain("\n");
+            }
             else
+            {
                 jsonString.Should().NotContain("\n");
+            }
 
         }
 

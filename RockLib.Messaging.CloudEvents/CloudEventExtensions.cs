@@ -44,7 +44,9 @@ namespace RockLib.Messaging.CloudEvents
             where TCloudEvent : CloudEvent
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
 
             if (data != cloudEvent.StringData)
             {
@@ -76,7 +78,9 @@ namespace RockLib.Messaging.CloudEvents
             where TCloudEvent : CloudEvent
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
 
             var binaryData = cloudEvent.BinaryData;
 
@@ -124,9 +128,14 @@ namespace RockLib.Messaging.CloudEvents
             where T : class
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
+
             if (!Enum.IsDefined(typeof(DataSerialization), serialization))
+            {
                 throw new ArgumentOutOfRangeException(nameof(serialization));
+            }
 
             if (data is null)
             {
@@ -198,14 +207,21 @@ namespace RockLib.Messaging.CloudEvents
             where T : class
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
+
             if (!Enum.IsDefined(typeof(DataSerialization), serialization))
+            {
                 throw new ArgumentOutOfRangeException(nameof(serialization));
+            }
 
             var dataObject = cloudEvent.GetDataObject<T>(serialization);
 
             if (dataObject is T data)
+            {
                 return data;
+            }
 
             throw new InvalidCastException(
                 $"Unable to cast the CloudEvent's data of type '{dataObject?.GetType().FullName}' to type '{typeof(T).FullName}'.");
@@ -255,9 +271,14 @@ namespace RockLib.Messaging.CloudEvents
             where T : class
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
+
             if (!Enum.IsDefined(typeof(DataSerialization), serialization))
+            {
                 throw new ArgumentOutOfRangeException(nameof(serialization));
+            }
 
             try
             {
@@ -307,10 +328,12 @@ namespace RockLib.Messaging.CloudEvents
             where TCloudEvent : CloudEvent
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
 
             var copyConstructor = _copyConstructors.GetOrAdd(typeof(TCloudEvent), CopyConstructor.Create!)
-                ?? throw MissingCopyConstructor(typeof(TCloudEvent));
+                                  ?? throw MissingCopyConstructor(typeof(TCloudEvent));
 
             return (TCloudEvent)copyConstructor.Invoke(cloudEvent);
         }
@@ -348,10 +371,12 @@ namespace RockLib.Messaging.CloudEvents
             where TCloudEvent : CloudEvent
         {
             if (receiverMessage is null)
+            {
                 throw new ArgumentNullException(nameof(receiverMessage));
+            }
 
             var messageConstructor = _messageConstructors.GetOrAdd(typeof(TCloudEvent), MessageConstructor.Create!)
-                ?? throw MissingReceiverConstructor(typeof(TCloudEvent));
+                                     ?? throw MissingReceiverConstructor(typeof(TCloudEvent));
 
             return (TCloudEvent)messageConstructor.Invoke(receiverMessage, protocolBinding);
         }
@@ -387,12 +412,19 @@ namespace RockLib.Messaging.CloudEvents
             where TCloudEvent : CloudEvent
         {
             if (receiver is null)
+            {
                 throw new ArgumentNullException(nameof(receiver));
+            }
+
             if (onEventReceivedAsync is null)
+            {
                 throw new ArgumentNullException(nameof(onEventReceivedAsync));
+            }
 
             if (!MessageConstructor.Exists(typeof(TCloudEvent)))
+            {
                 throw MissingReceiverConstructor(typeof(TCloudEvent));
+            }
 
             receiver.Start(message => onEventReceivedAsync(message.To<TCloudEvent>(protocolBinding), message));
         }
@@ -426,10 +458,12 @@ namespace RockLib.Messaging.CloudEvents
             where TCloudEvent : CloudEvent
         {
             if (builder is null)
+            {
                 throw new ArgumentNullException(nameof(builder));
+            }
 
             var validateMethod = _validateMethods.GetOrAdd(typeof(TCloudEvent), ValidateMethod.Create!)
-                ?? throw MissingValidateMethod(typeof(TCloudEvent));
+                                 ?? throw MissingValidateMethod(typeof(TCloudEvent));
 
             return builder.AddValidation(message => validateMethod.Invoke(message, protocolBinding!));
         }
@@ -456,7 +490,9 @@ namespace RockLib.Messaging.CloudEvents
         private static void ClearDataObject(this CloudEvent cloudEvent)
         {
             if (_dataObjects.TryGetValue(cloudEvent, out _))
+            {
                 _dataObjects.Remove(cloudEvent);
+            }
         }
 
         private static object? GetDataObject<T>(this CloudEvent cloudEvent, DataSerialization serialization)
@@ -469,10 +505,14 @@ namespace RockLib.Messaging.CloudEvents
                 if (string.IsNullOrEmpty(stringData))
                 {
                     if (evt.BinaryData != null)
+                    {
                         stringData = Encoding.UTF8.GetString(evt.BinaryData);
+                    }
 
                     if (string.IsNullOrEmpty(stringData))
+                    {
                         return null!;
+                    }
                 }
 
                 return serialization == DataSerialization.Json
@@ -493,7 +533,9 @@ namespace RockLib.Messaging.CloudEvents
         private static string? XmlSerialize(object data)
         {
             if (data is null)
+            {
                 return null;
+            }
 
             var sb = new StringBuilder();
             var serializer = new XmlSerializer(data.GetType());
@@ -506,7 +548,9 @@ namespace RockLib.Messaging.CloudEvents
             where T : class
         {
             if (data is null)
+            {
                 return null;
+            }
 
             var serializer = new XmlSerializer(typeof(T));
             using var reader = XmlReader.Create(new StringReader(data));

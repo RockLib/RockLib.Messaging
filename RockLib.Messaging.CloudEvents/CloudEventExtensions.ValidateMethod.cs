@@ -41,7 +41,9 @@ namespace RockLib.Messaging.CloudEvents
                 var validateMethod = GetValidateMethod(type);
 
                 if (validateMethod is null)
+                {
                     return null;
+                }
 
                 return new ValidateMethod(validateMethod);
             }

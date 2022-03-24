@@ -95,13 +95,17 @@ namespace RockLib.Messaging.CloudEvents
         public static new void Validate(SenderMessage senderMessage, IProtocolBinding? protocolBinding = null)
         {
             if (protocolBinding is null)
+            {
                 protocolBinding = DefaultProtocolBinding;
+            }
 
             CloudEvent.Validate(senderMessage, protocolBinding);
 
             var correlationIdHeader = protocolBinding.GetHeaderName(CorrelationIdAttribute);
             if (!ContainsHeader<string>(senderMessage, correlationIdHeader))
+            {
                 senderMessage.Headers[correlationIdHeader] = NewCorrelationId();
+            }
         }
 
         internal static string NewCorrelationId() => Guid.NewGuid().ToString();

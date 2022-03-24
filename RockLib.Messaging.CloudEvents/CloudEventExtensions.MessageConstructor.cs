@@ -38,9 +38,11 @@ namespace RockLib.Messaging.CloudEvents
             public static MessageConstructor? Create(Type type)
             {
                 var constructor = GetConstructor(type);
-                
+
                 if (constructor is null)
+                {
                     return null;
+                }
 
                 return new MessageConstructor(constructor);
             }

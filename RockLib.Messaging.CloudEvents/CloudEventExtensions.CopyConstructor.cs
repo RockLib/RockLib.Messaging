@@ -38,7 +38,9 @@ namespace RockLib.Messaging.CloudEvents
                 var constructor = GetConstructor(type);
 
                 if (constructor is null)
+                {
                     return null;
+                }
 
                 return new CopyConstructor(constructor);
             }

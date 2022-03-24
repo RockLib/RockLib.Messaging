@@ -106,11 +106,16 @@ namespace RockLib.Messaging.CloudEvents
             base.Validate();
 
             if (string.IsNullOrEmpty(Sequence))
+            {
                 throw new CloudEventValidationException("Sequence cannot be null or empty.");
+            }
 
             if (SequenceType == SequenceTypes.Integer
                 && !int.TryParse(Sequence, out _))
-                throw new CloudEventValidationException($"Invalid valid for Sequence: '{Sequence}'. Because SequenceType is '{SequenceTypes.Integer}', the Sequence property must be a valid string encoded 32-bit signed integer");
+            {
+                throw new CloudEventValidationException(
+                    $"Invalid valid for Sequence: '{Sequence}'. Because SequenceType is '{SequenceTypes.Integer}', the Sequence property must be a valid string encoded 32-bit signed integer");
+            }
         }
 
         /// <summary>
@@ -128,7 +133,9 @@ namespace RockLib.Messaging.CloudEvents
         public static new void Validate(SenderMessage senderMessage, IProtocolBinding? protocolBinding = null)
         {
             if (protocolBinding is null)
+            {
                 protocolBinding = DefaultProtocolBinding;
+            }
 
             CloudEvent.Validate(senderMessage, protocolBinding);
 

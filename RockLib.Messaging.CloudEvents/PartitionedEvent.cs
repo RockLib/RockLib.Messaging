@@ -90,7 +90,9 @@ namespace RockLib.Messaging.CloudEvents
             base.Validate();
 
             if (string.IsNullOrEmpty(PartitionKey))
+            {
                 throw new CloudEventValidationException("PartitionKey cannot be null or empty.");
+            }
         }
 
         /// <summary>
@@ -108,13 +110,18 @@ namespace RockLib.Messaging.CloudEvents
         public static new void Validate(SenderMessage senderMessage, IProtocolBinding? protocolBinding = null)
         {
             if (protocolBinding is null)
+            {
                 protocolBinding = DefaultProtocolBinding;
+            }
 
             CloudEvent.Validate(senderMessage, protocolBinding);
 
             var partitionKeyHeader = protocolBinding.GetHeaderName(PartitionKeyAttribute);
             if (!ContainsHeader<string>(senderMessage, partitionKeyHeader))
-                throw new CloudEventValidationException($"The '{partitionKeyHeader}' header is missing from the SenderMessage.");
+            {
+                throw new CloudEventValidationException(
+                    $"The '{partitionKeyHeader}' header is missing from the SenderMessage.");
+            }
         }
     }
 }
