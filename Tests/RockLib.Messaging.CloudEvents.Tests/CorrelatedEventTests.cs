@@ -31,7 +31,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var cloudEvent = new CorrelatedEvent();
 
-            cloudEvent.Invoking(evt => evt.CorrelationId = null).Should()
+            cloudEvent.Invoking(evt => evt.CorrelationId = null!).Should()
                 .ThrowExactly<ArgumentNullException>()
                 .WithMessage("*value*");
         }

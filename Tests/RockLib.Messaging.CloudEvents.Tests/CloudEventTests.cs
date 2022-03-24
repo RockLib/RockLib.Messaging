@@ -437,7 +437,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var cloudEvent = new CloudEvent();
 
-            cloudEvent.Invoking(evt => evt.Id = null).Should()
+            cloudEvent.Invoking(evt => evt.Id = null!).Should()
                 .ThrowExactly<ArgumentNullException>()
                 .WithMessage("*value*");
         }
@@ -932,7 +932,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // Null senderMessage
 
-            Action act = () => TestCloudEvent.Validate(null);
+            Action act = () => TestCloudEvent.Validate(null!);
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*senderMessage*");
         }
@@ -1074,7 +1074,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
         private class TestCloudEvent : CloudEvent
         {
-            public static new void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null) =>
+            public static new void Validate(SenderMessage senderMessage, IProtocolBinding? protocolBinding = null) =>
                 CloudEvent.Validate(senderMessage, protocolBinding);
         }
     }
