@@ -374,11 +374,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [InlineData("123.45")]
         [InlineData("{\"foo\":123}")]
         [InlineData("[\"abc\"]")]
-        public void Constructor4SadPath4(string data_base64)
+        public void Constructor4SadPath4(string dataBase64)
         {
             // Invalid data_base64
 
-            var json = $"{{\"data_base64\":{data_base64}}}";
+            var json = $"{{\"data_base64\":{dataBase64}}}";
 
             Action act = () =>
             {
