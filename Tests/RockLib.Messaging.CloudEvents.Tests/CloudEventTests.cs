@@ -57,7 +57,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             CloudEvent source = null!;
 
-            Action act = () => new CloudEvent(source);
+            Action act = () =>
+            {
+                var _ = new CloudEvent(source);
+            };
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*source*");
         }
@@ -205,7 +208,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // Null receiverMessage
 
-            Action act = () => new CloudEvent((IReceiverMessage)null!);
+            Action act = () =>
+            {
+                var _ = new CloudEvent((IReceiverMessage)null!);
+            };
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*receiverMessage*");
         }
@@ -218,7 +224,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
             using var receiverMessage = new FakeReceiverMessage("Hello, world!");
             receiverMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "0.0");
 
-            Action act = () => new CloudEvent(receiverMessage);
+            Action act = () =>
+            {
+                var _ = new CloudEvent(receiverMessage);
+            };
 
             act.Should().ThrowExactly<CloudEventValidationException>();
         }
@@ -325,7 +334,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // Null jsonFormattedCloudEvent
 
-            Action act = () => new CloudEvent((string)null!);
+            Action act = () =>
+            {
+                var _ = new CloudEvent((string)null!);
+            };
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*jsonFormattedCloudEvent*");
         }
@@ -335,7 +347,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // Empty jsonFormattedCloudEvent
 
-            Action act = () => new CloudEvent("");
+            Action act = () =>
+            {
+                var _ = new CloudEvent("");
+            };
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*jsonFormattedCloudEvent*");
         }
@@ -347,7 +362,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var json = "{\"specversion\":\"0.0\",\"data\":\"abc\"}";
 
-            Action act = () => new CloudEvent(json);
+            Action act = () =>
+            {
+                var _ = new CloudEvent(json);
+            };
 
             act.Should().ThrowExactly<CloudEventValidationException>().WithMessage("Invalid 'specversion' attribute*");
         }
@@ -362,7 +380,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var json = $"{{\"data_base64\":{data_base64}}}";
 
-            Action act = () => new CloudEvent(json);
+            Action act = () =>
+            {
+                var _ = new CloudEvent(json);
+            };
 
             act.Should().ThrowExactly<CloudEventValidationException>().WithMessage("'data_base64' must have a string value.");
         }
@@ -374,7 +395,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var json = "{\"data_base64\":\"Hello, world!\"}";
 
-            Action act = () => new CloudEvent(json);
+            Action act = () =>
+            {
+                var _ = new CloudEvent(json);
+            };
 
             act.Should().ThrowExactly<CloudEventValidationException>().WithMessage("'data_base64' must have a valid base-64 encoded binary value.");
         }
@@ -391,7 +415,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var binaryData = new byte[] { 1, 2, 3, 4 };
             var json = $"{{\"data_base64\":\"{Convert.ToBase64String(binaryData)}\",\"data\":{data}}}";
 
-            Action act = () => new CloudEvent(json);
+            Action act = () =>
+            {
+                var _ = new CloudEvent(json);
+            };
 
             act.Should().ThrowExactly<CloudEventValidationException>().WithMessage("'data_base64' and 'data' cannot both have values.");
         }
@@ -405,7 +432,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var json = $"{{\"customattribute\":{attributeValue}}}";
 
-            Action act = () => new CloudEvent(json);
+            Action act = () =>
+            {
+                var _ = new CloudEvent(json);
+            };
 
             act.Should().ThrowExactly<CloudEventValidationException>().WithMessage("Invalid value for 'customattribute' member*");
         }
