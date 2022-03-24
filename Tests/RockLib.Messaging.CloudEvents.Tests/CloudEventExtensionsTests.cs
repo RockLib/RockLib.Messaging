@@ -306,7 +306,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             cloudEvent.Unlock()._data = clientData;
 
-            cloudEvent.TryGetData(out Client client).Should().BeTrue();
+            cloudEvent.TryGetData(out Client? client).Should().BeTrue();
 
             client.FirstName.Should().Be("Brian");
             client.LastName.Should().Be("Friesen");
@@ -320,7 +320,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             cloudEvent.Unlock()._data = clientData;
 
-            cloudEvent.TryGetData(out Client client, DataSerialization.Xml).Should().BeTrue();
+            cloudEvent.TryGetData(out Client? client, DataSerialization.Xml).Should().BeTrue();
 
             client.FirstName.Should().Be("Brian");
             client.LastName.Should().Be("Friesen");
@@ -334,7 +334,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             _dataObjects.Add(cloudEvent, client);
 
-            cloudEvent.TryGetData(out Client actualClient).Should().BeTrue();
+            cloudEvent.TryGetData(out Client? actualClient).Should().BeTrue();
             actualClient.Should().BeSameAs(client);
         }
 
@@ -343,7 +343,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             CloudEvent cloudEvent = null!;
 
-            Action act = () => cloudEvent.TryGetData(out Client client);
+            Action act = () => cloudEvent.TryGetData(out Client? client);
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*cloudEvent*");
         }
@@ -354,7 +354,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var cloudEvent = new CloudEvent();
             var serialization = (DataSerialization)(-123);
 
-            Action act = () => cloudEvent.TryGetData(out Client client, serialization);
+            Action act = () => cloudEvent.TryGetData(out Client? client, serialization);
 
             act.Should().ThrowExactly<ArgumentOutOfRangeException>().WithMessage("*serialization*");
         }
@@ -366,7 +366,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             cloudEvent.Unlock()._data = "Not valid JSON";
 
-            cloudEvent.TryGetData(out Client _).Should().BeFalse();
+            cloudEvent.TryGetData(out Client? _).Should().BeFalse();
         }
 
         [Fact(DisplayName = "TryGetData method returns false if StringData is invalid XML")]
@@ -376,7 +376,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             cloudEvent.Unlock()._data = "Not valid JSON";
 
-            cloudEvent.TryGetData(out Client _, DataSerialization.Xml).Should().BeFalse();
+            cloudEvent.TryGetData(out Client? _, DataSerialization.Xml).Should().BeFalse();
         }
 
         [Fact(DisplayName = "TryGetData method returns false if data object already exists and cannot be cast to T")]
@@ -386,7 +386,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             _dataObjects.Add(cloudEvent, new NotAClient());
 
-            cloudEvent.TryGetData(out Client _).Should().BeFalse();
+            cloudEvent.TryGetData(out Client? _).Should().BeFalse();
         }
 
         private static string XmlSerialize(Client client)
