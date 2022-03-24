@@ -61,7 +61,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.SetSequence("MySequence");
 
             cloudEvent.Attributes.Should().ContainKey(SequentialEvent.SequenceAttribute)
-                .WhichValue.Should().Be("MySequence");
+                .WhoseValue.Should().Be("MySequence");
         }
 
         [Fact(DisplayName = "SetSequence extension method clears the 'sequence' attribute when value is null")]
@@ -141,7 +141,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.SetSequenceType("MySequenceType");
 
             cloudEvent.Attributes.Should().ContainKey(SequentialEvent.SequenceTypeAttribute)
-                .WhichValue.Should().Be("MySequenceType");
+                .WhoseValue.Should().Be("MySequenceType");
         }
 
         [Fact(DisplayName = "SetSequenceType extension method clears the 'sequencetype' attribute when value is null")]

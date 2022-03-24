@@ -61,7 +61,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.SetPartitionKey("MyPartitionKey");
 
             cloudEvent.Attributes.Should().ContainKey(PartitionedEvent.PartitionKeyAttribute)
-                .WhichValue.Should().Be("MyPartitionKey");
+                .WhoseValue.Should().Be("MyPartitionKey");
         }
 
         [Fact(DisplayName = "SetPartitionKey extension method clears the 'partitionkey' attribute when value is null")]

@@ -178,8 +178,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var cloudEvent = new CloudEvent(receiverMessage, mockProtocolBinding.Object);
 
             cloudEvent.Attributes.Should().HaveCount(2);
-            cloudEvent.Attributes.Should().ContainKey("foo").WhichValue.Should().Be("abc");
-            cloudEvent.Attributes.Should().ContainKey("bar").WhichValue.Should().Be(123);
+            cloudEvent.Attributes.Should().ContainKey("foo").WhoseValue.Should().Be("abc");
+            cloudEvent.Attributes.Should().ContainKey("bar").WhoseValue.Should().Be(123);
         }
 
         [Fact(DisplayName = "Constructor 3 maps with the specified protocol binding")]
@@ -196,7 +196,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var cloudEvent = new CloudEvent(receiverMessage, mockProtocolBinding.Object);
 
             cloudEvent.Id.Should().Be("MyId");
-            cloudEvent.Headers.Should().ContainKey("foo").WhichValue.Should().Be("abc");
+            cloudEvent.Headers.Should().ContainKey("foo").WhoseValue.Should().Be("abc");
         }
 
         [Fact(DisplayName = "Constructor 3 throws when receiverMessage parameter is null")]
@@ -803,8 +803,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
-            senderMessage.Headers.Should().ContainKey("foo").WhichValue.Should().Be("abc");
-            senderMessage.Headers.Should().ContainKey("bar").WhichValue.Should().Be(123);
+            senderMessage.Headers.Should().ContainKey("foo").WhoseValue.Should().Be("abc");
+            senderMessage.Headers.Should().ContainKey("bar").WhoseValue.Should().Be(123);
         }
 
         [Fact(DisplayName = "ToSenderMessage method Binary Mode applies specified protocol binding to each attribute")]
@@ -829,9 +829,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var senderMessage = cloudEvent.ToSenderMessage();
 
-            senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.IdAttribute).WhichValue.Should().BeSameAs(id);
-            senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.SpecVersionAttribute).WhichValue.Should().Be("1.0");
-            senderMessage.Headers.Should().ContainKey("test-foo").WhichValue.Should().Be("abc");
+            senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.IdAttribute).WhoseValue.Should().BeSameAs(id);
+            senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.SpecVersionAttribute).WhoseValue.Should().Be("1.0");
+            senderMessage.Headers.Should().ContainKey("test-foo").WhoseValue.Should().Be("abc");
         }
 
         [Fact(DisplayName = "ToSenderMessage method Structured Mode renders correctly")]
@@ -851,9 +851,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var senderMessage = cloudEvent.ToSenderMessage(structuredMode: true);
 
             senderMessage.Headers.Should().ContainKey(CloudEvent.StructuredModeContentTypeHeader)
-                .WhichValue.Should().Be(CloudEvent.StructuredModeJsonMediaType);
+                .WhoseValue.Should().Be(CloudEvent.StructuredModeJsonMediaType);
             senderMessage.Headers.Should().ContainKey(HeaderNames.MessageId)
-                .WhichValue.Should().Be("MyCoreInternalId");
+                .WhoseValue.Should().Be("MyCoreInternalId");
 
             dynamic json = JObject.Parse(senderMessage.StringPayload);
 
@@ -974,7 +974,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             act.Should().NotThrow();
 
-            senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.IdAttribute).WhichValue.Should().NotBeNull();
+            senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.IdAttribute).WhoseValue.Should().NotBeNull();
         }
 
         [Fact(DisplayName = "Validate method throws given missing Source header")]
@@ -1030,7 +1030,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             act.Should().NotThrow();
 
-            senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.TimeAttribute).WhichValue.Should().NotBeNull();
+            senderMessage.Headers.Should().ContainKey("test-" + CloudEvent.TimeAttribute).WhoseValue.Should().NotBeNull();
         }
 
         #endregion
@@ -1052,10 +1052,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
             SenderMessage senderMessage = mockCloudEvent.Object;
 
             senderMessage.StringPayload.Should().Be("Hello, world!");
-            senderMessage.Headers.Should().ContainKey(CloudEvent.IdAttribute).WhichValue.Should().Be("MyId");
-            senderMessage.Headers.Should().ContainKey(CloudEvent.SourceAttribute).WhichValue.ToString().Should().Be("http://mysource/");
-            senderMessage.Headers.Should().ContainKey(CloudEvent.TypeAttribute).WhichValue.Should().Be("test");
-            senderMessage.Headers.Should().ContainKey("foo").WhichValue.Should().Be("abc");
+            senderMessage.Headers.Should().ContainKey(CloudEvent.IdAttribute).WhoseValue.Should().Be("MyId");
+            senderMessage.Headers.Should().ContainKey(CloudEvent.SourceAttribute).WhoseValue.ToString().Should().Be("http://mysource/");
+            senderMessage.Headers.Should().ContainKey(CloudEvent.TypeAttribute).WhoseValue.Should().Be("test");
+            senderMessage.Headers.Should().ContainKey("foo").WhoseValue.Should().Be("abc");
 
             mockCloudEvent.Verify(m => m.ToSenderMessage(It.IsAny<bool>()), Times.Once());
         }
