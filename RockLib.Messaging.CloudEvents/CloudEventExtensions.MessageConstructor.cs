@@ -27,7 +27,7 @@ namespace RockLib.Messaging.CloudEvents
 
                     var body = Expression.New(constructor, receiverMessageParameter, protocolBindingParameter);
 
-                    var lamda = Expression.Lambda<Func<IReceiverMessage, IProtocolBinding, object>>(
+                    var lamda = Expression.Lambda<Func<IReceiverMessage, IProtocolBinding?, object>>(
                         body, receiverMessageParameter, protocolBindingParameter);
 
                     // Replace the reflection function with a compiled function.

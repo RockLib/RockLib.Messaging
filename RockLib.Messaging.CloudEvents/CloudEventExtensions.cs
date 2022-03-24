@@ -309,7 +309,7 @@ namespace RockLib.Messaging.CloudEvents
             if (cloudEvent is null)
                 throw new ArgumentNullException(nameof(cloudEvent));
 
-            var copyConstructor = _copyConstructors.GetOrAdd(typeof(TCloudEvent), CopyConstructor.Create)
+            var copyConstructor = _copyConstructors.GetOrAdd(typeof(TCloudEvent), CopyConstructor.Create!)
                 ?? throw MissingCopyConstructor(typeof(TCloudEvent));
 
             return (TCloudEvent)copyConstructor.Invoke(cloudEvent);
@@ -350,7 +350,7 @@ namespace RockLib.Messaging.CloudEvents
             if (receiverMessage is null)
                 throw new ArgumentNullException(nameof(receiverMessage));
 
-            var messageConstructor = _messageConstructors.GetOrAdd(typeof(TCloudEvent), MessageConstructor.Create)
+            var messageConstructor = _messageConstructors.GetOrAdd(typeof(TCloudEvent), MessageConstructor.Create!)
                 ?? throw MissingReceiverConstructor(typeof(TCloudEvent));
 
             return (TCloudEvent)messageConstructor.Invoke(receiverMessage, protocolBinding);
@@ -428,7 +428,7 @@ namespace RockLib.Messaging.CloudEvents
             if (builder is null)
                 throw new ArgumentNullException(nameof(builder));
 
-            var validateMethod = _validateMethods.GetOrAdd(typeof(TCloudEvent), ValidateMethod.Create)
+            var validateMethod = _validateMethods.GetOrAdd(typeof(TCloudEvent), ValidateMethod.Create!)
                 ?? throw MissingValidateMethod(typeof(TCloudEvent));
 
             return builder.AddValidation(message => validateMethod.Invoke(message, protocolBinding!));
