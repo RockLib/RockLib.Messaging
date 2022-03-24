@@ -400,12 +400,12 @@ namespace RockLib.Messaging.CloudEvents.Tests
             return sb.ToString();
         }
 
-        public class Client
+        private class Client
         {
             public string? FirstName { get; set; }
             public string? LastName { get; set; }
         }
 
-        public class NotAClient { }
+        private class NotAClient { }
     }
 }
