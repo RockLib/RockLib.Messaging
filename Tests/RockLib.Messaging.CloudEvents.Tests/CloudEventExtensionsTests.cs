@@ -396,8 +396,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var sb = new StringBuilder();
             var serializer = new XmlSerializer(typeof(TestClient));
-            using (var writer = new StringWriter(sb))
-                serializer.Serialize(writer, testClient);
+            using var writer = new StringWriter(sb);
+            serializer.Serialize(writer, testClient);
             return sb.ToString();
         }
 

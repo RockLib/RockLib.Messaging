@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text.Json;
 using static RockLib.Messaging.HttpUtils;
 
 namespace RockLib.Messaging.CloudEvents

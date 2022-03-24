@@ -497,8 +497,8 @@ namespace RockLib.Messaging.CloudEvents
 
             var sb = new StringBuilder();
             var serializer = new XmlSerializer(data.GetType());
-            using (var writer = new StringWriter(sb))
-                serializer.Serialize(writer, data);
+            using var writer = new StringWriter(sb);
+            serializer.Serialize(writer, data);
             return sb.ToString();
         }
 
