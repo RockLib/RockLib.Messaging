@@ -79,7 +79,7 @@ namespace RockLib.Messaging
             }
 
 #if NET48
-            if (!headerValue.Contains(','))
+            if (!headerValue.Contains(","))
 #else
             if (!headerValue.Contains(',', StringComparison.InvariantCultureIgnoreCase))
 #endif
