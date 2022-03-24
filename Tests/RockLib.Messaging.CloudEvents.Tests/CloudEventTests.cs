@@ -916,7 +916,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
             senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
 
-            Action act = () => TestCloudEvent.Validate(senderMessage);
+            Action act = () => CloudEvent.Validate(senderMessage);
 
             act.Should().NotThrow();
         }
@@ -932,7 +932,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
             senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow.ToString("O"));
 
-            Action act = () => TestCloudEvent.Validate(senderMessage);
+            Action act = () => CloudEvent.Validate(senderMessage);
 
             act.Should().NotThrow();
         }
@@ -953,7 +953,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var mockProtocolBinding = new Mock<IProtocolBinding>();
             mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
 
-            Action act = () => TestCloudEvent.Validate(senderMessage, mockProtocolBinding.Object);
+            Action act = () => CloudEvent.Validate(senderMessage, mockProtocolBinding.Object);
 
             act.Should().NotThrow();
         }
@@ -963,7 +963,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // Null senderMessage
 
-            Action act = () => TestCloudEvent.Validate(null!);
+            Action act = () => CloudEvent.Validate(null!);
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*senderMessage*");
         }
@@ -981,7 +981,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
             senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
 
-            Action act = () => TestCloudEvent.Validate(senderMessage);
+            Action act = () => CloudEvent.Validate(senderMessage);
 
             act.Should().ThrowExactly<CloudEventValidationException>();
         }
@@ -1001,7 +1001,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var mockProtocolBinding = new Mock<IProtocolBinding>();
             mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
 
-            Action act = () => TestCloudEvent.Validate(senderMessage, mockProtocolBinding.Object);
+            Action act = () => CloudEvent.Validate(senderMessage, mockProtocolBinding.Object);
 
             act.Should().NotThrow();
 
@@ -1020,7 +1020,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Add(CloudEvent.TypeAttribute, "MyType");
             senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
 
-            Action act = () => TestCloudEvent.Validate(senderMessage);
+            Action act = () => CloudEvent.Validate(senderMessage);
 
             act.Should().ThrowExactly<CloudEventValidationException>();
         }
@@ -1037,7 +1037,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             senderMessage.Headers.Add(CloudEvent.SourceAttribute, new Uri("http://MySource"));
             senderMessage.Headers.Add(CloudEvent.TimeAttribute, DateTime.UtcNow);
 
-            Action act = () => TestCloudEvent.Validate(senderMessage);
+            Action act = () => CloudEvent.Validate(senderMessage);
 
             act.Should().ThrowExactly<CloudEventValidationException>();
         }
@@ -1057,7 +1057,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var mockProtocolBinding = new Mock<IProtocolBinding>();
             mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
 
-            Action act = () => TestCloudEvent.Validate(senderMessage, mockProtocolBinding.Object);
+            Action act = () => CloudEvent.Validate(senderMessage, mockProtocolBinding.Object);
 
             act.Should().NotThrow();
 
@@ -1102,11 +1102,5 @@ namespace RockLib.Messaging.CloudEvents.Tests
         }
 
         #endregion
-
-        private class TestCloudEvent : CloudEvent
-        {
-            public static new void Validate(SenderMessage senderMessage, IProtocolBinding? protocolBinding = null) =>
-                CloudEvent.Validate(senderMessage, protocolBinding);
-        }
     }
 }
