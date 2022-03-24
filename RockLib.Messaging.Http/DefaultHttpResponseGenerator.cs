@@ -27,17 +27,23 @@
         /// <summary>
         /// Gets the response to be returned from calls to <see cref="GetAcknowledgeResponse"/>.
         /// </summary>
+#pragma warning disable CA1721 // Property names should not match get methods
         public HttpResponse AcknowledgeResponse { get; }
+#pragma warning restore CA1721 // Property names should not match get methods
 
         /// <summary>
         /// Gets the response to be returned from calls to <see cref="GetRollbackResponse"/>.
         /// </summary>
+#pragma warning disable CA1721 // Property names should not match get methods
         public HttpResponse RollbackResponse { get; }
+#pragma warning restore CA1721 // Property names should not match get methods
 
         /// <summary>
         /// Gets the response to be returned from calls to <see cref="GetRejectResponse"/>.
         /// </summary>
+#pragma warning disable CA1721 // Property names should not match get methods
         public HttpResponse RejectResponse { get; }
+#pragma warning restore CA1721 // Property names should not match get methods
 
         /// <summary>
         /// Returns <see cref="AcknowledgeResponse"/>.

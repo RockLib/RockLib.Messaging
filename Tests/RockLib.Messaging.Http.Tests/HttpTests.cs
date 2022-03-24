@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace RockLib.Messaging.Http.Tests
@@ -8,21 +10,21 @@ namespace RockLib.Messaging.Http.Tests
     public class HttpTests
     {
         [Fact]
-        public void HttpMessagesAreSentAndReceived()
+        public async Task HttpMessagesAreSentAndReceivedUsingUriUrl()
         {
-            using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5000/", method: "PUT", requiredHeaders: new RequiredHttpRequestHeaders(contentType: "application/json", accept: "application/json")))
+            using (var receiver = new HttpListenerReceiver("foo", new Uri("http://localhost:5000/"), method: "PUT", requiredHeaders: new RequiredHttpRequestHeaders(contentType: "application/json", accept: "application/json")))
             {
-                string payload = null;
+                string? payload = null;
 
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
                     payload = m.StringPayload;
-                    m.Acknowledge();
+                    await m.AcknowledgeAsync().ConfigureAwait(false);
                 });
 
-                using (var sender = new HttpClientSender("foo", "http://localhost:5000/", method: "PUT", defaultHeaders: new Dictionary<string, string> { { "Content-Type", "application/json" }, { "Accept", "application/json" } }))
+                using (var sender = new HttpClientSender("foo", new Uri("http://localhost:5000/"), method: "PUT", defaultHeaders: new Dictionary<string, string> { { "Content-Type", "application/json" }, { "Accept", "application/json" } }))
                 {
-                    sender.Send("Hello, world!");
+                    await sender.SendAsync("Hello, world!").ConfigureAwait(false);
                 }
 
                 Assert.Equal("Hello, world!", payload);
@@ -30,21 +32,21 @@ namespace RockLib.Messaging.Http.Tests
         }
 
         [Fact]
-        public void HttpMessagesAreSentAndReceivedWhenReceiverDoesRollback()
+        public async Task HttpMessagesAreSentAndReceivedUsingStringUrlAsync()
         {
-            using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5000/"))
+            using (var receiver = new HttpListenerReceiver("foo", new Uri("http://localhost:5001/"), method: "PUT", requiredHeaders: new RequiredHttpRequestHeaders(contentType: "application/json", accept: "application/json")))
             {
-                string payload = null;
+                string? payload = null;
 
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
                     payload = m.StringPayload;
-                    m.Rollback();
+                    await m.AcknowledgeAsync().ConfigureAwait(false);
                 });
 
-                using (var sender = new HttpClientSender("foo", "http://localhost:5000/"))
+                using (var sender = new HttpClientSender("foo", "http://localhost:5001/", method: "PUT", defaultHeaders: new Dictionary<string, string> { { "Content-Type", "application/json" }, { "Accept", "application/json" } }))
                 {
-                    Assert.ThrowsAny<HttpRequestException>(() => sender.Send("Hello, world!"));
+                    await sender.SendAsync("Hello, world!").ConfigureAwait(false);
                 }
 
                 Assert.Equal("Hello, world!", payload);
@@ -52,22 +54,44 @@ namespace RockLib.Messaging.Http.Tests
         }
 
         [Fact]
-        public void TokensInHttpClientSenderUrlAreReplacedByMatchingHeaders()
+        public async Task HttpMessagesAreSentAndReceivedWhenReceiverDoesRollback()
         {
-            using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5000/"))
+            using (var receiver = new HttpListenerReceiver("foo", new Uri("http://localhost:5002/")))
             {
-                string payload = null;
+                string? payload = null;
 
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
                     payload = m.StringPayload;
-                    m.Acknowledge();
+                    await m.RollbackAsync().ConfigureAwait(false);
                 });
 
-                using (var sender = new HttpClientSender("foo", "http://{server}:5000/"))
+                using (var sender = new HttpClientSender("foo", new Uri("http://localhost:5002/")))
+                {
+                    await Assert.ThrowsAnyAsync<HttpRequestException>(() => sender.SendAsync("Hello, world!")).ConfigureAwait(false);
+                }
+
+                Assert.Equal("Hello, world!", payload);
+            }
+        }
+
+        [Fact]
+        public async Task TokensInHttpClientSenderUrlAreReplacedByMatchingHeaders()
+        {
+            using (var receiver = new HttpListenerReceiver("foo", new Uri("http://localhost:5003/")))
+            {
+                string? payload = null;
+
+                receiver.Start(async m =>
+                {
+                    payload = m.StringPayload;
+                    await m.AcknowledgeAsync().ConfigureAwait(false);
+                });
+
+                using (var sender = new HttpClientSender("foo", "http://{server}:5003/"))
                 {
                     var message = new SenderMessage("Hello, world!") { Headers = { ["server"] = "localhost" } };
-                    sender.Send(message);
+                    await sender.SendAsync(message).ConfigureAwait(false);
                 }
 
                 Assert.Equal("Hello, world!", payload);
@@ -75,22 +99,22 @@ namespace RockLib.Messaging.Http.Tests
         }
 
         [Fact]
-        public void TokensInHttpClientSenderUrlWithoutACorrespondingHeaderThrowsInvalidOperationException()
+        public async Task TokensInHttpClientSenderUrlWithoutACorrespondingHeaderThrowsInvalidOperationException()
         {
-            using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5000/"))
+            using (var receiver = new HttpListenerReceiver("foo", new Uri("http://localhost:5004/")))
             {
-                string payload = null;
+                string? payload = null;
 
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
                     payload = m.StringPayload;
-                    m.Acknowledge();
+                    await m.AcknowledgeAsync().ConfigureAwait(false);
                 });
 
-                using (var sender = new HttpClientSender("foo", "http://{server}:5000/"))
+                using (var sender = new HttpClientSender("foo", "http://{server}:5004/"))
                 {
                     var message = new SenderMessage("Hello, world!");
-                    Assert.Throws<InvalidOperationException>(() => sender.Send(message));
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => sender.SendAsync(message)).ConfigureAwait(false);
                 }
 
                 Assert.Null(payload);
@@ -98,23 +122,23 @@ namespace RockLib.Messaging.Http.Tests
         }
 
         [Fact]
-        public void TokensInHttpListenerReceiverPathAreExtractedIntoHeaders()
+        public async Task TokensInHttpListenerReceiverPathAreExtractedIntoHeaders()
         {
-            using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5000/api/{api_version}"))
+            using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5005/api/{api_version}"))
             {
-                string payload = null;
-                string apiVersion = null;
+                string? payload = null;
+                string? apiVersion = null;
 
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
                     payload = m.StringPayload;
                     apiVersion = m.Headers.GetValue<string>("api_version");
-                    m.Acknowledge();
+                    await m.AcknowledgeAsync().ConfigureAwait(false);
                 });
 
-                using (var sender = new HttpClientSender("foo", "http://localhost:5000/API/v2/"))
+                using (var sender = new HttpClientSender("foo", new Uri("http://localhost:5005/API/v2/")))
                 {
-                    sender.Send("Hello, world!");
+                    await sender.SendAsync("Hello, world!").ConfigureAwait(false);
                 }
 
                 Assert.Equal("Hello, world!", payload);
@@ -123,24 +147,24 @@ namespace RockLib.Messaging.Http.Tests
         }
 
         [Fact]
-        public void ExtraPathAfterTokenResultIn404()
+        public async Task ExtraPathAfterTokenResultIn404()
         {
-            using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5000/api/{api_version}"))
+            using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5006/api/{api_version}"))
             {
-                string payload = null;
-                string apiVersion = null;
+                string? payload = null;
+                string? apiVersion = null;
 
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
                     payload = m.StringPayload;
                     apiVersion = m.Headers.GetValue<string>("api_version");
-                    m.Acknowledge();
+                    await m.AcknowledgeAsync().ConfigureAwait(false);
                 });
 
-                using (var sender = new HttpClientSender("foo", "http://localhost:5000/API/v2/extra"))
+                using (var sender = new HttpClientSender("foo", new Uri("http://localhost:5006/API/v2/extra")))
                 {
-                    var exception = Assert.Throws<HttpRequestException>(() => sender.Send("Hello, world!"));
-                    Assert.Contains("404 (Not Found)", exception.Message);
+                    var exception = await Assert.ThrowsAsync<HttpRequestException>(() => sender.SendAsync("Hello, world!")).ConfigureAwait(false);
+                    Assert.Contains("404 (Not Found)", exception.Message, StringComparison.InvariantCultureIgnoreCase);
                 }
 
                 Assert.Null(payload);
@@ -148,22 +172,22 @@ namespace RockLib.Messaging.Http.Tests
         }
 
         [Fact]
-        public void MismatchedMethodsResultsIn405()
+        public async Task MismatchedMethodsResultsIn405()
         {
-            using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5000/", method: "POST"))
+            using (var receiver = new HttpListenerReceiver("foo", new Uri("http://localhost:5007/"), method: "POST"))
             {
-                string payload = null;
+                string? payload = null;
 
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
                     payload = m.StringPayload;
-                    m.Acknowledge();
+                    await m.AcknowledgeAsync().ConfigureAwait(false);
                 });
 
-                using (var sender = new HttpClientSender("foo", "http://localhost:5000/", "PUT"))
+                using (var sender = new HttpClientSender("foo", new Uri("http://localhost:5007/"), "PUT"))
                 {
-                    var exception = Assert.Throws<HttpRequestException>(() => sender.Send("Hello, world!"));
-                    Assert.Contains("405 (Method Not Allowed)", exception.Message);
+                    var exception = await Assert.ThrowsAsync<HttpRequestException>(() => sender.SendAsync("Hello, world!")).ConfigureAwait(false);
+                    Assert.Contains("405 (Method Not Allowed)", exception.Message, StringComparison.InvariantCultureIgnoreCase);
                 }
 
                 Assert.Null(payload);
@@ -171,22 +195,22 @@ namespace RockLib.Messaging.Http.Tests
         }
 
         [Fact]
-        public void MismatchedContentTypeResultsIn415()
+        public async Task MismatchedContentTypeResultsIn415()
         {
-            using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5000/", requiredHeaders: new RequiredHttpRequestHeaders(contentType: "application/json")))
+            using (var receiver = new HttpListenerReceiver("foo", new Uri("http://localhost:5008/"), requiredHeaders: new RequiredHttpRequestHeaders(contentType: "application/json")))
             {
-                string payload = null;
+                string? payload = null;
 
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
                     payload = m.StringPayload;
-                    m.Acknowledge();
+                    await m.AcknowledgeAsync().ConfigureAwait(false);
                 });
 
-                using (var sender = new HttpClientSender("foo", "http://localhost:5000/", defaultHeaders: new Dictionary<string, string> { { "Content-Type", "application/xml" } }))
+                using (var sender = new HttpClientSender("foo", new Uri("http://localhost:5008/"), defaultHeaders: new Dictionary<string, string> { { "Content-Type", "application/xml" } }))
                 {
-                    var exception = Assert.Throws<HttpRequestException>(() => sender.Send("Hello, world!"));
-                    Assert.Contains("415 (Unsupported Media Type)", exception.Message);
+                    var exception = await Assert.ThrowsAsync<HttpRequestException>(() => sender.SendAsync("Hello, world!")).ConfigureAwait(false);
+                    Assert.Contains("415 (Unsupported Media Type)", exception.Message, StringComparison.InvariantCultureIgnoreCase);
                 }
 
                 Assert.Null(payload);
@@ -194,22 +218,22 @@ namespace RockLib.Messaging.Http.Tests
         }
 
         [Fact]
-        public void MismatchedAcceptResultsIn406()
+        public async Task MismatchedAcceptResultsIn406()
         {
-            using (var receiver = new HttpListenerReceiver("foo", "http://localhost:5000/", requiredHeaders: new RequiredHttpRequestHeaders(accept: "application/json")))
+            using (var receiver = new HttpListenerReceiver("foo", new Uri("http://localhost:5009/"), requiredHeaders: new RequiredHttpRequestHeaders(accept: "application/json")))
             {
-                string payload = null;
+                string? payload = null;
 
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
                     payload = m.StringPayload;
-                    m.Acknowledge();
+                    await m.AcknowledgeAsync().ConfigureAwait(false);
                 });
 
-                using (var sender = new HttpClientSender("foo", "http://localhost:5000/", defaultHeaders: new Dictionary<string, string> { { "Accept", "application/xml" } }))
+                using (var sender = new HttpClientSender("foo", new Uri("http://localhost:5009/"), defaultHeaders: new Dictionary<string, string> { { "Accept", "application/xml" } }))
                 {
-                    var exception = Assert.Throws<HttpRequestException>(() => sender.Send("Hello, world!"));
-                    Assert.Contains("406 (Not Acceptable)", exception.Message);
+                    var exception = await Assert.ThrowsAsync<HttpRequestException>(() => sender.SendAsync("Hello, world!")).ConfigureAwait(false);
+                    Assert.Contains("406 (Not Acceptable)", exception.Message, StringComparison.InvariantCultureIgnoreCase);
                 }
 
                 Assert.Null(payload);

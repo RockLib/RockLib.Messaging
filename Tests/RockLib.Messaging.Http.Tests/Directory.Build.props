@@ -1,0 +1,21 @@
+<Project>
+	<PropertyGroup Condition=" '$(TargetFramework)' == 'net48' or '$(TargetFramework)' == 'netcoreapp3.1'">
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+	</PropertyGroup>
+	<PropertyGroup>
+		<AnalysisMode>AllEnabledByDefault</AnalysisMode>
+		<Authors>Rocket Mortgage</Authors>
+		<Copyright>Copyright 2022 (c) Rocket Mortgage. All rights reserved.</Copyright>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+		<TargetFrameworks>net6.0;netcoreapp3.1;net48</TargetFrameworks>
+		<NoWarn>NU1603,NU1701</NoWarn>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	</PropertyGroup>
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net48' or '$(TargetFramework)' == 'netcoreapp3.1'">
+		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+</Project>

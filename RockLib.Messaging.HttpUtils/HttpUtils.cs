@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 
@@ -71,8 +73,11 @@ namespace RockLib.Messaging
         private static IEnumerable<string> SplitByComma(string headerValue)
         {
             string value;
-
-            if (!headerValue.Contains(","))
+#if NET48
+            if (!headerValue.Contains(','))
+#else
+            if (!headerValue.Contains(',', StringComparison.InvariantCultureIgnoreCase))
+#endif
             {
                 value = headerValue.Trim();
                 if (value.Length > 0)
