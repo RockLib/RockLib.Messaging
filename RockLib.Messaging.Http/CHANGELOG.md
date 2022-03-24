@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.0.0 - 2022-03-24
 
 #### Added
 - Added `.editorconfig` and `Directory.Build.props` files to ensure consistency.
@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - As the package now uses nullable reference types, some method parameters now specify if they can accept nullable values.
 - The field `url` now accepts the Uri type in `HttpClientSender` and `HttpListenerReceiver`.
   - This is now the prefered way to use these methods.
-  - In the future, versions of these method accepting string urls will be marked obsolete.
+  - In the future, versions of these methods accepting string urls will be marked obsolete.
 
 ## 1.0.8 - 2021-08-12
 
