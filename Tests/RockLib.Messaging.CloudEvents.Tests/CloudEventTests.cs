@@ -111,7 +111,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var cloudEvent = new CloudEvent(receiverMessage);
 
-            cloudEvent.SpecVersion.Should().Be("1.0");
+            CloudEvent.SpecVersion.Should().Be("1.0");
             cloudEvent.Id.Should().Be("MyId");
             cloudEvent.Source.Should().BeSameAs(source);
             cloudEvent.Type.Should().Be("MyType");
@@ -130,7 +130,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var cloudEvent = new CloudEvent(receiverMessage);
 
-            cloudEvent.SpecVersion.Should().Be("1.0");
+            CloudEvent.SpecVersion.Should().Be("1.0");
             cloudEvent.Source.Should().BeNull();
             cloudEvent.Type.Should().BeNull();
             cloudEvent.DataContentType.Should().BeNull();
