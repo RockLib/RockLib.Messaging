@@ -158,9 +158,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             var cloudEvent = new CloudEvent(receiverMessage);
 
-            cloudEvent.Source.ToString().Should().Be(source);
-            cloudEvent.DataContentType.ToString().Should().Be(dataContentType);
-            cloudEvent.DataSchema.ToString().Should().Be(dataSchema);
+            cloudEvent.Should().NotBeNull();
+            cloudEvent.Source!.ToString().Should().Be(source);
+            cloudEvent.DataContentType!.ToString().Should().Be(dataContentType);
+            cloudEvent.DataSchema!.ToString().Should().Be(dataSchema);
             cloudEvent.Time.ToString("O").Should().Be(time);
         }
 

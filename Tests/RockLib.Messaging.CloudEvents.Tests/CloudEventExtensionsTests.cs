@@ -308,8 +308,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             cloudEvent.TryGetData(out Client? client).Should().BeTrue();
 
-            client.FirstName.Should().Be("Brian");
-            client.LastName.Should().Be("Friesen");
+            cloudEvent.Should().NotBeNull();
+            client!.FirstName.Should().Be("Brian");
+            client!.LastName.Should().Be("Friesen");
         }
 
         [Fact(DisplayName = "TryGetData method XML deserializes StringData")]
@@ -322,7 +323,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             cloudEvent.TryGetData(out Client? client, DataSerialization.Xml).Should().BeTrue();
 
-            client.FirstName.Should().Be("Brian");
+            client.Should().NotBeNull();
+            client!.FirstName.Should().Be("Brian");
             client.LastName.Should().Be("Friesen");
         }
 
