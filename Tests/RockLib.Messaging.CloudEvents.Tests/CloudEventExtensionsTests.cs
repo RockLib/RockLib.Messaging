@@ -133,7 +133,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         public void SetDataMethod3HappyPath1()
         {
             var cloudEvent = new CloudEvent();
-            var client = new Client { FirstName = "Brian", LastName = "Friesen" };
+            var client = new TestClient { FirstName = "Brian", LastName = "Friesen" };
 
             cloudEvent.SetData(client);
 
@@ -148,7 +148,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         public void SetDataMethod3HappyPath2()
         {
             var cloudEvent = new CloudEvent();
-            var client = new Client { FirstName = "Brian", LastName = "Friesen" };
+            var client = new TestClient { FirstName = "Brian", LastName = "Friesen" };
 
             cloudEvent.SetData(client, DataSerialization.Xml);
 
@@ -170,9 +170,9 @@ namespace RockLib.Messaging.CloudEvents.Tests
             // In order to verify that the method cleared the data object, there needs to be one first.
             _dataObjects.Add(cloudEvent, new object());
 
-            Client client = null!;
+            TestClient testClient = null!;
 
-            cloudEvent.SetData(client);
+            cloudEvent.SetData(testClient);
 
             object data = cloudEvent.Unlock()._data;
 
@@ -184,7 +184,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         public void SetDataMethod3SadPath1()
         {
             CloudEvent cloudEvent = null!;
-            var client = new Client { FirstName = "Brian", LastName = "Friesen" };
+            var client = new TestClient { FirstName = "Brian", LastName = "Friesen" };
 
             Action act = () => cloudEvent.SetData(client);
 
@@ -195,7 +195,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         public void SetDataMethod3SadPath2()
         {
             var cloudEvent = new CloudEvent();
-            var client = new Client { FirstName = "Brian", LastName = "Friesen" };
+            var client = new TestClient { FirstName = "Brian", LastName = "Friesen" };
             var serialization = (DataSerialization)(-123);
 
             Action act = () => cloudEvent.SetData(client, serialization);
@@ -207,11 +207,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
         public void GetDataMethodHappyPath1()
         {
             var cloudEvent = new CloudEvent();
-            var clientData = JsonConvert.SerializeObject(new Client { FirstName = "Brian", LastName = "Friesen" });
+            var clientData = JsonConvert.SerializeObject(new TestClient { FirstName = "Brian", LastName = "Friesen" });
 
             cloudEvent.Unlock()._data = clientData;
 
-            var client = cloudEvent.GetData<Client>();
+            var client = cloudEvent.GetData<TestClient>();
 
             client.FirstName.Should().Be("Brian");
             client.LastName.Should().Be("Friesen");
@@ -221,11 +221,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
         public void GetDataMethodHappyPath2()
         {
             var cloudEvent = new CloudEvent();
-            var clientData = XmlSerialize(new Client { FirstName = "Brian", LastName = "Friesen" });
+            var clientData = XmlSerialize(new TestClient { FirstName = "Brian", LastName = "Friesen" });
 
             cloudEvent.Unlock()._data = clientData;
 
-            var client = cloudEvent.GetData<Client>(DataSerialization.Xml);
+            var client = cloudEvent.GetData<TestClient>(DataSerialization.Xml);
 
             client.FirstName.Should().Be("Brian");
             client.LastName.Should().Be("Friesen");
@@ -235,11 +235,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
         public void GetDataMethodHappyPath3()
         {
             var cloudEvent = new CloudEvent();
-            var client = new Client { FirstName = "Brian", LastName = "Friesen" };
+            var client = new TestClient { FirstName = "Brian", LastName = "Friesen" };
 
             _dataObjects.Add(cloudEvent, client);
 
-            cloudEvent.GetData<Client>().Should().BeSameAs(client);
+            cloudEvent.GetData<TestClient>().Should().BeSameAs(client);
         }
 
         [Fact(DisplayName = "GetData method throws if cloudEvent is null")]
@@ -247,7 +247,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             CloudEvent cloudEvent = null!;
 
-            Action act = () => cloudEvent.GetData<Client>();
+            Action act = () => cloudEvent.GetData<TestClient>();
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*cloudEvent*");
         }
@@ -258,7 +258,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var cloudEvent = new CloudEvent();
             var serialization = (DataSerialization)(-123);
 
-            Action act = () => cloudEvent.GetData<Client>(serialization);
+            Action act = () => cloudEvent.GetData<TestClient>(serialization);
 
             act.Should().ThrowExactly<ArgumentOutOfRangeException>().WithMessage("*serialization*");
         }
@@ -270,7 +270,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             cloudEvent.Unlock()._data = "Not valid JSON";
 
-            Action act = () => cloudEvent.GetData<Client>();
+            Action act = () => cloudEvent.GetData<TestClient>();
 
             act.Should().Throw<JsonException>();
         }
@@ -282,7 +282,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             cloudEvent.Unlock()._data = "Not valid JSON";
 
-            Action act = () => cloudEvent.GetData<Client>(DataSerialization.Xml);
+            Action act = () => cloudEvent.GetData<TestClient>(DataSerialization.Xml);
 
             act.Should().Throw<InvalidOperationException>();
         }
@@ -294,7 +294,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             _dataObjects.Add(cloudEvent, new NotAClient());
 
-            Action act = () => cloudEvent.GetData<Client>();
+            Action act = () => cloudEvent.GetData<TestClient>();
 
             act.Should().ThrowExactly<InvalidCastException>();
         }
@@ -303,11 +303,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
         public void TryGetDataMethodHappyPath1()
         {
             var cloudEvent = new CloudEvent();
-            var clientData = JsonConvert.SerializeObject(new Client { FirstName = "Brian", LastName = "Friesen" });
+            var clientData = JsonConvert.SerializeObject(new TestClient { FirstName = "Brian", LastName = "Friesen" });
 
             cloudEvent.Unlock()._data = clientData;
 
-            cloudEvent.TryGetData(out Client? client).Should().BeTrue();
+            cloudEvent.TryGetData(out TestClient? client).Should().BeTrue();
 
             cloudEvent.Should().NotBeNull();
             client!.FirstName.Should().Be("Brian");
@@ -318,11 +318,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
         public void TryGetDataMethodHappyPath2()
         {
             var cloudEvent = new CloudEvent();
-            var clientData = XmlSerialize(new Client { FirstName = "Brian", LastName = "Friesen" });
+            var clientData = XmlSerialize(new TestClient { FirstName = "Brian", LastName = "Friesen" });
 
             cloudEvent.Unlock()._data = clientData;
 
-            cloudEvent.TryGetData(out Client? client, DataSerialization.Xml).Should().BeTrue();
+            cloudEvent.TryGetData(out TestClient? client, DataSerialization.Xml).Should().BeTrue();
 
             client.Should().NotBeNull();
             client!.FirstName.Should().Be("Brian");
@@ -333,11 +333,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
         public void TryGetDataMethodHappyPath3()
         {
             var cloudEvent = new CloudEvent();
-            var client = new Client { FirstName = "Brian", LastName = "Friesen" };
+            var client = new TestClient { FirstName = "Brian", LastName = "Friesen" };
 
             _dataObjects.Add(cloudEvent, client);
 
-            cloudEvent.TryGetData(out Client? actualClient).Should().BeTrue();
+            cloudEvent.TryGetData(out TestClient? actualClient).Should().BeTrue();
             actualClient.Should().BeSameAs(client);
         }
 
@@ -346,7 +346,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             CloudEvent cloudEvent = null!;
 
-            Action act = () => cloudEvent.TryGetData(out Client? client);
+            Action act = () => cloudEvent.TryGetData(out TestClient? client);
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*cloudEvent*");
         }
@@ -357,7 +357,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             var cloudEvent = new CloudEvent();
             var serialization = (DataSerialization)(-123);
 
-            Action act = () => cloudEvent.TryGetData(out Client? client, serialization);
+            Action act = () => cloudEvent.TryGetData(out TestClient? client, serialization);
 
             act.Should().ThrowExactly<ArgumentOutOfRangeException>().WithMessage("*serialization*");
         }
@@ -369,7 +369,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             cloudEvent.Unlock()._data = "Not valid JSON";
 
-            cloudEvent.TryGetData(out Client? _).Should().BeFalse();
+            cloudEvent.TryGetData(out TestClient? _).Should().BeFalse();
         }
 
         [Fact(DisplayName = "TryGetData method returns false if StringData is invalid XML")]
@@ -379,7 +379,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             cloudEvent.Unlock()._data = "Not valid JSON";
 
-            cloudEvent.TryGetData(out Client? _, DataSerialization.Xml).Should().BeFalse();
+            cloudEvent.TryGetData(out TestClient? _, DataSerialization.Xml).Should().BeFalse();
         }
 
         [Fact(DisplayName = "TryGetData method returns false if data object already exists and cannot be cast to T")]
@@ -389,24 +389,28 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             _dataObjects.Add(cloudEvent, new NotAClient());
 
-            cloudEvent.TryGetData(out Client? _).Should().BeFalse();
+            cloudEvent.TryGetData(out TestClient? _).Should().BeFalse();
         }
 
-        private static string XmlSerialize(Client client)
+        private static string XmlSerialize(TestClient testClient)
         {
             var sb = new StringBuilder();
-            var serializer = new XmlSerializer(typeof(Client));
+            var serializer = new XmlSerializer(typeof(TestClient));
             using (var writer = new StringWriter(sb))
-                serializer.Serialize(writer, client);
+                serializer.Serialize(writer, testClient);
             return sb.ToString();
         }
 
-        private class Client
+#pragma warning disable CA1034 // Do not nest types
+        public class TestClient
+#pragma warning restore CA1034 // Do not nest types
         {
             public string? FirstName { get; set; }
             public string? LastName { get; set; }
         }
 
-        private class NotAClient { }
+#pragma warning disable CA1034 // Do not nest types
+        public class NotAClient { }
+#pragma warning restore CA1034 // Do not nest types
     }
 }
