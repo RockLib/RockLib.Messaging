@@ -385,7 +385,9 @@ namespace RockLib.Messaging.CloudEvents
         /// <para>To set this value, call the <see cref="CloudEventExtensions.SetData{TCloudEvent}(
         /// TCloudEvent, byte[])"/> extension method.</para>
         /// </summary>
+#pragma warning disable // Properties should not return arrays
         public byte[]? BinaryData => _data as byte[];
+#pragma warning restore // Properties should not return arrays
 
         /// <summary>
         /// Converts the cloud event to a string in the
