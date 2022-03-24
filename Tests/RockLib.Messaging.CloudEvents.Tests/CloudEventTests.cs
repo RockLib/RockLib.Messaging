@@ -55,7 +55,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "Constructor 2 throws is source parameter is null")]
         public void Constructor2SadPath()
         {
-            CloudEvent source = null;
+            CloudEvent source = null!;
 
             Action act = () => new CloudEvent(source);
 
@@ -204,7 +204,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // Null receiverMessage
 
-            Action act = () => new CloudEvent((IReceiverMessage)null);
+            Action act = () => new CloudEvent((IReceiverMessage)null!);
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*receiverMessage*");
         }
@@ -324,7 +324,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // Null jsonFormattedCloudEvent
 
-            Action act = () => new CloudEvent((string)null);
+            Action act = () => new CloudEvent((string)null!);
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*jsonFormattedCloudEvent*");
         }
@@ -1063,7 +1063,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "Implicit conversion operator returns null given null cloud event")]
         public void ImplicitConversionOperatorHappyPath2()
         {
-            CloudEvent cloudEvent = null;
+            CloudEvent cloudEvent = null!;
 
             SenderMessage senderMessage = cloudEvent;
 

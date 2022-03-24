@@ -46,7 +46,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "GetPartitionKey extension throws is cloudEvent is null")]
         public void GetPartitionKeyExtensionMethodSadPath()
         {
-            CloudEvent cloudEvent = null;
+            CloudEvent cloudEvent = null!;
 
             Action act = () => cloudEvent.GetPartitionKey();
 
@@ -80,7 +80,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "SetPartitionKey extension throws is cloudEvent is null")]
         public void SetPartitionKeyExtensionMethodSadPath()
         {
-            CloudEvent cloudEvent = null;
+            CloudEvent cloudEvent = null!;
 
             Action act = () => cloudEvent.SetPartitionKey("MyPartitionKey");
 

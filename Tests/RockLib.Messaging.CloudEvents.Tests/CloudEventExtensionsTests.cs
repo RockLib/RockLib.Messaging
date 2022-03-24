@@ -54,7 +54,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "SetData method 1 throws if cloudEvent is null")]
         public void SetDataMethod1SadPath()
         {
-            CloudEvent cloudEvent = null;
+            CloudEvent cloudEvent = null!;
 
             Action act = () => cloudEvent.SetData("Hello, world!");
 
@@ -121,7 +121,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "SetData method 2 throws if cloudEvent is null")]
         public void SetDataMethod2SadPath()
         {
-            CloudEvent cloudEvent = null;
+            CloudEvent cloudEvent = null!;
 
             Action act = () => cloudEvent.SetData(new byte[] { 1, 2, 3, 4 });
 
@@ -169,7 +169,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             // In order to verify that the method cleared the data object, there needs to be one first.
             _dataObjects.Add(cloudEvent, new object());
 
-            Client client = null;
+            Client client = null!;
 
             cloudEvent.SetData(client);
 
@@ -182,7 +182,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "SetData method 3 throws if cloudEvent is null")]
         public void SetDataMethod3SadPath1()
         {
-            CloudEvent cloudEvent = null;
+            CloudEvent cloudEvent = null!;
             var client = new Client { FirstName = "Brian", LastName = "Friesen" };
 
             Action act = () => cloudEvent.SetData(client);
@@ -244,7 +244,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "GetData method throws if cloudEvent is null")]
         public void GetDataMethodSadPath1()
         {
-            CloudEvent cloudEvent = null;
+            CloudEvent cloudEvent = null!;
 
             Action act = () => cloudEvent.GetData<Client>();
 
@@ -341,7 +341,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "TryGetData method throws if cloudEvent is null")]
         public void TryGetDataMethodSadPath1()
         {
-            CloudEvent cloudEvent = null;
+            CloudEvent cloudEvent = null!;
 
             Action act = () => cloudEvent.TryGetData(out Client client);
 
