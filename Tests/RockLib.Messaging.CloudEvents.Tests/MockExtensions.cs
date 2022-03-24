@@ -1,4 +1,5 @@
 ﻿using Moq;
+using System;
 using System.Text.RegularExpressions;
 
 namespace RockLib.Messaging.CloudEvents.Tests
@@ -7,6 +8,10 @@ namespace RockLib.Messaging.CloudEvents.Tests
     {
         public static Mock<IProtocolBinding> SetupTestProtocolBinding(this Mock<IProtocolBinding> mockProtocolBinding)
         {
+            if (mockProtocolBinding is null)
+            {
+                throw new ArgumentNullException(nameof(mockProtocolBinding));
+            }
             mockProtocolBinding.Setup(m => m.GetHeaderName(It.IsAny<string>())).Returns<string>(header => "test-" + header);
 
             mockProtocolBinding.Setup(m => m.GetAttributeName(It.IsAny<string>(), out It.Ref<bool>.IsAny))
