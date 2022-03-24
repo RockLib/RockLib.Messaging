@@ -43,7 +43,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
             // In order to verify that the method did not clear the data object, there needs to be one first.
             _dataObjects.Add(cloudEvent, new object());
 
-            cloudEvent.SetData($"Hello, {"WORLD".ToLowerInvariant()}!");
+            // SetData to the same to check that it does not change and also not get removed from _dataObjects
+            cloudEvent.SetData($"Hello, world!");
 
             string data = cloudEvent.Unlock()._data;
 
