@@ -1,11 +1,8 @@
 ﻿using FluentAssertions;
 using Moq;
 using Newtonsoft.Json.Linq;
-using RockLib.Messaging.Testing;
 using System;
-using System.Linq;
 using System.Net.Mime;
-using System.Runtime.InteropServices;
 using Xunit;
 
 namespace RockLib.Messaging.CloudEvents.Tests
@@ -70,7 +67,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var binaryData = new byte[] { 1, 2, 3, 4 };
 
-            var receiverMessage = new FakeReceiverMessage(binaryData);
+            using var receiverMessage = new FakeReceiverMessage(binaryData);
 
             var cloudEvent = new CloudEvent(receiverMessage);
 
@@ -83,7 +80,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var stringData = "Hello, world!";
 
-            var receiverMessage = new FakeReceiverMessage(stringData);
+            using var receiverMessage = new FakeReceiverMessage(stringData);
 
             var cloudEvent = new CloudEvent(receiverMessage);
 
@@ -96,7 +93,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // All attributes provided
 
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+            using var receiverMessage = new FakeReceiverMessage("Hello, world!");
 
             var source = "http://MySource";
             var dataContentType = "application/mycontenttype";
@@ -129,7 +126,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // No attributes provided
 
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+            using var receiverMessage = new FakeReceiverMessage("Hello, world!");
 
             var cloudEvent = new CloudEvent(receiverMessage);
 
@@ -147,7 +144,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // Alternate property types provided
 
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+            using var receiverMessage = new FakeReceiverMessage("Hello, world!");
 
             var source = new Uri("http://MySource").ToString();
             var dataContentType = new ContentType("application/mycontenttype").ToString();
@@ -172,7 +169,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // Additional attributes provided
 
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+            using var receiverMessage = new FakeReceiverMessage("Hello, world!");
             receiverMessage.Headers.Add("test-foo", "abc");
             receiverMessage.Headers.Add("test-bar", 123);
 
@@ -190,7 +187,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // Non-default protocol binding
 
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+            using var receiverMessage = new FakeReceiverMessage("Hello, world!");
             receiverMessage.Headers.Add("foo", "abc");
             receiverMessage.Headers.Add("test-" + CloudEvent.IdAttribute, "MyId");
 
@@ -217,7 +214,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             // Invalid specversion
 
-            var receiverMessage = new FakeReceiverMessage("Hello, world!");
+            using var receiverMessage = new FakeReceiverMessage("Hello, world!");
             receiverMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "0.0");
 
             Action act = () => new CloudEvent(receiverMessage);

@@ -1,7 +1,4 @@
 ﻿using FluentAssertions;
-using RockLib.Messaging.CloudEvents.Partitioning;
-using RockLib.Messaging.Testing;
-using System;
 using Xunit;
 
 namespace RockLib.Messaging.CloudEvents.Tests
@@ -53,7 +50,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "Default field's Bind method 2 does nothing")]
         public void DefaultProtocolBindingBindMethod2HappyPath()
         {
-            var receiverMessage = new FakeReceiverMessage("")
+            using var receiverMessage = new FakeReceiverMessage("")
             {
                 Headers =
                 {
@@ -132,7 +129,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "Kafka field's Bind method 2 remaps 'Kafka.Key' to 'partitionkey'")]
         public void KafkaProtocolBindingBindMethod2HappyPath1()
         {
-            var receiverMessage = new FakeReceiverMessage("")
+            using var receiverMessage = new FakeReceiverMessage("")
             {
                 Headers = { ["Kafka.Key"] = "MyKafkaKey" }
             };
