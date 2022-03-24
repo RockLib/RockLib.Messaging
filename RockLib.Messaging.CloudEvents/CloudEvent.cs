@@ -827,7 +827,7 @@ namespace RockLib.Messaging.CloudEvents
 
         private static bool IsStructuredMode(IReceiverMessage receiverMessage) =>
             receiverMessage.Headers.TryGetValue(StructuredModeContentTypeHeader, out string? contentType)
-            && contentType is not null && contentType.StartsWith(StructuredModeMediaTypePrefix);
+            && contentType is not null && contentType.StartsWith(StructuredModeMediaTypePrefix, StringComparison.InvariantCulture);
 
     }
 }
