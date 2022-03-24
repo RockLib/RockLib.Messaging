@@ -584,7 +584,7 @@ namespace RockLib.Messaging.CloudEvents
         /// to render in Binary Mode.
         /// </param>
         /// <returns>The mapped <see cref="HttpRequestMessage"/>.</returns>
-        public HttpRequestMessage ToHttpRequestMessage(string? requestUri = null, bool structuredMode = false) =>
+        public HttpRequestMessage ToHttpRequestMessage(Uri? requestUri = null, bool structuredMode = false) =>
             ToHttpRequestMessage(HttpMethod.Get, requestUri, structuredMode);
 
         /// <summary>
@@ -597,7 +597,7 @@ namespace RockLib.Messaging.CloudEvents
         /// to render in Binary Mode.
         /// </param>
         /// <returns>The mapped <see cref="HttpRequestMessage"/>.</returns>
-        public HttpRequestMessage ToHttpRequestMessage(HttpMethod method, string? requestUri = null, bool structuredMode = false)
+        public HttpRequestMessage ToHttpRequestMessage(HttpMethod method, Uri? requestUri = null, bool structuredMode = false)
         {
             if (method is null)
                 throw new ArgumentNullException(nameof(method));
