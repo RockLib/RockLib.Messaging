@@ -710,7 +710,7 @@ namespace RockLib.Messaging.CloudEvents
         /// </returns>
         protected static bool ContainsHeader<T>(SenderMessage senderMessage, string headerName)
         {
-            if (senderMessage.Headers.TryGetValue(headerName, out var objectValue))
+            if (senderMessage is not null && senderMessage.Headers.TryGetValue(headerName, out var objectValue))
             {
                 switch (objectValue)
                 {
@@ -765,7 +765,7 @@ namespace RockLib.Messaging.CloudEvents
         /// </returns>
         protected static bool TryGetHeaderValue<T>(SenderMessage senderMessage, string headerName, out T? value)
         {
-            if (senderMessage.Headers.TryGetValue(headerName, out var objectValue))
+            if (senderMessage is not null && senderMessage.Headers.TryGetValue(headerName, out var objectValue))
             {
                 switch (objectValue)
                 {
