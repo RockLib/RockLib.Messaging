@@ -249,7 +249,7 @@ namespace RockLib.Messaging.CloudEvents
         /// <exception cref="ArgumentOutOfRangeException">
         /// If <paramref name="serialization"/> is not defined.
         /// </exception>
-        public static bool TryGetData<T>(this CloudEvent cloudEvent, out T data,
+        public static bool TryGetData<T>(this CloudEvent cloudEvent, out T? data,
             DataSerialization serialization = DataSerialization.Json)
             where T : class
         {
