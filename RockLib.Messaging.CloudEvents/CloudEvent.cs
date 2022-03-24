@@ -225,7 +225,7 @@ namespace RockLib.Messaging.CloudEvents
         /// REQUIRED. The version of the CloudEvents specification which the event uses. This
         /// enables the interpretation of the context. Always returns '1.0'.
         /// </summary>
-        public string SpecVersion => _specVersion1_0;
+        public static string SpecVersion => _specVersion1_0;
 
         /// <summary>
         /// REQUIRED. This attribute contains a value describing the type of event related to the
@@ -521,7 +521,7 @@ namespace RockLib.Messaging.CloudEvents
                 else
                     senderMessage = new SenderMessage("");
 
-                senderMessage.Headers[ProtocolBinding.GetHeaderName(SpecVersionAttribute)] = SpecVersion;
+                senderMessage.Headers[ProtocolBinding.GetHeaderName(SpecVersionAttribute)] = CloudEvent.SpecVersion;
 
                 foreach (var attribute in Attributes)
                     senderMessage.Headers[ProtocolBinding.GetHeaderName(attribute.Key)] = attribute.Value;
