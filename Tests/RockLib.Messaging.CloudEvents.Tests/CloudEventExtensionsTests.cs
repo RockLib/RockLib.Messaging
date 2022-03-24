@@ -402,8 +402,8 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
         public class Client
         {
-            public string FirstName { get; set; }
-            public string LastName { get; set; }
+            public string? FirstName { get; set; }
+            public string? LastName { get; set; }
         }
 
         public class NotAClient { }
