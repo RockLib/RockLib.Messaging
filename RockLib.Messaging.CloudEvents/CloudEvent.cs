@@ -578,7 +578,7 @@ namespace RockLib.Messaging.CloudEvents
         /// <summary>
         /// Creates an <see cref="HttpRequestMessage"/> with headers mapped from the attributes of this cloud event.
         /// </summary>
-        /// <param name="requestUri">A string that represents the request <see cref="Uri"/>.</param>
+        /// <param name="requestUri">A Uri that represents the request <see cref="Uri"/>.</param>
         /// <param name="structuredMode">
         /// <see langword="true"/> to render in Structured Mode, otherwise <see langword="false"/>
         /// to render in Binary Mode.
@@ -591,7 +591,7 @@ namespace RockLib.Messaging.CloudEvents
         /// Creates an <see cref="HttpRequestMessage"/> with headers mapped from the attributes of this cloud event.
         /// </summary>
         /// <param name="method">The HTTP method of the request.</param>
-        /// <param name="requestUri">A string that represents the request <see cref="Uri"/>.</param>
+        /// <param name="requestUri">A Uri that represents the request <see cref="Uri"/>.</param>
         /// <param name="structuredMode">
         /// <see langword="true"/> to render in Structured Mode, otherwise <see langword="false"/>
         /// to render in Binary Mode.
