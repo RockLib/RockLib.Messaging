@@ -209,7 +209,10 @@ namespace RockLib.Messaging.CloudEvents
             {
                 if (value != null)
                 {
-                    new Uri(value, UriKind.RelativeOrAbsolute);
+                    if (!Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out _))
+                    {
+                        throw new UriFormatException($"Invalid Uri {value}");
+                    }
                     Attributes[SourceAttribute] = value;
                 }
                 else
@@ -297,7 +300,10 @@ namespace RockLib.Messaging.CloudEvents
             {
                 if (value != null)
                 {
-                    new Uri(value, UriKind.RelativeOrAbsolute);
+                    if (!Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out _))
+                    {
+                        throw new UriFormatException($"Invalid Uri {value}");
+                    }
                     Attributes[DataSchemaAttribute] = value;
                 }
                 else
