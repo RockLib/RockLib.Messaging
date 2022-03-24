@@ -476,8 +476,8 @@ namespace RockLib.Messaging.CloudEvents
                 }
 
                 return serialization == DataSerialization.Json
-                    ? JsonDeserialize<T>(stringData)!
-                    : XmlDeserialize<T>(stringData)!;
+                    ? JsonDeserialize<T>(stringData!)!
+                    : XmlDeserialize<T>(stringData!)!;
             });
         }
 
