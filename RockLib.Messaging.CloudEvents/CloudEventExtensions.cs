@@ -81,7 +81,7 @@ namespace RockLib.Messaging.CloudEvents
             var binaryData = cloudEvent.BinaryData;
 
             if (!ReferenceEquals(binaryData, data)
-                && (binaryData == null || data == null || !binaryData.SequenceEqual(data)))
+                && (binaryData is null || data is null || !binaryData.SequenceEqual(data)))
             {
                 cloudEvent.SetDataField(data);
                 cloudEvent.ClearDataObject();
@@ -492,7 +492,7 @@ namespace RockLib.Messaging.CloudEvents
 
         private static string? XmlSerialize(object data)
         {
-            if (data == null)
+            if (data is null)
                 return null;
 
             var sb = new StringBuilder();
@@ -505,7 +505,7 @@ namespace RockLib.Messaging.CloudEvents
         private static T? XmlDeserialize<T>(string data)
             where T : class
         {
-            if (data == null)
+            if (data is null)
                 return null;
 
             var serializer = new XmlSerializer(typeof(T));

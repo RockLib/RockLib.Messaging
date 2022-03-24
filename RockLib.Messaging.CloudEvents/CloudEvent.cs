@@ -208,7 +208,7 @@ namespace RockLib.Messaging.CloudEvents
                 : null;
             set
             {
-                if (value != null)
+                if (value is not null)
                 {
                     if (!Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out _))
                     {
@@ -240,7 +240,7 @@ namespace RockLib.Messaging.CloudEvents
                 : null;
             set
             {
-                if (value != null)
+                if (value is not null)
                     Attributes[TypeAttribute] = value;
                 else
                     Attributes.Remove(TypeAttribute);
@@ -258,7 +258,7 @@ namespace RockLib.Messaging.CloudEvents
                 : null;
             set
             {
-                if (value != null)
+                if (value is not null)
                 {
                     _contentType = MediaTypeHeaderValue.Parse(value);
                     Attributes[DataContentTypeAttribute] = value;
@@ -278,7 +278,7 @@ namespace RockLib.Messaging.CloudEvents
         {
             get
             {
-                if (_contentType != null)
+                if (_contentType is not null)
                     return _contentType;
                 if (string.IsNullOrEmpty(DataContentType))
                     return null;
@@ -299,7 +299,7 @@ namespace RockLib.Messaging.CloudEvents
                 : null;
             set
             {
-                if (value != null)
+                if (value is not null)
                 {
                     if (!Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out _))
                     {
@@ -331,7 +331,7 @@ namespace RockLib.Messaging.CloudEvents
                 : null;
             set
             {
-                if (value != null)
+                if (value is not null)
                     Attributes[SubjectAttribute] = value;
                 else
                     Attributes.Remove(SubjectAttribute);
@@ -438,15 +438,15 @@ namespace RockLib.Messaging.CloudEvents
                     if (jvalue.Value is string stringValue)
                         try { _data = Convert.FromBase64String(stringValue); }
                         catch (Exception ex) { throw new CloudEventValidationException("'data_base64' must have a valid base-64 encoded binary value.", ex); }
-                    else if (jvalue.Value != null)
+                    else if (jvalue.Value is not null)
                         throw new CloudEventValidationException("'data_base64' must have a string value.");
                 }
                 else
                     throw new CloudEventValidationException("'data_base64' must have a string value.");
 
-                if (_data != null
+                if (_data is not null
                     && jobject.TryGetValue("data", out token)
-                    && (!(token is JValue jv) || jv.Value != null))
+                    && (!(token is JValue jv) || jv.Value is not null))
                     throw new CloudEventValidationException("'data_base64' and 'data' cannot both have values.");
             }
             
@@ -610,7 +610,7 @@ namespace RockLib.Messaging.CloudEvents
             else
                 request.Content = new StringContent(message.StringPayload);
 
-            if (DataContentType != null)
+            if (DataContentType is not null)
                 request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(DataContentType);
 
             foreach (var header in message.Headers)
