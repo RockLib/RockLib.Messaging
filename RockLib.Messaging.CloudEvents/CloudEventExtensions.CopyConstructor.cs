@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging.CloudEvents
 {
@@ -18,7 +18,7 @@ namespace RockLib.Messaging.CloudEvents
                     (CloudEvent)constructor.Invoke(new object[] { cloudEvent });
 
                 // Compile the optimized function in the background.
-                ThreadPool.QueueUserWorkItem(_ =>
+                Task.Run(() =>
                 {
                     var cloudEventParameter = Expression.Parameter(typeof(CloudEvent), "cloudEvent");
 

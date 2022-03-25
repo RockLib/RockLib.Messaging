@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace RockLib.Messaging.CloudEvents
 {
@@ -20,7 +20,7 @@ namespace RockLib.Messaging.CloudEvents
                     constructor.Invoke(new object[] { receiverMessage, protocolBinding! });
 
                 // Compile the optimized function in the background.
-                ThreadPool.QueueUserWorkItem(_ =>
+                Task.Run(() =>
                 {
                     var receiverMessageParameter = Expression.Parameter(typeof(IReceiverMessage), "receiverMessage");
                     var protocolBindingParameter = Expression.Parameter(typeof(IProtocolBinding), "protocolBinding");
