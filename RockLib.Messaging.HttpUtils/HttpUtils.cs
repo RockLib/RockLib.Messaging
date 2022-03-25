@@ -9,13 +9,19 @@ namespace RockLib.Messaging
     {
         public static void AddHeader(HttpHeaders headers, string headerName, string? headerValue)
         {
-            if (headerValue == null)
+            if (headerValue is null)
+            {
                 return;
+            }
 
             if (SupportsMultipleValues(headerName))
+            {
                 headers.Add(headerName, SplitByComma(headerValue));
+            }
             else
+            {
                 headers.Add(headerName, headerValue);
+            }
         }
 
         public static bool IsContentHeader(string headerName)
@@ -86,7 +92,10 @@ namespace RockLib.Messaging
             {
                 value = headerValue.Trim();
                 if (value.Length > 0)
+                {
                     yield return value;
+                }
+
                 yield break;
             }
 
@@ -112,7 +121,9 @@ namespace RockLib.Messaging
             {
                 value = sb.ToString().Trim();
                 if (value.Length > 0)
+                {
                     yield return value;
+                }
             }
         }
     }

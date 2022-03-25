@@ -17,10 +17,14 @@ namespace RockLib.Messaging.CloudEvents.Sequencing
         public static string? GetSequence(this CloudEvent cloudEvent)
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
 
             if (cloudEvent.Attributes.TryGetValue(SequenceAttribute, out var value) && value is string sequence)
+            {
                 return sequence;
+            }
 
             return null;
         }
@@ -37,12 +41,18 @@ namespace RockLib.Messaging.CloudEvents.Sequencing
         public static void SetSequence(this CloudEvent cloudEvent, string? sequence)
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
 
-            if (sequence != null)
+            if (sequence is not null)
+            {
                 cloudEvent.Attributes[SequenceAttribute] = sequence;
+            }
             else
+            {
                 cloudEvent.Attributes.Remove(SequenceAttribute);
+            }
         }
 
         /// <summary>
@@ -54,10 +64,14 @@ namespace RockLib.Messaging.CloudEvents.Sequencing
         public static string? GetSequenceType(this CloudEvent cloudEvent)
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
 
             if (cloudEvent.Attributes.TryGetValue(SequenceTypeAttribute, out var value) && value is string sequenceType)
+            {
                 return sequenceType;
+            }
 
             return null;
         }
@@ -74,12 +88,18 @@ namespace RockLib.Messaging.CloudEvents.Sequencing
         public static void SetSequenceType(this CloudEvent cloudEvent, string? sequenceType)
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
 
-            if (sequenceType != null)
+            if (sequenceType is not null)
+            {
                 cloudEvent.Attributes[SequenceTypeAttribute] = sequenceType;
+            }
             else
+            {
                 cloudEvent.Attributes.Remove(SequenceTypeAttribute);
+            }
         }
     }
 }
