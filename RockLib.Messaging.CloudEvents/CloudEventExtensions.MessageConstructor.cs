@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace RockLib.Messaging.CloudEvents
 {
@@ -18,21 +16,6 @@ namespace RockLib.Messaging.CloudEvents
                 // The initial function uses regular reflection.
                 _invokeConstructor = (receiverMessage, protocolBinding) =>
                     constructor.Invoke(new object[] { receiverMessage, protocolBinding! });
-
-                // Compile the optimized function in the background.
-                Task.Run(() =>
-                {
-                    var receiverMessageParameter = Expression.Parameter(typeof(IReceiverMessage), "receiverMessage");
-                    var protocolBindingParameter = Expression.Parameter(typeof(IProtocolBinding), "protocolBinding");
-
-                    var body = Expression.New(constructor, receiverMessageParameter, protocolBindingParameter);
-
-                    var lamda = Expression.Lambda<Func<IReceiverMessage, IProtocolBinding?, object>>(
-                        body, receiverMessageParameter, protocolBindingParameter);
-
-                    // Replace the reflection function with a compiled function.
-                    _invokeConstructor = lamda.Compile();
-                });
             }
 
             public static MessageConstructor? Create(Type type)

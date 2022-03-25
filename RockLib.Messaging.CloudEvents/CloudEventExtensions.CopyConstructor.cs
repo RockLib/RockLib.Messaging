@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace RockLib.Messaging.CloudEvents
 {
@@ -16,21 +14,6 @@ namespace RockLib.Messaging.CloudEvents
                 // The initial function uses regular reflection.
                 _invokeConstructor = cloudEvent =>
                     (CloudEvent)constructor.Invoke(new object[] { cloudEvent });
-
-                // Compile the optimized function in the background.
-                Task.Run(() =>
-                {
-                    var cloudEventParameter = Expression.Parameter(typeof(CloudEvent), "cloudEvent");
-
-                    var body = Expression.New(constructor,
-                        Expression.Convert(cloudEventParameter, constructor.DeclaringType!));
-
-                    var lamda = Expression.Lambda<Func<CloudEvent, CloudEvent>>(
-                        body, cloudEventParameter);
-
-                    // Replace the reflection function with a compiled function.
-                    _invokeConstructor = lamda.Compile();
-                });
             }
 
             public static CopyConstructor? Create(Type type)

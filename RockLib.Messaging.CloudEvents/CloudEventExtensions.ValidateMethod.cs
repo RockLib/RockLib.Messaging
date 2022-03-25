@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace RockLib.Messaging.CloudEvents
 {
@@ -19,21 +17,6 @@ namespace RockLib.Messaging.CloudEvents
                 // The initial function uses regular reflection.
                 _invokeValidateMethod = (senderMessage, protocolBinding) =>
                     validateMethod.Invoke(null, new object[] { senderMessage, protocolBinding });
-
-                // Compile the optimized function in the background.
-                Task.Run(() =>
-                {
-                    var senderMessageParameter = Expression.Parameter(typeof(SenderMessage), "senderMessage");
-                    var protocolBindingParameter = Expression.Parameter(typeof(IProtocolBinding), "protocolBinding");
-
-                    var body = Expression.Call(validateMethod, senderMessageParameter, protocolBindingParameter);
-
-                    var lamda = Expression.Lambda<Action<SenderMessage, IProtocolBinding>>(
-                        body, senderMessageParameter, protocolBindingParameter);
-
-                    // Replace the reflection function with a compiled function.
-                    _invokeValidateMethod = lamda.Compile();
-                });
             }
 
             public static ValidateMethod? Create(Type type)
