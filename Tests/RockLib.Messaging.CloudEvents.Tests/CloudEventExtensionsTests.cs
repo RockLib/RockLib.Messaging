@@ -44,7 +44,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             _dataObjects.Add(cloudEvent, new object());
 
             // SetData to the same to check that it does not change and also not get removed from _dataObjects
-            cloudEvent.SetData($"Hello, world!");
+            cloudEvent.SetData("Hello, world!");
 
             string data = cloudEvent.Unlock()._data;
 
