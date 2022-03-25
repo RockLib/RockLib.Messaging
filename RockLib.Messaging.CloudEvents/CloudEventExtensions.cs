@@ -502,14 +502,14 @@ namespace RockLib.Messaging.CloudEvents
             {
                 var stringData = evt.StringData;
 
-                if (string.IsNullOrEmpty(stringData))
+                if (string.IsNullOrWhiteSpace(stringData))
                 {
                     if (evt.BinaryData != null)
                     {
                         stringData = Encoding.UTF8.GetString(evt.BinaryData);
                     }
 
-                    if (string.IsNullOrEmpty(stringData))
+                    if (string.IsNullOrWhiteSpace(stringData))
                     {
                         return null!;
                     }

@@ -89,7 +89,7 @@ namespace RockLib.Messaging.CloudEvents
         {
             base.Validate();
 
-            if (string.IsNullOrEmpty(PartitionKey))
+            if (string.IsNullOrWhiteSpace(PartitionKey))
             {
                 throw new CloudEventValidationException("PartitionKey cannot be null or empty.");
             }

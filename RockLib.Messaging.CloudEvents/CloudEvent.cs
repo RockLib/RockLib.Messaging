@@ -133,7 +133,7 @@ namespace RockLib.Messaging.CloudEvents
         /// </param>
         public CloudEvent(string jsonFormattedCloudEvent)
         {
-            if (string.IsNullOrEmpty(jsonFormattedCloudEvent))
+            if (string.IsNullOrWhiteSpace(jsonFormattedCloudEvent))
             {
                 throw new ArgumentNullException(nameof(jsonFormattedCloudEvent));
             }
@@ -199,7 +199,7 @@ namespace RockLib.Messaging.CloudEvents
             }
             set
             {
-                if (string.IsNullOrEmpty(value))
+                if (string.IsNullOrWhiteSpace(value))
                 {
                     throw new ArgumentNullException(nameof(value));
                 }
@@ -303,7 +303,7 @@ namespace RockLib.Messaging.CloudEvents
                     return _contentType;
                 }
 
-                if (string.IsNullOrEmpty(DataContentType))
+                if (string.IsNullOrWhiteSpace(DataContentType))
                 {
                     return null;
                 }
@@ -750,7 +750,7 @@ namespace RockLib.Messaging.CloudEvents
                 throw new CloudEventValidationException("Source cannot be null.");
             }
 
-            if (string.IsNullOrEmpty(Type))
+            if (string.IsNullOrWhiteSpace(Type))
             {
                 throw new CloudEventValidationException("Type cannot be null or empty.");
             }

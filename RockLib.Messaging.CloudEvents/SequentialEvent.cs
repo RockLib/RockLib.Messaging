@@ -105,7 +105,7 @@ namespace RockLib.Messaging.CloudEvents
         {
             base.Validate();
 
-            if (string.IsNullOrEmpty(Sequence))
+            if (string.IsNullOrWhiteSpace(Sequence))
             {
                 throw new CloudEventValidationException("Sequence cannot be null or empty.");
             }
