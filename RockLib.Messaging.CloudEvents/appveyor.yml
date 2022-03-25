@@ -1,5 +1,5 @@
 version: 'RockLib.Messaging.CloudEvents.{build}.0.0-ci'
-image: Visual Studio 2019
+image: Visual Studio 2022
 configuration: Release
 only_commits:
   files:
