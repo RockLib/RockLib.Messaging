@@ -849,14 +849,7 @@ namespace RockLib.Messaging.CloudEvents
                 var converter = TypeDescriptor.GetConverter(typeof(T));
                 if (converter.CanConvertFrom(objectValue.GetType()))
                 {
-                    try
-                    {
-                        converter.ConvertFrom(objectValue);
-                        return true;
-                    }
-                    catch (Exception ex) when (ex is NotSupportedException)
-                    {
-                    }
+                    return true;
                 }
 
                 converter = TypeDescriptor.GetConverter(objectValue);
