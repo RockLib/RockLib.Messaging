@@ -31,7 +31,7 @@ namespace RockLib.Messaging.CloudEvents
             }
 
             public static bool Exists(Type type) =>
-                GetConstructor(type) != null;
+                GetConstructor(type) is not null;
 
             public object Invoke(IReceiverMessage receiverMessage, IProtocolBinding? protocolBinding) =>
                 _invokeConstructor(receiverMessage, protocolBinding);

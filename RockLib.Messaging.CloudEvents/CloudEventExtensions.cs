@@ -504,7 +504,7 @@ namespace RockLib.Messaging.CloudEvents
 
                 if (string.IsNullOrWhiteSpace(stringData))
                 {
-                    if (evt.BinaryData != null)
+                    if (evt.BinaryData is not null)
                     {
                         stringData = Encoding.UTF8.GetString(evt.BinaryData);
                     }

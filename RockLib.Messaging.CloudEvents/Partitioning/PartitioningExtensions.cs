@@ -57,7 +57,7 @@ namespace RockLib.Messaging.CloudEvents.Partitioning
                 throw new ArgumentNullException(nameof(cloudEvent));
             }
 
-            if (partitionKey != null)
+            if (partitionKey is not null)
             {
                 cloudEvent.Attributes[PartitionKeyAttribute] = partitionKey;
             }
