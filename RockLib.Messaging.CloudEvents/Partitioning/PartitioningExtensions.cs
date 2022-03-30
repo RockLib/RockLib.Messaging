@@ -20,13 +20,17 @@ namespace RockLib.Messaging.CloudEvents.Partitioning
         /// <exception cref="ArgumentNullException">
         /// If <paramref name="cloudEvent"/> is <see langword="null"/>.
         /// </exception>
-        public static string GetPartitionKey(this CloudEvent cloudEvent)
+        public static string? GetPartitionKey(this CloudEvent cloudEvent)
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
 
             if (cloudEvent.Attributes.TryGetValue(PartitionKeyAttribute, out var value) && value is string key)
+            {
                 return key;
+            }
 
             return null;
         }
@@ -46,15 +50,21 @@ namespace RockLib.Messaging.CloudEvents.Partitioning
         /// <exception cref="ArgumentNullException">
         /// If <paramref name="cloudEvent"/> is <see langword="null"/>.
         /// </exception>
-        public static void SetPartitionKey(this CloudEvent cloudEvent, string partitionKey)
+        public static void SetPartitionKey(this CloudEvent cloudEvent, string? partitionKey)
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
 
-            if (partitionKey != null)
+            if (partitionKey is not null)
+            {
                 cloudEvent.Attributes[PartitionKeyAttribute] = partitionKey;
+            }
             else
+            {
                 cloudEvent.Attributes.Remove(PartitionKeyAttribute);
+            }
         }
     }
 }

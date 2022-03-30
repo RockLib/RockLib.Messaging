@@ -43,7 +43,7 @@ namespace RockLib.Messaging.CloudEvents
         /// CloudEvent attributes. If <see langword="null"/>, then <see cref="CloudEvent.DefaultProtocolBinding"/>
         /// is used instead.
         /// </param>
-        public CorrelatedEvent(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)
+        public CorrelatedEvent(IReceiverMessage receiverMessage, IProtocolBinding? protocolBinding = null)
             : base(receiverMessage, protocolBinding)
         {
         }
@@ -92,16 +92,20 @@ namespace RockLib.Messaging.CloudEvents
         /// <exception cref="CloudEventValidationException">
         /// If the <see cref="SenderMessage"/> is not valid.
         /// </exception>
-        public static new void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null)
+        public static new void Validate(SenderMessage senderMessage, IProtocolBinding? protocolBinding = null)
         {
             if (protocolBinding is null)
+            {
                 protocolBinding = DefaultProtocolBinding;
+            }
 
             CloudEvent.Validate(senderMessage, protocolBinding);
 
             var correlationIdHeader = protocolBinding.GetHeaderName(CorrelationIdAttribute);
             if (!ContainsHeader<string>(senderMessage, correlationIdHeader))
+            {
                 senderMessage.Headers[correlationIdHeader] = NewCorrelationId();
+            }
         }
 
         internal static string NewCorrelationId() => Guid.NewGuid().ToString();

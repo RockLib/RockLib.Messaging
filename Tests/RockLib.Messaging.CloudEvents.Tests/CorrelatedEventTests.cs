@@ -31,7 +31,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         {
             var cloudEvent = new CorrelatedEvent();
 
-            cloudEvent.Invoking(evt => evt.CorrelationId = null).Should()
+            cloudEvent.Invoking(evt => evt.CorrelationId = null!).Should()
                 .ThrowExactly<ArgumentNullException>()
                 .WithMessage("*value*");
         }
@@ -53,7 +53,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
 
             cloudEvent.Attributes.Should().HaveCount(5);
             cloudEvent.Attributes.Should().ContainKey(CorrelatedEvent.CorrelationIdAttribute)
-                .WhichValue.Should().NotBeNull();
+                .WhoseValue.Should().NotBeNull();
         }
 
         [Fact(DisplayName = "Validate static method does not throw when given valid sender message")]
@@ -113,7 +113,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             CorrelatedEvent.Validate(senderMessage);
 
             senderMessage.Headers.Should().ContainKey(CorrelatedEvent.CorrelationIdAttribute)
-                .WhichValue.Should().NotBeNull();
+                .WhoseValue.Should().NotBeNull();
         }
     }
 }

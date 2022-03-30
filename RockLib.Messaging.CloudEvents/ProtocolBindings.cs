@@ -1,6 +1,5 @@
 ﻿using RockLib.Messaging.CloudEvents.Partitioning;
 using System.Text.RegularExpressions;
-using static RockLib.Messaging.CloudEvents.ProtocolBindings.Constants;
 using static RockLib.Messaging.CloudEvents.PartitionedEvent;
 
 namespace RockLib.Messaging.CloudEvents
@@ -11,22 +10,16 @@ namespace RockLib.Messaging.CloudEvents
     public static class ProtocolBindings
     {
         /// <summary>
-        /// Constants used by protocol binding implementations.
+        /// The name of the header of a <see cref="SenderMessage"/> or <see cref=
+        /// "IReceiverMessage"/> where the Key of a Kafka message is stored.
         /// </summary>
-        public static class Constants
-        {
-            /// <summary>
-            /// The name of the header of a <see cref="SenderMessage"/> or <see cref=
-            /// "IReceiverMessage"/> where the Key of a Kafka message is stored.
-            /// </summary>
-            public const string KafkaKeyHeader = "Kafka.Key";
+        private const string KafkaKeyHeader = "Kafka.Key";
 
-            /// <summary>
-            /// The prefix to apply to the attributes of a <see cref="CloudEvent"/> when converting
-            /// to a <see cref="SenderMessage"/>.
-            /// </summary>
-            public const string KafkaHeaderPrefix = "ce_";
-        }
+        /// <summary>
+        /// The prefix to apply to the attributes of a <see cref="CloudEvent"/> when converting
+        /// to a <see cref="SenderMessage"/>.
+        /// </summary>
+        private const string KafkaHeaderPrefix = "ce_";
 
         /// <summary>
         /// The default protocol binding.
@@ -77,7 +70,7 @@ namespace RockLib.Messaging.CloudEvents
 
             public void Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent)
             {
-                if (fromReceiverMessage.Headers.TryGetValue(KafkaKeyHeader, out string kafkaKey))
+                if (fromReceiverMessage.Headers.TryGetValue(KafkaKeyHeader, out string? kafkaKey))
                 {
                     toCloudEvent.Attributes.Remove(KafkaKeyHeader);
                     toCloudEvent.SetPartitionKey(kafkaKey);

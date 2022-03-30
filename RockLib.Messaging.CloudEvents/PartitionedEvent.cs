@@ -52,7 +52,7 @@ namespace RockLib.Messaging.CloudEvents
         /// to CloudEvent attributes. If <see langword="null"/>, then <see cref=
         /// "CloudEvent.DefaultProtocolBinding"/> is used instead.
         /// </param>
-        public PartitionedEvent(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)
+        public PartitionedEvent(IReceiverMessage receiverMessage, IProtocolBinding? protocolBinding = null)
             : base(receiverMessage, protocolBinding)
         {
         }
@@ -78,7 +78,7 @@ namespace RockLib.Messaging.CloudEvents
         /// attribute might change, or even be removed, due to protocol semantics or business
         /// processing logic within each hop.
         /// </summary>
-        public string PartitionKey
+        public string? PartitionKey
         {
             get => this.GetPartitionKey();
             set => this.SetPartitionKey(value);
@@ -89,8 +89,10 @@ namespace RockLib.Messaging.CloudEvents
         {
             base.Validate();
 
-            if (string.IsNullOrEmpty(PartitionKey))
+            if (string.IsNullOrWhiteSpace(PartitionKey))
+            {
                 throw new CloudEventValidationException("PartitionKey cannot be null or empty.");
+            }
         }
 
         /// <summary>
@@ -105,16 +107,21 @@ namespace RockLib.Messaging.CloudEvents
         /// <exception cref="CloudEventValidationException">
         /// If the <see cref="SenderMessage"/> is not valid.
         /// </exception>
-        public static new void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null)
+        public static new void Validate(SenderMessage senderMessage, IProtocolBinding? protocolBinding = null)
         {
             if (protocolBinding is null)
+            {
                 protocolBinding = DefaultProtocolBinding;
+            }
 
             CloudEvent.Validate(senderMessage, protocolBinding);
 
             var partitionKeyHeader = protocolBinding.GetHeaderName(PartitionKeyAttribute);
             if (!ContainsHeader<string>(senderMessage, partitionKeyHeader))
-                throw new CloudEventValidationException($"The '{partitionKeyHeader}' header is missing from the SenderMessage.");
+            {
+                throw new CloudEventValidationException(
+                    $"The '{partitionKeyHeader}' header is missing from the SenderMessage.");
+            }
         }
     }
 }

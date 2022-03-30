@@ -1,50 +1,46 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <DebugType>Embedded</DebugType>
+        <Description>Send and receive messages using the CloudEvents format.</Description>
+        <EmbedUntrackedSources>True</EmbedUntrackedSources>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageId>RockLib.Messaging.CloudEvents</PackageId>
+        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+        <PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
+        <PackageReleaseNotes>A changelog is available at https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging.CloudEvents/CHANGELOG.md.</PackageReleaseNotes>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PackageTags>rocklib messaging cloudevents</PackageTags>
+        <PackageVersion>1.0.2</PackageVersion>
+        <PublishRepositoryUrl>True</PublishRepositoryUrl>
+        <Version>1.0.0</Version>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFrameworks>net5.0;netstandard2.0;net462</TargetFrameworks>
-  </PropertyGroup>
+    <PropertyGroup>
+      <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(PackageId).xml</DocumentationFile>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <PackageId>RockLib.Messaging.CloudEvents</PackageId>
-    <PackageVersion>1.0.2</PackageVersion>
-    <Authors>RockLib</Authors>
-    <Description>Send and receive messages using the CloudEvents format.</Description>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>A changelog is available at https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging.CloudEvents/CHANGELOG.md.</PackageReleaseNotes>
-    <PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
-    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <PackageIcon>icon.png</PackageIcon>
-    <Copyright>Copyright 2020-2021 (c) Rocket Mortgage. All rights reserved.</Copyright>
-    <PackageTags>rocklib messaging cloudevents</PackageTags>
-    <Version>1.0.0</Version>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <PublishRepositoryUrl>True</PublishRepositoryUrl>
-    <EmbedUntrackedSources>True</EmbedUntrackedSources>
-    <DebugType>Embedded</DebugType>
-  </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)'=='Release'">
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <None Include="..\LICENSE.md" Pack="true" PackagePath="" />
+        <None Include="..\icon.png" Pack="true" PackagePath="" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="RockLib.Messaging" Version="3.0.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    </ItemGroup>
 
-  <PropertyGroup>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(PackageId).xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\LICENSE.md" Pack="true" PackagePath="" />
-    <None Include="..\icon.png" Pack="true" PackagePath="" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="RockLib.Messaging" Version="2.5.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-  </ItemGroup>
-
-  <Import Project="..\RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.projitems" Label="Shared" />
-
+    <ItemGroup Condition="'$(TargetFramework)'=='net48'">
+        <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    </ItemGroup>
+    
+    <Import Project="..\RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.projitems" Label="Shared" />
 </Project>

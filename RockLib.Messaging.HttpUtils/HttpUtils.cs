@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 
@@ -8,15 +7,21 @@ namespace RockLib.Messaging
 {
     internal static class HttpUtils
     {
-        public static void AddHeader(HttpHeaders headers, string headerName, string headerValue)
+        public static void AddHeader(HttpHeaders headers, string headerName, string? headerValue)
         {
-            if (headerValue == null)
+            if (headerValue is null)
+            {
                 return;
+            }
 
             if (SupportsMultipleValues(headerName))
+            {
                 headers.Add(headerName, SplitByComma(headerValue));
+            }
             else
+            {
                 headers.Add(headerName, headerValue);
+            }
         }
 
         public static bool IsContentHeader(string headerName)
@@ -70,18 +75,27 @@ namespace RockLib.Messaging
             }
         }
 
-        private static IEnumerable<string> SplitByComma(string headerValue)
+        private static IEnumerable<string> SplitByComma(string? headerValue)
         {
             string value;
+
+            if (headerValue is null)
+            {
+                yield break;
+            }
+
 #if NET48
-            if (!headerValue.Contains(','))
+            if (!headerValue.Contains(","))
 #else
             if (!headerValue.Contains(',', StringComparison.InvariantCultureIgnoreCase))
 #endif
             {
                 value = headerValue.Trim();
                 if (value.Length > 0)
+                {
                     yield return value;
+                }
+
                 yield break;
             }
 
@@ -107,7 +121,9 @@ namespace RockLib.Messaging
             {
                 value = sb.ToString().Trim();
                 if (value.Length > 0)
+                {
                     yield return value;
+                }
             }
         }
     }

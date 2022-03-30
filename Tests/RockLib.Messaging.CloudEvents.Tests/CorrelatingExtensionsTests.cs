@@ -30,13 +30,13 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.GetCorrelationId();
 
             cloudEvent.Attributes.Should().ContainKey(CorrelatedEvent.CorrelationIdAttribute)
-                .WhichValue.Should().NotBeNull();
+                .WhoseValue.Should().NotBeNull();
         }
 
         [Fact(DisplayName = "GetCorrelationId extension method throws if cloudEvent parameter is null")]
         public void GetCorrelationIdExtensionMethodSadPath()
         {
-            CloudEvent cloudEvent = null;
+            CloudEvent cloudEvent = null!;
 
             Action act = () => cloudEvent.GetCorrelationId();
 
@@ -51,13 +51,13 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.SetCorrelationId("MyCorrelationId");
 
             cloudEvent.Attributes.Should().ContainKey(CorrelatedEvent.CorrelationIdAttribute)
-                .WhichValue.Should().Be("MyCorrelationId");
+                .WhoseValue.Should().Be("MyCorrelationId");
         }
 
         [Fact(DisplayName = "SetCorrelationId extension method throws if cloudEvent is null")]
         public void SetCorrelationIdExtensionMethodSadPath1()
         {
-            CloudEvent cloudEvent = null;
+            CloudEvent cloudEvent = null!;
 
             Action act = () => cloudEvent.SetCorrelationId("MyCorrelationId");
 

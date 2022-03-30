@@ -19,10 +19,15 @@ namespace RockLib.Messaging.CloudEvents.Correlating
         public static string GetCorrelationId(this CloudEvent cloudEvent)
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
 
-            if (cloudEvent.Attributes.TryGetValue(CorrelationIdAttribute, out var value) && value is string correlationId)
+            if (cloudEvent.Attributes.TryGetValue(CorrelationIdAttribute, out var value) &&
+                value is string correlationId)
+            {
                 return correlationId;
+            }
 
             correlationId = NewCorrelationId();
             cloudEvent.Attributes[CorrelationIdAttribute] = correlationId;
@@ -41,9 +46,14 @@ namespace RockLib.Messaging.CloudEvents.Correlating
         public static void SetCorrelationId(this CloudEvent cloudEvent, string correlationId)
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
+
             if (string.IsNullOrEmpty(correlationId))
+            {
                 throw new ArgumentNullException(nameof(correlationId));
+            }
 
             cloudEvent.Attributes[CorrelationIdAttribute] = correlationId;
         }

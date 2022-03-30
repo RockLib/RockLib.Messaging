@@ -14,13 +14,17 @@ namespace RockLib.Messaging.CloudEvents.Sequencing
         /// </summary>
         /// <param name="cloudEvent">The cloud event.</param>
         /// <returns>The Sequence of the event.</returns>
-        public static string GetSequence(this CloudEvent cloudEvent)
+        public static string? GetSequence(this CloudEvent cloudEvent)
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
 
             if (cloudEvent.Attributes.TryGetValue(SequenceAttribute, out var value) && value is string sequence)
+            {
                 return sequence;
+            }
 
             return null;
         }
@@ -34,15 +38,21 @@ namespace RockLib.Messaging.CloudEvents.Sequencing
         /// The Sequence of the event. If <see langword="null"/>, the Sequence of the event is
         /// removed.
         /// </param>
-        public static void SetSequence(this CloudEvent cloudEvent, string sequence)
+        public static void SetSequence(this CloudEvent cloudEvent, string? sequence)
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
 
-            if (sequence != null)
+            if (sequence is not null)
+            {
                 cloudEvent.Attributes[SequenceAttribute] = sequence;
+            }
             else
+            {
                 cloudEvent.Attributes.Remove(SequenceAttribute);
+            }
         }
 
         /// <summary>
@@ -51,13 +61,17 @@ namespace RockLib.Messaging.CloudEvents.Sequencing
         /// </summary>
         /// <param name="cloudEvent">The cloud event.</param>
         /// <returns>The Sequence Type of the event.</returns>
-        public static string GetSequenceType(this CloudEvent cloudEvent)
+        public static string? GetSequenceType(this CloudEvent cloudEvent)
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
 
             if (cloudEvent.Attributes.TryGetValue(SequenceTypeAttribute, out var value) && value is string sequenceType)
+            {
                 return sequenceType;
+            }
 
             return null;
         }
@@ -71,15 +85,21 @@ namespace RockLib.Messaging.CloudEvents.Sequencing
         /// The Sequence Type of the event. If <see langword="null"/>, the Sequence Type of the
         /// event is removed.
         /// </param>
-        public static void SetSequenceType(this CloudEvent cloudEvent, string sequenceType)
+        public static void SetSequenceType(this CloudEvent cloudEvent, string? sequenceType)
         {
             if (cloudEvent is null)
+            {
                 throw new ArgumentNullException(nameof(cloudEvent));
+            }
 
-            if (sequenceType != null)
+            if (sequenceType is not null)
+            {
                 cloudEvent.Attributes[SequenceTypeAttribute] = sequenceType;
+            }
             else
+            {
                 cloudEvent.Attributes.Remove(SequenceTypeAttribute);
+            }
         }
     }
 }

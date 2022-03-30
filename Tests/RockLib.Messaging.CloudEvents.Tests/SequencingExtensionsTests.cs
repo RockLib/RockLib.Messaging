@@ -46,7 +46,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "GetSequence extension throws is cloudEvent is null")]
         public void GetSequenceExtensionMethodSadPath()
         {
-            CloudEvent cloudEvent = null;
+            CloudEvent cloudEvent = null!;
 
             Action act = () => cloudEvent.GetSequence();
 
@@ -61,7 +61,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.SetSequence("MySequence");
 
             cloudEvent.Attributes.Should().ContainKey(SequentialEvent.SequenceAttribute)
-                .WhichValue.Should().Be("MySequence");
+                .WhoseValue.Should().Be("MySequence");
         }
 
         [Fact(DisplayName = "SetSequence extension method clears the 'sequence' attribute when value is null")]
@@ -80,7 +80,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "SetSequence extension throws is cloudEvent is null")]
         public void SetSequenceExtensionMethodSadPath()
         {
-            CloudEvent cloudEvent = null;
+            CloudEvent cloudEvent = null!;
 
             Action act = () => cloudEvent.SetSequence("MySequence");
 
@@ -126,7 +126,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "GetSequenceType extension throws is cloudEvent is null")]
         public void GetSequenceTypeExtensionMethodSadPath()
         {
-            CloudEvent cloudEvent = null;
+            CloudEvent cloudEvent = null!;
 
             Action act = () => cloudEvent.GetSequenceType();
 
@@ -141,7 +141,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.SetSequenceType("MySequenceType");
 
             cloudEvent.Attributes.Should().ContainKey(SequentialEvent.SequenceTypeAttribute)
-                .WhichValue.Should().Be("MySequenceType");
+                .WhoseValue.Should().Be("MySequenceType");
         }
 
         [Fact(DisplayName = "SetSequenceType extension method clears the 'sequencetype' attribute when value is null")]
@@ -160,7 +160,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Fact(DisplayName = "SetSequenceType extension throws is cloudEvent is null")]
         public void SetSequenceTypeExtensionMethodSadPath()
         {
-            CloudEvent cloudEvent = null;
+            CloudEvent cloudEvent = null!;
 
             Action act = () => cloudEvent.SetSequenceType("MySequenceType");
 

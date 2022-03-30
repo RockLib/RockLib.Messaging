@@ -1,4 +1,5 @@
 ﻿using RockLib.Messaging.CloudEvents.Sequencing;
+using System.Globalization;
 
 namespace RockLib.Messaging.CloudEvents
 {
@@ -43,7 +44,7 @@ namespace RockLib.Messaging.CloudEvents
             if (SequenceType == SequenceTypes.Integer
                 && int.TryParse(source.Sequence, out int sequence))
             {
-                Sequence = unchecked(sequence + 1).ToString();
+                Sequence = unchecked(sequence + 1).ToString(CultureInfo.CurrentCulture);
             }
         }
 
@@ -60,7 +61,7 @@ namespace RockLib.Messaging.CloudEvents
         /// CloudEvent attributes. If <see langword="null"/>, then <see cref="CloudEvent.DefaultProtocolBinding"/>
         /// is used instead.
         /// </param>
-        public SequentialEvent(IReceiverMessage receiverMessage, IProtocolBinding protocolBinding = null)
+        public SequentialEvent(IReceiverMessage receiverMessage, IProtocolBinding? protocolBinding = null)
             : base(receiverMessage, protocolBinding)
         {
         }
@@ -83,7 +84,7 @@ namespace RockLib.Messaging.CloudEvents
         /// REQUIRED. Value expressing the relative order of the event. This enables interpretation of
         /// data supercedence.
         /// </summary>
-        public string Sequence
+        public string? Sequence
         {
             get => this.GetSequence();
             set => this.SetSequence(value);
@@ -93,7 +94,7 @@ namespace RockLib.Messaging.CloudEvents
         /// Specifies the semantics of the sequence attribute. See the <see cref="SequenceTypes"/> class
         /// for known values of this attribute.
         /// </summary>
-        public string SequenceType
+        public string? SequenceType
         {
             get => this.GetSequenceType();
             set => this.SetSequenceType(value);
@@ -104,12 +105,17 @@ namespace RockLib.Messaging.CloudEvents
         {
             base.Validate();
 
-            if (string.IsNullOrEmpty(Sequence))
+            if (string.IsNullOrWhiteSpace(Sequence))
+            {
                 throw new CloudEventValidationException("Sequence cannot be null or empty.");
+            }
 
             if (SequenceType == SequenceTypes.Integer
                 && !int.TryParse(Sequence, out _))
-                throw new CloudEventValidationException($"Invalid valid for Sequence: '{Sequence}'. Because SequenceType is '{SequenceTypes.Integer}', the Sequence property must be a valid string encoded 32-bit signed integer");
+            {
+                throw new CloudEventValidationException(
+                    $"Invalid valid for Sequence: '{Sequence}'. Because SequenceType is '{SequenceTypes.Integer}', the Sequence property must be a valid string encoded 32-bit signed integer");
+            }
         }
 
         /// <summary>
@@ -124,18 +130,20 @@ namespace RockLib.Messaging.CloudEvents
         /// <exception cref="CloudEventValidationException">
         /// If the <see cref="SenderMessage"/> is not valid.
         /// </exception>
-        public static new void Validate(SenderMessage senderMessage, IProtocolBinding protocolBinding = null)
+        public static new void Validate(SenderMessage senderMessage, IProtocolBinding? protocolBinding = null)
         {
             if (protocolBinding is null)
+            {
                 protocolBinding = DefaultProtocolBinding;
+            }
 
             CloudEvent.Validate(senderMessage, protocolBinding);
 
             var sequenceHeader = protocolBinding.GetHeaderName(SequenceAttribute);
-            if (TryGetHeaderValue(senderMessage, sequenceHeader, out string sequence))
+            if (TryGetHeaderValue(senderMessage, sequenceHeader, out string? sequence))
             {
                 var sequenceTypeHeader = protocolBinding.GetHeaderName(SequenceTypeAttribute);
-                if (TryGetHeaderValue(senderMessage, sequenceTypeHeader, out string sequenceType)
+                if (TryGetHeaderValue(senderMessage, sequenceTypeHeader, out string? sequenceType)
                     && sequenceType == SequenceTypes.Integer
                     && !int.TryParse(sequence, out _))
                 {

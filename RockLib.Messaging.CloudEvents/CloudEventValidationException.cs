@@ -6,6 +6,7 @@ namespace RockLib.Messaging.CloudEvents
     /// <summary>
     /// The exception that is thrown when validation for a CloudEvent fails.
     /// </summary>
+    [Serializable]
     public class CloudEventValidationException : Exception
     {
         /// <summary>
