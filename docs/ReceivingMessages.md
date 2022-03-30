@@ -136,7 +136,7 @@ Once your instance of IReceiver has been created, you can create handlers for ev
   
 ---
 
-Connected events can be handled using
+Connected events can be handled using:
 
 ```c#
 receiver.Connected += (obj, args) =>
@@ -147,7 +147,7 @@ receiver.Connected += (obj, args) =>
 
 ---
 
-Error Events can be handled using 
+Error Events can be handled using:  
 
 ```c#
 receiver.Error += (obj, args) =>
@@ -159,7 +159,7 @@ receiver.Error += (obj, args) =>
 
 ---
 
-Disconnected Events can be handled using
+Disconnected Events can be handled using:  
 
 ```c#
 receiver.Disconnected += (obj, args) =>
