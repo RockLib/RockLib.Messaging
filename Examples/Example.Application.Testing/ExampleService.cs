@@ -11,6 +11,12 @@ namespace Example
         public ExampleService(IReceiver receiver, IDatabase database)
         {
             Receiver = receiver ?? throw new ArgumentNullException(nameof(receiver));
+            Receiver.Error += (obj, args) =>
+            {
+                // Do something when the receiver encounters an error
+                throw new Exception($"Error in Receiver: {args.Exception.Message}");
+            };
+
             Database = database ?? throw new ArgumentNullException(nameof(database));
         }
 

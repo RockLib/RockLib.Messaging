@@ -21,8 +21,29 @@ namespace Example.Common
             DataReceiver = receiverLookup(DataReceiverName)
                 ?? throw new ArgumentException("Must have an IReceiver registered with the name 'DataReceiver'.", nameof(receiverLookup));
 
+            DataReceiver.Connected += (obj, args) =>
+            {
+                // Do something when the DataReceiver connects to the service
+            };
+            DataReceiver.Error += (obj, args) =>
+            {
+                // Do something when the DataReceiver ecounters an error
+                throw new Exception($"Error in the DataReceiver: {args.Exception.Message}");
+            };
+            DataReceiver.Disconnected += (obj, args) =>
+            {
+                // Do something when the DataReceiver disconnects from the service
+            };
+
             CommandReceiver = receiverLookup(CommandReceiverName)
                 ?? throw new ArgumentException("Must have an IReceiver registered with the name 'CommandReceiver'.", nameof(receiverLookup));
+
+            CommandReceiver.Error += (obj, args) =>
+            {
+                // Do something when the CommandReceiver ecounters an error
+                throw new Exception($"Error in the DataReceiver: {args.Exception.Message}");
+            };
+
         }
 
         public IReceiver DataReceiver { get; }
