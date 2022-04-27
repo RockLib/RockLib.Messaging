@@ -145,8 +145,6 @@ The first has the following parameters:
   - Whether to automatically store offset of last message provided to application.
 - autoOffsetReset
   - Action to take when there is no initial offset in offset store or the desired offset is out of range: 'smallest','earliest' - automatically reset the offset to the smallest offset, 'largest','latest' - automatically reset the offset to the largest offset, 'error' - trigger an error which is retrieved by consuming messages and checking 'message->err'.
-- synchronousProcessing
-  - Whether the kafka receiver should process messages synchronously.
 - schemaIdRequired
   - Should the receiver expect schema information in the message payload
 - statisticsIntervalMs (optional, defaults 0)
@@ -160,8 +158,6 @@ And the second has the following parameters:
   - The topic to subscribe to. A regex can be specified to subscribe to the set of all matching topics (which is updated as topics are added / removed from the cluster). A regex must be front anchored to be recognized as a regex. e.g. `^myregex`
 - consumerConfig
   - The configuration used in creation of the Kafka consumer.
-- synchronousProcessing
-  - Whether the kafka receiver should process messages synchronously.
 - schemaIdRequired
   - Should the receiver expect schema information in the message payload
 
