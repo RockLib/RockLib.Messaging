@@ -76,7 +76,8 @@ MessagingScenarioFactory can be configured with an `SQSSender` named "commands" 
 // long-lived. They are thread-safe, so you can use a single instance throughout your application.
 // Instances should be disposed before the application exits.
 
-// MessagingScenarioFactory uses the above JSON configuration to create a SQSSender:
+// MessagingScenarioFactory uses the above JSON configuration to create a SQSSender
+// Note that the Value object's properties in the json must map to a valid constructor since CreateSender Creates instances using [RockLib.Configuration.ObjectFactory](https://github.com/RockLib/RockLib.Configuration/tree/main/RockLib.Configuration.ObjectFactory#rocklibconfigurationobjectfactory)
 ISender sender = MessagingScenarioFactory.CreateSender("commands");
 
 // Use the sender (for good, not evil):
@@ -178,7 +179,8 @@ MessagingScenarioFactory can be configured with an `SQSReceiver` named "commands
 ```
 
 ```c#
-// MessagingScenarioFactory uses the above JSON configuration to create a SQSReceiver:
+// MessagingScenarioFactory uses the above JSON configuration to create a SQSReceiver
+// Note that the Value object's properties in the json must map to a valid constructor since CreateSender Creates instances using [RockLib.Configuration.ObjectFactory](https://github.com/RockLib/RockLib.Configuration/tree/main/RockLib.Configuration.ObjectFactory#rocklibconfigurationobjectfactory)
 IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
 
 // Start the receiver, passing in a lambda function callback to be invoked when a message is received.

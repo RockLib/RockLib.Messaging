@@ -67,7 +67,8 @@ MessagingScenarioFactory can be configured with a `NamedPipeSender` named "comma
 // long-lived. They are thread-safe, so you can use a single instance throughout your application.
 // Instances should be disposed before the application exits.
 
-// MessagingScenarioFactory uses the above JSON configuration to create a NamedPipeSender:
+// MessagingScenarioFactory uses the above JSON configuration to create a NamedPipeSender
+// Note that the Value object's properties in the json must map to a valid constructor since CreateSender Creates instances using [RockLib.Configuration.ObjectFactory](https://github.com/RockLib/RockLib.Configuration/tree/main/RockLib.Configuration.ObjectFactory#rocklibconfigurationobjectfactory)
 ISender sender = MessagingScenarioFactory.CreateSender("commands");
 
 // Use the sender (for good, not evil):
@@ -138,7 +139,8 @@ MessagingScenarioFactory can be configured with a `NamedPipeReceiver` named "com
 ```
 
 ```c#
-// MessagingScenarioFactory uses the above JSON configuration to create a NamedPipeReceiver:
+// MessagingScenarioFactory uses the above JSON configuration to create a NamedPipeReceiver
+// Note that the Value object's properties in the json must map to a valid constructor since CreateSender Creates instances using [RockLib.Configuration.ObjectFactory](https://github.com/RockLib/RockLib.Configuration/tree/main/RockLib.Configuration.ObjectFactory#rocklibconfigurationobjectfactory)
 IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
 
 // Start the receiver, passing in a lambda function callback to be invoked when a message is received.
