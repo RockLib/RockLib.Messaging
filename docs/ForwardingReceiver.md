@@ -104,6 +104,7 @@ An equivalent forwarding receiver can be defined in config:
 ```
 
 This forwarding receiver can be created by `MessagingScenarioFactory`:
+Note that the Value object's properties in the json must map to a valid constructor since CreateSender Creates instances using [RockLib.Configuration.ObjectFactory](https://github.com/RockLib/RockLib.Configuration/tree/main/RockLib.Configuration.ObjectFactory#rocklibconfigurationobjectfactory)
 
 ```c#
 IReceiver receiver = MessagingScenarioFactory.CreateReceiver("MyForwardingReceiver");

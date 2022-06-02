@@ -114,7 +114,8 @@ MessagingScenarioFactory can be configured with an `KafkaSender` named "commands
 // long-lived. They are thread-safe, so you can use a single instance throughout your application.
 // Instances should be disposed before the application exits.
 
-// MessagingScenarioFactory uses the above JSON configuration to create a KafkaSender:
+// MessagingScenarioFactory uses the above JSON configuration to create a KafkaSender
+// Note that the Value object's properties in the json must map to a valid constructor since CreateSender Creates instances using [RockLib.Configuration.ObjectFactory](https://github.com/RockLib/RockLib.Configuration/tree/main/RockLib.Configuration.ObjectFactory#rocklibconfigurationobjectfactory)
 ISender sender = MessagingScenarioFactory.CreateSender("commands");
 
 // KafkaSender can also be instantiated directly:
@@ -220,7 +221,8 @@ MessagingScenarioFactory can be configured with an `KafkaReceiver` named "comman
 ```
 
 ```c#
-// MessagingScenarioFactory uses the above JSON configuration to create a KafkaReceiver:
+// MessagingScenarioFactory uses the above JSON configuration to create a KafkaReceiver
+// Note that the Value object's properties in the json must map to a valid constructor since CreateSender Creates instances using [RockLib.Configuration.ObjectFactory](https://github.com/RockLib/RockLib.Configuration/tree/main/RockLib.Configuration.ObjectFactory#rocklibconfigurationobjectfactory)
 IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
 
 // KafkaReceiver can also be instantiated directly:

@@ -44,7 +44,8 @@ MessagingScenarioFactory can be configured with an `RabbitSender` named "command
 // long-lived. They are thread-safe, so you can use a single instance throughout your application.
 // Instances should be disposed before the application exits.
 
-// MessagingScenarioFactory uses the above JSON configuration to create a RabbitSender:
+// MessagingScenarioFactory uses the above JSON configuration to create a RabbitSender
+// Note that the Value object's properties in the json must map to a valid constructor since CreateSender Creates instances using [RockLib.Configuration.ObjectFactory](https://github.com/RockLib/RockLib.Configuration/tree/main/RockLib.Configuration.ObjectFactory#rocklibconfigurationobjectfactory)
 ISender sender = MessagingScenarioFactory.CreateSender("commands");
 
 // RabbitSender can also be instantiated directly:
@@ -108,7 +109,8 @@ MessagingScenarioFactory can be configured with an `RabbitReceiver` named "comma
 ```
 
 ```c#
-// MessagingScenarioFactory uses the above JSON configuration to create a RabbitReceiver:
+// MessagingScenarioFactory uses the above JSON configuration to create a RabbitReceiver
+// Note that the Value object's properties in the json must map to a valid constructor since CreateSender Creates instances using [RockLib.Configuration.ObjectFactory](https://github.com/RockLib/RockLib.Configuration/tree/main/RockLib.Configuration.ObjectFactory#rocklibconfigurationobjectfactory)
 IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
 
 // RabbitReceiver can also be instantiated directly:

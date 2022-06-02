@@ -42,7 +42,8 @@ MessagingScenarioFactory can be configured with an `HttpClientSender` named "com
 // long-lived. They are thread-safe, so you can use a single instance throughout your application.
 // Instances should be disposed before the application exits.
 
-// MessagingScenarioFactory uses the above JSON configuration to create an HttpClientSender:
+// MessagingScenarioFactory uses the above JSON configuration to create an HttpClientSender
+// Note that the Value object's properties in the json must map to a valid constructor since CreateSender Creates instances using [RockLib.Configuration.ObjectFactory](https://github.com/RockLib/RockLib.Configuration/tree/main/RockLib.Configuration.ObjectFactory#rocklibconfigurationobjectfactory)
 ISender sender = MessagingScenarioFactory.CreateSender("commands");
 
 // HttpClientSender can also be instantiated directly:
