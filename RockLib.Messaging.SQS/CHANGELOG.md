@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## UNRELEASED
 
-####Fixed
+#### Fixed
 - Updated Wildcard syntax with the correct wildcard syntax ".* " which is consistent with the aws cli.
 
 ## 3.0.1 - 2022-03-22
