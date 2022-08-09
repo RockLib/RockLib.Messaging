@@ -156,7 +156,7 @@ namespace RockLib.Messaging.SQS.Tests
                 It.Is<ReceiveMessageRequest>(r => r.MaxNumberOfMessages == 3
                     && r.QueueUrl == "http://url.com/foo"
                     && r.MessageAttributeNames.Count == 1
-                    && r.MessageAttributeNames[0] == "*"),
+                    && r.MessageAttributeNames[0] == ".*"),
                 It.IsAny<CancellationToken>()));
 
             Assert.Equal("Hello, world!", receivedMessage);
