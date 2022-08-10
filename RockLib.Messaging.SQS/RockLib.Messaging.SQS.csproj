@@ -8,12 +8,12 @@
 		<PackageId>RockLib.Messaging.SQS</PackageId>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 		<PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
-		<PackageVersion>3.0.1</PackageVersion>
+		<PackageVersion>3.0.2-alpha.1</PackageVersion>
 		<PackageReleaseNotes>A changelog is available at https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging.SQS/CHANGELOG.md.</PackageReleaseNotes>
 		<PublishRepositoryUrl>True</PublishRepositoryUrl>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageTags>rocklib messaging sqs</PackageTags>
-		<Version>3.0.1</Version>
+		<Version>3.0.2-alpha.1</Version>
 	</PropertyGroup>
 
 	<PropertyGroup>
