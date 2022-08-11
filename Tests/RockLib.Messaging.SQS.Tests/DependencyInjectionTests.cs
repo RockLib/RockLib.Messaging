@@ -89,6 +89,27 @@ namespace RockLib.Messaging.SQS.Tests
             sqsSender.SQSClient.Should().BeSameAs(sqsClient);
         }
 
+        [Fact(DisplayName = "Should register SQS sender as transient")]
+        public void SQSSenderRegisterTransient()
+        {
+            var services = new ServiceCollection();
+
+            using var sqsClient = new AmazonSQSClient(RegionEndpoint.USEast2);
+            services.AddSingleton<IAmazonSQS>(sqsClient);
+
+            services.AddSQSSender("mySender", options =>
+            {
+                options.QueueUrl = new Uri("http://example.com");
+            }, lifetime: ServiceLifetime.Transient);
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            var instance1 = serviceProvider.GetRequiredService<ISender>();
+            var instance2 = serviceProvider.GetRequiredService<ISender>();
+
+            instance1.Should().NotBeSameAs(instance2);
+        }
+
         [Fact]
         public void RetrieveViaSQSReceiver()
         {
@@ -181,6 +202,27 @@ namespace RockLib.Messaging.SQS.Tests
 
             sqsReceiver.Name.Should().Be("myReceiver");
             sqsReceiver.SQSClient.Should().BeSameAs(sqsClient);
+        }
+
+        [Fact(DisplayName = "Should register SQS receiver as transient")]
+        public void SQSReceiverRegisterTransient()
+        {
+            var services = new ServiceCollection();
+
+            using var sqsClient = new AmazonSQSClient(RegionEndpoint.USEast2);
+            services.AddSingleton<IAmazonSQS>(sqsClient);
+
+            services.AddSQSReceiver("myReceiver", options =>
+            {
+                options.QueueUrl = new Uri("http://example.com");
+            }, lifetime: ServiceLifetime.Transient);
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            var instance1 = serviceProvider.GetRequiredService<IReceiver>();
+            var instance2 = serviceProvider.GetRequiredService<IReceiver>();
+
+            instance1.Should().NotBeSameAs(instance2);
         }
     }
 }
