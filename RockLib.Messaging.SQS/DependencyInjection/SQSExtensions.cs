@@ -66,7 +66,7 @@ namespace RockLib.Messaging.DependencyInjection
         /// <returns>A builder allowing the sender to be decorated.</returns>
         public static ISenderBuilder AddSQSSender(this IServiceCollection services, string name,
             Action<SQSSenderOptions> configureOptions) =>
-            services.AddSQSSender(name, configureOptions, true, ServiceLifetime.Singleton);
+            services.AddSQSSender(name, configureOptions, true, _defaultLifetime);
 
         /// <summary>
         /// Adds an <see cref="SQSReceiver"/> to the service collection.
