@@ -102,12 +102,9 @@ namespace RockLib.Messaging.SQS.Tests
                 options.QueueUrl = new Uri("http://example.com");
             }, lifetime: ServiceLifetime.Transient);
 
-            var serviceProvider = services.BuildServiceProvider();
-
-            var instance1 = serviceProvider.GetRequiredService<ISender>();
-            var instance2 = serviceProvider.GetRequiredService<ISender>();
-
-            instance1.Should().NotBeSameAs(instance2);
+            services.Should().Contain(s =>
+                s.ServiceType == typeof(ISender) &&
+                s.Lifetime == ServiceLifetime.Transient);
         }
 
         [Fact]
@@ -217,12 +214,9 @@ namespace RockLib.Messaging.SQS.Tests
                 options.QueueUrl = new Uri("http://example.com");
             }, lifetime: ServiceLifetime.Transient);
 
-            var serviceProvider = services.BuildServiceProvider();
-
-            var instance1 = serviceProvider.GetRequiredService<IReceiver>();
-            var instance2 = serviceProvider.GetRequiredService<IReceiver>();
-
-            instance1.Should().NotBeSameAs(instance2);
+            services.Should().Contain(s =>
+                s.ServiceType == typeof(IReceiver) &&
+                s.Lifetime == ServiceLifetime.Transient);
         }
     }
 }
