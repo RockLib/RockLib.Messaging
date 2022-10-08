@@ -11,6 +11,8 @@ namespace RockLib.Messaging.Kafka
     /// </summary>
     public class KafkaReceiver : Receiver
     {
+        private const int DefaultMessageBufferSize = 10;
+
         private Task? _kafkaPolling;
         private readonly Lazy<IConsumer<string, byte[]>> _consumer;
         private readonly CancellationTokenSource _consumerCancellation = new();
@@ -54,11 +56,13 @@ namespace RockLib.Messaging.Kafka
         /// </param>
         /// <param name="statisticsIntervalMs">
         /// The statistics emit interval in milliseconds. Granularity is 1,000ms. An event handler must be attached to the
-        /// <see cref="StatisticsEmitted"/> event to receive the statistics data. Setting to 0 disables statistics. 
+        /// <see cref="StatisticsEmitted"/> event to receive the statistics data. Setting to 0 disables statistics.
         /// </param>
+        /// <param name="messageBufferSize">The message buffer capacity. Setting to 0 will set the capacity to
+        /// <see cref ="int.MaxValue">int.MaxValue</see></param>
         public KafkaReceiver(string name, string topic, string groupId, string bootstrapServers,
             bool enableAutoOffsetStore = false, AutoOffsetReset autoOffsetReset = Confluent.Kafka.AutoOffsetReset.Latest,
-            bool schemaIdRequired = false, int statisticsIntervalMs = 0)
+            bool schemaIdRequired = false, int statisticsIntervalMs = 0, int messageBufferSize = DefaultMessageBufferSize)
             : base(name)
         {
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
@@ -73,7 +77,7 @@ namespace RockLib.Messaging.Kafka
             builder.SetStatisticsHandler(OnStatisticsEmitted);
 
             _consumer = new Lazy<IConsumer<string, byte[]>>(() => builder.Build());
-            _trackingCollection = new BlockingCollection<KafkaReceiverMessage>();
+            _trackingCollection = CreateBlockingCollection(messageBufferSize);
 
             _schemaIdRequired = schemaIdRequired;
         }
@@ -93,7 +97,10 @@ namespace RockLib.Messaging.Kafka
         /// to the Confluent
         /// <a href="https://docs.confluent.io/platform/current/schema-registry/serdes-develop/index.html#wire-format">wire format</a>
         /// </param>
-        public KafkaReceiver(string name, string topic, ConsumerConfig consumerConfig, bool schemaIdRequired = false)
+        /// <param name="messageBufferSize">The message buffer capacity. Setting to 0 will set the capacity to
+        /// <see cref ="int.MaxValue">int.MaxValue</see></param>
+        public KafkaReceiver(string name, string topic, ConsumerConfig consumerConfig, bool schemaIdRequired = false,
+            int messageBufferSize = DefaultMessageBufferSize)
             : base(name)
         {
             if (consumerConfig is null)
@@ -117,10 +124,13 @@ namespace RockLib.Messaging.Kafka
             builder.SetStatisticsHandler(OnStatisticsEmitted);
 
             _consumer = new Lazy<IConsumer<string, byte[]>>(() => builder.Build());
-            _trackingCollection = new BlockingCollection<KafkaReceiverMessage>();
+            _trackingCollection = CreateBlockingCollection(messageBufferSize);
 
             _schemaIdRequired = schemaIdRequired;
         }
+
+        private static BlockingCollection<KafkaReceiverMessage> CreateBlockingCollection(int size) =>
+            new(size <= 0 ? int.MaxValue : size);
 
         /// <summary>
         /// Gets the topic to subscribe to.
