@@ -77,7 +77,7 @@ namespace RockLib.Messaging.Kafka
             builder.SetStatisticsHandler(OnStatisticsEmitted);
 
             _consumer = new Lazy<IConsumer<string, byte[]>>(() => builder.Build());
-            _trackingCollection = CreateBlockingCollection(messageBufferSize);
+            _trackingCollection = CreateMessageTrackingCollection(messageBufferSize);
 
             _schemaIdRequired = schemaIdRequired;
         }
@@ -124,12 +124,12 @@ namespace RockLib.Messaging.Kafka
             builder.SetStatisticsHandler(OnStatisticsEmitted);
 
             _consumer = new Lazy<IConsumer<string, byte[]>>(() => builder.Build());
-            _trackingCollection = CreateBlockingCollection(messageBufferSize);
+            _trackingCollection = CreateMessageTrackingCollection(messageBufferSize);
 
             _schemaIdRequired = schemaIdRequired;
         }
 
-        private static BlockingCollection<KafkaReceiverMessage> CreateBlockingCollection(int size) =>
+        private static BlockingCollection<KafkaReceiverMessage> CreateMessageTrackingCollection(int size) =>
             new(size <= 0 ? int.MaxValue : size);
 
         /// <summary>
