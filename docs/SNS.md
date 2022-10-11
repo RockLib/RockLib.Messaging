@@ -1,3 +1,7 @@
+---
+sidebar_position: 6
+---
+
 # How to use and configure RockLib.Messaging.SNS
 
 See the [.NET Core example] for a complete demo application.
@@ -12,8 +16,8 @@ The SNSSender class can be directly instantiated and has the following parameter
   - The ARN (Amazon Resource Name) of the SNS topic.
 - region (optional, defaults to null)
   - The region of the SNS topic.
-  
-```c#
+
+```csharp
 ISender sender = new SNSSender("MySender", "arn:aws:sns:us-west-2:123456789012:MyTopic", "us-west-2");
 ```
 
@@ -21,7 +25,7 @@ ISender sender = new SNSSender("MySender", "arn:aws:sns:us-west-2:123456789012:M
 
 To add an SNSSender to a service collection for dependency injection, use the `AddSNSSender` method, optionally passing in a `configureOptions` callback:
 
-```c#
+```csharp
 services.AddSNSSender("MySender", options =>
 {
     options.Region = "us-west-2";
@@ -30,7 +34,7 @@ services.AddSNSSender("MySender", options =>
 
 To bind `SNSSenderOptions` to a configuration section, use the name of the sender when calling the `Configure` method:
 
-```c#
+```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     services.Configure<SNSSenderOptions>("MySender", Configuration.GetSection("MySNSSender"));
@@ -66,7 +70,7 @@ MessagingScenarioFactory can be configured with an `SNSSender` named "commands" 
 }
 ```
 
-```c#
+```csharp
 // Note that implementations of the ISender interface are somewhat expensive and intended to be
 // long-lived. They are thread-safe, so you can use a single instance throughout your application.
 // Instances should be disposed before the application exits.

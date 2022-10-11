@@ -1,3 +1,7 @@
+---
+sidebar_position: 4
+---
+
 # How to use and configure RockLib.Messaging.NamedPipes
 
 See the [.NET Core example] or [.NET Framework example] for a complete demo application.
@@ -11,7 +15,7 @@ The NamedPipeSender class can be directly instantiated and has the following par
 - pipeName (optional)
   - Name of the named pipe. If not provided, the value of the `name` parameter is used.
 
-```c#
+```csharp
 ISender sender = new NamedPipeSender("MySender", "MyPipeName");
 ```
 
@@ -19,7 +23,7 @@ ISender sender = new NamedPipeSender("MySender", "MyPipeName");
 
 To add a NamedPipeSender to a service collection for dependency injection, use the `AddNamedPipeSender` method, optionally passing in a `configureOptions` callback:
 
-```c#
+```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddNamedPipeSender("MySender", options => options.PipeName = "MyPipeName");
@@ -28,7 +32,7 @@ public void ConfigureServices(IServiceCollection services)
 
 To bind the `NamedPipeOptions` to a configuration section, use the name of the sender when calling the `Configure` method:
 
-```c#
+```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     services.Configure<NamedPipeOptions>("MySender", Configuration.GetSection("MyNamedPipe"));
@@ -62,7 +66,7 @@ MessagingScenarioFactory can be configured with a `NamedPipeSender` named "comma
 }
 ```
 
-```c#
+```csharp
 // Note that implementations of the ISender interface are somewhat expensive and intended to be
 // long-lived. They are thread-safe, so you can use a single instance throughout your application.
 // Instances should be disposed before the application exits.
@@ -87,7 +91,7 @@ The NamedPipeReceiver class can be directly instantiated and has the following p
 - pipeName (optional)
   - Name of the named pipe. If not provided, the value of the `name` parameter is used.
 
-```c#
+```csharp
 IReceiver receiver = new NamedPipeReceiver("MyReceiver", "MyPipeName");
 ```
 
@@ -95,7 +99,7 @@ IReceiver receiver = new NamedPipeReceiver("MyReceiver", "MyPipeName");
 
 To add a NamedPipeSender to a service collection for dependency injection, use the `AddNamedPipeSender` method, optionally passing in a `configureOptions` callback:
 
-```c#
+```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddNamedPipeReceiver("MyReceiver", options => options.PipeName = "MyPipeName");
@@ -104,7 +108,7 @@ public void ConfigureServices(IServiceCollection services)
 
 To bind the `NamedPipeOptions` to a configuration section, use the name of the sender when calling the `Configure` method:
 
-```c#
+```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     services.Configure<NamedPipeOptions>("MyReceiver", Configuration.GetSection("MyNamedPipe"));
@@ -138,7 +142,7 @@ MessagingScenarioFactory can be configured with a `NamedPipeReceiver` named "com
 }
 ```
 
-```c#
+```csharp
 // MessagingScenarioFactory uses the above JSON configuration to create a NamedPipeReceiver
 // Note that the Value object's properties in the json must map to a valid constructor since CreateSender Creates instances using [RockLib.Configuration.ObjectFactory](https://github.com/RockLib/RockLib.Configuration/tree/main/RockLib.Configuration.ObjectFactory#rocklibconfigurationobjectfactory)
 IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");

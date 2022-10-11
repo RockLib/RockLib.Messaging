@@ -1,4 +1,8 @@
-# Using RockLib.Messaging with a DI/IOC container
+---
+sidebar_position: 11
+---
+
+# RockLib.Messaging with a DI/IOC container
 
 RockLib.Messaging includes extension methods for registering with the Microsoft.Extensions.DependencyInjection container. There are three extension methods - `AddSender`, `AddTransactionalSender`, and `AddReceiver` - each with two variants. One variant registers the sender/receiver returned by a delegate and the other registers the sender/receiver from `MessagingScenarioFactory` by name.
 
@@ -8,7 +12,7 @@ It may not be necessary to call these methods directly - each implementation has
 
 This example registers by delegate:
 
-```c#
+```csharp
 public void RegisterServices(IServiceCollection services)
 {
     serivces.AddSender((IServiceProvider serviceProvider) =>
@@ -38,7 +42,7 @@ public void RegisterServices(IServiceCollection services)
 
 This example registers with `MessagingScenarioFactory`:
 
-```c#
+```csharp
 public void RegisterServices(IServiceCollection services)
 {
     // Registers ISender from MessagingScenarioFactory.CreateSender("MySender")
@@ -59,7 +63,7 @@ In addition to registering the `ISender`, `ITransactionalSender`, or `IReceiver`
 
 This example service is dependant on two instances of `IReceiver` and has a `ReceiverLookup` injected to retrieve them:
 
-```c#
+```csharp
 public class ExampleService
 {
     private readonly IReceiver _dataReceiver;

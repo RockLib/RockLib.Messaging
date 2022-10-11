@@ -1,3 +1,7 @@
+---
+sidebar_position: 5
+---
+
 # How to use and configure RockLib.Messaging.SQS
 
 See the [.NET Core example] or [.NET Framework example] for a complete demo application.
@@ -15,7 +19,7 @@ The SQSSender class can be directly instantiated and has the following parameter
 - messageGroupId (optional, defaults to null)
   - The tag that specifies that a message belongs to a specific message group. Messages that belong to the same message group are processed in a FIFO manner (however, messages in different message groups might be processed out of order). To interleave multiple ordered streams within a single queue, use MessageGroupId values (for example, session data for multiple users). In this scenario, multiple consumers can process the queue, but the session data of each user is processed in a FIFO fashion. This parameter applies only to FIFO (first-in-first-out) queues.
 
-```c#
+```csharp
 ISender sender = new SQSSender("MySender", new Uri("https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name"),
     region: "us-west-2", messageGroupId: null);
 ```
@@ -24,7 +28,7 @@ ISender sender = new SQSSender("MySender", new Uri("https://sqs.us-west-2.amazon
 
 To add an SQSSender to a service collection for dependency injection, use the `AddSQSSender` method, optionally passing in a `configureOptions` callback:
 
-```c#
+```csharp
 services.AddSQSSender("MySender", options =>
 {
     options.Region = "us-west-2";
@@ -35,7 +39,7 @@ services.AddSQSSender("MySender", options =>
 
 To bind `SQSSenderOptions` to a configuration section, use the name of the sender when calling the `Configure` method:
 
-```c#
+```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     services.Configure<SQSSenderOptions>("MySender", Configuration.GetSection("MySQSSender"));
@@ -71,7 +75,7 @@ MessagingScenarioFactory can be configured with an `SQSSender` named "commands" 
 }
 ```
 
-```c#
+```csharp
 // Note that implementations of the ISender interface are somewhat expensive and intended to be
 // long-lived. They are thread-safe, so you can use a single instance throughout your application.
 // Instances should be disposed before the application exits.
@@ -108,7 +112,7 @@ The SQSReceiver class can be directly instantiated and has the following paramet
 - terminateMessageVisibilityTimeoutOnRollback (optional, defaults to false)
   - Whether to terminate the message visibility timeout when SQSReceiverMessage.RollbackMessageAsync is called. Terminating the message visibility timeout allows the message to immediately become available for queue consumers to process.
 
-```c#
+```csharp
 IReceiver receiver = new SQSReceiver("MyReceiver", new Uri("https://sqs.us-west-2.amazonaws.com/123456789012/your_queue_name"),
     region:"us-west-2", maxMessages: 3, autoAcknowledge: true, waitTimeSeconds: 0, unpackSNS: false, terminateMessageVisibilityTimeoutOnRollback: false);
 ```
@@ -117,7 +121,7 @@ IReceiver receiver = new SQSReceiver("MyReceiver", new Uri("https://sqs.us-west-
 
 To add an SQSReceiver to a service collection for dependency injection, use the `AddSQSReceiver` method, optionally passing in a `configureOptions` callback:
 
-```c#
+```csharp
 services.AddSQSReceiver("MySender", options =>
 {
     options.Region = "us-west-2";
@@ -132,7 +136,7 @@ services.AddSQSReceiver("MySender", options =>
 
 To bind `SQSReceiverOptions` to a configuration section, use the name of the sender when calling the `Configure` method:
 
-```c#
+```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     services.Configure<SQSReceiverOptions>("MyReceiver", Configuration.GetSection("MySQSReceiver"));
@@ -178,7 +182,7 @@ MessagingScenarioFactory can be configured with an `SQSReceiver` named "commands
 }
 ```
 
-```c#
+```csharp
 // MessagingScenarioFactory uses the above JSON configuration to create a SQSReceiver
 // Note that the Value object's properties in the json must map to a valid constructor since CreateSender Creates instances using [RockLib.Configuration.ObjectFactory](https://github.com/RockLib/RockLib.Configuration/tree/main/RockLib.Configuration.ObjectFactory#rocklibconfigurationobjectfactory)
 IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");

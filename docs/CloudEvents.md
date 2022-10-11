@@ -1,3 +1,7 @@
+---
+sidebar_position: 14
+---
+
 # How to send and receive messages as CloudEvents
 
 The RockLib.Messaging.CloudEvents package allows messages to be sent, received, and validated according to the [CloudEvents spec](https://github.com/cloudevents/spec).
@@ -32,7 +36,7 @@ The RockLib.Messaging.CloudEvents package allows messages to be sent, received, 
 
 To make it easy to send CloudEvents with any `ISender` or `ITransactionalSender`, the `CloudEvent` class and all of its inheritors are implicitly convertible to `SenderMessage`. Simply instantiate a CloudEvent and pass it anywhere that needs a sender message.
 
-```c#
+```csharp
 ISender sender = // TODO: Initialize
 
 // Source and Type must be provided.
@@ -47,7 +51,7 @@ await sender.SendAsync(cloudEvent);
 
 Alternatively, explicitly convert a `CloudEvent` by calling its `ToSenderMessage()` method:
 
-```c#
+```csharp
 await sender.SendAsync(cloudEvent.ToSenderMessage());
 ```
 
@@ -59,7 +63,7 @@ To ensure that a `SenderMessage` is valid for a given `IProtocolBinding`, call t
 
 To ensure that all messages sent by an `ISender` are in the correct format for a given `IProtocolBinding`, wrap it in a `ValidatingSender` and call a static `Validate(SenderMessage, IProtocolBinding)` method in the callback. There is also a `AddValidation<TCloudEvent>()` extension method for `ISenderBuilder` that calls the static `Validate` method of type `TCloudEvent`:
 
-```c#
+```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddNamedPipeSender("exampleSender")
@@ -71,7 +75,7 @@ public void ConfigureServices(IServiceCollection services)
 
 To receive CloudEvents from any `IReceiver`, start it using the `Start<TCloudEvent>` extension method, where `TCloudEvent` is `CloudEvent` or its inheritor.
 
-```c#
+```csharp
 public class MyService : IHostedService
 {
     private readonly IReceiver _receiver;
@@ -158,7 +162,7 @@ The raw data (or payload) of an event is available from the `StringData` and `Bi
 
 The following example demonstrates usage of these properties and extension methods:
 
-```c#
+```csharp
 // Note that all of the SetData extension method overloads return the same
 // CloudEvent, allowing for an event to be initialized on a single line.
 
@@ -401,7 +405,7 @@ The `PartitionedEvent` class defines four constructors:
 
 ## Protocol Bindings
 
-The `ProtocolBindings` static class defines the following bindings (corresponding to the [CloudEvents spec](https://github.com/cloudevents/spec#cloudevents-documents)):
+The `ProtocolBindings` static class defines the following bindings (corresponding to the [CloudEvents spec](https://github.com/cloudevents/specsharpcloudevents-documents)):
 
 - Default
   - Basically does nothing.
