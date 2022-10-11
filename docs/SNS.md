@@ -53,7 +53,7 @@ public void ConfigureServices(IServiceCollection services)
 
 ---
 
-MessagingScenarioFactory can be configured with an `SNSSender` named "commands" as follows:
+MessagingScenarioFactory configured with an `SNSSender` named "commands" as follows:
 
 ```json
 {
@@ -88,4 +88,4 @@ sender.Dispose();
 
 ---
 
-[.NET Core example]: ../Example.Messaging.SNS.DotNetCore20
+[.NET Core example]: https://github.com/RockLib/RockLib.Messaging/blob/main/Examples/Example.Messaging.SNS/Program.cs

@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # How to send messages
 
-In order to send messages, an instance of the `ISender` interface is needed. So throughout this document, it is assumed that you have an `ISender` variable named `sender` declared and initialized somewhere. Like this:
+To send messages, an instance of the `ISender` interface is needed. Throughout this document, it's assumed that you have an `ISender` variable named `sender` declared and initialized somewhere. Like this:
 
 ```csharp
 ISender sender; // TODO: Initialize the sender variable
@@ -69,5 +69,3 @@ message.Headers["ExampleDescription"] = "boring";
 
 sender.Send(message);
 ```
-
----

@@ -50,7 +50,7 @@ public void ConfigureServices(IServiceCollection services)
 
 ---
 
-MessagingScenarioFactory can be configured with a `NamedPipeSender` named "commands" as follows:
+MessagingScenarioFactory configured with a `NamedPipeSender` named "commands" as follows:
 
 ```json
 {
@@ -126,7 +126,7 @@ public void ConfigureServices(IServiceCollection services)
 
 ---
 
-MessagingScenarioFactory can be configured with a `NamedPipeReceiver` named "commands" as follows:
+MessagingScenarioFactory configured with a `NamedPipeReceiver` named "commands":
 
 ```json
 {
@@ -151,7 +151,7 @@ IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
 receiver.Start(async message =>
 {
     Console.WriteLine(message.StringPayload);
-    
+
     // Since AutoAcknowledge is false in this example, the message must be acknowledged.
     await message.AcknowledgeAsync();
 });
@@ -163,5 +163,4 @@ Console.ReadLine();
 receiver.Dispose();
 ```
 
-[.NET Core example]: ../Example.Messaging.NamedPipes.DotNetCore20
-[.NET Framework example]: ../Example.Messaging.NamedPipes.DotNetFramework451
+[.NET Core example]: https://github.com/RockLib/RockLib.Messaging/blob/main/Examples/Example.Messaging.NamedPipes/Program.cs

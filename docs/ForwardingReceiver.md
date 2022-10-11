@@ -61,7 +61,7 @@ public void ConfigureServices(IServiceCollection services)
 
 ---
 
-An equivalent forwarding receiver can be defined in config:
+An equivalent forwarding receiver defined in config:
 
 ```json
 {

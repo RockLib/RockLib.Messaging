@@ -6,7 +6,7 @@ sidebar_position: 3
 
 ## Starting a receiver
 
-In order to receive messages, an instance of the `IReceiver` interface is needed. So throughout this section, it is assumed that you have an `IReceiver` variable named `receiver` declared and initialized somewhere. Like this:
+To receive messages, an instance of the `IReceiver` interface is needed. So throughout this section, it is assumed that you have an `IReceiver` variable named `receiver` declared and initialized somewhere. Like this:
 
 ```csharp
 IReceiver receiver; // TODO: Initialize the receiver variable
@@ -136,8 +136,8 @@ await message.RollbackAsync();
 
 ## Handling Error/Connected/Disconnected Events
 
-Once your instance of IReceiver has been created, you can create handlers for events that the receiver may publish.  
-  
+Once your instance of IReceiver has been created, you can create handlers for events that the receiver may publish.
+
 ---
 
 Connected events can be handled using:
@@ -151,7 +151,7 @@ receiver.Connected += (obj, args) =>
 
 ---
 
-Error Events can be handled using:  
+Error Events can be handled using:
 
 ```csharp
 receiver.Error += (obj, args) =>
@@ -163,7 +163,7 @@ receiver.Error += (obj, args) =>
 
 ---
 
-Disconnected Events can be handled using:  
+Disconnected Events can be handled using:
 
 ```csharp
 receiver.Disconnected += (obj, args) =>

@@ -1,6 +1,5 @@
 ---
 sidebar_position: 9
-sidebar_label: 'Configure RockLib.Messaging.RabbitMQ'
 ---
 
 # How to use and configure RockLib.Messaging.RabbitMQ
@@ -143,5 +142,4 @@ receiver.Dispose();
 
 ---
 
-[.NET Core example]: ../Example.Messaging.RabbitMQ.DotNetCore20
-[.NET Framework example]: ../Example.Messaging.RabbitMQ.DotNetFramework451
+[.NET Core example]: https://github.com/RockLib/RockLib.Messaging/tree/main/Examples/Example.Messaging.RabbitMQ

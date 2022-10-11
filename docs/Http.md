@@ -184,5 +184,4 @@ receiver.Start(async message =>
 
 *Note that since all handled requests are guaranteed to match the path, messages from a receiver with path tokens will always have a header for each token.*
 
-[.NET Core example]: ../Example.Messaging.Http.DotNetCore20
-[.NET Framework example]: ../Example.Messaging.Http.DotNetFramework451
+[.NET Core example]: https://github.com/RockLib/RockLib.Messaging/blob/main/Examples/Example.Messaging.Http/Program.cs

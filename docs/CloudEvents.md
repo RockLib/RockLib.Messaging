@@ -112,7 +112,7 @@ public class MyService : IHostedService
 
 The `CloudEvent` class is the base class for all CloudEvents. Three additional implementations, [SequentialEvent](#sequentialevent-class), [CorrelatedEvent](#correlatedevent-class), and [PartitionedEvent](#partitionedevent-class) are included in this package.
 
-#### CloudEvent Constructors
+### CloudEvent Constructors
 
 The `CloudEvent` class defines four constructors:
 
@@ -139,7 +139,7 @@ The `CloudEvent` class defines four constructors:
 
 *Inheritors of the `CloudEvent` class (and inheritors of those classes) are expected to have a default constructor, a copy constructor, a message constructor, and a json constructor that each call their base constructor.*
 
-#### CloudEvent Attributes
+### CloudEvent Attributes
 
 The following CloudEvent attributes are defined by the `CloudEvent` class:
 
@@ -156,7 +156,7 @@ The following CloudEvent attributes are defined by the `CloudEvent` class:
 
 <!-- TODO: Describe how the Attributes property works. -->
 
-#### CloudEvent Data
+### CloudEvent Data
 
 The raw data (or payload) of an event is available from the `StringData` and `BinaryData` properties, as well as from the `GetData<T>` and `TryGetData<T>` extension methods. The data of a `CloudEvent`, can be set by calling one of the `SetData` extension method overloads.
 
@@ -241,15 +241,15 @@ class Client
 }
 ```
 
-#### CloudEvent Headers
+### CloudEvent Headers
 
 This property exists to store key/value pairs that are not specific to the CloudEvent specification. It also allows for a lossless conversion from CloudEvent to SenderMessage and from IReceiverMessage to CloudEvent.
 
-#### ProtocolBinding property
+### ProtocolBinding property
 
 This property is used to determine the header name of a sender or receiver message in order to map it to/from a `CloudEvent`.
 
-#### DefaultProtocolBinding static property
+### DefaultProtocolBinding static property
 
 The `DefaultProtocolBinding` property determines which `IProtocolBinding` to use when not otherwise specified.
 
@@ -259,31 +259,31 @@ Its value is used...
 - ...by the *message*  constructor - but only if its `protocolBinding` parameter is null - as the initial value of the `ProtocolBinding` property, and also to map the receiver message headers to CloudEvent attributes.
 - ...by the static `Validate` method (and methods that hide it) - but only if its `protocolBinding` parameter is null - to map the CloudEvent attributes to sender message headers.
 
-#### ToJson method
+### ToJson method
 
 This method serializes the CloudEvent in the [JSON Event Format for CloudEvents](https://github.com/cloudevents/spec/blob/v1.0/json-format.md).
 
-#### ToSenderMessage method
+### ToSenderMessage method
 
 The `CloudEvent` class defines a virtual `ToSenderMessage` that creates a new `SenderMessage` based on the event's data and attributes, using the event's `ProtocolBinding` to map those attributes to sender message headers. Note that before this method creates the `SenderMessage`, it first calls the [`Validate` instance method](#validate-instance-method).
 
-#### ToHttpRequestMessage method
+### ToHttpRequestMessage method
 
 To  convert any `CloudEvent` to an `HttpRequestMessage` (to be used by `HttpClient`), call one of the `ToHttpRequestMessage` overloads, optionally passing an `HttpMethod` or request URI.
 
-#### Validate instance method
+### Validate instance method
 
 This virtual method ensures that the `CloudEvent` instance is valid - throws a `CloudEventValidationException` if invalid. This method is called at the beginning of the `ToSenderMessage()` method.
 
 *Inheritors of the `CloudEvent` class (and inheritors of those classes) are expected to __override__ this method, call `base.Validate()`, and add additional validation according to the CloudEvent subclass type.*
 
-#### Validate static method
+### Validate static method
 
 This static method ensures that the `SenderMessage` instance is valid according to the `IProtocolBinding` - throws a `CloudEventValidationException` if invalid.
 
 *Inheritors of the `CloudEvent` class (and inheritors of those classes) are expected to **hide** this method, call `CloudEvent.Validate(senderMessage, protocolBinding)`, and add additional validation according to the CloudEvent subclass type.*
 
-#### Protected methods
+### Protected methods
 
 In order to implement custom validation logic, subclasses of `CloudEvent` will need to query the headers of outgoing sender messages. However, the `SenderMessage` class wasn't really designed to have its headers queried, so accessing its headers can be cumbersome. To make it easier for subclasses, the `CloudEvent` class contains two protected helper methods:
 
@@ -308,7 +308,7 @@ If the `SequenceType` attribute is set to `"Integer"`, the `Sequence` attribute 
 
 The `SequenceTypes` static class defines a string constant, `Integer`, with the value `"Integer"`.
 
-#### SequentialEvent Constructors
+### SequentialEvent Constructors
 
 The `SequentialEvent` class defines four constructors:
 
@@ -343,7 +343,7 @@ The `CorrelatedEvent` class defines one additional CloudEvent attribute, `Correl
 |:----------------------------------|:---------|:----------|:----------------------------|
 | CorrelationId (`correlationid`)   | `string` | Yes       | `Guid.NewGuid().ToString()` |
 
-#### CorrelatedEvent Constructors
+### CorrelatedEvent Constructors
 
 The `CorrelatedEvent` class defines four constructors:
 
@@ -377,7 +377,7 @@ The `PartitionedEvent` class defines one additional CloudEvent attribute, `Parti
 |:----------------------------------|:---------|:----------|:--------------|
 | PartitionKey (`partitionkey`)   | `string` | Yes       | N/A           |
 
-#### PartitionedEvent Constructors
+### PartitionedEvent Constructors
 
 The `PartitionedEvent` class defines four constructors:
 

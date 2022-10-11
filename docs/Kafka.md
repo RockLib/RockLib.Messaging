@@ -286,5 +286,4 @@ receiver.AddStatisticsEmittedHandler(OnStatisticsEmitted);
 
 ---
 
-[.NET Core example]: ../Example.Messaging.Kafka.DotNetCore20
-[.NET Framework example]: ../Example.Messaging.Kafka.DotNetFramework451
+[.NET Core example]: https://github.com/RockLib/RockLib.Messaging/tree/main/Examples/Example.Messaging.Kafka

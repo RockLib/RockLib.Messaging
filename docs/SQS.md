@@ -191,7 +191,7 @@ IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
 receiver.Start(async message =>
 {
     Console.WriteLine(message.StringPayload);
-    
+
     // Always handle the message.
     await message.AcknowledgeAsync();
 });
@@ -205,5 +205,4 @@ receiver.Dispose();
 
 ---
 
-[.NET Core example]: ../Example.Messaging.SQS.DotNetCore20
-[.NET Framework example]: ../Example.Messaging.SQS.DotNetFramework451
+[.NET Core example]: https://github.com/RockLib/RockLib.Messaging/blob/main/Examples/Example.Messaging.SQS/Program.cs
