@@ -1,8 +1,12 @@
+---
+sidebar_position: 13
+---
+
 # Sending messages transactionally
 
 The RockLib.Messaging library defines an interface for sending messages tranactionally through the `ITransactionalSender` interface. Sending messages transactionally in this case means that one or more messages, all destined for the same sender, are added to a transaction, then the transaction is committed. The `ITransactionalSender` interface inherits from `ISender`, so it has the same functionality in addition to its `BeginTransaction` method.
 
-```c#
+```csharp
 ITransactionalSender transactionalSender = // TODO: Instantiate.
 
 ISenderTransaction transaction = transactionalSender.BeginTransaction();

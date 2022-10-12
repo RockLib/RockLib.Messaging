@@ -1,3 +1,7 @@
+---
+sidebar_position: 7
+---
+
 # How to use and configure RockLib.Messaging.Http
 
 See the [.NET Core example] or [.NET Framework example] for a complete demo application.
@@ -37,7 +41,7 @@ MessagingScenarioFactory can be configured with an `HttpClientSender` named "com
 }
 ```
 
-```c#
+```csharp
 // Note that implementations of the ISender interface are somewhat expensive and intended to be
 // long-lived. They are thread-safe, so you can use a single instance throughout your application.
 // Instances should be disposed before the application exits.
@@ -67,7 +71,7 @@ sender.Dispose();
 
 The `url` parameter supports the concept of "URL tokens" - where its value contains some identifier surrounded by curly braces. When a message is sent, the actual URL is calculated by replacing the token with the value of corresponding message header.
 
-```c#
+```csharp
 ISender sender = new HttpClientSender("my_sender", "http://foo.com/api/{api_version}/commands");
 
 SenderMessage message = new SenderMessage("Hello, world!");
@@ -163,7 +167,7 @@ This constructor actually does the initialization.
 
 The `path` and `url` parameters in the constructors above support the concept of "path tokens" - where a header is added to the receiver message for each token. The path of the incoming http request determines the value of the token header.
 
-```c#
+```csharp
 IReceiver receiver = new HttpListenerReceiver("my_receiver", "http://localhost:5000/api/{api_version}/commands");
 
 receiver.Start(async message =>
@@ -180,5 +184,4 @@ receiver.Start(async message =>
 
 *Note that since all handled requests are guaranteed to match the path, messages from a receiver with path tokens will always have a header for each token.*
 
-[.NET Core example]: ../Example.Messaging.Http.DotNetCore20
-[.NET Framework example]: ../Example.Messaging.Http.DotNetFramework451
+[.NET Core example]: https://github.com/RockLib/RockLib.Messaging/blob/main/Examples/Example.Messaging.Http/Program.cs

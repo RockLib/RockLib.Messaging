@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 # Getting Started
 
 RockLib.Messaging is a simple API that allows you to send and receive messages. In this tutorial, we will be building a pair of console applications that send messages to each other using a [named pipe](https://en.wikipedia.org/wiki/Named_pipe).
@@ -14,7 +18,7 @@ Add a nuget references for "RockLib.Messaging.NamedPipes" and "Microsoft.Extensi
 
 Add a class named 'SendingService' to the SenderApp project and replace its contents with the following:
 
-```c#
+```csharp
 using Microsoft.Extensions.Hosting;
 using RockLib.Messaging;
 using System;
@@ -64,7 +68,7 @@ namespace SenderApp
 
 Add a class named 'ReceivingService' to the ReceiverApp project and replace its contents with the following:
 
-```c#
+```csharp
 using Microsoft.Extensions.Hosting;
 using RockLib.Messaging;
 using System;
@@ -107,7 +111,7 @@ namespace ReceiverApp
 
 Edit the `Program.cs` file in the SenderApp project as follows:
 
-```c#
+```csharp
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RockLib.Messaging.DependencyInjection;
@@ -138,7 +142,7 @@ namespace SenderApp
 
 Edit the `Program.cs` file in the ReceiverApp project as follows:
 
-```c#
+```csharp
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RockLib.Messaging.DependencyInjection;

@@ -1,8 +1,12 @@
+---
+sidebar_position: 12
+---
+
 # Sending and receiving compressed messages
 
 To send compressed messages with RockLib.Messaging, instantiate the `SenderMessage` object using either of its constructors that has a `payload` parameter. Pass the value of the `payload` parameter uncompressed and pass `true` as the value of the optional `compress` parameter. The payload will be gzip compressed and a header with the name `HeaderNames.IsCompressedPayload` is set to `true`, marking the message as compressed. *Note that if gzip compressing the payload does not make it smaller, then the payload is left uncompressed.*
 
-```c#
+```csharp
 ISender sender = // TODO: instantiate
 
 string stringPayload = // TODO: Load value

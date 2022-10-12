@@ -1,3 +1,7 @@
+---
+sidebar_position: 9
+---
+
 # How to use and configure RockLib.Messaging.RabbitMQ
 
 See the [.NET Core example] or [.NET Framework example] for a complete demo application.
@@ -39,7 +43,7 @@ MessagingScenarioFactory can be configured with an `RabbitSender` named "command
 }
 ```
 
-```c#
+```csharp
 // Note that implementations of the ISender interface are somewhat expensive and intended to be
 // long-lived. They are thread-safe, so you can use a single instance throughout your application.
 // Instances should be disposed before the application exits.
@@ -108,7 +112,7 @@ MessagingScenarioFactory can be configured with an `RabbitReceiver` named "comma
 }
 ```
 
-```c#
+```csharp
 // MessagingScenarioFactory uses the above JSON configuration to create a RabbitReceiver
 // Note that the Value object's properties in the json must map to a valid constructor since CreateSender Creates instances using [RockLib.Configuration.ObjectFactory](https://github.com/RockLib/RockLib.Configuration/tree/main/RockLib.Configuration.ObjectFactory#rocklibconfigurationobjectfactory)
 IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
@@ -138,5 +142,4 @@ receiver.Dispose();
 
 ---
 
-[.NET Core example]: ../Example.Messaging.RabbitMQ.DotNetCore20
-[.NET Framework example]: ../Example.Messaging.RabbitMQ.DotNetFramework451
+[.NET Core example]: https://github.com/RockLib/RockLib.Messaging/tree/main/Examples/Example.Messaging.RabbitMQ

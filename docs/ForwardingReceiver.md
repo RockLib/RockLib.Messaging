@@ -1,10 +1,14 @@
+---
+sidebar_position: 10
+---
+
 # ForwardingReceiver
 
 The `ForwardingReceiver` class is a [decorator] implementation of the `IReceiver` interface that can automatically forward messages to an `ISender` when they are handled. This makes it very simple to implement the "fault queue" pattern.
 
 For example, an application might need to forward messages to a "reject" queue if a message is malformed and forward messages to a "retry" queue if an external error occurred while processing a message. With a forwarding receiver, the message handler for this app could be very simple:
 
-```c#
+```csharp
 ForwardingReceiver receiver = // TODO: initialize
 
 receiver.Start(async message =>
@@ -33,7 +37,7 @@ receiver.Start(async message =>
 
 Adding a forwarding receiver using dependency injection (using SQS for example):
 
-```c#
+```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddSQSSender("RejectQueue", options => options.QueueUrl = "my-reject-queue-url");
@@ -57,7 +61,7 @@ public void ConfigureServices(IServiceCollection services)
 
 ---
 
-An equivalent forwarding receiver can be defined in config:
+An equivalent forwarding receiver defined in config:
 
 ```json
 {
@@ -106,7 +110,7 @@ An equivalent forwarding receiver can be defined in config:
 This forwarding receiver can be created by `MessagingScenarioFactory`:
 Note that the Value object's properties in the json must map to a valid constructor since CreateSender Creates instances using [RockLib.Configuration.ObjectFactory](https://github.com/RockLib/RockLib.Configuration/tree/main/RockLib.Configuration.ObjectFactory#rocklibconfigurationobjectfactory)
 
-```c#
+```csharp
 IReceiver receiver = MessagingScenarioFactory.CreateReceiver("MyForwardingReceiver");
 ```
 

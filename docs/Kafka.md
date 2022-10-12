@@ -1,3 +1,8 @@
+---
+sidebar_position: 8
+sidebar_label: 'Configure RockLib.Messaging.Kafka'
+---
+
 # How to use and configure RockLib.Messaging.Kafka
 
 See the [.NET Core example] or [.NET Framework example] for a complete demo application.
@@ -58,7 +63,7 @@ The fourth has the following parameters:
 
 To add an KafkaSender to a service collection for dependency injection, use the `AddKafkaSender` method, optionally passing in a `configureOptions` callback:
 
-```c#
+```csharp
 services.AddKafkaSender("MySender", options =>
 {
     options.Topic = "test";
@@ -69,7 +74,7 @@ services.AddKafkaSender("MySender", options =>
 
 To bind `KafkaSenderOptions` to a configuration section, use the name of the sender when calling the `Configure` method:
 
-```c#
+```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     services.Configure<KafkaSenderOptions>("MySender", Configuration.GetSection("MyKafkaSender"));
@@ -109,7 +114,7 @@ MessagingScenarioFactory can be configured with an `KafkaSender` named "commands
 }
 ```
 
-```c#
+```csharp
 // Note that implementations of the ISender interface are somewhat expensive and intended to be
 // long-lived. They are thread-safe, so you can use a single instance throughout your application.
 // Instances should be disposed before the application exits.
@@ -166,7 +171,7 @@ And the second has the following parameters:
 
 To add an KafkaReceiver to a service collection for dependency injection, use the `AddKafkaReceiver` method, optionally passing in a `configureOptions` callback:
 
-```c#
+```csharp
 services.AddKafkaReceiver("MyReceiver", options =>
 {
     options.Topic = "test";
@@ -177,7 +182,7 @@ services.AddKafkaReceiver("MyReceiver", options =>
 
 To bind `KafkaReceiverOptions` to a configuration section, use the name of the receiver when calling the `Configure` method:
 
-```c#
+```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     services.Configure<KafkaReceiverOptions>("MyReceiver", Configuration.GetSection("MyKafkaReceiver"));
@@ -216,7 +221,7 @@ MessagingScenarioFactory can be configured with an `KafkaReceiver` named "comman
 }
 ```
 
-```c#
+```csharp
 // MessagingScenarioFactory uses the above JSON configuration to create a KafkaReceiver
 // Note that the Value object's properties in the json must map to a valid constructor since CreateSender Creates instances using [RockLib.Configuration.ObjectFactory](https://github.com/RockLib/RockLib.Configuration/tree/main/RockLib.Configuration.ObjectFactory#rocklibconfigurationobjectfactory)
 IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
@@ -265,7 +270,7 @@ This is disabled by default, but can be enabled by setting the `statisticsInterv
 }
 ```
 
-```c#
+```csharp
 // MessagingScenarioFactory uses the above JSON configuration to create a KafkaReceiver:
 IReceiver receiver = MessagingScenarioFactory.CreateReceiver("commands");
 
@@ -281,5 +286,4 @@ receiver.AddStatisticsEmittedHandler(OnStatisticsEmitted);
 
 ---
 
-[.NET Core example]: ../Example.Messaging.Kafka.DotNetCore20
-[.NET Framework example]: ../Example.Messaging.Kafka.DotNetFramework451
+[.NET Core example]: https://github.com/RockLib/RockLib.Messaging/tree/main/Examples/Example.Messaging.Kafka

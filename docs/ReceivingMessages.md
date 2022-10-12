@@ -1,10 +1,14 @@
+---
+sidebar_position: 3
+---
+
 # How to receive messages
 
 ## Starting a receiver
 
-In order to receive messages, an instance of the `IReceiver` interface is needed. So throughout this section, it is assumed that you have an `IReceiver` variable named `receiver` declared and initialized somewhere. Like this:
+To receive messages, an instance of the `IReceiver` interface is needed. So throughout this section, it is assumed that you have an `IReceiver` variable named `receiver` declared and initialized somewhere. Like this:
 
-```c#
+```csharp
 IReceiver receiver; // TODO: Initialize the receiver variable
 ```
 
@@ -12,7 +16,7 @@ IReceiver receiver; // TODO: Initialize the receiver variable
 
 A receiver must be started to begin receiving messages. There are several ways of starting a receiver. One was is to call the `Start` extension method, passing it a callback function to be invoked when a message is received:
 
-```c#
+```csharp
 async Task HandleMessageAsync(IReceiverMessage message)
 {
     // TODO: do something with the message
@@ -25,7 +29,7 @@ receiver.Start(HandleMessageAsync);
 
 If you need to know which instance of `IReceiver` received the message, pass a callback function with this signature to the `Start` method:
 
-```c#
+```csharp
 async Task HandleMessageAsync(IReceiver receiver, IReceiverMessage message)
 {
     // TODO: do something with the receiver and message
@@ -38,7 +42,7 @@ receiver.Start(HandleMessageAsync);
 
 If you need to encapsulate the message handler in a class, implement the `IMessageHandler` interface and pass an instance of the object to the `Start` method:
 
-```c#
+```csharp
 class MyMessageHandler : IMessageHandler
 {
     public async Task OnMessageReceivedAsync(IReceiver receiver, IReceiverMessage message)
@@ -55,7 +59,7 @@ receiver.Start(messageHandler);
 
 An equivalent way of starting a receiver with an `IMessageHandler` implementation is by setting the `MessageHandler` property:
 
-```c#
+```csharp
 class MyMessageHandler : IMessageHandler
 {
     public async Task OnMessageReceivedAsync(IReceiver receiver, IReceiverMessage message)
@@ -74,7 +78,7 @@ receiver.MessageHandler = messageHandler;
 
 Received messages implement the `IReceiverMessage` interface. The examples in this section assume there is an `IReceiverMessage` parameter named `message`. To access the message payload, use the `StringPayload` or `BinaryPayload` properties:
 
-```c#
+```csharp
 string stringPayload = message.StringPayload;
 byte[] binaryPayload = message.BinaryPayload;
 ```
@@ -83,7 +87,7 @@ byte[] binaryPayload = message.BinaryPayload;
 
 To access the headers of the received message, use the `Headers` property.
 
-```c#
+```csharp
 // The TryGetValue method is generic. Note the out bool parameter.
 if (message.Headers.TryGetValue("IsDemoCode", out bool isDemoCode))
 {
@@ -108,7 +112,7 @@ if (message.Headers.TryGetValue("ExampleDescription", out string exampleDescript
 
 The `IReceiverMessage` interface provides three methods to signal to the sender of the message what the outcome of processing the message was. If the message *was* processed successfully, and the sender should *not* redeliver it, it should be acknowledged:
 
-```c#
+```csharp
 await message.AcknowledgeAsync();
 ```
 
@@ -116,7 +120,7 @@ await message.AcknowledgeAsync();
 
 If the message was *not* processed successfully, and the sender should *not* redeliver it, the message should be rejected:
 
-```c#
+```csharp
 await message.RejectAsync();
 ```
 
@@ -124,7 +128,7 @@ await message.RejectAsync();
 
 If the message was *not* processed successfully, and the sender *should* redeliver it, the message should be rolled back:
 
-```c#
+```csharp
 await message.RollbackAsync();
 ```
 
@@ -132,13 +136,13 @@ await message.RollbackAsync();
 
 ## Handling Error/Connected/Disconnected Events
 
-Once your instance of IReceiver has been created, you can create handlers for events that the receiver may publish.  
-  
+Once your instance of IReceiver has been created, you can create handlers for events that the receiver may publish.
+
 ---
 
 Connected events can be handled using:
 
-```c#
+```csharp
 receiver.Connected += (obj, args) =>
 {
     // Do something when the receiver connects to the service
@@ -147,9 +151,9 @@ receiver.Connected += (obj, args) =>
 
 ---
 
-Error Events can be handled using:  
+Error Events can be handled using:
 
-```c#
+```csharp
 receiver.Error += (obj, args) =>
 {
     // Do something when the receiver ecounters an error
@@ -159,9 +163,9 @@ receiver.Error += (obj, args) =>
 
 ---
 
-Disconnected Events can be handled using:  
+Disconnected Events can be handled using:
 
-```c#
+```csharp
 receiver.Disconnected += (obj, args) =>
 {
     // Do something when the receiver disconnects from the service
