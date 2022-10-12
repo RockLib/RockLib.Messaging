@@ -21,7 +21,7 @@ The first has the following parameters:
   - List of brokers as a CSV list of broker host or host:port.
 - messageTimeoutMs (optional, defaults to 10000)
   - Local message timeout. This value is only enforced locally and limits the time a produced message waits for successful delivery. A time of 0 is infinite. This is the maximum time librdkafka may use to deliver a message (including retries). Delivery error occurs when either the retry count or the message timeout are exceeded.
-- statisticsIntervalMs (optional, defaults 0)
+- statisticsIntervalMs (optional, defaults to 0)
   - The statistics emit interval
 
 The second has the following parameters:
@@ -153,8 +153,10 @@ The first has the following parameters:
   - Action to take when there is no initial offset in offset store or the desired offset is out of range: 'smallest','earliest' - automatically reset the offset to the smallest offset, 'largest','latest' - automatically reset the offset to the largest offset, 'error' - trigger an error which is retrieved by consuming messages and checking 'message->err'.
 - schemaIdRequired
   - Should the receiver expect schema information in the message payload
-- statisticsIntervalMs (optional, defaults 0)
+- statisticsIntervalMs (optional, defaults to 0)
   - The statistics emit interval
+- messageBufferSize (optional, defaults to 10)
+  - The number of messages allowed to be queued up in memory, awaiting processing. N - 1 should be the max number of messages the system can comfortably allow duplicate processing.
 
 And the second has the following parameters:
 
@@ -166,6 +168,8 @@ And the second has the following parameters:
   - The configuration used in creation of the Kafka consumer.
 - schemaIdRequired
   - Should the receiver expect schema information in the message payload
+- messageBufferSize (optional, defaults to 10)
+  - The number of messages allowed to be queued up in memory, awaiting processing. N - 1 should be the max number of messages the system can comfortably allow duplicate processing.
 
 ---
 

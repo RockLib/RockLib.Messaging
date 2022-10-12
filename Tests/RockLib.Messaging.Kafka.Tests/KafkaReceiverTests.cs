@@ -77,6 +77,29 @@ namespace RockLib.Messaging.Kafka.Tests
             Assert.Equal(schemaIdRequired, unlockedReceiver._schemaIdRequired);
         }
 
+        [Theory(DisplayName = "KafkaReceiver constructor sets blocking collection size")]
+        [InlineData(1, 1)]
+        [InlineData(100, 100)]
+        [InlineData(999, 999)]
+        [InlineData(int.MaxValue, int.MaxValue)]
+        [InlineData(0, int.MaxValue)]
+        [InlineData(-987, int.MaxValue)]
+        [InlineData(int.MinValue, int.MaxValue)]
+        public static void CreateWithBufferSize(int bufferSize, int expectedBufferSize)
+        {
+            using (var receiver = new KafkaReceiver("name", "topic", "groupId", "bootstrapServers", true, AutoOffsetReset.Error, false, 0, bufferSize))
+            {
+                var unlockedReceiver = receiver.Unlock();
+                Assert.Equal(expectedBufferSize, unlockedReceiver._trackingCollection.BoundedCapacity);
+            }
+
+            using (var receiver = new KafkaReceiver("name", "topic", new ConsumerConfig(), false, bufferSize))
+            {
+                var unlockedReceiver = receiver.Unlock();
+                Assert.Equal(expectedBufferSize, unlockedReceiver._trackingCollection.BoundedCapacity);
+            }
+        }
+
         [Fact]
         public static void CreateWithConfigAndNullTopic()
         {
@@ -160,7 +183,7 @@ namespace RockLib.Messaging.Kafka.Tests
 
             receivedMessage.Should().Be("This is the expected message!");
         }
-        
+
         [Fact]
         public static void KafkaReceiverGetsMessageWithSchemaId()
         {
@@ -208,7 +231,7 @@ namespace RockLib.Messaging.Kafka.Tests
             receivedMessage.Should().Be(msg);
             parsedSchemaId.Should().Be(schemaId);
         }
-        
+
         [Fact]
         public static void KafkaReceiverSchemaIdExceptionForShortMessage()
         {
@@ -230,7 +253,7 @@ namespace RockLib.Messaging.Kafka.Tests
                 {
                     var ex = Assert.Throws<InvalidMessageException>(() => m.Headers[Constants.KafkaKeyHeader].ToString());
                     Assert.StartsWith("Expected payload greater than", ex.Message, StringComparison.Ordinal);
-                    
+
                     ex = Assert.Throws<InvalidMessageException>(() => m.StringPayload);
                     Assert.StartsWith("Expected payload greater than", ex.Message, StringComparison.Ordinal);
                     waitHandle.Set();
@@ -242,7 +265,7 @@ namespace RockLib.Messaging.Kafka.Tests
 
             consumerMock.Verify(m => m.Consume(It.IsAny<CancellationToken>()));
         }
-        
+
         [Fact]
         public static void KafkaReceiverSchemaIdExceptionForInvalidSchemaDataFrame()
         {
@@ -264,10 +287,10 @@ namespace RockLib.Messaging.Kafka.Tests
                 {
                     var ex = Assert.Throws<InvalidMessageException>(() => m.Headers[Constants.KafkaKeyHeader].ToString());
                     Assert.StartsWith("Expected schema registry data frame", ex.Message, StringComparison.Ordinal);
-                    
+
                     ex = Assert.Throws<InvalidMessageException>(() => m.StringPayload);
                     Assert.StartsWith("Expected schema registry data frame", ex.Message, StringComparison.Ordinal);
-                    
+
                     waitHandle.Set();
                     return Task.CompletedTask;
                 });
