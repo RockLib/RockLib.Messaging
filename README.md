@@ -38,7 +38,7 @@
   - [Send and receive compressed messages](docs/Compressed.md)
   - [Send messages transactionally](docs/TransactionalSend.md)
   - [Send and receive message as CloudEvents](docs/CloudEvents.md) 🆕
-  - [Test components that use RockLib.Messaging](https://github.com/RockLib/RockLib.Messaging/tree/main/Examples/Example.Application.Testing) 🆕
+  - [Test components that use RockLib.Messaging](Examples/Example.Application.Testing) 🆕
 - API Reference:
   - [RockLib.Messaging](https://www.fuget.org/packages/RockLib.Messaging)
   - [RockLib.Messaging.NamedPipes](https://www.fuget.org/packages/RockLib.Messaging.NamedPipes)
