@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.0.1 - 2022-10-13
+
+#### Fixed
+- Out of memory exceptions - in cases where a system has tons of messages to process from a topic regardless of being able to scale, the system can run into out of memory exceptions due to the consuming task not having any backpressure to prevent it from dumping whole partition(s) (and possibly topic) into the tracking collection.
+- Duplicate message processing - similarly, when a system has tons of messages to process and the number of consumers is less than the number of partitions, upon scaling up the new consumer starts processing the partition it was assigned, but messages it consumes are still in memory of the originally assigned consumer, causing the messages to be processed multiple times.
+
 ## 1.0.0 - 2022-03-14
 
 #### Added
