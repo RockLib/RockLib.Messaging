@@ -1,0 +1,20 @@
+name: Build and Test
+
+####################################################################################################
+##  WORKFLOW TRIGGER
+####################################################################################################
+on:
+  # Workflow will run on any pull request to main.
+  pull_request:
+    branches:
+      - main
+
+####################################################################################################
+##  WORKFLOW JOBS
+####################################################################################################
+jobs:
+  # Calls the shared build-and-test workflow.
+  call_build_and_test:
+    name: Call build-and-test workflow
+    uses: RockLib/RockLib.Workflows/.github/workflows/build-and-test.yml@main
+    secrets: inherit

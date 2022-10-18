@@ -1,0 +1,19 @@
+name: Build and Publish
+
+####################################################################################################
+##  WORKFLOW TRIGGER
+####################################################################################################
+on:
+  # Workflow will run when a release is published.
+  release:
+    types: [ released, prereleased ]
+
+####################################################################################################
+##  WORKFLOW JOBS
+####################################################################################################
+jobs:
+  # Calls the shared build-and-publish workflow.
+  call_build_and_publish:
+    name: Call build-and-publish workflow
+    uses: RockLib/RockLib.Workflows/.github/workflows/build-and-publish.yml@main
+    secrets: inherit
