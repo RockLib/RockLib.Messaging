@@ -15,6 +15,6 @@
 		</PackageReference>
 	</ItemGroup>
 	<ItemGroup>
-	  <ProjectReference Include="..\RockLib.Messaging.RabbitMQ\RockLib.Messaging.RabbitMQ.csproj" />
+	  <ProjectReference Include="..\..\RockLib.Messaging.RabbitMQ\RockLib.Messaging.RabbitMQ.csproj" />
 	</ItemGroup>
 </Project>
