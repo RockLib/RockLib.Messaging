@@ -1,19 +1,20 @@
-name: Run Unit Test
+name: Run Snyk Test
 
 ####################################################################################################
 ##  WORKFLOW TRIGGER
 ####################################################################################################
 on:
-  # Workflow will run on pull requests to the main branch.
-  pull_request:
-    branches: [ main ]
+  # Workflow will run after unit-test is completed.
+  workflow_run:
+    workflows: [ Run Unit Test ]
+    types: [ completed ]
 
 ####################################################################################################
 ##  WORKFLOW JOBS
 ####################################################################################################
 jobs:
-  # Calls the shared unit-test workflow.
-  call_unit_test:
-    name: Call unit-test workflow
-    uses: RockLib/RockLib.Workflows/.github/workflows/unit-test.yml@main
+  # Calls the shared snyk-test workflow.
+  call_snyk_test:
+    name: Call snyk-test workflow
+    uses: RockLib/RockLib.Workflows/.github/workflows/snyk-test.yml@main
     secrets: inherit
