@@ -16,7 +16,8 @@ namespace RockLib.Messaging.Kafka
         private Task? _kafkaPolling;
         private readonly Lazy<IConsumer<string, byte[]>> _consumer;
         private readonly CancellationTokenSource _consumerCancellation = new();
-        private readonly BlockingCollection<KafkaReceiverMessage>? _trackingCollection;
+        private readonly ManualResetEventSlim _completeDispose = new(true);
+        private readonly BlockingCollection<KafkaReceiverMessage> _trackingCollection;
         private Task? _tracking;
 
         private readonly bool _schemaIdRequired;
@@ -182,8 +183,12 @@ namespace RockLib.Messaging.Kafka
             _tracking = Task.Factory.StartNew(async () => await TrackMessageHandlingAsync().ConfigureAwait(false),
                 _consumerCancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             _consumer.Value.Subscribe(Topic);
-            _kafkaPolling = Task.Factory.StartNew(() => PollForMessages(),
+            _kafkaPolling = Task.Factory.StartNew(PollForMessages,
                 _consumerCancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+
+            //receiver is considered to be connected once subscribed
+            _connected = true;
+            OnConnected();
         }
 
         /// <summary>
@@ -200,15 +205,11 @@ namespace RockLib.Messaging.Kafka
             _disposed = true;
             _stopped = true;
 
+            _consumerCancellation.Cancel();
+            _trackingCollection.CompleteAdding();
+
             if(_connected is true)
             {
-                _consumerCancellation.Cancel();
-
-                _trackingCollection!.CompleteAdding();
-                _trackingCollection.Dispose();
-
-                _consumerCancellation.Dispose();
-
                 if (_kafkaPolling?.IsCompleted ?? false)
                 {
                     _kafkaPolling?.Dispose();
@@ -220,17 +221,26 @@ namespace RockLib.Messaging.Kafka
                 }
             }
 
+            //wait for the polling task to indicate it is okay to dispose of the remaining resources
+            //otherwise, memory access exceptions can occur when the consumer accesses a disposed  cancellation token
+            _completeDispose.Wait();
+
+            _consumerCancellation.Dispose();
+            _trackingCollection.Dispose();
+
             if (_consumer.IsValueCreated)
             {
                 _consumer.Value.Close();
-                _consumer.Value.Dispose();
             }
+            _completeDispose.Dispose();
 
             base.Dispose(disposing);
         }
 
         private void PollForMessages()
         {
+            _completeDispose.Reset();
+
             while (!_stopped)
             {
                 try
@@ -238,16 +248,11 @@ namespace RockLib.Messaging.Kafka
                     var result = _consumer.Value.Consume(_consumerCancellation.Token);
                     var message = new KafkaReceiverMessage(_consumer.Value, result, EnableAutoOffsetStore ?? false, _schemaIdRequired);
 
-                    if (_connected != true)
-                    {
-                        _connected = true;
-                        OnConnected();
-                    }
-
-                    _trackingCollection!.Add(message);
+                    _trackingCollection.Add(message, _consumerCancellation.Token);
                 }
                 catch (OperationCanceledException) when (_consumerCancellation.IsCancellationRequested)
                 {
+                    _completeDispose.Set();
                     return;
                 }
                 // We don't want to break out of the while loop with an exception,
@@ -259,24 +264,33 @@ namespace RockLib.Messaging.Kafka
                     OnError("Error in polling loop.", ex);
                 }
             }
+
+            _completeDispose.Set();
         }
 
         private async Task TrackMessageHandlingAsync()
         {
-            foreach (var message in _trackingCollection!.GetConsumingEnumerable(_consumerCancellation.Token))
+            try
             {
-                try
+                foreach (var message in _trackingCollection.GetConsumingEnumerable(_consumerCancellation.Token))
                 {
-                    await MessageHandler!.OnMessageReceivedAsync(this, message).ConfigureAwait(false);
-                }
-                // We don't want to break out of the while loop with an exception,
-                // hence the "catch all"
+                    try
+                    {
+                        await MessageHandler!.OnMessageReceivedAsync(this, message).ConfigureAwait(false);
+                    }
+                    // We don't want to break out of the while loop with an exception,
+                    // hence the "catch all"
 #pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception ex)
+                    catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
-                {
-                    OnError("Error while tracking message handler task.", ex);
+                    {
+                        OnError("Error while tracking message handler task.", ex);
+                    }
                 }
+            }
+            catch (OperationCanceledException) when (_consumerCancellation.IsCancellationRequested)
+            {
+                //ignoring cancellations
             }
         }
 

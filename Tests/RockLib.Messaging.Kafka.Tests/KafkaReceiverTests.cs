@@ -138,7 +138,6 @@ namespace RockLib.Messaging.Kafka.Tests
 
             var consumerMock = new Mock<IConsumer<string, byte[]>>();
             consumerMock.Setup(cm => cm.Close());
-            consumerMock.Setup(cm => cm.Dispose());
 
             var unlockedReceiver = receiver.Unlock();
             unlockedReceiver._consumer = new Lazy<IConsumer<string, byte[]>>(() => consumerMock.Object);
@@ -147,7 +146,6 @@ namespace RockLib.Messaging.Kafka.Tests
             unlockedReceiver.Dispose();
 
             consumerMock.Verify(cm => cm.Close(), Times.Once);
-            consumerMock.Verify(cm => cm.Dispose(), Times.Once);
         }
 
         [Fact]
