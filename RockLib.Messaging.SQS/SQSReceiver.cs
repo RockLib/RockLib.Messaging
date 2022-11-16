@@ -29,6 +29,8 @@ namespace RockLib.Messaging.SQS
         private const int _maxAcknowledgeAttempts = 3;
         private const int _maxReceiveAttempts = 3;
 
+        private readonly CancellationTokenSource _consumerToken = new();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SQSReceiver"/> class.
         /// Uses a default implementation of the <see cref="AmazonSQSClient"/> to
@@ -269,7 +271,10 @@ namespace RockLib.Messaging.SQS
                 {
                     try
                     {
-                        response = await SQSClient.ReceiveMessageAsync(receiveMessageRequest).ConfigureAwait(false);
+                        _consumerToken.Token.ThrowIfCancellationRequested();
+
+                        response = await SQSClient.ReceiveMessageAsync(receiveMessageRequest, _consumerToken.Token)
+                            .ConfigureAwait(false);
 
                         if (response.HttpStatusCode == HttpStatusCode.OK)
                         {
@@ -283,6 +288,10 @@ namespace RockLib.Messaging.SQS
                             break;
                         }
                     }
+                    catch (OperationCanceledException) when (_consumerToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
 #pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
@@ -291,7 +300,9 @@ namespace RockLib.Messaging.SQS
                     }
                 }
 
+#pragma warning disable CA1508 // false positive regarding `exception`
                 if (exception is not null || response is null || response.HttpStatusCode != HttpStatusCode.OK)
+#pragma warning restore CA1508
                 {
                     if (connected != false)
                     {
@@ -302,7 +313,7 @@ namespace RockLib.Messaging.SQS
                                 return $"{exception.GetType().Name}: {exception.Message}";
                             }
                             if (response is null)
-                            { 
+                            {
                                 return "Null response returned from IAmazonSQS.ReceiveMessageAsync method.";
                             }
                             return $"Unsuccessful response returned from IAmazonSQS.ReceiveMessageAsync method: {(int)response.HttpStatusCode} {response.HttpStatusCode}";
@@ -354,7 +365,7 @@ namespace RockLib.Messaging.SQS
                 {
                     try
                     {
-                        await DeleteMessageAsync().ConfigureAwait(false);
+                        await DeleteMessageAsync(_consumerToken.Token).ConfigureAwait(false);
                     }
 #pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception ex)
@@ -366,38 +377,45 @@ namespace RockLib.Messaging.SQS
             }
         }
 
-        private Task DeleteAsync(string receiptHandle, CancellationToken cancellationToken)
-        {
-            return ExecuteWithRetry(async () =>
-            {
-                return await SQSClient.DeleteMessageAsync(new DeleteMessageRequest
-                {
-                    QueueUrl = QueueUrl?.OriginalString,
-                    ReceiptHandle = receiptHandle
-                }, cancellationToken).ConfigureAwait(false);
-            });
-        }
+        private Task DeleteAsync(string receiptHandle, CancellationToken cancellationToken) =>
+            ExecuteWithRetry(
+                async () =>
+                    await SQSClient.DeleteMessageAsync(
+                        new DeleteMessageRequest
+                        {
+                            QueueUrl = QueueUrl?.OriginalString,
+                            ReceiptHandle = receiptHandle
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false),
+                _consumerToken.Token);
 
         private Task RollbackAsync(string receiptHandle, CancellationToken cancellationToken)
         {
             if (!TerminateMessageVisibilityTimeoutOnRollback)
             {
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             }
 
-            return ExecuteWithRetry(async () =>
-            {
-                return await SQSClient.ChangeMessageVisibilityAsync(new ChangeMessageVisibilityRequest
-                {
-                    VisibilityTimeout = 0,
-                    QueueUrl = QueueUrl?.OriginalString,
-                    ReceiptHandle = receiptHandle
-                }, cancellationToken).ConfigureAwait(false);
-            });
+            return ExecuteWithRetry(
+                async () =>
+                    await SQSClient.ChangeMessageVisibilityAsync(
+                        new ChangeMessageVisibilityRequest
+                        {
+                            VisibilityTimeout = 0,
+                            QueueUrl = QueueUrl?.OriginalString,
+                            ReceiptHandle = receiptHandle
+                        },
+                        cancellationToken)
+                    .ConfigureAwait(false),
+                _consumerToken.Token);
         }
 
-        private static async Task ExecuteWithRetry(Func<Task<AmazonWebServiceResponse>> funcToExecute)
+        private static async Task ExecuteWithRetry(Func<Task<AmazonWebServiceResponse>> funcToExecute,
+            CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             int i = 0;
 
             while (true)
@@ -425,15 +443,24 @@ namespace RockLib.Messaging.SQS
         /// </summary>
         protected override void Dispose(bool disposing)
         {
+            if (_stopped)
+            {
+                return;
+            }
+
             _stopped = true;
-            if (_receiveMessagesTask.IsValueCreated)
+            _consumerToken.Cancel();
+
+            if (_receiveMessagesTask.IsValueCreated && !_receiveMessagesTask.Value.IsCompleted)
             {
                 try { _receiveMessagesTask.Value.Wait(); }
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch { }
 #pragma warning restore CA1031 // Do not catch general exception types
             }
+            _receiveMessagesTask.Value.Dispose();
             SQSClient.Dispose();
+            _consumerToken.Dispose();
             base.Dispose(disposing);
         }
 
