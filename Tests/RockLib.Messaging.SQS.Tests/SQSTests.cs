@@ -7,7 +7,9 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using RockLib.Dynamic;
 using Xunit;
+using Xunit.Sdk;
 
 namespace RockLib.Messaging.SQS.Tests
 {
@@ -455,7 +457,7 @@ namespace RockLib.Messaging.SQS.Tests
             {
                 Assert.Throws<KeyNotFoundException>(() => sqsReceiverMessage.Headers.GetValue<string>("SQS.MessageID"));
             }
- 
+
         }
 
         private static void SetupDeleteMessageAsync(Mock<IAmazonSQS> mockSqs, HttpStatusCode httpStatusCode = HttpStatusCode.OK)
@@ -495,6 +497,89 @@ namespace RockLib.Messaging.SQS.Tests
                         } },
                     HttpStatusCode = httpStatusCode
                 }));
+        }
+
+        [Fact]
+        public static void SQSReceiverDisposeRequestsCancellation()
+        {
+            var mockSqs = new Mock<IAmazonSQS>();
+
+            SetupReceiveMessageAsync(mockSqs);
+
+            using var waitHandle = new AutoResetEvent(false);
+
+            string? receivedMessage = null;
+            string? quxHeader = null;
+
+            var receiver = new SQSReceiver(mockSqs.Object, "foo", new Uri("http://url.com/foo"), autoAcknowledge: false);
+            receiver.Start(async m =>
+            {
+                receivedMessage = m.StringPayload;
+                quxHeader = m.Headers.GetValue<string>("qux");
+                waitHandle.Set();
+                await Task.CompletedTask.ConfigureAwait(false);
+            });
+
+            waitHandle.WaitOne();
+
+            receiver.Dispose();
+            var unlocked = receiver.Unlock();
+            Assert.True(unlocked._consumerToken.IsCancellationRequested);
+            Assert.True(unlocked._stopped);
+        }
+
+        [Fact]
+        public static void SQSReceiverUnaffectedByMultipleDisposes()
+        {
+            var mockSqs = new Mock<IAmazonSQS>();
+
+            SetupReceiveMessageAsync(mockSqs);
+
+            using var waitHandle = new AutoResetEvent(false);
+
+            var receiver = new SQSReceiver(mockSqs.Object, "foo", new Uri("http://url.com/foo"), autoAcknowledge: false);
+            receiver.Start(async m =>
+            {
+                waitHandle.Set();
+                await Task.CompletedTask.ConfigureAwait(false);
+            });
+
+            waitHandle.WaitOne();
+
+            receiver.Dispose();
+            receiver.Dispose();
+            receiver.Dispose();
+
+            var unlocked = receiver.Unlock();
+            Assert.True(unlocked._consumerToken.IsCancellationRequested);
+            Assert.True(unlocked._stopped);
+        }
+
+        [Fact]
+        public static async Task SQSReceiverPreDisposeDoesNotConsume()
+        {
+            var mockSqs = new Mock<IAmazonSQS>();
+
+            SetupReceiveMessageAsync(mockSqs);
+
+            using var waitHandle = new AutoResetEvent(false);
+
+            var consumed = false;
+            var receiver = new SQSReceiver(mockSqs.Object, "foo", new Uri("http://url.com/foo"), autoAcknowledge: false);
+            receiver.Dispose();
+            receiver.Start(async _ =>
+            {
+                consumed = true;
+                await Task.CompletedTask.ConfigureAwait(false);
+            });
+
+            var unlocked = receiver.Unlock();
+            Assert.True(unlocked._consumerToken.IsCancellationRequested);
+            Assert.True(unlocked._stopped);
+
+            //wait a few secs just to see
+            await Task.Delay(5_000).ConfigureAwait(false);
+            Assert.False(consumed, "Should not consume any messages when disposed");
         }
     }
 }

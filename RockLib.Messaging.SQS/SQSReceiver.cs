@@ -451,14 +451,19 @@ namespace RockLib.Messaging.SQS
             _stopped = true;
             _consumerToken.Cancel();
 
-            if (_receiveMessagesTask.IsValueCreated && !_receiveMessagesTask.Value.IsCompleted)
+            if (_receiveMessagesTask.IsValueCreated)
             {
-                try { _receiveMessagesTask.Value.Wait(); }
+                if (!_receiveMessagesTask.Value.IsCompleted)
+                {
+                    try { _receiveMessagesTask.Value.Wait(); }
 #pragma warning disable CA1031 // Do not catch general exception types
-                catch { }
+                    catch { }
 #pragma warning restore CA1031 // Do not catch general exception types
+                }
+
+                _receiveMessagesTask.Value.Dispose();
             }
-            _receiveMessagesTask.Value.Dispose();
+
             SQSClient.Dispose();
             _consumerToken.Dispose();
             base.Dispose(disposing);
