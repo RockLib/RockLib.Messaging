@@ -216,9 +216,11 @@ namespace RockLib.Messaging.Kafka.Tests
                     validationWaitHandle.WaitOne();
                     consumerMock.Verify(cm => cm.Close(), Times.Once);
                 }
-                finally
+                catch (Exception)
                 {
+                    //on exception allow polling to complete to not hold up the test
                     waitHandle.Set();
+                    throw;
                 }
             });
 
@@ -239,6 +241,7 @@ namespace RockLib.Messaging.Kafka.Tests
             //signal disposing has started and should be waiting for polling to complete
             validationWaitHandle.Set();
 
+            //this will wait until dispose has completed, which requires polling to complete
             await disposeTask.ConfigureAwait(false);
 
             //signal disposing is done
