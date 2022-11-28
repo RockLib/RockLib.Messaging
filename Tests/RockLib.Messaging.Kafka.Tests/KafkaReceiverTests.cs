@@ -127,6 +127,7 @@ namespace RockLib.Messaging.Kafka.Tests
             unlockedReceiver.Start();
 
             consumerMock.Verify(cm => cm.Subscribe("one_topic"), Times.Once);
+            Assert.True(unlockedReceiver._connected);
 
             unlockedReceiver.Dispose();
         }
@@ -138,7 +139,6 @@ namespace RockLib.Messaging.Kafka.Tests
 
             var consumerMock = new Mock<IConsumer<string, byte[]>>();
             consumerMock.Setup(cm => cm.Close());
-            consumerMock.Setup(cm => cm.Dispose());
 
             var unlockedReceiver = receiver.Unlock();
             unlockedReceiver._consumer = new Lazy<IConsumer<string, byte[]>>(() => consumerMock.Object);
@@ -147,7 +147,118 @@ namespace RockLib.Messaging.Kafka.Tests
             unlockedReceiver.Dispose();
 
             consumerMock.Verify(cm => cm.Close(), Times.Once);
-            consumerMock.Verify(cm => cm.Dispose(), Times.Once);
+            Assert.True(unlockedReceiver._stopped);
+            Assert.True(unlockedReceiver._disposed);
+            Assert.True(unlockedReceiver._consumerCancellation.IsCancellationRequested);
+        }
+
+        [Fact]
+        public static void KafkaReceiverUnaffectedByMultipleDisposes()
+        {
+            using var receiver = new KafkaReceiver("name", "one_topic", "groupId", "servers");
+
+            var consumerMock = new Mock<IConsumer<string, byte[]>>();
+            consumerMock.Setup(cm => cm.Close());
+
+            var unlockedReceiver = receiver.Unlock();
+            unlockedReceiver._consumer = new Lazy<IConsumer<string, byte[]>>(() => consumerMock.Object);
+            unlockedReceiver.Start();
+
+            unlockedReceiver.Dispose();
+            unlockedReceiver.Dispose();
+            unlockedReceiver.Dispose();
+
+            consumerMock.Verify(cm => cm.Close(), Times.Once);
+            Assert.True(unlockedReceiver._stopped);
+            Assert.True(unlockedReceiver._disposed);
+            Assert.True(unlockedReceiver._consumerCancellation.IsCancellationRequested);
+        }
+
+        [Fact]
+        public static async Task KafkaReceiverDisposeWaitsForPollingCompletion()
+        {
+            using var receiver = new KafkaReceiver("name", "one_topic", "groupId", "servers");
+            using var waitHandle = new AutoResetEvent(false);
+            using var validationWaitHandle = new AutoResetEvent(false);
+
+            var consumerMock = new Mock<IConsumer<string, byte[]>>();
+            consumerMock.Setup(x => x.Consume(It.IsAny<CancellationToken>()))
+                .Callback<CancellationToken>(_ =>
+                {
+                    //wait until signaled to finish
+                    waitHandle.WaitOne();
+                });
+            consumerMock.Setup(cm => cm.Close());
+
+            var unlockedReceiver = receiver.Unlock();
+
+            var validationTask = Task.Run(() =>
+            {
+                try
+                {
+                    //pre-dispose validation
+                    validationWaitHandle.WaitOne();
+                    Assert.False(unlockedReceiver._stopped);
+                    Assert.False(unlockedReceiver._disposed);
+                    Assert.False(unlockedReceiver._consumerCancellation.IsCancellationRequested);
+
+                    //mid-dispose/pre-polling complete validation
+                    validationWaitHandle.WaitOne();
+                    Assert.True(unlockedReceiver._stopped);
+                    Assert.True(unlockedReceiver._disposed);
+                    Assert.True(unlockedReceiver._consumerCancellation.IsCancellationRequested);
+                    consumerMock.Verify(cm => cm.Close(), Times.Never);
+
+                    //allow the polling to complete
+                    waitHandle.Set();
+
+                    //post-dispose validation
+                    validationWaitHandle.WaitOne();
+                    consumerMock.Verify(cm => cm.Close(), Times.Once);
+                }
+                catch (Exception)
+                {
+                    //on exception allow polling to complete to not hold up the test
+                    waitHandle.Set();
+                    throw;
+                }
+            });
+
+            unlockedReceiver._consumer = new Lazy<IConsumer<string, byte[]>>(() => consumerMock.Object);
+            unlockedReceiver.Start();
+
+            //signal the receiver has started
+            validationWaitHandle.Set();
+
+            //wait a bit
+            await Task.Delay(2_000).ConfigureAwait(false);
+
+            var disposeTask = Task.Run(() => unlockedReceiver.Dispose());
+
+            //allow for the dispose task to start
+            await Task.Delay(2_000).ConfigureAwait(false);
+
+            //signal disposing has started and should be waiting for polling to complete
+            validationWaitHandle.Set();
+
+            //this will wait until dispose has completed, which requires polling to complete
+            await disposeTask.ConfigureAwait(false);
+
+            //signal disposing is done
+            validationWaitHandle.Set();
+
+            await validationTask.ConfigureAwait(false);
+
+            //check tasks for failures
+            if (disposeTask is { IsFaulted: true, Exception: { } })
+            {
+                throw disposeTask.Exception;
+            }
+
+            if (validationTask is { IsFaulted: true, Exception: { } })
+            {
+                throw validationTask.Exception;
+            }
         }
 
         [Fact]
