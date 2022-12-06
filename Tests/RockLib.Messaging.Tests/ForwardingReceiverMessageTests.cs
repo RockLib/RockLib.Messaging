@@ -13,7 +13,7 @@ namespace RockLib.Messaging.Tests
             using var forwardingReceiver = new ForwardingReceiver("foo", receiver, acknowledgeForwarder: null);
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
+            using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
             await forwardingMessage.AcknowledgeAsync().ConfigureAwait(false);
 
@@ -29,7 +29,7 @@ namespace RockLib.Messaging.Tests
             using var forwardingReceiver = new ForwardingReceiver("foo", receiver, acknowledgeForwarder: forwarder);
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
+            using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
             await forwardingMessage.AcknowledgeAsync().ConfigureAwait(false);
 
@@ -49,7 +49,7 @@ namespace RockLib.Messaging.Tests
             using var forwardingReceiver = new ForwardingReceiver("foo", receiver, acknowledgeForwarder: forwarder, acknowledgeOutcome: outcome);
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
+            using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
             await forwardingMessage.AcknowledgeAsync().ConfigureAwait(false);
 
@@ -63,7 +63,7 @@ namespace RockLib.Messaging.Tests
             using var forwardingReceiver = new ForwardingReceiver("foo", receiver, rollbackForwarder: null);
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
+            using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
             await forwardingMessage.RollbackAsync().ConfigureAwait(false);
 
@@ -79,7 +79,7 @@ namespace RockLib.Messaging.Tests
             using var forwardingReceiver = new ForwardingReceiver("foo", receiver, rollbackForwarder: forwarder);
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
+            using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
             await forwardingMessage.RollbackAsync().ConfigureAwait(false);
 
@@ -99,7 +99,7 @@ namespace RockLib.Messaging.Tests
             using var forwardingReceiver = new ForwardingReceiver("foo", receiver, rollbackForwarder: forwarder, rollbackOutcome: outcome);
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
+            using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
             await forwardingMessage.RollbackAsync().ConfigureAwait(false);
 
@@ -113,7 +113,7 @@ namespace RockLib.Messaging.Tests
             using var forwardingReceiver = new ForwardingReceiver("foo", receiver, rejectForwarder: null);
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
+            using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
             await forwardingMessage.RejectAsync().ConfigureAwait(false);
 
@@ -129,7 +129,7 @@ namespace RockLib.Messaging.Tests
             using var forwardingReceiver = new ForwardingReceiver("foo", receiver, rejectForwarder: forwarder);
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
+            using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
             await forwardingMessage.RejectAsync().ConfigureAwait(false);
 
@@ -149,7 +149,7 @@ namespace RockLib.Messaging.Tests
             using var forwardingReceiver = new ForwardingReceiver("foo", receiver, rejectForwarder: forwarder, rejectOutcome: outcome);
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
+            using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
             await forwardingMessage.RejectAsync().ConfigureAwait(false);
 

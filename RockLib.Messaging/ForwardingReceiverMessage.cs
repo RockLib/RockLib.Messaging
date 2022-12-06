@@ -10,10 +10,10 @@ namespace RockLib.Messaging
     /// received messages to configured <see cref="ISender"/> instances when
     /// messages are acknowledged, rolled back, or rejected.
     /// </summary>
-    public class ForwardingReceiverMessage : IReceiverMessage
+    public class ForwardingReceiverMessage : IReceiverMessage, IDisposable
     {
         private readonly SemaphoreSlim _semaphore = new(1, 1);
-
+        private bool _isDisposed;
         private string? _handledBy;
 
         internal ForwardingReceiverMessage(ForwardingReceiver forwardingReceiver, IReceiverMessage message)
@@ -186,6 +186,33 @@ namespace RockLib.Messaging
         private void SetHandled([CallerMemberName] string? callerMemberName = null)
         {
             _handledBy = callerMemberName;
+        }
+
+        /// <summary>
+        /// Disposes the object.
+        /// </summary>
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Disposes the object with a flag specifying the 
+        /// dispoing status.
+        /// </summary>
+        /// <param name="isDisposing"></param>
+        protected virtual void Dispose(bool isDisposing)
+        {
+            if(!_isDisposed)
+            {
+                if (isDisposing)
+                {
+                    ((IDisposable)_semaphore).Dispose();
+                }
+            }
+
+            _isDisposed = true;
         }
     }
 }
