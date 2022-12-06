@@ -41,7 +41,10 @@ namespace RockLib.Messaging
         /// </summary>
         /// <param name="receiver">The instance of <see cref="IReceiver"/> that received the message.</param>
         /// <param name="message">The message that was received.</param>
-        public Task OnMessageReceivedAsync(IReceiver receiver, IReceiverMessage message) =>
-            MessageHandler?.OnMessageReceivedAsync(ForwardingReceiver, new ForwardingReceiverMessage(ForwardingReceiver, message)) ?? Task.CompletedTask;
+        public Task OnMessageReceivedAsync(IReceiver receiver, IReceiverMessage message)
+        {
+            using var forwardMessage = new ForwardingReceiverMessage(ForwardingReceiver, message);
+            return MessageHandler?.OnMessageReceivedAsync(ForwardingReceiver, forwardMessage) ?? Task.CompletedTask;
+        }
     }
 }
