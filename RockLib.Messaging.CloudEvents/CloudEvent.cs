@@ -1,9 +1,10 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using static RockLib.Messaging.HttpUtils;
@@ -437,7 +438,7 @@ namespace RockLib.Messaging.CloudEvents
 
             var jobject = new JObject
             {
-                { "specversion", new JValue("1.0") }
+                { "specversion", new JValue(SpecVersion) }
             };
 
             foreach (var attribute in Attributes)
@@ -498,12 +499,12 @@ namespace RockLib.Messaging.CloudEvents
 
                 if (_data is not null
                     && jobject.TryGetValue("data", out token)
-                    && (!(token is JValue jv) || jv.Value is not null))
+                    && ( !( token is JValue jv ) || jv.Value is not null ))
                 {
                     throw new CloudEventValidationException("'data_base64' and 'data' cannot both have values.");
                 }
             }
-            
+
             if (jobject.TryGetValue("data", out token))
             {
                 if (token is JValue jvalue)
@@ -538,15 +539,13 @@ namespace RockLib.Messaging.CloudEvents
                     continue;
                 }
 
-                if (attribute.Key == "specversion")
+                if (attribute.Key == "specversion" && attribute.Value is JValue jv && jv.Value?.ToString() is string specVersion)
                 {
-                    if (attribute.Value is JValue jv && jv.Value?.ToString() == "1.0")
-                    {
+                    if (IsSpecVersionSupported(specVersion))
                         continue;
-                    }
 
                     throw new CloudEventValidationException(
-                        $"Invalid '{SpecVersionAttribute}' attribute. Expected '{_specVersion1_0}', but was '{attribute.Value}'.");
+                        $"Invalid '{SpecVersionAttribute}' attribute. Expected '{_specVersion1_0}.X', but was '{specVersion}'.");
                 }
 
                 if (attribute.Value is JValue jvalue && jvalue.Value is not null)
@@ -613,7 +612,7 @@ namespace RockLib.Messaging.CloudEvents
                     senderMessage.Headers[header.Key] = header.Value;
                 }
 
-                ProtocolBinding.Bind(this, senderMessage); 
+                ProtocolBinding.Bind(this, senderMessage);
             }
 
             return senderMessage;
@@ -657,10 +656,10 @@ namespace RockLib.Messaging.CloudEvents
 
                 if (Attributes.TryGetValue(SpecVersionAttribute, out var value) && value is string specVersion)
                 {
-                    if (specVersion != _specVersion1_0)
+                    if (!IsSpecVersionSupported(specVersion))
                     {
                         throw new CloudEventValidationException(
-                            $"Invalid '{SpecVersionAttribute}' attribute. Expected '{_specVersion1_0}', but was '{specVersion}'.");
+                            $"Invalid '{SpecVersionAttribute}' attribute. Expected '{_specVersion1_0}.X', but was '{specVersion}'.");
                     }
 
                     Attributes.Remove(SpecVersionAttribute);
@@ -669,6 +668,9 @@ namespace RockLib.Messaging.CloudEvents
                 ProtocolBinding.Bind(receiverMessage, this);
             }
         }
+
+        private static bool IsSpecVersionSupported(string specVersion) =>
+            specVersion.StartsWith(_specVersion1_0, StringComparison.InvariantCultureIgnoreCase);
 
         /// <summary>
         /// Creates an <see cref="HttpRequestMessage"/> with headers mapped from the attributes of this cloud event.
@@ -788,9 +790,9 @@ namespace RockLib.Messaging.CloudEvents
                 throw new CloudEventValidationException(
                     $"The '{specVersionHeader}' header is missing from the SenderMessage.");
             }
-            else if (specVersion != _specVersion1_0)
+            else if (!IsSpecVersionSupported(specVersion ?? string.Empty))
             {
-                throw new CloudEventValidationException($"The '{specVersionHeader}' header must have a value of '{_specVersion1_0}'.");
+                throw new CloudEventValidationException($"The '{specVersionHeader}' header must have a value of '{_specVersion1_0}.X'.");
             }
 
             var idHeader = protocolBinding.GetHeaderName(IdAttribute);
@@ -862,6 +864,7 @@ namespace RockLib.Messaging.CloudEvents
                     }
                     catch (Exception ex) when (ex is NotSupportedException)
                     {
+                        return false;
                     }
                 }
             }
@@ -900,13 +903,10 @@ namespace RockLib.Messaging.CloudEvents
                         return false;
                 }
 
-                if (typeof(T) == typeof(DateTime) && objectValue is string stringValue)
+                if (typeof(T) == typeof(DateTime) && objectValue is string stringValue && DateTime.TryParse(stringValue, null, DateTimeStyles.RoundtripKind, out var dateTimeValue))
                 {
-                    if (DateTime.TryParse(stringValue, null, DateTimeStyles.RoundtripKind, out var dateTimeValue))
-                    {
-                        value = (T)(object)dateTimeValue;
-                        return true;
-                    }
+                    value = (T)(object)dateTimeValue;
+                    return true;
                 }
 
                 var converter = TypeDescriptor.GetConverter(typeof(T));
@@ -919,6 +919,7 @@ namespace RockLib.Messaging.CloudEvents
                     }
                     catch (Exception ex) when (ex is NotSupportedException)
                     {
+                        value = default;
                     }
                 }
 
@@ -932,6 +933,7 @@ namespace RockLib.Messaging.CloudEvents
                     }
                     catch (Exception ex) when (ex is NotSupportedException)
                     {
+                        value = default;
                     }
                 }
             }
