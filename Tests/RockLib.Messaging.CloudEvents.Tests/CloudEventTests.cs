@@ -203,6 +203,21 @@ namespace RockLib.Messaging.CloudEvents.Tests
             cloudEvent.Headers.Should().ContainKey("foo").WhoseValue.Should().Be("abc");
         }
 
+        [Fact(DisplayName = "Constructor 3 accepts specification patch versions '1.0.X'")]
+        public void Constructor3HappyPath8()
+        {
+            // Invalid specversion
+
+            using var receiverMessage = new FakeReceiverMessage("Hello, world!");
+            receiverMessage.Headers.Add(CloudEvent.SpecVersionAttribute, "1.0.2");
+
+            var mockProtocolBinding = new Mock<IProtocolBinding>().SetupTestProtocolBinding();
+
+            var cloudEvent = new CloudEvent(receiverMessage, mockProtocolBinding.Object);
+
+            cloudEvent.Headers.Should().ContainKey(CloudEvent.SpecVersionAttribute).WhoseValue.Should().Be("1.0.2");
+        }
+        
         [Fact(DisplayName = "Constructor 3 throws when receiverMessage parameter is null")]
         public void Constructor3SadPath1()
         {
