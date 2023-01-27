@@ -216,7 +216,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*receiverMessage*");
         }
 
-        [Fact(DisplayName = "Constructor 3 throws when specversion header is not '1.0'")]
+        [Fact(DisplayName = "Constructor 3 throws when specversion header is not '1.0.X'")]
         public void Constructor3SadPath2()
         {
             // Invalid specversion
