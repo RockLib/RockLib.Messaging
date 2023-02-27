@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 3.0.1 - 2023-02-27
 
 #### Changed
-- Updated RockLib.Messaging packager reference to `3.0.1`
+- Updated RockLib.Messaging package reference to `3.0.1`
 
 ## 3.0.0 - 2022-03-08
 
