@@ -11,9 +11,9 @@
         <PackageReleaseNotes>A changelog is available at https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging.CloudEvents/CHANGELOG.md.</PackageReleaseNotes>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <PackageTags>rocklib messaging cloudevents</PackageTags>
-        <PackageVersion>2.0.1-alpha02</PackageVersion>
+        <PackageVersion>2.0.1</PackageVersion>
         <PublishRepositoryUrl>True</PublishRepositoryUrl>
-        <Version>2.0.1-alpha02</Version>
+        <Version>2.0.1</Version>
     </PropertyGroup>
 
     <PropertyGroup>
