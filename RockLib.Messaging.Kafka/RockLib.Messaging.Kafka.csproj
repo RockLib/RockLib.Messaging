@@ -30,6 +30,6 @@
 		<PackageReference Include="Confluent.Kafka" Version="2.1.0" />
 		<PackageReference Include="RockLib.Messaging" Version="3.0.1" />
 		<PackageReference Include="RockLib.Reflection.Optimized" Version="2.0.0" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 </Project>
