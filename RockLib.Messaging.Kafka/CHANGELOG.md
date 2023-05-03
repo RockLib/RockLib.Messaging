@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changed
 - Updated Confluent.Kafka package reference to `2.1.0`
+- Updated Newtonsoft.Json package reference to '13.0.3'
 
 #### Upgrade Considerations [from Confluent.Kafka](https://github.com/confluentinc/confluent-kafka-dotnet/blob/master/CHANGELOG.md#upgrade-considerations)
 - OpenSSL 3.0.x upgrade in librdkafka requires a major version bump, as some legacy ciphers need to be explicitly configured to continue working, but it is highly recommended NOT to use them. The rest of the API remains backward compatible.
