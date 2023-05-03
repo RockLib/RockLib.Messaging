@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.0.0-alpha1 - 2023-05-03
+
+#### Changed
+- Updated Confluent.Kafka package reference to `2.1.0`
+- Updated Newtonsoft.Json package reference to '13.0.3'
+
+#### Upgrade Considerations [from Confluent.Kafka](https://github.com/confluentinc/confluent-kafka-dotnet/blob/master/CHANGELOG.md#upgrade-considerations)
+- OpenSSL 3.0.x upgrade in librdkafka requires a major version bump, as some legacy ciphers need to be explicitly configured to continue working, but it is highly recommended NOT to use them. The rest of the API remains backward compatible.
+
 ## 1.0.3 - 2023-02-27
 
 #### Changed
