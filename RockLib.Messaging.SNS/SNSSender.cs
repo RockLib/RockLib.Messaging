@@ -57,6 +57,18 @@ namespace RockLib.Messaging.SNS
         public string TopicArn { get; }
 
         /// <summary>
+        /// Gets the tag that specifies that a message belongs to a specific message group.
+        /// Messages that belong to the same message group are processed in a FIFO manner
+        /// (however, messages in different message groups might be processed out of order). To
+        /// interleave multiple ordered streams within a single queue, use MessageGroupId values
+        /// (for example, session data for multiple users). In this scenario, multiple consumers
+        /// can process the queue, but the session data of each user is processed in a FIFO
+        /// fashion.
+        /// <para>This parameter applies only to FIFO (first-in-first-out) queues.</para>
+        /// </summary>
+        public string MessageGroupId { get; }
+
+        /// <summary>
         /// Asynchronously sends the specified message.
         /// </summary>
         /// <param name="message">The message to send.</param>
@@ -74,6 +86,16 @@ namespace RockLib.Messaging.SNS
             }
 
             var publishMessage = new PublishRequest(TopicArn, message.StringPayload);
+
+            if (message.Headers.TryGetValue("SNS.MessageGroupId", out var value) && value is not null)
+            {
+                publishMessage.MessageGroupId = value.ToString();
+                message.Headers.Remove("SNS.MessageGroupId");
+            }
+            else if (MessageGroupId is not null)
+            {
+                publishMessage.MessageGroupId = MessageGroupId;
+            }
 
             foreach (var header in message.Headers)
             {
