@@ -22,8 +22,18 @@ namespace RockLib.Messaging.SNS
         /// <param name="name">The name of the sender.</param>
         /// <param name="topicArn">The arn of the SNS topic.</param>
         /// <param name="region">The region of the SNS topic.</param>
-        public SNSSender(string name, string topicArn, string? region = null)
-            : this(region is null ? new AmazonSimpleNotificationServiceClient() : new AmazonSimpleNotificationServiceClient(RegionEndpoint.GetBySystemName(region)), name, topicArn)
+        /// <param name="messageGroupId">
+        /// The tag that specifies that a message belongs to a specific message group. Messages
+        /// that belong to the same message group are processed in a FIFO manner (however,
+        /// messages in different message groups might be processed out of order). To interleave
+        /// multiple ordered streams within a single topic, use MessageGroupId values (for
+        /// example, session data for multiple users). In this scenario, multiple consumers
+        /// can process the topic, but the session data of each user is processed in a FIFO
+        /// fashion.
+        /// <para>This parameter applies only to FIFO (first-in-first-out) topic.</para>
+        /// </param>
+        public SNSSender(string name, string topicArn, string? region = null, string? messageGroupId = null)
+            : this(region is null ? new AmazonSimpleNotificationServiceClient() : new AmazonSimpleNotificationServiceClient(RegionEndpoint.GetBySystemName(region)), name, topicArn, messageGroupId!)
         {
         }
 
