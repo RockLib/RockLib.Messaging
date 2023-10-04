@@ -42,6 +42,30 @@ namespace RockLib.Messaging.SNS
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="SNSSender"/> class.
+        /// </summary>
+        /// <param name="client">An object that communicates with SNS.</param>
+        /// <param name="name">The name of the sender.</param>
+        /// <param name="topicArn">The arn of the SNS topic.</param>
+        /// <param name="messageGroupId">
+        /// The tag that specifies that a message belongs to a specific message group. Messages
+        /// that belong to the same message group are processed in a FIFO manner (however,
+        /// messages in different message groups might be processed out of order). To interleave
+        /// multiple ordered streams within a single topic, use MessageGroupId values (for
+        /// example, session data for multiple users). In this scenario, multiple consumers
+        /// can process the topic, but the session data of each user is processed in a FIFO
+        /// fashion.
+        /// <para>This parameter applies only to FIFO (first-in-first-out) topic.</para>
+        /// </param>
+        public SNSSender(IAmazonSimpleNotificationService client, string name, string topicArn, string messageGroupId)
+        {
+            SnsClient = client ?? throw new ArgumentNullException(nameof(client));
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            TopicArn = topicArn ?? throw new ArgumentNullException(nameof(topicArn));
+            MessageGroupId = messageGroupId;
+        }
+
+        /// <summary>
         /// Gets the simple notification service client.
         /// </summary>
         public IAmazonSimpleNotificationService SnsClient { get; }
@@ -66,7 +90,7 @@ namespace RockLib.Messaging.SNS
         /// fashion.
         /// <para>This parameter applies only to FIFO (first-in-first-out) queues.</para>
         /// </summary>
-        public string MessageGroupId { get; }
+        public string? MessageGroupId { get; }
 
         /// <summary>
         /// Asynchronously sends the specified message.
