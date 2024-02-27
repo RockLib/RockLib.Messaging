@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,10 +64,11 @@ namespace RockLib.Messaging.Kafka
         /// <param name="producerConfig">The configuration used in creation of the Kafka producer.</param>
         public KafkaSender(string name, string topic, ProducerConfig producerConfig)
         {
-            if (producerConfig is null)
-            {
-                throw new ArgumentNullException(nameof(producerConfig));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(producerConfig);
+#else
+            if (producerConfig is null) { throw new ArgumentNullException(nameof(producerConfig)); }
+#endif
 
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Topic = topic ?? throw new ArgumentNullException(nameof(topic));
@@ -207,10 +209,11 @@ namespace RockLib.Messaging.Kafka
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
         {
-            if (message is null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(message);
+#else
+            if (message is null) { throw new ArgumentNullException(nameof(message)); }
+#endif
 
             if (message.OriginatingSystem is null)
             {

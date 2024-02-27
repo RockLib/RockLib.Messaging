@@ -63,10 +63,11 @@ namespace RockLib.Messaging.SNS
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
         {
-            if (message is null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(message);
+#else
+            if (message is null) { throw new ArgumentNullException(nameof(message)); }
+#endif
 
             if (message.OriginatingSystem is null)
             {

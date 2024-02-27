@@ -43,10 +43,11 @@ namespace RockLib.Messaging.CloudEvents
         public static TCloudEvent SetData<TCloudEvent>(this TCloudEvent cloudEvent, string? data)
             where TCloudEvent : CloudEvent
         {
-            if (cloudEvent is null)
-            {
-                throw new ArgumentNullException(nameof(cloudEvent));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(cloudEvent);
+#else
+            if (cloudEvent is null) { throw new ArgumentNullException(nameof(cloudEvent)); }
+#endif
 
             if (data != cloudEvent.StringData)
             {
@@ -77,10 +78,11 @@ namespace RockLib.Messaging.CloudEvents
         public static TCloudEvent SetData<TCloudEvent>(this TCloudEvent cloudEvent, byte[]? data)
             where TCloudEvent : CloudEvent
         {
-            if (cloudEvent is null)
-            {
-                throw new ArgumentNullException(nameof(cloudEvent));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(cloudEvent);
+#else
+            if (cloudEvent is null) { throw new ArgumentNullException(nameof(cloudEvent)); }
+#endif
 
             var binaryData = cloudEvent.BinaryData;
 
@@ -127,10 +129,11 @@ namespace RockLib.Messaging.CloudEvents
             where TCloudEvent : CloudEvent
             where T : class
         {
-            if (cloudEvent is null)
-            {
-                throw new ArgumentNullException(nameof(cloudEvent));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(cloudEvent);
+#else
+            if (cloudEvent is null) { throw new ArgumentNullException(nameof(cloudEvent)); }
+#endif
 
             if (!Enum.IsDefined(typeof(DataSerialization), serialization))
             {
@@ -206,10 +209,11 @@ namespace RockLib.Messaging.CloudEvents
             DataSerialization serialization = DataSerialization.Json)
             where T : class
         {
-            if (cloudEvent is null)
-            {
-                throw new ArgumentNullException(nameof(cloudEvent));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(cloudEvent);
+#else
+            if (cloudEvent is null) { throw new ArgumentNullException(nameof(cloudEvent)); }
+#endif
 
             if (!Enum.IsDefined(typeof(DataSerialization), serialization))
             {
@@ -270,10 +274,11 @@ namespace RockLib.Messaging.CloudEvents
             DataSerialization serialization = DataSerialization.Json)
             where T : class
         {
-            if (cloudEvent is null)
-            {
-                throw new ArgumentNullException(nameof(cloudEvent));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(cloudEvent);
+#else
+            if (cloudEvent is null) { throw new ArgumentNullException(nameof(cloudEvent)); }
+#endif
 
             if (!Enum.IsDefined(typeof(DataSerialization), serialization))
             {
@@ -327,10 +332,11 @@ namespace RockLib.Messaging.CloudEvents
         public static TCloudEvent Copy<TCloudEvent>(this TCloudEvent cloudEvent)
             where TCloudEvent : CloudEvent
         {
-            if (cloudEvent is null)
-            {
-                throw new ArgumentNullException(nameof(cloudEvent));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(cloudEvent);
+#else
+            if (cloudEvent is null) { throw new ArgumentNullException(nameof(cloudEvent)); }
+#endif
 
             var copyConstructor = _copyConstructors.GetOrAdd(typeof(TCloudEvent), CopyConstructor.Create!)
                                   ?? throw MissingCopyConstructor(typeof(TCloudEvent));
@@ -370,10 +376,11 @@ namespace RockLib.Messaging.CloudEvents
         public static TCloudEvent To<TCloudEvent>(this IReceiverMessage receiverMessage, IProtocolBinding? protocolBinding = null)
             where TCloudEvent : CloudEvent
         {
-            if (receiverMessage is null)
-            {
-                throw new ArgumentNullException(nameof(receiverMessage));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(receiverMessage);
+#else
+            if (receiverMessage is null) { throw new ArgumentNullException(nameof(receiverMessage)); }
+#endif
 
             var messageConstructor = _messageConstructors.GetOrAdd(typeof(TCloudEvent), MessageConstructor.Create!)
                                      ?? throw MissingReceiverConstructor(typeof(TCloudEvent));
@@ -411,15 +418,13 @@ namespace RockLib.Messaging.CloudEvents
             Func<TCloudEvent, IReceiverMessage, Task> onEventReceivedAsync, IProtocolBinding? protocolBinding = null)
             where TCloudEvent : CloudEvent
         {
-            if (receiver is null)
-            {
-                throw new ArgumentNullException(nameof(receiver));
-            }
-
-            if (onEventReceivedAsync is null)
-            {
-                throw new ArgumentNullException(nameof(onEventReceivedAsync));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(receiver);
+            ArgumentNullException.ThrowIfNull(onEventReceivedAsync);
+#else
+            if (receiver is null) { throw new ArgumentNullException(nameof(receiver)); }
+            if (onEventReceivedAsync is null) { throw new ArgumentNullException(nameof(onEventReceivedAsync)); }
+#endif
 
             if (!MessageConstructor.Exists(typeof(TCloudEvent)))
             {
@@ -457,10 +462,11 @@ namespace RockLib.Messaging.CloudEvents
         public static ISenderBuilder AddValidation<TCloudEvent>(this ISenderBuilder builder, IProtocolBinding? protocolBinding = null)
             where TCloudEvent : CloudEvent
         {
-            if (builder is null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(builder);
+#else
+            if (builder is null) { throw new ArgumentNullException(nameof(builder)); }
+#endif
 
             var validateMethod = _validateMethods.GetOrAdd(typeof(TCloudEvent), ValidateMethod.Create!)
                                  ?? throw MissingValidateMethod(typeof(TCloudEvent));

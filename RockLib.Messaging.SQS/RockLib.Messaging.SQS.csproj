@@ -3,37 +3,28 @@
 		<DebugType>Embedded</DebugType>
 		<Description>Implementation of RockLib.Messaging API that sends and receives messages using Amazon SQS.</Description>
 		<EmbedUntrackedSources>True</EmbedUntrackedSources>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<PackageIcon>icon.png</PackageIcon>
 		<PackageId>RockLib.Messaging.SQS</PackageId>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 		<PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
-		<PackageVersion>3.1.2</PackageVersion>
+		<PackageVersion>4.0.0-alpha.1</PackageVersion>
 		<PackageReleaseNotes>A changelog is available at https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging.SQS/CHANGELOG.md.</PackageReleaseNotes>
 		<PublishRepositoryUrl>True</PublishRepositoryUrl>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageTags>rocklib messaging sqs</PackageTags>
-		<Version>3.1.2</Version>
+		<Version>4.0.0-alpha.1</Version>
 	</PropertyGroup>
-
-	<PropertyGroup>
-		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(PackageId).xml</DocumentationFile>
-	</PropertyGroup>
-
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-	</ItemGroup>
-
 	<ItemGroup>
 		<None Include="..\icon.png" Pack="true" PackagePath="" />
 		<None Include="..\LICENSE.md" Pack="true" PackagePath="" />
 	</ItemGroup>
-
 	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
 		<PackageReference Include="AWSSDK.SQS" Version="3.7.2.35" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
 		<PackageReference Include="RockLib.Messaging" Version="3.0.1" />

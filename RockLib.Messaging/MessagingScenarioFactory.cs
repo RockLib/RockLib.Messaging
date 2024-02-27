@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using RockLib.Configuration;
-using RockLib.Immutable;
 using RockLib.Configuration.ObjectFactory;
 using Microsoft.Extensions.Configuration;
 using Resolver = RockLib.Configuration.ObjectFactory.Resolver;
 using System.Globalization;
+using RockLib.Configuration;
 
 namespace RockLib.Messaging
 {
@@ -16,8 +15,8 @@ namespace RockLib.Messaging
     /// </summary>
     public static class MessagingScenarioFactory
     {
-        private static readonly Semimutable<IConfiguration> _configuration =
-            new Semimutable<IConfiguration>(() => Config.Root!.GetCompositeSection("RockLib_Messaging", "RockLib.Messaging"));
+        private static IConfiguration? _configuration;
+        private static bool _configurationSet;
 
         /// <summary>
         /// Sets the value of the <see cref="Configuration"/> property. Note that this
@@ -25,13 +24,35 @@ namespace RockLib.Messaging
         /// <see cref="Configuration"/> property has been read from, it cannot be changed.
         /// </summary>
         /// <param name="configuration"></param>
-        public static void SetConfiguration(IConfiguration configuration) => _configuration.Value = configuration;
+        public static void SetConfiguration(IConfiguration configuration) => Configuration = configuration;
 
         /// <summary>
         /// Gets the instance of <see cref="IConfiguration"/> used by
         /// <see cref="MessagingScenarioFactory"/> to construct messaging scenarios.
         /// </summary>
-        public static IConfiguration Configuration => _configuration.Value!;
+        public static IConfiguration Configuration
+        {
+            get
+            {
+                if (!_configurationSet)
+                {
+                    _configuration = Config.Root!.GetCompositeSection("RockLib_Messaging", "RockLib.Messaging");
+                    _configurationSet = true;
+                }
+
+                return _configuration!;
+            }
+            private set
+            {
+                if (_configurationSet)
+                {
+                    throw new InvalidOperationException("The configuration has already been set and cannot be changed.");
+                }
+
+                _configuration = value;
+                _configurationSet = true;
+            }
+        }
 
         /// <summary>
         /// Creates an instance of the <see cref="ISender"/> interface identified by
@@ -93,16 +114,13 @@ namespace RockLib.Messaging
             DefaultTypes? defaultTypes = null, ValueConverters? valueConverters = null,
             IResolver? resolver = null, bool reloadOnConfigChange = true)
         {
-            if (configuration is null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
-
-            if (name is null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(configuration);
+            ArgumentNullException.ThrowIfNull(name);
+#else
+            if (configuration is null) { throw new ArgumentNullException(nameof(configuration)); }
+            if (name is null) { throw new ArgumentNullException(nameof(name)); }
+#endif
             return configuration.CreateScenario<ISender>("senders", name, defaultTypes, valueConverters, resolver, reloadOnConfigChange);
         }
 
@@ -166,15 +184,13 @@ namespace RockLib.Messaging
             DefaultTypes? defaultTypes = null, ValueConverters? valueConverters = null,
             IResolver? resolver = null, bool reloadOnConfigChange = true)
         {
-            if (configuration is null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
-
-            if (name is null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(configuration);
+            ArgumentNullException.ThrowIfNull(name);
+#else
+            if (configuration is null) { throw new ArgumentNullException(nameof(configuration)); }
+            if (name is null) { throw new ArgumentNullException(nameof(name)); }
+#endif
 
             return configuration.CreateScenario<IReceiver>("receivers", name, defaultTypes, valueConverters, resolver, reloadOnConfigChange);
         }
@@ -238,7 +254,7 @@ namespace RockLib.Messaging
                 valueSection = section.GetSection("value");
             }
 
-            return valueSection["name"];
+            return valueSection["name"]!;
         }
     }
 }

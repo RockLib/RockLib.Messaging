@@ -16,10 +16,11 @@ namespace RockLib.Messaging.CloudEvents.Sequencing
         /// <returns>The Sequence of the event.</returns>
         public static string? GetSequence(this CloudEvent cloudEvent)
         {
-            if (cloudEvent is null)
-            {
-                throw new ArgumentNullException(nameof(cloudEvent));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(cloudEvent);
+#else
+            if (cloudEvent is null) { throw new ArgumentNullException(nameof(cloudEvent)); }
+#endif
 
             if (cloudEvent.Attributes.TryGetValue(SequenceAttribute, out var value) && value is string sequence)
             {
@@ -40,10 +41,11 @@ namespace RockLib.Messaging.CloudEvents.Sequencing
         /// </param>
         public static void SetSequence(this CloudEvent cloudEvent, string? sequence)
         {
-            if (cloudEvent is null)
-            {
-                throw new ArgumentNullException(nameof(cloudEvent));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(cloudEvent);
+#else
+            if (cloudEvent is null) { throw new ArgumentNullException(nameof(cloudEvent)); }
+#endif
 
             if (sequence is not null)
             {
@@ -63,10 +65,11 @@ namespace RockLib.Messaging.CloudEvents.Sequencing
         /// <returns>The Sequence Type of the event.</returns>
         public static string? GetSequenceType(this CloudEvent cloudEvent)
         {
-            if (cloudEvent is null)
-            {
-                throw new ArgumentNullException(nameof(cloudEvent));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(cloudEvent);
+#else
+            if (cloudEvent is null) { throw new ArgumentNullException(nameof(cloudEvent)); }
+#endif
 
             if (cloudEvent.Attributes.TryGetValue(SequenceTypeAttribute, out var value) && value is string sequenceType)
             {
@@ -87,10 +90,11 @@ namespace RockLib.Messaging.CloudEvents.Sequencing
         /// </param>
         public static void SetSequenceType(this CloudEvent cloudEvent, string? sequenceType)
         {
-            if (cloudEvent is null)
-            {
-                throw new ArgumentNullException(nameof(cloudEvent));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(cloudEvent);
+#else
+            if (cloudEvent is null) { throw new ArgumentNullException(nameof(cloudEvent)); }
+#endif
 
             if (sequenceType is not null)
             {

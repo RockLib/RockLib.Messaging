@@ -44,10 +44,11 @@ namespace RockLib.Messaging.Kafka
         /// <inheritdoc />
         protected override void InitializeHeaders(IDictionary<string, object> headers)
         {
-            if (headers is null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(headers);
+#else
+            if (headers is null) { throw new ArgumentNullException(nameof(headers)); }
+#endif
 
             if (Result.Message?.Key is string key)
             {

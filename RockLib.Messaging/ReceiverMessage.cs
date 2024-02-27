@@ -36,10 +36,11 @@ namespace RockLib.Messaging
         /// </param>
         protected ReceiverMessage(Func<Payload> getRawPayload)
         {
-            if (getRawPayload is null)
-            {
-                throw new ArgumentNullException(nameof(getRawPayload));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(getRawPayload);
+#else
+            if (getRawPayload is null) { throw new ArgumentNullException(nameof(getRawPayload)); }
+#endif
 
             var rawPayload = new Lazy<object>(() => getRawPayload().Value
                 ?? throw new InvalidOperationException("Cannot decode/decompress null payload."));

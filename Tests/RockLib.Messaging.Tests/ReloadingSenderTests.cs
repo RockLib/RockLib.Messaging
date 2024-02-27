@@ -33,7 +33,7 @@ namespace RockLib.Messaging.Tests
             var mockChangeListener = new Mock<IDisposable>(MockBehavior.Strict);
 
             mockOptionsMonitor.Setup(m => m.Get("MyReloadingSender")).Returns(testOptions);
-            mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestSenderOptions, string>>()))
+            mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestSenderOptions, string?>>()))
                 .Returns(mockChangeListener.Object);
 
             Action<TestSenderOptions> expectedConfigureOptions = options => { };
@@ -81,7 +81,7 @@ namespace RockLib.Messaging.Tests
             Action<TestSenderOptions, string> onChangeCallback = null!;
 
             mockOptionsMonitor.Setup(m => m.Get("MyReloadingSender")).Returns(initialOptions);
-            mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestSenderOptions, string>>()))
+            mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestSenderOptions, string?>>()))
                 .Callback<Action<TestSenderOptions, string>>(onChange => onChangeCallback = onChange)
                 .Returns(mockChangeListener.Object);
 
@@ -142,7 +142,7 @@ namespace RockLib.Messaging.Tests
             Action<TestSenderOptions, string> onChangeCallback = null!;
 
             mockOptionsMonitor.Setup(m => m.Get("MyReloadingSender")).Returns(initialOptions);
-            mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestSenderOptions, string>>()))
+            mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestSenderOptions, string?>>()))
                 .Callback<Action<TestSenderOptions, string>>(onChange => onChangeCallback = onChange)
                 .Returns(mockChangeListener.Object);
 
@@ -190,7 +190,7 @@ namespace RockLib.Messaging.Tests
             var mockChangeListener = new Mock<IDisposable>();
 
             mockOptionsMonitor.Setup(m => m.Get("MyReloadingSender")).Returns(initialOptions);
-            mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestSenderOptions, string>>()))
+            mockOptionsMonitor.Setup(m => m.OnChange(It.IsAny<Action<TestSenderOptions, string?>>()))
                 .Returns(mockChangeListener.Object);
 
             Action<TestSenderOptions> configureOptions = options => { };
