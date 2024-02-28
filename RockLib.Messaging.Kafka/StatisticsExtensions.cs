@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using Confluent.Kafka;
 using RockLib.Configuration.ObjectFactory;
 
