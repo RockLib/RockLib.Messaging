@@ -48,10 +48,12 @@ namespace RockLib.Messaging
         /// <param name="receiverMessage">The message to acknowledge.</param>
         public static Task AcknowledgeAsync(this IReceiverMessage receiverMessage)
         {
-            if (receiverMessage is null)
-            {
-                throw new ArgumentNullException(nameof(receiverMessage));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(receiverMessage);
+#else
+            if (receiverMessage is null) { throw new ArgumentNullException(nameof(receiverMessage)); }
+#endif
+
             return receiverMessage.AcknowledgeAsync(CancellationToken.None);
         }
 
@@ -62,10 +64,11 @@ namespace RockLib.Messaging
         /// <param name="receiverMessage">The message to roll back.</param>
         public static Task RollbackAsync(this IReceiverMessage receiverMessage)
         {
-            if (receiverMessage is null)
-            {
-                throw new ArgumentNullException(nameof(receiverMessage));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(receiverMessage);
+#else
+            if (receiverMessage is null) { throw new ArgumentNullException(nameof(receiverMessage)); }
+#endif
 
             return receiverMessage.RollbackAsync(CancellationToken.None);
         }
@@ -77,10 +80,11 @@ namespace RockLib.Messaging
         /// <param name="receiverMessage">The message to reject.</param>
         public static Task RejectAsync(this IReceiverMessage receiverMessage)
         {
-            if (receiverMessage is null)
-            {
-                throw new ArgumentNullException(nameof(receiverMessage));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(receiverMessage);
+#else
+            if (receiverMessage is null) { throw new ArgumentNullException(nameof(receiverMessage)); }
+#endif
 
             return receiverMessage.RejectAsync(CancellationToken.None);
         }

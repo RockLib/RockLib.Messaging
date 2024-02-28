@@ -31,7 +31,7 @@ namespace RockLib.Messaging.CloudEvents
         /// </summary>
         public static readonly IProtocolBinding Kafka = new KafkaProtocolBinding();
 
-        private class DefaultProtocolBinding : IProtocolBinding
+        private sealed class DefaultProtocolBinding : IProtocolBinding
         {
             public string GetHeaderName(string attributeName) => attributeName;
 
@@ -46,7 +46,7 @@ namespace RockLib.Messaging.CloudEvents
             public void Bind(IReceiverMessage fromReceiverMessage, CloudEvent toCloudEvent) { }
         }
 
-        private class KafkaProtocolBinding : IProtocolBinding
+        private sealed class KafkaProtocolBinding : IProtocolBinding
         {
             public static readonly Regex AttributeNameRegex = new Regex("^" + KafkaHeaderPrefix);
 

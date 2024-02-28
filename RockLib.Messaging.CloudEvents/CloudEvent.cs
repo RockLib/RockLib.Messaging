@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using static RockLib.Messaging.HttpUtils;
@@ -84,10 +83,11 @@ namespace RockLib.Messaging.CloudEvents
         /// </param>
         public CloudEvent(CloudEvent source)
         {
-            if (source is null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(source);
+#else
+            if (source is null) { throw new ArgumentNullException(nameof(source)); }
+#endif
 
             ProtocolBinding = source.ProtocolBinding;
 
@@ -115,10 +115,11 @@ namespace RockLib.Messaging.CloudEvents
         /// </param>
         public CloudEvent(IReceiverMessage receiverMessage, IProtocolBinding? protocolBinding = null)
         {
-            if (receiverMessage is null)
-            {
-                throw new ArgumentNullException(nameof(receiverMessage));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(receiverMessage);
+#else
+            if (receiverMessage is null) { throw new ArgumentNullException(nameof(receiverMessage)); }
+#endif
 
             FromReceiverMessage(receiverMessage, protocolBinding);
         }
@@ -696,10 +697,11 @@ namespace RockLib.Messaging.CloudEvents
         /// <returns>The mapped <see cref="HttpRequestMessage"/>.</returns>
         public HttpRequestMessage ToHttpRequestMessage(HttpMethod method, Uri? requestUri = null, bool structuredMode = false)
         {
-            if (method is null)
-            {
-                throw new ArgumentNullException(nameof(method));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(method);
+#else
+            if (method is null) { throw new ArgumentNullException(nameof(method)); }
+#endif
 
             var message = ToSenderMessage(structuredMode);
             var request = new HttpRequestMessage(method, requestUri);
@@ -774,10 +776,11 @@ namespace RockLib.Messaging.CloudEvents
         /// </exception>
         public static void Validate(SenderMessage senderMessage, IProtocolBinding? protocolBinding = null)
         {
-            if (senderMessage is null)
-            {
-                throw new ArgumentNullException(nameof(senderMessage));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(senderMessage);
+#else
+            if (senderMessage is null) { throw new ArgumentNullException(nameof(senderMessage)); }
+#endif
 
             if (protocolBinding is null)
             {

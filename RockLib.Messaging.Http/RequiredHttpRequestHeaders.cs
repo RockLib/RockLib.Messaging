@@ -80,10 +80,11 @@ namespace RockLib.Messaging.Http
                 return true;
             }
 
-            if (requestAcceptTypes is null)
-            {
-                throw new ArgumentNullException(nameof(requestAcceptTypes));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(requestAcceptTypes);
+#else
+            if (requestAcceptTypes is null) { throw new ArgumentNullException(nameof(requestAcceptTypes)); }
+#endif
 
             foreach (var requestAcceptType in requestAcceptTypes)
             {

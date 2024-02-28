@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
-using System.Reflection;
 using System.Text;
 
 namespace RockLib.Messaging
@@ -18,7 +17,7 @@ namespace RockLib.Messaging
 
         private readonly Lazy<string> _stringPayload;
         private readonly Lazy<byte[]> _binaryPayload;
-        private readonly IDictionary<string, object> _headers;
+        private readonly HeaderDictionary  _headers;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SenderMessage"/> class.
@@ -33,10 +32,11 @@ namespace RockLib.Messaging
         /// </param>
         public SenderMessage(string payload, bool compress = false, Func<object, object>? validateHeaderValue = null)
         {
-            if (payload is null)
-            {
-                throw new ArgumentNullException(nameof(payload));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(payload);
+#else
+            if (payload is null) { throw new ArgumentNullException(nameof(payload)); }
+#endif
 
             _headers = new HeaderDictionary(validateHeaderValue);
             InitAsString(payload, compress, out _stringPayload, out _binaryPayload);
@@ -55,10 +55,11 @@ namespace RockLib.Messaging
         /// </param>
         public SenderMessage(byte[] payload, bool compress = false, Func<object, object>? validateHeaderValue = null)
         {
-            if (payload is null)
-            {
-                throw new ArgumentNullException(nameof(payload));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(payload);
+#else
+            if (payload is null) { throw new ArgumentNullException(nameof(payload)); }
+#endif
 
             _headers = new HeaderDictionary(validateHeaderValue, isBinary: true);
             InitAsBinary(payload, compress, out _stringPayload, out _binaryPayload);
@@ -77,10 +78,11 @@ namespace RockLib.Messaging
         /// </param>
         public SenderMessage(IReceiverMessage receiverMessage, Func<object, object>? validateHeaderValue = null)
         {
-            if (receiverMessage is null)
-            {
-                throw new ArgumentNullException(nameof(receiverMessage));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(receiverMessage);
+#else
+            if (receiverMessage is null) { throw new ArgumentNullException(nameof(receiverMessage)); }
+#endif
 
             _headers = new HeaderDictionary(validateHeaderValue);
 
@@ -148,7 +150,7 @@ namespace RockLib.Messaging
         public bool IsCompressed =>
             Headers.TryGetValue(HeaderNames.IsCompressedPayload, out var value)
                 && ((value is bool isCompressed && isCompressed)
-                    || value is string isCompressedString && isCompressedString.ToUpperInvariant() == "TRUE");
+                    || value is string isCompressedString && isCompressedString.Equals("TRUE", StringComparison.OrdinalIgnoreCase));
 
         /// <summary>
         /// Gets a value indicating whether the message was constructed with a byte array
@@ -157,7 +159,7 @@ namespace RockLib.Messaging
         public bool IsBinary =>
             Headers.TryGetValue(HeaderNames.IsBinaryPayload, out var value)
                 && ((value is bool isBinary && isBinary)
-                    || value is string isBinaryString && isBinaryString.ToUpperInvariant() == "TRUE");
+                    || value is string isBinaryString && isBinaryString.Equals("TRUE", StringComparison.OrdinalIgnoreCase));
 
         /// <summary>
         /// Gets or sets the originating system of the message.

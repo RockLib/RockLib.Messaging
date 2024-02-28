@@ -158,7 +158,7 @@ namespace RockLib.Messaging.Tests
                 .Which.Sender.Should().BeSameAs(registeredSender);
         }
 
-        private class SenderDecorator : ISender
+        private sealed class SenderDecorator : ISender
         {
             public SenderDecorator(ISender sender) => Sender = sender;
             public ISender Sender { get; }
@@ -254,7 +254,7 @@ namespace RockLib.Messaging.Tests
                 .Which.Sender.Should().BeSameAs(registeredSender);
         }
 
-        private class TransactionalSenderDecorator : ITransactionalSender
+        private sealed class TransactionalSenderDecorator : ITransactionalSender
         {
             public TransactionalSenderDecorator(ITransactionalSender sender) => Sender = sender;
             public ITransactionalSender Sender { get; }
@@ -349,7 +349,7 @@ namespace RockLib.Messaging.Tests
                 .Which.Receiver.Should().BeSameAs(registeredReceiver);
         }
 
-        private class ReceiverDecorator : IReceiver
+        private sealed class ReceiverDecorator : IReceiver
         {
             public ReceiverDecorator(IReceiver sender) => Receiver = sender;
             public IReceiver Receiver { get; }

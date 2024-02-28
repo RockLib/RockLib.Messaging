@@ -30,14 +30,13 @@ namespace RockLib.Messaging.Kafka
         /// </exception>
         public static IReceiver AddStatisticsEmittedHandler(this IReceiver receiver, EventHandler<string> statisticsEmittedHandler)
         {
-            if (receiver is null)
-            {
-                throw new ArgumentNullException(nameof(receiver));
-            }
-            if (statisticsEmittedHandler is null)
-            {
-                throw new ArgumentNullException(nameof(statisticsEmittedHandler));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(receiver);
+            ArgumentNullException.ThrowIfNull(statisticsEmittedHandler);
+#else
+            if (receiver is null) { throw new ArgumentNullException(nameof(receiver)); }
+            if (statisticsEmittedHandler is null) { throw new ArgumentNullException(nameof(statisticsEmittedHandler)); }
+#endif
 
             var kafkaReceiver = (receiver as ConfigReloadingProxy<IReceiver>)?.Object as KafkaReceiver;
             kafkaReceiver ??= receiver as KafkaReceiver;
@@ -73,14 +72,13 @@ namespace RockLib.Messaging.Kafka
         /// </exception>
         public static ISender AddStatisticsEmittedHandler(this ISender sender, EventHandler<string> statisticsEmittedHandler)
         {
-            if (sender is null)
-            {
-                throw new ArgumentNullException(nameof(sender));
-            }
-            if (statisticsEmittedHandler is null)
-            {
-                throw new ArgumentNullException(nameof(statisticsEmittedHandler));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(sender);
+            ArgumentNullException.ThrowIfNull(statisticsEmittedHandler);
+#else
+            if (sender is null) { throw new ArgumentNullException(nameof(sender)); }
+            if (statisticsEmittedHandler is null) { throw new ArgumentNullException(nameof(statisticsEmittedHandler)); }
+#endif
 
             var kafkaSender = (sender as ConfigReloadingProxy<ISender>)?.Object as KafkaSender;
             kafkaSender ??= sender as KafkaSender;

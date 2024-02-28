@@ -18,11 +18,11 @@ namespace RockLib.Messaging.DependencyInjection
         public static IReceiverBuilder AddForwardingReceiver(this IReceiverBuilder builder,
             Action<IForwardingReceiverOptions>? configureOptions = null)
         {
-            if (builder is null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(builder);
+#else
+            if (builder is null) { throw new ArgumentNullException(nameof(builder)); }
+#endif
             builder.AddDecorator((receiver, serviceProvider) =>
             {
                 var optionsMonitor = serviceProvider.GetService<IOptionsMonitor<ForwardingReceiverOptions>>();

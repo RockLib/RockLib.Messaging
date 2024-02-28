@@ -27,10 +27,11 @@ namespace RockLib.Messaging.DependencyInjection
         /// <param name="decoration">The decoration delegate.</param>
         public ITransactionalSenderBuilder AddDecorator(TransactionalSenderDecoration decoration)
         {
-            if (decoration is null)
-            {
-                throw new ArgumentNullException(nameof(decoration));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(decoration);
+#else
+            if (decoration is null) { throw new ArgumentNullException(nameof(decoration)); }
+#endif
 
             var registration = Registration;
             Registration = serviceProvider =>

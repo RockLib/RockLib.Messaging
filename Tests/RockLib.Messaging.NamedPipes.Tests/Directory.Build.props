@@ -1,19 +1,19 @@
 <Project>
-	<PropertyGroup Condition=" '$(TargetFramework)' == 'net48' or '$(TargetFramework)' == 'netcoreapp3.1'">
+	<PropertyGroup Condition=" '$(TargetFramework)' == 'net48' ">
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 	</PropertyGroup>
 	<PropertyGroup>
-		<AnalysisMode>AllEnabledByDefault</AnalysisMode>
+		<AnalysisMode>all</AnalysisMode>
 		<Authors>Rocket Mortgage</Authors>
-		<Copyright>Copyright 2022 (c) Rocket Mortgage. All rights reserved.</Copyright>
+		<Copyright>Copyright 2024 (c) Rocket Mortgage. All rights reserved.</Copyright>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
-		<TargetFrameworks>net6.0;netcoreapp3.1;net48</TargetFrameworks>
+		<TargetFrameworks>net6.0;net48;net8.0</TargetFrameworks>
 		<NoWarn>NU1603,NU1701</NoWarn>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
-	<ItemGroup Condition=" '$(TargetFramework)' == 'net48' or '$(TargetFramework)' == 'netcoreapp3.1'">
-		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net48' ">
+		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>

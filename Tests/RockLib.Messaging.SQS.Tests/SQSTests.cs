@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using RockLib.Dynamic;
 using Xunit;
-using Xunit.Sdk;
 
 namespace RockLib.Messaging.SQS.Tests
 {

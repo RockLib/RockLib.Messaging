@@ -22,10 +22,11 @@ namespace RockLib.Messaging.CloudEvents.Partitioning
         /// </exception>
         public static string? GetPartitionKey(this CloudEvent cloudEvent)
         {
-            if (cloudEvent is null)
-            {
-                throw new ArgumentNullException(nameof(cloudEvent));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(cloudEvent);
+#else
+            if (cloudEvent is null) { throw new ArgumentNullException(nameof(cloudEvent)); }
+#endif
 
             if (cloudEvent.Attributes.TryGetValue(PartitionKeyAttribute, out var value) && value is string key)
             {
@@ -52,10 +53,11 @@ namespace RockLib.Messaging.CloudEvents.Partitioning
         /// </exception>
         public static void SetPartitionKey(this CloudEvent cloudEvent, string? partitionKey)
         {
-            if (cloudEvent is null)
-            {
-                throw new ArgumentNullException(nameof(cloudEvent));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(cloudEvent);
+#else
+            if (cloudEvent is null) { throw new ArgumentNullException(nameof(cloudEvent)); }
+#endif
 
             if (partitionKey is not null)
             {

@@ -3,6 +3,7 @@
 		<DebugType>Embedded</DebugType>
 		<Description>Implementation of RockLib.Messaging API that sends and receives messages to a local named pipe.</Description>
 		<EmbedUntrackedSources>True</EmbedUntrackedSources>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<PackageIcon>icon.png</PackageIcon>
 		<PackageId>RockLib.Messaging.NamedPipes</PackageId>
@@ -11,12 +12,9 @@
 		<PackageReleaseNotes>A changelog is available at https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging.NamedPipes/CHANGELOG.md.</PackageReleaseNotes>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageTags>rocklib messaging</PackageTags>
-		<PackageVersion>3.0.1</PackageVersion>
+		<PackageVersion>4.0.0-alpha.1</PackageVersion>
 		<PublishRepositoryUrl>True</PublishRepositoryUrl>
-		<Version>3.0.1</Version>
-	</PropertyGroup>
-	<PropertyGroup>
-		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(PackageId).xml</DocumentationFile>
+		<Version>4.0.0-alpha.1</Version>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>

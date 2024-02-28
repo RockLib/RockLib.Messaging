@@ -62,10 +62,11 @@ namespace RockLib.Messaging.Http
             int rejectStatusCode = DefaultRejectStatusCode,
             string method = DefaultMethod, RequiredHttpRequestHeaders? requiredHeaders = null) : base(name)
         {
-            if (url is null)
-            {
-                throw new ArgumentNullException(nameof(url));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(url);
+#else
+            if (url is null) { throw new ArgumentNullException(nameof(url)); }
+#endif
 
             Prefixes = GetPrefixes(url.OriginalString);
             foreach (var prefix in Prefixes)
@@ -228,10 +229,11 @@ namespace RockLib.Messaging.Http
             IHttpResponseGenerator httpResponseGenerator, string method = DefaultMethod, RequiredHttpRequestHeaders? requiredHeaders = null)
             : base(name)
         {
-            if (path is null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(path);
+#else
+            if (path is null) { throw new ArgumentNullException(nameof(path)); }
+#endif
 
             Prefixes = prefixes ?? throw new ArgumentNullException(nameof(prefixes));
             foreach (var prefix in Prefixes)
@@ -361,12 +363,13 @@ namespace RockLib.Messaging.Http
             _listener.Close();
         }
 
-        private static IReadOnlyList<string> GetPrefixes(string url)
+        private static string[] GetPrefixes(string url)
         {
-            if (url is null)
-            {
-                throw new ArgumentNullException(nameof(url));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(url);
+#else
+            if (url is null) { throw new ArgumentNullException(nameof(url)); }
+#endif
 
             var match = Regex.Match(url, ".*?(?={[^}]+})");
 

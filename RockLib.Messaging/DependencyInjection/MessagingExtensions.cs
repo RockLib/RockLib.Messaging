@@ -31,14 +31,13 @@ namespace RockLib.Messaging.DependencyInjection
         public static ISenderBuilder AddSender(this IServiceCollection services, string senderName,
             ServiceLifetime lifetime = _defaultLifetime)
         {
-            if (services is null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-            if (senderName is null)
-            {
-                throw new ArgumentNullException(nameof(senderName));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(senderName);
+#else
+            if (services is null) { throw new ArgumentNullException(nameof(services)); }
+            if (senderName is null) { throw new ArgumentNullException(nameof(senderName)); }
+#endif
 
             return services.AddSender(serviceProvider =>
             {
@@ -88,18 +87,15 @@ namespace RockLib.Messaging.DependencyInjection
             bool reloadOnChange = true, ServiceLifetime lifetime = _defaultLifetime)
             where TSenderOptions : class, new()
         {
-            if (services is null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-            if (senderName is null)
-            {
-                throw new ArgumentNullException(nameof(senderName));
-            }
-            if (createSender is null)
-            {
-                throw new ArgumentNullException(nameof(createSender));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(senderName);
+            ArgumentNullException.ThrowIfNull(createSender);
+#else
+            if (services is null) { throw new ArgumentNullException(nameof(services)); }
+            if (senderName is null) { throw new ArgumentNullException(nameof(senderName)); }
+            if (createSender is null) { throw new ArgumentNullException(nameof(createSender)); }
+#endif
 
             return services.AddSender(serviceProvider =>
             {
@@ -129,14 +125,13 @@ namespace RockLib.Messaging.DependencyInjection
         public static ISenderBuilder AddSender(this IServiceCollection services, SenderRegistration registration,
             ServiceLifetime lifetime = _defaultLifetime)
         {
-            if (services is null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-            if (registration is null)
-            {
-                throw new ArgumentNullException(nameof(registration));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(registration);
+#else
+            if (services is null) { throw new ArgumentNullException(nameof(services)); }
+            if (registration is null) { throw new ArgumentNullException(nameof(registration)); }
+#endif
 
             var builder = new SenderBuilder(registration);
 
@@ -160,14 +155,13 @@ namespace RockLib.Messaging.DependencyInjection
         public static ITransactionalSenderBuilder AddTransactionalSender(this IServiceCollection services, string senderName,
             ServiceLifetime lifetime = _defaultLifetime)
         {
-            if (services is null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-            if (senderName is null)
-            {
-                throw new ArgumentNullException(nameof(senderName));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(senderName);
+#else
+            if (services is null) { throw new ArgumentNullException(nameof(services)); }
+            if (senderName is null) { throw new ArgumentNullException(nameof(senderName)); }
+#endif
 
             return services.AddTransactionalSender(serviceProvider =>
             {
@@ -195,14 +189,13 @@ namespace RockLib.Messaging.DependencyInjection
         public static ITransactionalSenderBuilder AddTransactionalSender(this IServiceCollection services,
             TransactionalSenderRegistration registration, ServiceLifetime lifetime = _defaultLifetime)
         {
-            if (services is null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-            if (registration is null)
-            {
-                throw new ArgumentNullException(nameof(registration));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(registration);
+#else
+            if (services is null) { throw new ArgumentNullException(nameof(services)); }
+            if (registration is null) { throw new ArgumentNullException(nameof(registration)); }
+#endif
 
             var builder = new TransactionalSenderBuilder(registration);
 
@@ -227,14 +220,13 @@ namespace RockLib.Messaging.DependencyInjection
         public static IReceiverBuilder AddReceiver(this IServiceCollection services, string receiverName,
             ServiceLifetime lifetime = _defaultLifetime)
         {
-            if (services is null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-            if (receiverName is null)
-            {
-                throw new ArgumentNullException(nameof(receiverName));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(receiverName);
+#else
+            if (services is null) { throw new ArgumentNullException(nameof(services)); }
+            if (receiverName is null) { throw new ArgumentNullException(nameof(receiverName)); }
+#endif
 
             return services.AddReceiver(serviceProvider =>
             {
@@ -283,18 +275,15 @@ namespace RockLib.Messaging.DependencyInjection
             bool reloadOnChange = true, ServiceLifetime lifetime = _defaultLifetime)
             where TReceiverOptions : class, new()
         {
-            if (services is null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-            if (receiverName is null)
-            {
-                throw new ArgumentNullException(nameof(receiverName));
-            }
-            if (createReceiver is null)
-            {
-                throw new ArgumentNullException(nameof(createReceiver));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(receiverName);
+            ArgumentNullException.ThrowIfNull(createReceiver);
+#else
+            if (services is null) { throw new ArgumentNullException(nameof(services)); }
+            if (receiverName is null) { throw new ArgumentNullException(nameof(receiverName)); }
+            if (createReceiver is null) { throw new ArgumentNullException(nameof(createReceiver)); }
+#endif
 
             return services.AddReceiver(serviceProvider =>
             {
@@ -324,14 +313,13 @@ namespace RockLib.Messaging.DependencyInjection
         public static IReceiverBuilder AddReceiver(this IServiceCollection services, ReceiverRegistration registration,
             ServiceLifetime lifetime = _defaultLifetime)
         {
-            if (services is null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-            if (registration is null)
-            {
-                throw new ArgumentNullException(nameof(registration));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(registration);
+#else
+            if (services is null) { throw new ArgumentNullException(nameof(services)); }
+            if (registration is null) { throw new ArgumentNullException(nameof(registration)); }
+#endif
 
             var builder = new ReceiverBuilder(registration);
 
