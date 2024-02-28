@@ -12,9 +12,9 @@
 		<PackageReleaseNotes>A changelog is available at https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging.Kafka/CHANGELOG.md.</PackageReleaseNotes>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageTags>rocklib messaging kafka</PackageTags>
-		<PackageVersion>3.0.0-alpha1</PackageVersion>
+		<PackageVersion>3.0.0-alpha.1</PackageVersion>
 		<PublishRepositoryUrl>True</PublishRepositoryUrl>
-		<Version>3.0.0-alpha1</Version>
+		<Version>3.0.0-alpha.1</Version>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
