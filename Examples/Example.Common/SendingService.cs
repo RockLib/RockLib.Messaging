@@ -46,11 +46,11 @@ namespace Example.Common
             }
         }
 
-        private void ReadAndSendMessage()
+        private async Task ReadAndSendMessage()
         {
             string message = ReadLine();
             if (message is object)
-                Sender.Send(message);
+                await Sender.SendAsync(message);
         }
 
         protected virtual string ReadLine() => Console.ReadLine();

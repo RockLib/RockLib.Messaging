@@ -90,7 +90,7 @@ namespace RockLib.Messaging.Tests
         {
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.AcknowledgeAsync().ConfigureAwait(false);
+            await message.AcknowledgeAsync();
 
             message.Handled.Should().BeTrue();
         }
@@ -100,7 +100,7 @@ namespace RockLib.Messaging.Tests
         {
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.AcknowledgeAsync().ConfigureAwait(false);
+            await message.AcknowledgeAsync();
 
             message.HandledBy.Should().Be(nameof(message.AcknowledgeAsync));
         }
@@ -110,7 +110,7 @@ namespace RockLib.Messaging.Tests
         {
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.RollbackAsync().ConfigureAwait(false);
+            await message.RollbackAsync();
 
             message.Handled.Should().BeTrue();
         }
@@ -120,7 +120,7 @@ namespace RockLib.Messaging.Tests
         {
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.RollbackAsync().ConfigureAwait(false);
+            await message.RollbackAsync();
 
             message.HandledBy.Should().Be(nameof(message.RollbackAsync));
         }
@@ -130,7 +130,7 @@ namespace RockLib.Messaging.Tests
         {
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.RejectAsync().ConfigureAwait(false);
+            await message.RejectAsync();
 
             message.Handled.Should().BeTrue();
         }
@@ -140,7 +140,7 @@ namespace RockLib.Messaging.Tests
         {
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.RejectAsync().ConfigureAwait(false);
+            await message.RejectAsync();
 
             message.HandledBy.Should().Be(nameof(message.RejectAsync));
         }
@@ -150,12 +150,12 @@ namespace RockLib.Messaging.Tests
         {
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.AcknowledgeAsync().ConfigureAwait(false);
+            await message.AcknowledgeAsync();
 
             Func<Task> act = () => message.AcknowledgeAsync();
 
             await act.Should().ThrowAsync<InvalidOperationException>()
-                .WithMessage($"Cannot {nameof(message.AcknowledgeAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.").ConfigureAwait(false);
+                .WithMessage($"Cannot {nameof(message.AcknowledgeAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.");
         }
 
         [Fact]
@@ -163,12 +163,12 @@ namespace RockLib.Messaging.Tests
         {
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.AcknowledgeAsync().ConfigureAwait(false);
+            await message.AcknowledgeAsync();
 
             Func<Task> act = () => message.RollbackAsync();
 
             await act.Should().ThrowAsync<InvalidOperationException>()
-                .WithMessage($"Cannot {nameof(message.RollbackAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.").ConfigureAwait(false);
+                .WithMessage($"Cannot {nameof(message.RollbackAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.");
         }
 
         [Fact]
@@ -176,12 +176,12 @@ namespace RockLib.Messaging.Tests
         {
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            await message.AcknowledgeAsync().ConfigureAwait(false);
+            await message.AcknowledgeAsync();
 
             Func<Task> act = () => message.RejectAsync();
 
             await act.Should().ThrowAsync<InvalidOperationException>()
-                .WithMessage($"Cannot {nameof(message.RejectAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.").ConfigureAwait(false);
+                .WithMessage($"Cannot {nameof(message.RejectAsync)} message: the message has already been handled by {nameof(message.AcknowledgeAsync)}.");
         }
     }
 }

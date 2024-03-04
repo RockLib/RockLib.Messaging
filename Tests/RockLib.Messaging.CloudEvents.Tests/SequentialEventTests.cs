@@ -76,7 +76,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Theory(DisplayName = "Validate method throws when Sequence is missing")]
         [InlineData(null)]
         [InlineData("")]
-        public void ValidateMethodSadPath1(string sequence)
+        public void ValidateMethodSadPath1(string? sequence)
         {
             var cloudEvent = new SequentialEvent
             {

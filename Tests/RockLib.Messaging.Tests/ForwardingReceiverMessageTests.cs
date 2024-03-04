@@ -15,7 +15,7 @@ namespace RockLib.Messaging.Tests
 
             using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.AcknowledgeAsync().ConfigureAwait(false);
+            await forwardingMessage.AcknowledgeAsync();
 
             message.HandledBy.Should().Be(nameof(IReceiverMessage.AcknowledgeAsync));
         }
@@ -31,7 +31,7 @@ namespace RockLib.Messaging.Tests
 
             using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.AcknowledgeAsync().ConfigureAwait(false);
+            await forwardingMessage.AcknowledgeAsync();
 
             forwarder.SentMessages.Should().ContainSingle();
             forwarder.SentMessages[0].StringPayload.Should().Be("Hello, world!");
@@ -51,7 +51,7 @@ namespace RockLib.Messaging.Tests
 
             using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.AcknowledgeAsync().ConfigureAwait(false);
+            await forwardingMessage.AcknowledgeAsync();
 
             message.HandledBy.Should().Be($"{outcome}Async");
         }
@@ -65,7 +65,7 @@ namespace RockLib.Messaging.Tests
 
             using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.RollbackAsync().ConfigureAwait(false);
+            await forwardingMessage.RollbackAsync();
 
             message.HandledBy.Should().Be(nameof(IReceiverMessage.RollbackAsync));
         }
@@ -81,7 +81,7 @@ namespace RockLib.Messaging.Tests
 
             using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.RollbackAsync().ConfigureAwait(false);
+            await forwardingMessage.RollbackAsync();
 
             forwarder.SentMessages.Should().ContainSingle();
             forwarder.SentMessages[0].StringPayload.Should().Be("Hello, world!");
@@ -101,7 +101,7 @@ namespace RockLib.Messaging.Tests
 
             using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.RollbackAsync().ConfigureAwait(false);
+            await forwardingMessage.RollbackAsync();
 
             message.HandledBy.Should().Be($"{outcome}Async");
         }
@@ -115,7 +115,7 @@ namespace RockLib.Messaging.Tests
 
             using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.RejectAsync().ConfigureAwait(false);
+            await forwardingMessage.RejectAsync();
 
             message.HandledBy.Should().Be(nameof(IReceiverMessage.RejectAsync));
         }
@@ -131,7 +131,7 @@ namespace RockLib.Messaging.Tests
 
             using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.RejectAsync().ConfigureAwait(false);
+            await forwardingMessage.RejectAsync();
 
             forwarder.SentMessages.Should().ContainSingle();
             forwarder.SentMessages[0].StringPayload.Should().Be("Hello, world!");
@@ -151,7 +151,7 @@ namespace RockLib.Messaging.Tests
 
             using var forwardingMessage = new ForwardingReceiverMessage(forwardingReceiver, message);
 
-            await forwardingMessage.RejectAsync().ConfigureAwait(false);
+            await forwardingMessage.RejectAsync();
 
             message.HandledBy.Should().Be($"{outcome}Async");
         }

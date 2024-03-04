@@ -3,12 +3,13 @@ using RockLib.Messaging;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Example.Messaging.Http.DotNetCore20
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Console.WriteLine("Make a selection:");
             Console.WriteLine("1) Create an ISender and prompt for messages.");
@@ -25,15 +26,15 @@ namespace Example.Messaging.Http.DotNetCore20
                 {
                     case '1':
                         Console.WriteLine(c);
-                        RunSender();
+                        await RunSender();
                         return;
                     case '2':
                         Console.WriteLine(c);
-                        RunReceiver();
+                        await RunReceiver();
                         return;
                     case '3':
                         Console.WriteLine(c);
-                        SendAndReceiveOneMessage();
+                        await SendAndReceiveOneMessage();
                         return;
                     case 'q':
                         Console.WriteLine(c);
@@ -42,7 +43,7 @@ namespace Example.Messaging.Http.DotNetCore20
             }
         }
 
-        private static void RunSender()
+        private static async Task RunSender()
         {
             using (var sender = MessagingScenarioFactory.CreateSender("Sender1"))
             {
@@ -55,14 +56,14 @@ namespace Example.Messaging.Http.DotNetCore20
                         return;
 
                     if (TryExtractHeaders(ref message, out var headers))
-                        sender.Send(new SenderMessage(message) { Headers = headers });
+                        await sender.SendAsync(new SenderMessage(message) { Headers = headers });
                     else
-                        sender.Send(message);
+                        await sender.SendAsync(message);
                 }
             }
         }
 
-        private static void RunReceiver()
+        private static async Task RunReceiver()
         {
             using (var receiver = MessagingScenarioFactory.CreateReceiver("Receiver1"))
             {
@@ -72,7 +73,7 @@ namespace Example.Messaging.Http.DotNetCore20
                     throw new Exception($"Error in the receiver: {args.Exception.Message}");
                 };
 
-                receiver.Start(m =>
+                receiver.Start(async m =>
                 {
                     foreach (var header in m.Headers)
                         Console.WriteLine($"{header.Key}: {header.Value}");
@@ -80,14 +81,14 @@ namespace Example.Messaging.Http.DotNetCore20
                     Console.WriteLine(m.StringPayload);
 
                     // Always acknowledge, reject, or rollback a received http request.
-                    m.Acknowledge();
+                    await m.AcknowledgeAsync();
                 });
                 Console.WriteLine($"Receiving messages from receiver '{receiver.Name}'. Press <enter> to quit.");
                 while (Console.ReadKey(true).Key != ConsoleKey.Enter) { }
             }
         }
 
-        private static void SendAndReceiveOneMessage()
+        private static async Task SendAndReceiveOneMessage()
         {
             // Use a wait handle to pause the main thread while waiting for the message to be received.
             var waitHandle = new AutoResetEvent(false);
@@ -101,19 +102,19 @@ namespace Example.Messaging.Http.DotNetCore20
                 throw new Exception($"Error in the receiver: {args.Exception.Message}");
             };
 
-            receiver.Start(m =>
+            receiver.Start(async m =>
             {
                 var message = m.StringPayload;
 
                 Console.WriteLine($"Message received: {message}");
 
                 // Always acknowledge, reject, or rollback a received http request.
-                m.Acknowledge();
+                await m.AcknowledgeAsync();
 
                 waitHandle.Set();
             });
 
-            sender.Send($"Http test message from {typeof(Program).FullName}");
+            await sender.SendAsync($"Http test message from {typeof(Program).FullName}");
 
             waitHandle.WaitOne();
 

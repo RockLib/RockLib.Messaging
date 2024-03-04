@@ -19,13 +19,13 @@ namespace RockLib.Messaging.NamedPipes.Tests
             {
                 payload = m.StringPayload;
                 headerValue = m.Headers.GetValue<string>("bar");
-                await m.AcknowledgeAsync().ConfigureAwait(false);
+                await m.AcknowledgeAsync();
                 waitHandle.Set();
             });
 
             using (var sender = new NamedPipeSender("foo", "test-pipe"))
             {
-                await sender.SendAsync(new SenderMessage("Hello, world!") { Headers = { { "bar", "abc" } } }).ConfigureAwait(false);
+                await sender.SendAsync(new SenderMessage("Hello, world!") { Headers = { { "bar", "abc" } } });
                 waitHandle.WaitOne();
             }
 

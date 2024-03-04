@@ -37,12 +37,12 @@ namespace RockLib.Messaging.Kafka.Tests
         }
 
         [Theory]
-        [InlineData("name", null!, "groupId", "servers")]
-        [InlineData("name", "topic", null!, "servers")]
-        [InlineData("name", "topic", "groupId", null!)]
-        public static void CreateWithInvalidData(string name, string topic, string group, string bootstrapServers)
+        [InlineData("name", null, "groupId", "servers")]
+        [InlineData("name", "topic", null, "servers")]
+        [InlineData("name", "topic", "groupId", null)]
+        public static void CreateWithInvalidData(string name, string? topic, string? group, string? bootstrapServers)
         {
-            Func<KafkaReceiver> action = () => new KafkaReceiver(name, topic, group, bootstrapServers);
+            Func<KafkaReceiver> action = () => new KafkaReceiver(name, topic!, group!, bootstrapServers!);
             action.Should().Throw<ArgumentNullException>();
         }
 
@@ -231,23 +231,23 @@ namespace RockLib.Messaging.Kafka.Tests
             validationWaitHandle.Set();
 
             //wait a bit
-            await Task.Delay(2_000).ConfigureAwait(false);
+            await Task.Delay(2_000);
 
             var disposeTask = Task.Run(() => unlockedReceiver.Dispose());
 
             //allow for the dispose task to start
-            await Task.Delay(2_000).ConfigureAwait(false);
+            await Task.Delay(2_000);
 
             //signal disposing has started and should be waiting for polling to complete
             validationWaitHandle.Set();
 
             //this will wait until dispose has completed, which requires polling to complete
-            await disposeTask.ConfigureAwait(false);
+            await disposeTask;
 
             //signal disposing is done
             validationWaitHandle.Set();
 
-            await validationTask.ConfigureAwait(false);
+            await validationTask;
 
             //check tasks for failures
             if (disposeTask is { IsFaulted: true, Exception: { } })
