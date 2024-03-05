@@ -4,7 +4,7 @@ using Moq.Protected;
 using RockLib.Dynamic;
 using RockLib.Messaging;
 using RockLib.Messaging.DependencyInjection;
-using RockLib.Messaging.Testing;
+using RockLib.Messaging.Tests;
 using System;
 using System.Threading.Tasks;
 using Xunit;

@@ -17,10 +17,11 @@ namespace RockLib.Messaging.Kafka
         /// <returns>The Key of the Kafka message.</returns>
         public static string? GetKafkaKey(this IReceiverMessage receiverMessage)
         {
-            if (receiverMessage is null)
-            {
-                throw new ArgumentNullException(nameof(receiverMessage));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(receiverMessage);
+#else
+            if (receiverMessage is null) { throw new ArgumentNullException(nameof(receiverMessage)); }
+#endif
 
             if (receiverMessage.Headers.TryGetValue(KafkaKeyHeader, out string? kafkaKey))
             {
@@ -40,10 +41,11 @@ namespace RockLib.Messaging.Kafka
         /// event is removed.</param>
         public static void SetKafkaKey(this SenderMessage senderMessage, string kafkaKey)
         {
-            if (senderMessage is null)
-            {
-                throw new ArgumentNullException(nameof(senderMessage));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(senderMessage);
+#else
+            if (senderMessage is null) { throw new ArgumentNullException(nameof(senderMessage)); }
+#endif
 
             if (!string.IsNullOrEmpty(kafkaKey))
             {

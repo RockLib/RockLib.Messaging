@@ -17,7 +17,7 @@ namespace RockLib.Messaging.DependencyInjection
 
             var options = optionsMonitor.GetOptions(Name, configureOptions);
             Sender = CreateSender.Invoke(options);
-            ChangeListener = optionsMonitor.OnChange(OptionsMonitorChanged);
+            ChangeListener = optionsMonitor.OnChange(OptionsMonitorChanged)!;
         }
 
         public string Name { get; }
@@ -39,7 +39,7 @@ namespace RockLib.Messaging.DependencyInjection
             Sender.Dispose();
         }
 
-        private void OptionsMonitorChanged(TSenderOptions options, string name)
+        private void OptionsMonitorChanged(TSenderOptions options, string? name)
         {
             if (string.Equals(Name, name, StringComparison.OrdinalIgnoreCase))
             {

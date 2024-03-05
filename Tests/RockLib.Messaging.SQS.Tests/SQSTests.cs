@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using RockLib.Dynamic;
 using Xunit;
-using Xunit.Sdk;
 
 namespace RockLib.Messaging.SQS.Tests
 {
@@ -24,7 +23,7 @@ namespace RockLib.Messaging.SQS.Tests
             {
                 await sender.SendAsync(
                     new SenderMessage("Hello, world!") { Headers = { { "bar", "abc" } } })
-                    .ConfigureAwait(false);
+                    ;
             }
 
             mockSqs.Verify(m => m.SendMessageAsync(
@@ -43,7 +42,7 @@ namespace RockLib.Messaging.SQS.Tests
             {
                 await sender.SendAsync(
                     new SenderMessage("") { Headers = { { "SQS.MessageGroupId", "abc" } } })
-                    .ConfigureAwait(false);
+                    ;
             }
 
             mockSqs.Verify(m => m.SendMessageAsync(
@@ -62,7 +61,7 @@ namespace RockLib.Messaging.SQS.Tests
             {
                 await sender.SendAsync(
                     new SenderMessage(""))
-                    .ConfigureAwait(false);
+                    ;
             }
 
             mockSqs.Verify(m => m.SendMessageAsync(
@@ -79,7 +78,7 @@ namespace RockLib.Messaging.SQS.Tests
             {
                 await sender.SendAsync(
                     new SenderMessage("") { Headers = { { "SQS.MessageGroupId", "xyz" } } })
-                    .ConfigureAwait(false);
+                    ;
             }
 
                 mockSqs.Verify(m => m.SendMessageAsync(
@@ -98,7 +97,7 @@ namespace RockLib.Messaging.SQS.Tests
                 {
                     await sender.SendAsync(
                         new SenderMessage("") { Headers = { { "SQS.MessageDeduplicationId", "abc" } } })
-                        .ConfigureAwait(false);
+                        ;
                 }
 
             mockSqs.Verify(m => m.SendMessageAsync(
@@ -118,7 +117,7 @@ namespace RockLib.Messaging.SQS.Tests
             {
                 await sender.SendAsync(
                     new SenderMessage("") { Headers = { { "SQS.DelaySeconds", 123 } } })
-                    .ConfigureAwait(false);
+                    ;
             }
 
             mockSqs.Verify(m => m.SendMessageAsync(
@@ -179,7 +178,7 @@ namespace RockLib.Messaging.SQS.Tests
             {
                 receiver.Start(async m =>
                 {
-                    await m.AcknowledgeAsync().ConfigureAwait(false);
+                    await m.AcknowledgeAsync();
                     waitHandle.Set();
                 });
 
@@ -208,7 +207,7 @@ namespace RockLib.Messaging.SQS.Tests
             {
                 receiver.Start(async m =>
                 {
-                    await m.RollbackAsync().ConfigureAwait(false);
+                    await m.RollbackAsync();
                     waitHandle.Set();
                 });
 
@@ -235,7 +234,7 @@ namespace RockLib.Messaging.SQS.Tests
             {
                 receiver.Start(async m =>
                 {
-                    await m.RollbackAsync().ConfigureAwait(false);
+                    await m.RollbackAsync();
                     waitHandle.Set();
                 });
 
@@ -262,7 +261,7 @@ namespace RockLib.Messaging.SQS.Tests
             {
                 receiver.Start(async m =>
                 {
-                    await m.RollbackAsync().ConfigureAwait(false);
+                    await m.RollbackAsync();
                     waitHandle.Set();
                 });
 
@@ -288,7 +287,7 @@ namespace RockLib.Messaging.SQS.Tests
             {
                 receiver.Start(async m =>
                 {
-                    await m.RejectAsync().ConfigureAwait(false);
+                    await m.RejectAsync();
                     waitHandle.Set();
                 });
 
@@ -315,7 +314,7 @@ namespace RockLib.Messaging.SQS.Tests
             {
                 receiver.Start(async m =>
                 {
-                    await m.AcknowledgeAsync().ConfigureAwait(false);
+                    await m.AcknowledgeAsync();
                     waitHandle.Set();
                 });
 
@@ -342,7 +341,7 @@ namespace RockLib.Messaging.SQS.Tests
             {
                 receiver.Start(async m =>
                 {
-                    await m.RollbackAsync().ConfigureAwait(false);
+                    await m.RollbackAsync();
                     waitHandle.Set();
                 });
 
@@ -517,7 +516,7 @@ namespace RockLib.Messaging.SQS.Tests
                 receivedMessage = m.StringPayload;
                 quxHeader = m.Headers.GetValue<string>("qux");
                 waitHandle.Set();
-                await Task.CompletedTask.ConfigureAwait(false);
+                await Task.CompletedTask;
             });
 
             waitHandle.WaitOne();
@@ -541,7 +540,7 @@ namespace RockLib.Messaging.SQS.Tests
             receiver.Start(async m =>
             {
                 waitHandle.Set();
-                await Task.CompletedTask.ConfigureAwait(false);
+                await Task.CompletedTask;
             });
 
             waitHandle.WaitOne();
@@ -570,7 +569,7 @@ namespace RockLib.Messaging.SQS.Tests
             receiver.Start(async _ =>
             {
                 consumed = true;
-                await Task.CompletedTask.ConfigureAwait(false);
+                await Task.CompletedTask;
             });
 
             var unlocked = receiver.Unlock();
@@ -578,7 +577,7 @@ namespace RockLib.Messaging.SQS.Tests
             Assert.True(unlocked._stopped);
 
             //wait a few secs just to see
-            await Task.Delay(5_000).ConfigureAwait(false);
+            await Task.Delay(5_000);
             Assert.False(consumed, "Should not consume any messages when disposed");
         }
     }

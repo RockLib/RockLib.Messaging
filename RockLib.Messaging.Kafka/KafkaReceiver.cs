@@ -104,10 +104,11 @@ namespace RockLib.Messaging.Kafka
             int messageBufferSize = DefaultMessageBufferSize)
             : base(name)
         {
-            if (consumerConfig is null)
-            {
-                throw new ArgumentNullException(nameof(consumerConfig));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(consumerConfig);
+#else
+            if (consumerConfig is null) { throw new ArgumentNullException(nameof(consumerConfig)); }
+#endif
 
             if (consumerConfig.EnableAutoCommit is false)
             {

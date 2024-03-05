@@ -43,21 +43,21 @@ namespace Example.Messaging.SNS.DotNetCore20
             {
                 options.AutoAcknowledge = false;
                 options.Region = "us-east-1"; // TODO: Set Region
-                options.QueueUrl = "http://aws.com"; // TODO: Set Topic Url
+                options.QueueUrl = new Uri("http://aws.com"); // TODO: Set Topic Url
                 options.UnpackSNS = true;
             });
             services.AddSQSReceiver("Receiver2", options =>
             {
                 options.AutoAcknowledge = false;
                 options.Region = "us-east-1"; // TODO: Set Region
-                options.QueueUrl = "http://aws.com"; // TODO: Set Topic Url
+                options.QueueUrl = new Uri("http://aws.com"); // TODO: Set Topic Url
                 options.UnpackSNS = true;
             });
             services.AddSQSReceiver("Receiver3", options =>
             {
                 options.AutoAcknowledge = false;
                 options.Region = "us-east-1"; // TODO: Set Region
-                options.QueueUrl = "http://aws.com"; // TODO: Set Topic Url
+                options.QueueUrl = new Uri("http://aws.com"); // TODO: Set Topic Url
                 options.UnpackSNS = true;
             });
 

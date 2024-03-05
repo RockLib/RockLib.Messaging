@@ -92,7 +92,7 @@ namespace RockLib.Messaging.Tests
         public void DefaultTypesFunctionsProperly()
         {
             var config = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string>
+                .AddInMemoryCollection(new Dictionary<string, string?>
                 {
                     { "RockLib.Messaging:Senders:Name", "foo" },
                     { "RockLib.Messaging:Receivers:Name", "foo" }
@@ -117,7 +117,7 @@ namespace RockLib.Messaging.Tests
         public void ValueConvertersFunctionsProperly()
         {
             var config = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string>
+                .AddInMemoryCollection(new Dictionary<string, string?>
                 {
                     { "RockLib.Messaging:Senders:Type", typeof(TestSender).AssemblyQualifiedName! },
                     { "RockLib.Messaging:Senders:Value:Name", "foo" },
@@ -154,7 +154,7 @@ namespace RockLib.Messaging.Tests
         public void ResolverFunctionsProperly()
         {
             var config = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string>
+                .AddInMemoryCollection(new Dictionary<string, string?>
                 {
                     { "RockLib.Messaging:Senders:Type", typeof(TestSender).AssemblyQualifiedName! },
                     { "RockLib.Messaging:Senders:Value:Name", "foo" },
@@ -178,7 +178,7 @@ namespace RockLib.Messaging.Tests
         public void ReloadOnConfigChangeTrueFunctionsProperly()
         {
             var config = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string>
+                .AddInMemoryCollection(new Dictionary<string, string?>
                 {
                     { "RockLib.Messaging:Senders:Type", typeof(TestSender).AssemblyQualifiedName! },
                     { "RockLib.Messaging:Senders:Value:Name", "foo" },
@@ -199,7 +199,7 @@ namespace RockLib.Messaging.Tests
         public void ReloadOnConfigChangeFalseFunctionsProperly()
         {
             var config = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string>
+                .AddInMemoryCollection(new Dictionary<string, string?>
                 {
                     { "RockLib.Messaging:Senders:Type", typeof(TestSender).AssemblyQualifiedName! },
                     { "RockLib.Messaging:Senders:Value:Name", "foo" },
@@ -217,7 +217,7 @@ namespace RockLib.Messaging.Tests
         }
 
 #pragma warning disable CA1812
-        private class TestReceiver : Receiver
+        private sealed class TestReceiver : Receiver
         {
             public TestReceiver(Point location = default, ITestDependency? dependency = null)
                 : base(nameof(TestReceiver))
@@ -235,7 +235,7 @@ namespace RockLib.Messaging.Tests
             }
         }
 
-        private class TestSender : ISender
+        private sealed class TestSender : ISender
         {
             public TestSender(Point location = default, ITestDependency? dependency = null)
             {
@@ -274,7 +274,7 @@ namespace RockLib.Messaging.Tests
         {
         }
 
-        private class TestDependency : ITestDependency
+        private sealed class TestDependency : ITestDependency
         {
         }
 #pragma warning restore CA1812

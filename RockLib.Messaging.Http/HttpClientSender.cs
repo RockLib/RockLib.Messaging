@@ -134,10 +134,11 @@ namespace RockLib.Messaging.Http
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public async Task SendAsync(SenderMessage message, CancellationToken cancellationToken)
         {
-            if (message is null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(message);
+#else
+            if (message is null) { throw new ArgumentNullException(nameof(message)); }
+#endif
 
             if (message.OriginatingSystem is null)
             {
@@ -196,12 +197,20 @@ namespace RockLib.Messaging.Http
             {
                 var token = match.Groups[1].Value;
 
+#if NET8_0_OR_GREATER
+                if (headers.TryGetValue(token, out var value))
+                {
+                    headers.Remove(token);
+                    return value?.ToString()!;
+                }
+#else
                 if (headers.ContainsKey(token))
                 {
                     var value = headers[token];
                     headers.Remove(token);
                     return value?.ToString()!;
                 }
+#endif
 
                 throw new InvalidOperationException($"The url for this {nameof(HttpClientSender)} contains a token, '{token}', that is not present in the headers of the sender message.");
             });

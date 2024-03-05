@@ -18,10 +18,12 @@ namespace RockLib.Messaging
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Start(this IReceiver receiver, Action<IReceiverMessage> onMessageReceived)
         {
-            if (onMessageReceived is null)
-            {
-                throw new ArgumentNullException(nameof(onMessageReceived));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(onMessageReceived);
+#else
+            if (onMessageReceived is null) { throw new ArgumentNullException(nameof(onMessageReceived)); }
+#endif
+
             receiver.Start((_, message) => onMessageReceived(message));
         }
 
@@ -34,10 +36,12 @@ namespace RockLib.Messaging
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void Start(this IReceiver receiver, OnMessageReceivedDelegate onMessageReceived)
         {
-            if (onMessageReceived is null)
-            {
-                throw new ArgumentNullException(nameof(onMessageReceived));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(onMessageReceived);
+#else
+            if (onMessageReceived is null) { throw new ArgumentNullException(nameof(onMessageReceived)); }
+#endif
+
             receiver.Start(new SyncDelegateMessageHandler(onMessageReceived));
         }
 
@@ -48,10 +52,12 @@ namespace RockLib.Messaging
         /// <param name="onMessageReceivedAsync">A function that is invoked when a message is received.</param>
         public static void Start(this IReceiver receiver, Func<IReceiverMessage, Task> onMessageReceivedAsync)
         {
-            if (onMessageReceivedAsync is null)
-            {
-                throw new ArgumentNullException(nameof(onMessageReceivedAsync));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(onMessageReceivedAsync);
+#else
+            if (onMessageReceivedAsync is null) { throw new ArgumentNullException(nameof(onMessageReceivedAsync)); }
+#endif
+
             receiver.Start((_, message) => onMessageReceivedAsync(message));
         }
 
@@ -62,10 +68,12 @@ namespace RockLib.Messaging
         /// <param name="onMessageReceivedAsync">A function that is invoked when a message is received.</param>
         public static void Start(this IReceiver receiver, OnMessageReceivedAsyncDelegate onMessageReceivedAsync)
         {
-            if (onMessageReceivedAsync is null)
-            {
-                throw new ArgumentNullException(nameof(onMessageReceivedAsync));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(onMessageReceivedAsync);
+#else
+            if (onMessageReceivedAsync is null) { throw new ArgumentNullException(nameof(onMessageReceivedAsync)); }
+#endif
+
             receiver.Start(new AsyncDelegateMessageHandler(onMessageReceivedAsync));
         }
 
@@ -76,10 +84,12 @@ namespace RockLib.Messaging
         /// <param name="messageHandler">The object that handles received messages.</param>
         public static void Start(this IReceiver receiver, IMessageHandler messageHandler)
         {
-            if (receiver is null)
-            {
-                throw new ArgumentNullException(nameof(receiver));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(receiver);
+#else
+            if (receiver is null) { throw new ArgumentNullException(nameof(receiver)); }
+#endif
+
             if (receiver.MessageHandler is not null)
             {
                 throw new InvalidOperationException("The receiver is already started.");

@@ -5,7 +5,7 @@ namespace RockLib.Messaging.CloudEvents
 {
     partial class CloudEventExtensions
     {
-        private class MessageConstructor
+        private sealed class MessageConstructor
         {
             private static readonly Type[] _constructorParameters = new[] { typeof(IReceiverMessage), typeof(IProtocolBinding) };
 

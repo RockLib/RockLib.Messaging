@@ -5,7 +5,7 @@ namespace RockLib.Messaging.CloudEvents
 {
     partial class CloudEventExtensions
     {
-        private class ValidateMethod
+        private sealed class ValidateMethod
         {
             private const BindingFlags _publicStaticFlags = BindingFlags.Public | BindingFlags.Static;
             private static readonly Type[] _validateMethodParameters = new[] { typeof(SenderMessage), typeof(IProtocolBinding) };

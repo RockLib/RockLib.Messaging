@@ -90,10 +90,12 @@ namespace RockLib.Messaging
             ISender? rollbackForwarder = null, ForwardingOutcome rollbackOutcome = ForwardingOutcome.Rollback,
             ISender? rejectForwarder = null, ForwardingOutcome rejectOutcome = ForwardingOutcome.Reject)
         {
-            if (receiver is null)
-            {
-                throw new ArgumentNullException(nameof(receiver));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(receiver);
+#else
+            if (receiver is null) { throw new ArgumentNullException(nameof(receiver)); }
+#endif
+
             if (receiver.MessageHandler is not null)
             {
                 throw new ArgumentException("Cannot create a ForwardingReceiver with a receiver that is already started.", nameof(receiver));

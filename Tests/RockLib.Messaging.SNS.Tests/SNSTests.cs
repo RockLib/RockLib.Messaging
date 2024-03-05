@@ -18,7 +18,7 @@ namespace RockLib.Messaging.SNS.Tests
             {
                 await sender.SendAsync(
                     new SenderMessage("Hello, world!") { Headers = { { "bar", "abc" } } })
-                    .ConfigureAwait(false);
+                    ;
             }
 
             mockSns.Verify(m => m.PublishAsync(

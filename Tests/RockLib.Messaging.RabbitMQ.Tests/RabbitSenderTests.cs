@@ -116,7 +116,7 @@ namespace RockLib.Messaging.RabbitMQ.Tests
             using (var sender = new RabbitSender("name", connectionFactory.Object,
                 "exchange", "routingKey", "routingKeyHeaderName", false))
             {
-                await sender.SendAsync(message, default).ConfigureAwait(false);
+                await sender.SendAsync(message, default);
                 message.OriginatingSystem.Should().Be("RabbitMQ");
             }
 
@@ -150,7 +150,7 @@ namespace RockLib.Messaging.RabbitMQ.Tests
             using (var sender = new RabbitSender("name", connectionFactory.Object,
                 "exchange", "routingKey", "routingKeyHeaderName", false))
             {
-                await sender.SendAsync(message, default).ConfigureAwait(false);
+                await sender.SendAsync(message, default);
                 message.OriginatingSystem.Should().Be("OriginatingSystem");
             }
 
@@ -185,7 +185,7 @@ namespace RockLib.Messaging.RabbitMQ.Tests
             using (var sender = new RabbitSender("name", connectionFactory.Object,
                 "exchange", "routingKey", "routingKeyHeaderName", true))
             {
-                await sender.SendAsync(message, default).ConfigureAwait(false);
+                await sender.SendAsync(message, default);
                 message.OriginatingSystem.Should().Be("OriginatingSystem");
             }
 
@@ -200,8 +200,8 @@ namespace RockLib.Messaging.RabbitMQ.Tests
         {
             using var sender = new RabbitSender("name", Mock.Of<IConnectionFactory>(),
                 "exchange", "routingKey", "routingKeyHeaderName", false);
-            Func<Task> send = async () => await sender.SendAsync(null!, default).ConfigureAwait(false);
-            await send.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
+            Func<Task> send = async () => await sender.SendAsync(null!, default);
+            await send.Should().ThrowAsync<ArgumentNullException>();
         }
     }
 }

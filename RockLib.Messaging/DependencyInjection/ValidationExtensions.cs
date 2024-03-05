@@ -20,15 +20,13 @@ namespace RockLib.Messaging.DependencyInjection
         /// <returns>The same <see cref="ISenderBuilder"/>.</returns>
         public static ISenderBuilder AddValidation(this ISenderBuilder builder, Action<SenderMessage> validateMessage)
         {
-            if (builder is null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            if (validateMessage is null)
-            {
-                throw new ArgumentNullException(nameof(validateMessage));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(validateMessage);
+#else
+            if (builder is null) { throw new ArgumentNullException(nameof(builder)); }
+            if (validateMessage is null) { throw new ArgumentNullException(nameof(validateMessage)); }
+#endif
 
             return builder.AddDecorator((sender, serviceProvider) =>
                 new ValidatingSender(sender.Name, sender, validateMessage));
@@ -47,15 +45,13 @@ namespace RockLib.Messaging.DependencyInjection
         /// <returns>The same <see cref="ITransactionalSenderBuilder"/>.</returns>
         public static ITransactionalSenderBuilder AddValidation(this ITransactionalSenderBuilder builder, Action<SenderMessage> validateMessage)
         {
-            if (builder is null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            if (validateMessage is null)
-            {
-                throw new ArgumentNullException(nameof(validateMessage));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(validateMessage);
+#else
+            if (builder is null) { throw new ArgumentNullException(nameof(builder)); }
+            if (validateMessage is null) { throw new ArgumentNullException(nameof(validateMessage)); }
+#endif
 
             return builder.AddDecorator((transactionalSender, serviceProvider) =>
                 new ValidatingTransactionalSender(transactionalSender.Name, transactionalSender, validateMessage));

@@ -17,10 +17,12 @@ namespace RockLib.Messaging
         /// <param name="message">The message to send.</param>
         public static Task SendAsync(this ISender source, SenderMessage message)
         {
-            if (source is null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(source);
+#else
+            if (source is null) { throw new ArgumentNullException(nameof(source)); }
+#endif
+
             return source.SendAsync(message, default);
         }
 
@@ -50,10 +52,11 @@ namespace RockLib.Messaging
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public static Task SendAsync(this ISender source, string message, CancellationToken cancellationToken = default)
         {
-            if (source is null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(source);
+#else
+            if (source is null) { throw new ArgumentNullException(nameof(source)); }
+#endif
 
             return source.SendAsync(new SenderMessage(message), cancellationToken);
         }
@@ -75,10 +78,11 @@ namespace RockLib.Messaging
         /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
         public static Task SendAsync(this ISender source, byte[] message, CancellationToken cancellationToken = default)
         {
-            if (source is null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(source);
+#else
+            if (source is null) { throw new ArgumentNullException(nameof(source)); }
+#endif
 
             return source.SendAsync(new SenderMessage(message), cancellationToken);
         }

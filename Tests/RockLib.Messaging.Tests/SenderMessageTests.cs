@@ -193,7 +193,7 @@ namespace RockLib.Messaging.Tests
             return payload;
         }
 
-        private class FakeReceiverMessage : IReceiverMessage
+        private sealed class FakeReceiverMessage : IReceiverMessage
         {
             private readonly Lazy<string> _stringPayload;
             private readonly Lazy<byte[]> _binaryPayload;
@@ -220,10 +220,13 @@ namespace RockLib.Messaging.Tests
             public Task RollbackAsync(CancellationToken cancellationToken) => Task.FromResult(0);
             public Task RejectAsync(CancellationToken cancellationToken) => Task.FromResult(0);
 
-            private static IReadOnlyDictionary<string, object> GetBackingHeaderDictionary(bool binary, bool compressed)
+            private static Dictionary<string, object> GetBackingHeaderDictionary(bool binary, bool compressed)
             {
-                var headers = new Dictionary<string, object>();
-                headers[HeaderNames.MessageId] = Guid.NewGuid().ToString("D");
+                var headers = new Dictionary<string, object>
+                {
+                    [HeaderNames.MessageId] = Guid.NewGuid().ToString("D")
+                };
+
                 if (binary)
                     headers[HeaderNames.IsBinaryPayload] = "true";
                 if (compressed)

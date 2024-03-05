@@ -5,7 +5,7 @@ namespace RockLib.Messaging.CloudEvents
 {
     partial class CloudEventExtensions
     {
-        private class CopyConstructor
+        private sealed class CopyConstructor
         {
             private Func<CloudEvent, CloudEvent> _invokeConstructor;
 
