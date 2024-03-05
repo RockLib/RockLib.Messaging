@@ -21,7 +21,7 @@ namespace Example.Common
         public Task StartAsync(CancellationToken cancellationToken)
         {
             Receiver.Start(OnMessageReceived);
-            ThreadPool.QueueUserWorkItem(_ => WaitAndSendMessage());
+            ThreadPool.QueueUserWorkItem(async _ => await WaitAndSendMessage());
 
             return Task.CompletedTask;
         }
@@ -37,10 +37,10 @@ namespace Example.Common
             return message.AcknowledgeAsync();
         }
 
-        private void WaitAndSendMessage()
+        private async Task WaitAndSendMessage()
         {
             Wait();
-            Sender.Send($"[{Now:G}] Example message");
+            await Sender.SendAsync($"[{Now:G}] Example message");
         }
 
         protected virtual void Wait() => Thread.Sleep(1000);

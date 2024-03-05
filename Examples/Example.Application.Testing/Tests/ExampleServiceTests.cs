@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using Moq;
 using RockLib.Messaging;
-using RockLib.Messaging.Testing;
+using RockLib.Messaging.Tests;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

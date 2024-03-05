@@ -197,7 +197,7 @@ namespace RockLib.Messaging.Kafka.Tests
             using var sender = new KafkaSender("name", "topic", "servers");
             sender.Unlock()._producer = new Lazy<IProducer<string, byte[]>>(() => producerMock.Object);
 
-            await sender.SendAsync(new SenderMessage(message)).ConfigureAwait(false);
+            await sender.SendAsync(new SenderMessage(message));
 
             producerMock.Verify(pm => pm.ProduceAsync("topic", 
                 It.Is<Message<string, byte[]>>(m => Encoding.UTF8.GetString(m.Value) == message && Encoding.UTF8.GetString(m.Headers[1].GetValueBytes()) == "Kafka"), 
@@ -219,7 +219,7 @@ namespace RockLib.Messaging.Kafka.Tests
             using var sender = new KafkaSender("name", "topic", schemaId, "servers");
             sender.Unlock()._producer = new Lazy<IProducer<string, byte[]>>(() => producerMock.Object);
 
-            await sender.SendAsync(new SenderMessage(message)).ConfigureAwait(false);
+            await sender.SendAsync(new SenderMessage(message));
             
             Assert.Equal(0, BitConverter.ToInt32(sentMessage!.Value, 0));
             Assert.Equal(schemaId, IPAddress.NetworkToHostOrder(BitConverter.ToInt32(sentMessage.Value, 1)));

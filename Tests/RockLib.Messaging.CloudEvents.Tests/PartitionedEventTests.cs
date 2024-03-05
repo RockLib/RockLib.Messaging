@@ -34,7 +34,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Theory(DisplayName = "Validate method throws when PartitionKey is missing")]
         [InlineData(null)]
         [InlineData("")]
-        public void ValidateMethodSadPath(string partitionKey)
+        public void ValidateMethodSadPath(string? partitionKey)
         {
             var cloudEvent = new PartitionedEvent
             {

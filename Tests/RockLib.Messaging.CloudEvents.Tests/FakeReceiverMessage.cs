@@ -72,7 +72,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         /// <inheritdoc />
         public async Task AcknowledgeAsync(CancellationToken cancellationToken)
         {
-            await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _semaphore.WaitAsync(cancellationToken);
 
             try
             {
@@ -88,7 +88,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         /// <inheritdoc />
         public async Task RollbackAsync(CancellationToken cancellationToken)
         {
-            await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _semaphore.WaitAsync(cancellationToken);
 
             try
             {
@@ -104,7 +104,7 @@ namespace RockLib.Messaging.CloudEvents.Tests
         /// <inheritdoc />
         public async Task RejectAsync(CancellationToken cancellationToken)
         {
-            await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _semaphore.WaitAsync(cancellationToken);
 
             try
             {

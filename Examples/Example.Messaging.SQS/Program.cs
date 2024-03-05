@@ -1,5 +1,6 @@
 ﻿using Amazon;
 using Amazon.Runtime.CredentialManagement;
+using Amazon.Runtime.Internal.Util;
 using Example.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,7 +45,7 @@ namespace Example.Messaging.SQS.DotNetCore31
                         {
                             // Configuring a sender's SQSSenderOptions programmatically:
                             services.AddSQSSender("DataSender", options =>
-                                options.QueueUrl = "https://sqs.{region}.amazonaws.com/{account-id}/{data-queue-name}");
+                                options.QueueUrl = new Uri("https://sqs.{region}.amazonaws.com/{account-id}/{data-queue-name}"));
 
                             // Since only one ISender is registered, the constructor of DataSendingService
                             // has an ISender parameter. If more than one ISender was registered, the service
@@ -57,7 +58,7 @@ namespace Example.Messaging.SQS.DotNetCore31
                         {
                             // Configuring a sender's SQSSenderOptions programmatically:
                             services.AddSQSSender("CommandSender", options =>
-                                options.QueueUrl = "https://sqs.{region}.amazonaws.com/{account-id}/{command-queue-name}");
+                                options.QueueUrl = new Uri("https://sqs.{region}.amazonaws.com/{account-id}/{command-queue-name}"));
 
                             // Since only one ISender is registered, the constructor of CommandSendingService
                             // has an ISender parameter. If more than one ISender was registered, the service

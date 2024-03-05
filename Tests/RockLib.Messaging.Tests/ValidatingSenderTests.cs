@@ -79,8 +79,8 @@ namespace RockLib.Messaging.Tests
             var message1 = new SenderMessage("Hello, world!");
             var message2 = new SenderMessage("Good-bye, cruel world!");
 
-            await validatingSender.SendAsync(message1).ConfigureAwait(false);
-            await validatingSender.SendAsync(message2).ConfigureAwait(false);
+            await validatingSender.SendAsync(message1);
+            await validatingSender.SendAsync(message2);
 
             mockSender.Verify(m => m.SendAsync(message1, default), Times.Once());
             mockSender.Verify(m => m.SendAsync(message2, default), Times.Once());

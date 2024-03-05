@@ -17,7 +17,7 @@ namespace RockLib.Messaging.Tests
 
             using var message = new FakeReceiverMessage("Hello, world!");
 
-            await handler.OnMessageReceivedAsync(receiver, message).ConfigureAwait(false);
+            await handler.OnMessageReceivedAsync(receiver, message);
 
             messageHandler.ReceivedMessages.Should().ContainSingle();
             messageHandler.ReceivedMessages[0].Receiver.Should().BeSameAs(forwardingReceiver);

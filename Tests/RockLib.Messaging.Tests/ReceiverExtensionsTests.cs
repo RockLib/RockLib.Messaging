@@ -15,11 +15,11 @@ namespace RockLib.Messaging.Tests
             receiver.Start(async m =>
             {
                 received = true;
-                await m.AcknowledgeAsync().ConfigureAwait(false);
+                await m.AcknowledgeAsync();
             });
 
             using var message = new FakeReceiverMessage("Hello, world!");
-            await receiver.MessageHandler.OnMessageReceivedAsync(receiver, message).ConfigureAwait(false);
+            await receiver.MessageHandler.OnMessageReceivedAsync(receiver, message);
 
             Assert.True(received);
         }
@@ -40,7 +40,7 @@ namespace RockLib.Messaging.Tests
 #pragma warning restore CS0618 // Type or member is obsolete
 
             using var message = new FakeReceiverMessage("Hello, world!");
-            await receiver.MessageHandler.OnMessageReceivedAsync(receiver, message).ConfigureAwait(false);
+            await receiver.MessageHandler.OnMessageReceivedAsync(receiver, message);
 
             Assert.True(received);
         }
@@ -55,11 +55,11 @@ namespace RockLib.Messaging.Tests
             receiver.Start(async (r, m) =>
             {
                 received = true;
-                await m.AcknowledgeAsync().ConfigureAwait(false);
+                await m.AcknowledgeAsync();
             });
 
             using var message = new FakeReceiverMessage("Hello, world!");
-            await receiver.MessageHandler.OnMessageReceivedAsync(receiver, message).ConfigureAwait(false);
+            await receiver.MessageHandler.OnMessageReceivedAsync(receiver, message);
 
             Assert.True(received);
         }
@@ -80,7 +80,7 @@ namespace RockLib.Messaging.Tests
 #pragma warning restore CS0618 // Type or member is obsolete
 
             using var message = new FakeReceiverMessage("Hello, world!");
-            await receiver.MessageHandler.OnMessageReceivedAsync(receiver, message).ConfigureAwait(false);
+            await receiver.MessageHandler.OnMessageReceivedAsync(receiver, message);
 
             Assert.True(received);
         }

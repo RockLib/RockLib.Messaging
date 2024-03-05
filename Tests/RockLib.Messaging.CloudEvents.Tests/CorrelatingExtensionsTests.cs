@@ -67,11 +67,11 @@ namespace RockLib.Messaging.CloudEvents.Tests
         [Theory(DisplayName = "SetCorrelationId extension method throws if correlationId is null or empty")]
         [InlineData(null)]
         [InlineData("")]
-        public void SetCorrelationIdExtensionMethodSadPath2(string correlationId)
+        public void SetCorrelationIdExtensionMethodSadPath2(string? correlationId)
         {
             var cloudEvent = new CloudEvent();
 
-            Action act = () => cloudEvent.SetCorrelationId(correlationId);
+            Action act = () => cloudEvent.SetCorrelationId(correlationId!);
 
             act.Should().ThrowExactly<ArgumentNullException>().WithMessage("*correlationId*");
         }

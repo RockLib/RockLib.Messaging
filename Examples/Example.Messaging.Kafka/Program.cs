@@ -4,12 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using RockLib.Messaging.Kafka;
+using System.Threading.Tasks;
 
 namespace Example.Messaging.Kafka.DotNetCore20
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Console.WriteLine("Make a selection:");
             Console.WriteLine("1) Create an ISender and prompt for messages.");
@@ -27,7 +28,7 @@ namespace Example.Messaging.Kafka.DotNetCore20
                 {
                     case '1':
                         Console.WriteLine(c);
-                        RunSender();
+                        await RunSender();
                         return;
                     case '2':
                         Console.WriteLine(c);
@@ -35,11 +36,11 @@ namespace Example.Messaging.Kafka.DotNetCore20
                         return;
                     case '3':
                         Console.WriteLine(c);
-                        SendAndReceiveOneMessage(false);
+                        await SendAndReceiveOneMessage(false);
                         return;
                     case '4':
                         Console.WriteLine(c);
-                        SendAndReceiveOneMessage(true);
+                        await SendAndReceiveOneMessage(true);
                         return;
                     case 'q':
                         Console.WriteLine(c);
@@ -48,7 +49,7 @@ namespace Example.Messaging.Kafka.DotNetCore20
             }
         }
 
-        private static void RunSender()
+        private static async Task RunSender()
         {
             using (var sender = MessagingScenarioFactory.CreateSender("Sender1"))
             {
@@ -61,9 +62,9 @@ namespace Example.Messaging.Kafka.DotNetCore20
                         return;
 
                     if (TryExtractHeaders(ref message, out var headers))
-                        sender.Send(new SenderMessage(message) { Headers = headers });
+                        await sender.SendAsync(new SenderMessage(message) { Headers = headers });
                     else
-                        sender.Send(message);
+                        await sender.SendAsync(message);
                 }
             }
         }
@@ -93,7 +94,7 @@ namespace Example.Messaging.Kafka.DotNetCore20
             }
         }
 
-        private static void SendAndReceiveOneMessage(bool displayStatistics)
+        private static async Task SendAndReceiveOneMessage(bool displayStatistics)
         {
             // Use a wait handle to pause the main thread while waiting for the message to be received.
             var waitHandle = new AutoResetEvent(false);
@@ -125,7 +126,7 @@ namespace Example.Messaging.Kafka.DotNetCore20
                 waitHandle.Set();
             });
 
-            sender.Send($"Kafka test message from {typeof(Program).FullName}");
+            await sender.SendAsync($"Kafka test message from {typeof(Program).FullName}");
 
             waitHandle.WaitOne();
 
