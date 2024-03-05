@@ -12,7 +12,7 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="RockLib.Messaging.SQS" Version="4.0.0" />
+		<PackageReference Include="RockLib.Messaging.SQS" Version="4.0.0-alpha.1" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Example.Common\Example.Common.csproj" />
