@@ -76,6 +76,12 @@ namespace RockLib.Messaging.SNS
                 MessageDeduplicationId = message.Headers.TryGetValue("messageDeduplicationId", out var messageDeduplicationId) ? messageDeduplicationId.ToString() : null
             };
 
+            if (message.Headers.TryGetValue("SNS.MessageGroupId", out var value) && value is not null)
+            {
+                publishMessage.MessageGroupId = value.ToString();
+                message.Headers.Remove("SNS.MessageGroupId");
+            }
+
             foreach (var header in message.Headers)
             {
                 publishMessage.MessageAttributes[header.Key] =
