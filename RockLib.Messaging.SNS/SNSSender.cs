@@ -69,12 +69,12 @@ namespace RockLib.Messaging.SNS
             if (message is null) { throw new ArgumentNullException(nameof(message)); }
 #endif
 
-            if (message.OriginatingSystem is null)
-            {
-                message.OriginatingSystem = "SNS";
-            }
+            message.OriginatingSystem ??= "SNS";
 
-            var publishMessage = new PublishRequest(TopicArn, message.StringPayload);
+            var publishMessage = new PublishRequest(TopicArn, message.StringPayload) {
+                MessageGroupId = message.Headers.TryGetValue("messageGroupId", out var messageGroupId) ? messageGroupId.ToString() : null,
+                MessageDeduplicationId = message.Headers.TryGetValue("messageDeduplicationId", out var messageDeduplicationId) ? messageDeduplicationId.ToString() : null
+            };
 
             foreach (var header in message.Headers)
             {
