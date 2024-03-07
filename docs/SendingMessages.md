@@ -48,6 +48,18 @@ message.Headers["IsDemoCode"] = true;
 await sender.SendAsync(message, cancellation.Token);
 ```
 
+If you need to utilize the `MessageGroupId` and `MessageDeduplicationId` properties, add the values to the header:
+
+```csharp
+CancellationTokenSource cancellation = new CancellationTokenSource();
+
+SenderMessage message = new SenderMessage("<message payload goes here>");
+message.Headers["messageGroupId"] = "message group id";
+message.Headers["messageDeduplicationId"] = "message deduplication id";
+
+await sender.SendAsync(message, cancellation.Token);
+```
+
 ---
 
 The `CancellationToken` can be omitted from this call as well:

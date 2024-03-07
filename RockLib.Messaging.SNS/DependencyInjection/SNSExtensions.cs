@@ -26,7 +26,7 @@ namespace RockLib.Messaging.DependencyInjection
             return services.AddSender(name, CreateSNSSender, configureOptions, reloadOnChange);
 
             ISender CreateSNSSender(SNSSenderOptions options, IServiceProvider serviceProvider) =>
-                new SNSSender(name, options.TopicArn, options.Region, options.MessageGroupId);
+                new SNSSender(name, options.TopicArn, options.Region);
         }
 
         /// <summary>
