@@ -20,6 +20,7 @@ namespace RockLib.Messaging.SNS.Tests
             {
                 options.TopicArn = "myTopicArn";
                 options.Region = "us-west-2";
+                options.MessageGroupId = "myMessageGroupId";
             }, false);
 
             var serviceProvider = services.BuildServiceProvider();
@@ -31,6 +32,7 @@ namespace RockLib.Messaging.SNS.Tests
             snsSender.Name.Should().Be("mySender");
             snsSender.TopicArn.Should().Be("myTopicArn");
             snsSender.SnsClient.Config.RegionEndpoint.Should().Be(RegionEndpoint.USWest2);
+            snsSender.MessageGroupId.Should().Be("myMessageGroupId");
         }
 
         [Fact]
@@ -46,6 +48,7 @@ namespace RockLib.Messaging.SNS.Tests
             {
                 options.TopicArn = "myTopicArn";
                 options.Region = "us-west-2";
+                options.MessageGroupId = "myMessageGroupId";
             }, true);
 
             var serviceProvider = services.BuildServiceProvider();
@@ -59,6 +62,7 @@ namespace RockLib.Messaging.SNS.Tests
             snsSender.Name.Should().Be("mySender");
             snsSender.TopicArn.Should().Be("myTopicArn");
             snsSender.SnsClient.Config.RegionEndpoint.Should().Be(RegionEndpoint.USWest2);
+            snsSender.MessageGroupId.Should().Be("myMessageGroupId");
         }
     }
 }
