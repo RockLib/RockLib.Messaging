@@ -327,8 +327,7 @@ namespace RockLib.Messaging.SQS
                     continue;
                 }
 
-                var tasks = response.Messages.Select(HandleAsync);
-                await Task.WhenAll(tasks).ConfigureAwait(false);
+                response.Messages.ForEach(x => _ = HandleAsync(x));
             }
         }
 
