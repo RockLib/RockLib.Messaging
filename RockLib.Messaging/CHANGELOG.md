@@ -8,8 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 4.0.1 - 2024-07-16
 
 #### Changed
-RockLib.Configuration.4.0.0 -> RockLib.Configuration.4.0.1
-System.Text.Json.8.0.0 -> System.Text.Json.8.0.4
+RockLib.Configuration.4.0.0 -> RockLib.Configuration.4.0.1 to fix vulnerability
 
 ## 4.0.0 - 2024-03-04
 
