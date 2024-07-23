@@ -89,5 +89,10 @@ namespace RockLib.Messaging.DependencyInjection
         /// available for queue consumers to process.
         /// </summary>
         public bool TerminateMessageVisibilityTimeoutOnRollback { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to process message groups concurrently.
+        /// </summary>
+        public bool ProcessMessageGroupsConcurrently { get; set; }
     }
 }

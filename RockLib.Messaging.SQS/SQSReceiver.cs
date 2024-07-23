@@ -18,7 +18,7 @@ namespace RockLib.Messaging.SQS
     {
         private readonly Lazy<Task> _receiveMessagesTask;
 
-        private bool _stopped;
+        private bool _stopRequested;
 
         /// <summary>The default value for <see cref="MaxMessages"/>.</summary>
         public const int DefaultMaxMessages = 3;
@@ -241,7 +241,7 @@ namespace RockLib.Messaging.SQS
         /// </summary>
         protected override void Start()
         {
-            if (!_receiveMessagesTask.IsValueCreated && !_stopped)
+            if (!_receiveMessagesTask.IsValueCreated && !_stopRequested)
             {
                 _ = _receiveMessagesTask.Value;
             }
@@ -253,7 +253,7 @@ namespace RockLib.Messaging.SQS
 
             bool? connected = null;
 
-            while (!_stopped)
+            while (!_stopRequested)
             {
                 var receiveMessageRequest = new ReceiveMessageRequest
                 {
@@ -327,13 +327,45 @@ namespace RockLib.Messaging.SQS
                     continue;
                 }
 
-                response.Messages.ForEach(x => _ = HandleAsync(x));
+                await ProcessMessagesAsync(response.Messages).ConfigureAwait(false);
             }
+
+            OnDoneReceiving();
         }
 
-        private async Task HandleAsync(Message message)
+        /// <summary>
+        /// Processes the group of messages received from SQS.
+        /// </summary>
+        /// <param name="messages">The messages to process.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        protected async virtual Task ProcessMessagesAsync(IEnumerable<Message> messages)
         {
-            if (_stopped)
+            var tasks = messages.Select(HandleAsync);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Indicates that the receiver should stop trying to receive messages.
+        /// </summary>
+        protected void OnStopRequested()
+        {
+            _stopRequested = true;
+        }
+
+        /// <summary>
+        /// Indicates that the receiver has stopped trying to receive messages.
+        /// </summary>
+        protected virtual void OnDoneReceiving() {}
+
+        /// <summary>
+        /// Handles a single message received from SQS.
+        /// </summary>
+        /// <param name="message"></param>
+        protected async Task HandleAsync(Message message)
+        {
+            ArgumentNullException.ThrowIfNull(message);
+
+            if (_stopRequested)
             {
                 return;
             }
@@ -442,12 +474,7 @@ namespace RockLib.Messaging.SQS
         /// </summary>
         protected override void Dispose(bool disposing)
         {
-            if (_stopped)
-            {
-                return;
-            }
-
-            _stopped = true;
+            OnStopRequested();
             _consumerToken.Cancel();
 
             if (_receiveMessagesTask.IsValueCreated)

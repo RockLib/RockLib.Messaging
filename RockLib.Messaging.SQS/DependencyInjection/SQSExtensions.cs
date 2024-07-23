@@ -92,6 +92,13 @@ namespace RockLib.Messaging.DependencyInjection
                         ? new AmazonSQSClient(RegionEndpoint.GetBySystemName(options.Region))
                         : serviceProvider.GetService<IAmazonSQS>() ?? new AmazonSQSClient());
 
+                if (options.ProcessMessageGroupsConcurrently)
+                {
+                    return new SQSConcurrentReceiver(sqsClient, name, options.QueueUrl!, options.MaxMessages,
+                        options.AutoAcknowledge, options.WaitTimeSeconds, options.UnpackSNS,
+                        options.TerminateMessageVisibilityTimeoutOnRollback);
+                }
+
                 return new SQSReceiver(sqsClient, name, options.QueueUrl!, options.MaxMessages,
                     options.AutoAcknowledge, options.WaitTimeSeconds, options.UnpackSNS,
                     options.TerminateMessageVisibilityTimeoutOnRollback);
