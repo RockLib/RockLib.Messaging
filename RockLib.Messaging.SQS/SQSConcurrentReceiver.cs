@@ -12,9 +12,9 @@ namespace RockLib.Messaging.SQS;
 /// </summary>
 public class SQSConcurrentReceiver : SQSReceiver
 {
-    private ulong _messagesBeingProcessedCount;
-    private readonly ManualResetEventSlim _noMessagesBeingProcessed = new(initialState:true);
-    private readonly ManualResetEventSlim _doneReceiving = new(initialState:false);
+    private ulong _messagesBeingHandledCount;
+    private readonly ManualResetEventSlim _zeroMessagesAreCurrentlyBeingHandled = new(initialState: true);
+    private readonly ManualResetEventSlim _doneReceiving = new(initialState: false);
 
     /// <inheritdoc />
     public SQSConcurrentReceiver(string name, Uri queueUrl, string? region = null, int maxMessages = DefaultMaxMessages, bool autoAcknowledge = true, int waitTimeSeconds = DefaultWaitTimeSeconds, bool unpackSNS = false, bool terminateMessageVisibilityTimeoutOnRollback = false)
@@ -29,12 +29,14 @@ public class SQSConcurrentReceiver : SQSReceiver
     }
 
     /// <inheritdoc />
-    public SQSConcurrentReceiver(IAmazonSQS sqs, string name, Uri queueUrl, int maxMessages = DefaultMaxMessages, bool autoAcknowledge = true, int waitTimeSeconds = DefaultWaitTimeSeconds, bool unpackSNS = false, bool terminateMessageVisibilityTimeoutOnRollback = false) : base(sqs, name, queueUrl, maxMessages, autoAcknowledge, waitTimeSeconds, unpackSNS, terminateMessageVisibilityTimeoutOnRollback)
+    public SQSConcurrentReceiver(IAmazonSQS sqs, string name, Uri queueUrl, int maxMessages = DefaultMaxMessages, bool autoAcknowledge = true, int waitTimeSeconds = DefaultWaitTimeSeconds, bool unpackSNS = false, bool terminateMessageVisibilityTimeoutOnRollback = false)
+        : base(sqs, name, queueUrl, maxMessages, autoAcknowledge, waitTimeSeconds, unpackSNS, terminateMessageVisibilityTimeoutOnRollback)
     {
     }
 
     /// <inheritdoc />
-    public SQSConcurrentReceiver(IAmazonSQS sqs, string name, Uri queueUrl, int maxMessages, bool autoAcknowledge, int waitTimeSeconds, bool unpackSNS) : base(sqs, name, queueUrl, maxMessages, autoAcknowledge, waitTimeSeconds, unpackSNS)
+    public SQSConcurrentReceiver(IAmazonSQS sqs, string name, Uri queueUrl, int maxMessages, bool autoAcknowledge, int waitTimeSeconds, bool unpackSNS)
+        : base(sqs, name, queueUrl, maxMessages, autoAcknowledge, waitTimeSeconds, unpackSNS)
     {
     }
 
@@ -42,15 +44,19 @@ public class SQSConcurrentReceiver : SQSReceiver
     protected override Task ProcessMessagesAsync(IEnumerable<Message> messages)
     {
         ArgumentNullException.ThrowIfNull(messages);
+
+        // Process each message without waiting for them to finish
+        // (but wait for all messages to finish while disposing)
         foreach (var message in messages)
         {
             _ = HandleMessageAsync();
 
             async Task HandleMessageAsync()
             {
-                if (Interlocked.Increment(ref _messagesBeingProcessedCount) == 1)
+                // If any messages are being processed, set the event so that Dispose will wait
+                if (Interlocked.Increment(ref _messagesBeingHandledCount) == 1)
                 {
-                    _noMessagesBeingProcessed.Reset();
+                    _zeroMessagesAreCurrentlyBeingHandled.Reset();
                 }
 
                 try
@@ -59,9 +65,10 @@ public class SQSConcurrentReceiver : SQSReceiver
                 }
                 finally
                 {
-                    if (Interlocked.Decrement(ref _messagesBeingProcessedCount) == 0)
+                    // If no messages are being processed, reset the event so that Dispose will not wait
+                    if (Interlocked.Decrement(ref _messagesBeingHandledCount) == 0)
                     {
-                        _noMessagesBeingProcessed.Set();
+                        _zeroMessagesAreCurrentlyBeingHandled.Set();
                     }
                 }
             }
@@ -81,11 +88,15 @@ public class SQSConcurrentReceiver : SQSReceiver
         if (disposing)
         {
             OnStopRequested();
-            _doneReceiving.Wait();
-            _noMessagesBeingProcessed.Wait();
 
+            // Wait for the `ReceiveMessages` loop to finish, indicating that no new messages will begin to be handled
+            _doneReceiving.Wait();
             _doneReceiving.Dispose();
-            _noMessagesBeingProcessed.Dispose();
+
+            // Wait for all messages to finish being handled
+            _zeroMessagesAreCurrentlyBeingHandled.Wait();
+            _zeroMessagesAreCurrentlyBeingHandled.Dispose();
+
         }
         base.Dispose(disposing);
     }
