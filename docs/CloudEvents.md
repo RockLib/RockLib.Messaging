@@ -405,7 +405,7 @@ The `PartitionedEvent` class defines four constructors:
 
 ## Protocol Bindings
 
-The `ProtocolBindings` static class defines the following bindings (corresponding to the [CloudEvents spec](https://github.com/cloudevents/specsharpcloudevents-documents)):
+The `ProtocolBindings` static class defines the following bindings (corresponding to the [CloudEvents spec](https://github.com/cloudevents/spec)):
 
 - Default
   - Basically does nothing.
