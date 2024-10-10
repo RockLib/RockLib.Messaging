@@ -40,11 +40,11 @@
   - [Send and receive message as CloudEvents](docs/CloudEvents.md) 🆕
   - [Test components that use RockLib.Messaging](https://github.com/RockLib/RockLib.Messaging/tree/main/Examples/Example.Application.Testing) 🆕
 - API Reference:
-  - [RockLib.Messaging](https://www.fuget.org/packages/RockLib.Messaging)
-  - [RockLib.Messaging.NamedPipes](https://www.fuget.org/packages/RockLib.Messaging.NamedPipes)
-  - [RockLib.Messaging.SQS](https://www.fuget.org/packages/RockLib.Messaging.SQS)
-  - [RockLib.Messaging.SNS](https://www.fuget.org/packages/RockLib.Messaging.SNS)
-  - [RockLib.Messaging.Http](https://www.fuget.org/packages/RockLib.Messaging.Http)
-  - [RockLib.Messaging.Kafka](https://www.fuget.org/packages/RockLib.Messaging.Kafka)
-  - [RockLib.Messaging.RabbitMQ](https://www.fuget.org/packages/RockLib.Messaging.RabbitMQ)
-  - [RockLib.Messaging.CloudEvents](https://www.fuget.org/packages/RockLib.Messaging.CloudEvents)
+  - [RockLib.Messaging](https://www.nuget.org/packages/RockLib.Messaging)
+  - [RockLib.Messaging.NamedPipes](https://www.nuget.org/packages/RockLib.Messaging.NamedPipes)
+  - [RockLib.Messaging.SQS](https://www.nuget.org/packages/RockLib.Messaging.SQS)
+  - [RockLib.Messaging.SNS](https://www.nuget.org/packages/RockLib.Messaging.SNS)
+  - [RockLib.Messaging.Http](https://www.nuget.org/packages/RockLib.Messaging.Http)
+  - [RockLib.Messaging.Kafka](https://www.nuget.org/packages/RockLib.Messaging.Kafka)
+  - [RockLib.Messaging.RabbitMQ](https://www.nuget.org/packages/RockLib.Messaging.RabbitMQ)
+  - [RockLib.Messaging.CloudEvents](https://www.nuget.org/packages/RockLib.Messaging.CloudEvents)
