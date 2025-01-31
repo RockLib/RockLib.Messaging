@@ -1,5 +1,4 @@
-﻿using RockLib.Compression;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -15,7 +14,7 @@ namespace RockLib.Messaging
     /// </summary>
     public abstract class ReceiverMessage : IReceiverMessage, IDisposable
     {
-        private static readonly GZipDecompressor _gzip = new();
+        //private static readonly GZipDecompressor _gzip = new();
 
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
@@ -53,9 +52,9 @@ namespace RockLib.Messaging
                     {
                         if (this.IsBinary())
                         {
-                            return Convert.ToBase64String(_gzip.Decompress(Convert.FromBase64String(stringPayload)));
+                            return Convert.ToBase64String(GZipDecompressor.Decompress(Convert.FromBase64String(stringPayload)));
                         }
-                        return Encoding.UTF8.GetString(_gzip.Decompress(Convert.FromBase64String(stringPayload)));
+                        return Encoding.UTF8.GetString(GZipDecompressor.Decompress(Convert.FromBase64String(stringPayload)));
                     }
                     return stringPayload;
                 }
@@ -63,7 +62,7 @@ namespace RockLib.Messaging
                 {
                     if (this.IsCompressed())
                     {
-                        binaryPayload = _gzip.Decompress(binaryPayload);
+                        binaryPayload = GZipDecompressor.Decompress(binaryPayload);
                     }
                     if (this.IsBinary())
                     {
@@ -80,7 +79,7 @@ namespace RockLib.Messaging
                 {
                     if (this.IsCompressed())
                     {
-                        return _gzip.Decompress(Convert.FromBase64String(stringPayload));
+                        return GZipDecompressor.Decompress(Convert.FromBase64String(stringPayload));
                     }
                     if (this.IsBinary())
                     {
@@ -92,7 +91,7 @@ namespace RockLib.Messaging
                 {
                     if (this.IsCompressed())
                     {
-                        return _gzip.Decompress(binaryPayload);
+                        return GZipDecompressor.Decompress(binaryPayload);
                     }
                     return binaryPayload;
                 }
