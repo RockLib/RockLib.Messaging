@@ -5,15 +5,15 @@
 	<PropertyGroup>
 		<AnalysisMode>all</AnalysisMode>
 		<Authors>Rocket Mortgage</Authors>
-		<Copyright>Copyright 2024 (c) Rocket Mortgage. All rights reserved.</Copyright>
+		<Copyright>Copyright 2025 (c) Rocket Mortgage. All rights reserved.</Copyright>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
-		<TargetFrameworks>net6.0;net48;net8.0</TargetFrameworks>
+		<TargetFrameworks>net48;net8.0</TargetFrameworks>
 		<NoWarn>NU1603,NU1701</NoWarn>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
 	<ItemGroup Condition=" '$(TargetFramework)' == 'net48' ">
-		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
+		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
