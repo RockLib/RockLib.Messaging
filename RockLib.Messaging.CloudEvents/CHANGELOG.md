@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changed
 - Removed .NET 6 as a target framework.
+- Updated the following packages:
+  - RockLib.Messaging.4.0.1 -> RockLib.Messaging.5.0.0-alpha.1
 
 ## 3.0.1 - 2024-07-19
 
