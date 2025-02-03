@@ -11,17 +11,32 @@
 
 ### RockLib.Messaging.NamedPipes
 
+> [!WARNING]  
+> The 5.0.0 release of this library will be the final version with upgrades and changes. Bug fixes will continue to be released as needed.
+
 ### RockLib.Messaging.SQS
 
 ### RockLib.Messaging.SNS
 
 ### RockLib.Messaging.Http
 
+> [!WARNING]  
+> The 4.0.0 release of this library will be the final version with upgrades and changes. Bug fixes will continue to be released as needed.
+
 ### RockLib.Messaging.Kafka
+
+> [!WARNING]  
+> The 4.0.0 release of this library will be the final version with upgrades and changes. Bug fixes will continue to be released as needed.
 
 ### RockLib.Messaging.RabbitMQ
 
+> [!WARNING]  
+> The 3.0.0 release of this library will be the final version with upgrades and changes. Bug fixes will continue to be released as needed.
+
 ### RockLib.Messaging.CloudEvents
+
+> [!WARNING]  
+> The 4.0.0 release of this library will be the final version with upgrades and changes. Bug fixes will continue to be released as needed.
 
 -----
 

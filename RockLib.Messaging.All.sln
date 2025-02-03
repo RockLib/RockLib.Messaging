@@ -70,8 +70,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.CloudEven
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.CloudEvents.Tests", "Tests\RockLib.Messaging.CloudEvents.Tests\RockLib.Messaging.CloudEvents.Tests.csproj", "{B7B9E920-3251-4AE6-AA83-5147EC3403E6}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RockLib.Messaging.HttpUtils", "RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.shproj", "{93800DE0-2CC4-454D-BD9C-4C7058DFD276}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Messaging.CloudEvents", "Examples\Example.Messaging.CloudEvents\Example.Messaging.CloudEvents.csproj", "{13418188-1DFE-48F4-9103-B592B34023B2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.Application.Testing", "Examples\Example.Application.Testing\Example.Application.Testing.csproj", "{7221DFC0-ED53-4F4D-8CB7-163FEEF1E5F8}"
@@ -81,11 +79,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockLib.Messaging.RabbitMQ.Tests", "Tests\RockLib.Messaging.RabbitMQ.Tests\RockLib.Messaging.RabbitMQ.Tests.csproj", "{FE0B8186-6C98-4574-811E-1012DE468C29}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.projitems*{93800de0-2cc4-454d-bd9c-4c7058dfd276}*SharedItemsImports = 13
-		RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.projitems*{a84fce16-e330-498f-a4a2-b4467153d731}*SharedItemsImports = 5
-		RockLib.Messaging.HttpUtils\RockLib.Messaging.HttpUtils.projitems*{ffc6155d-02d8-49f1-8943-a079bd8bff26}*SharedItemsImports = 5
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU

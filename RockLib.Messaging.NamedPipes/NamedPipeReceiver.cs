@@ -56,7 +56,7 @@ namespace RockLib.Messaging.NamedPipes
 #pragma warning restore CA1416 // Validate platform compatibility
             _pipeServer.BeginWaitForConnection(WaitForConnectionCallBack, null);
         }
-        
+
         private void WaitForConnectionCallBack(IAsyncResult result)
         {
             // We can assume _pipeServer will always be non-null here.

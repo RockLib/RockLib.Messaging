@@ -261,7 +261,7 @@ namespace RockLib.Messaging.SQS
                     QueueUrl = QueueUrl?.OriginalString,
                     MessageAttributeNames = new List<string> { ".*" },
                     WaitTimeSeconds = WaitTimeSeconds,
-                    AttributeNames = new List<string> { "All" }
+                    MessageSystemAttributeNames = new List<string> { "All" }
                 };
 
                 ReceiveMessageResponse? response = null;
