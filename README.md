@@ -11,6 +11,9 @@
 
 ### RockLib.Messaging.NamedPipes
 
+> [!WARNING]  
+> The 5.0.0 release of this library will be the final version with upgrades and changes. Bug fixes will continue to be released as needed.
+
 ### RockLib.Messaging.SQS
 
 ### RockLib.Messaging.SNS
