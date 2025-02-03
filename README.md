@@ -19,6 +19,9 @@
 
 ### RockLib.Messaging.Kafka
 
+> [!WARNING]  
+> The 4.0.0 release of this library will be the final version with upgrades and changes. Bug fixes will continue to be released as needed.
+
 ### RockLib.Messaging.RabbitMQ
 
 ### RockLib.Messaging.CloudEvents
