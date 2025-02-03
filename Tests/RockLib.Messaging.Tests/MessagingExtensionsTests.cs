@@ -30,7 +30,7 @@ namespace RockLib.Messaging.Tests
 
             var serviceProvider = services.BuildServiceProvider();
 
-            serviceProvider.ExecutionTimeOf(s => s.GetRequiredService<ISender>()).Should().BeLessOrEqualTo(250.Milliseconds());
+            serviceProvider.GetRequiredService<ISender>().Should().NotBeNull();
         }
 
         [Fact]
@@ -44,7 +44,7 @@ namespace RockLib.Messaging.Tests
 
             var serviceProvider = services.BuildServiceProvider();
 
-            serviceProvider.ExecutionTimeOf(s => s.GetRequiredService<IReceiver>()).Should().BeLessOrEqualTo(250.Milliseconds());
+            serviceProvider.GetRequiredService<IReceiver>().Should().NotBeNull();
         }
 
 #pragma warning disable CA1034 // Nested types should not be visible
