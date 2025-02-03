@@ -371,10 +371,10 @@ namespace RockLib.Messaging.DependencyInjection
             }
 
             // Capture which senders and which transactional senders are singleton according to index.
-            IReadOnlyList<bool> isSingletonSender = services.Where(service => service.ServiceType == typeof(ISender))
+            var isSingletonSender = services.Where(service => service.ServiceType == typeof(ISender))
                 .Select(service => service.Lifetime == ServiceLifetime.Singleton)
                 .ToArray();
-            IReadOnlyList<bool> isSingletonTransactionalSender = services.Where(service => service.ServiceType == typeof(ITransactionalSender))
+            var isSingletonTransactionalSender = services.Where(service => service.ServiceType == typeof(ITransactionalSender))
                 .Select(service => service.Lifetime == ServiceLifetime.Singleton)
                 .ToArray();
 
@@ -438,7 +438,7 @@ namespace RockLib.Messaging.DependencyInjection
             }
 
             // Capture which transactional senders are singleton according to index.
-            IReadOnlyList<bool> isSingletonTransactionalSender = services.Where(service => service.ServiceType == typeof(ITransactionalSender))
+            var isSingletonTransactionalSender = services.Where(service => service.ServiceType == typeof(ITransactionalSender))
                 .Select(service => service.Lifetime == ServiceLifetime.Singleton)
                 .ToArray();
 
@@ -475,7 +475,7 @@ namespace RockLib.Messaging.DependencyInjection
             }
 
             // Capture which receivers are singleton according to index.
-            IReadOnlyList<bool> isSingletonReceiver = services.Where(service => service.ServiceType == typeof(IReceiver))
+            var isSingletonReceiver = services.Where(service => service.ServiceType == typeof(IReceiver))
                 .Select(service => service.Lifetime == ServiceLifetime.Singleton)
                 .ToArray();
 

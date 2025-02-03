@@ -125,7 +125,7 @@ namespace RockLib.Messaging.Http
         private static byte[] GetPayload(HttpListenerContext context)
         {
             var buffer = new byte[context.Request.ContentLength64];
-            context.Request.InputStream.Read(buffer, 0, buffer.Length);
+            _ = context.Request.InputStream.Read(buffer, 0, buffer.Length);
             return buffer;
         }
     }

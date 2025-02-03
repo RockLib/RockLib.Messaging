@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using RockLib.Compression;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,8 +10,6 @@ namespace RockLib.Messaging.Tests
 {
     public class SenderMessageTests
     {
-        private static readonly GZipCompressor _gzip = new GZipCompressor();
-
         [Fact]
         public void StringConstructorNotCompressed()
         {
@@ -40,8 +37,8 @@ namespace RockLib.Messaging.Tests
 
             var message = new SenderMessage(payload, compress: true);
 
-            message.StringPayload.Should().Be(Convert.ToBase64String(_gzip.Compress(Encoding.UTF8.GetBytes(payload))));
-            message.BinaryPayload.Should().BeEquivalentTo(_gzip.Compress(Encoding.UTF8.GetBytes(payload)));
+            message.StringPayload.Should().Be(Convert.ToBase64String(GZipCompressor.Compress(Encoding.UTF8.GetBytes(payload))));
+            message.BinaryPayload.Should().BeEquivalentTo(GZipCompressor.Compress(Encoding.UTF8.GetBytes(payload)));
 
             message.Headers.Should().ContainKey(HeaderNames.MessageId);
             message.MessageId.Should().NotBeNull();
@@ -80,8 +77,8 @@ namespace RockLib.Messaging.Tests
 
             var message = new SenderMessage(payload, compress: true);
 
-            message.StringPayload.Should().Be(Convert.ToBase64String(_gzip.Compress(payload)));
-            message.BinaryPayload.Should().BeEquivalentTo(_gzip.Compress(payload));
+            message.StringPayload.Should().Be(Convert.ToBase64String(GZipCompressor.Compress(payload)));
+            message.BinaryPayload.Should().BeEquivalentTo(GZipCompressor.Compress(payload));
 
             message.Headers.Should().ContainKey(HeaderNames.MessageId);
             message.MessageId.Should().NotBeNull();
@@ -122,8 +119,8 @@ namespace RockLib.Messaging.Tests
 
             var message = new SenderMessage(receiverMessage);
 
-            message.StringPayload.Should().Be(Convert.ToBase64String(_gzip.Compress(Encoding.UTF8.GetBytes(payload))));
-            message.BinaryPayload.Should().BeEquivalentTo(_gzip.Compress(Encoding.UTF8.GetBytes(payload)));
+            message.StringPayload.Should().Be(Convert.ToBase64String(GZipCompressor.Compress(Encoding.UTF8.GetBytes(payload))));
+            message.BinaryPayload.Should().BeEquivalentTo(GZipCompressor.Compress(Encoding.UTF8.GetBytes(payload)));
 
             message.Headers.Should().ContainKey(HeaderNames.MessageId);
             message.MessageId.Should().NotBeNull();
@@ -164,8 +161,8 @@ namespace RockLib.Messaging.Tests
 
             var message = new SenderMessage(receiverMessage);
 
-            message.StringPayload.Should().Be(Convert.ToBase64String(_gzip.Compress(payload)));
-            message.BinaryPayload.Should().BeEquivalentTo(_gzip.Compress(payload));
+            message.StringPayload.Should().Be(Convert.ToBase64String(GZipCompressor.Compress(payload)));
+            message.BinaryPayload.Should().BeEquivalentTo(GZipCompressor.Compress(payload));
 
             message.Headers.Should().ContainKey(HeaderNames.MessageId);
             message.MessageId.Should().NotBeNull();

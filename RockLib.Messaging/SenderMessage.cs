@@ -1,5 +1,4 @@
-﻿using RockLib.Compression;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -13,8 +12,6 @@ namespace RockLib.Messaging
     /// </summary>
     public sealed class SenderMessage
     {
-        private static readonly GZipCompressor _gzip = new GZipCompressor();
-
         private readonly Lazy<string> _stringPayload;
         private readonly Lazy<byte[]> _binaryPayload;
         private readonly HeaderDictionary  _headers;
@@ -198,7 +195,7 @@ namespace RockLib.Messaging
         private void Compress(ref Lazy<string> stringPayload, ref Lazy<byte[]> binaryPayload)
         {
             var uncompressedPayload = binaryPayload;
-            var compressedPayload = new Lazy<byte[]>(() => _gzip.Compress(uncompressedPayload.Value));
+            var compressedPayload = new Lazy<byte[]>(() => GZipCompressor.Compress(uncompressedPayload.Value));
 
             if (compressedPayload.Value.Length < uncompressedPayload.Value.Length)
             {
