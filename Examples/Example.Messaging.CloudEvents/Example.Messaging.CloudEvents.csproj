@@ -6,8 +6,8 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-		<PackageReference Include="RockLib.Messaging.CloudEvents" Version="3.0.0" />
-		<PackageReference Include="RockLib.Messaging.NamedPipes" Version="4.0.0" />
+		<PackageReference Include="RockLib.Messaging.CloudEvents" Version="4.0.0" />
+		<PackageReference Include="RockLib.Messaging.NamedPipes" Version="5.0.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Update="appsettings.json">
