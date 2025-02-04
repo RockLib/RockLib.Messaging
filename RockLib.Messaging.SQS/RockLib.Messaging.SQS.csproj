@@ -9,12 +9,12 @@
 		<PackageId>RockLib.Messaging.SQS</PackageId>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 		<PackageProjectUrl>https://github.com/RockLib/RockLib.Messaging</PackageProjectUrl>
-		<PackageVersion>5.0.0-alpha.1</PackageVersion>
+		<PackageVersion>5.0.0</PackageVersion>
 		<PackageReleaseNotes>A changelog is available at https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging.SQS/CHANGELOG.md.</PackageReleaseNotes>
 		<PublishRepositoryUrl>True</PublishRepositoryUrl>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageTags>rocklib messaging sqs</PackageTags>
-		<Version>5.0.0-alpha.1</Version>
+		<Version>5.0.0</Version>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
@@ -27,6 +27,6 @@
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
 		<PackageReference Include="AWSSDK.SQS" Version="3.7.400.86" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="RockLib.Messaging" Version="5.0.0-alpha.1" />
+		<PackageReference Include="RockLib.Messaging" Version="5.0.0" />
 	</ItemGroup>
 </Project>
