@@ -4,7 +4,7 @@
 		<TargetFramework>net8.0</TargetFramework>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="RockLib.Messaging.Kafka" Version="3.0.0" />
+		<PackageReference Include="RockLib.Messaging.Kafka" Version="4.0.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Update="appsettings.json">
