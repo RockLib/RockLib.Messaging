@@ -12,16 +12,16 @@
 		<PackageReleaseNotes>A changelog is available at https://github.com/RockLib/RockLib.Messaging/blob/main/RockLib.Messaging.CloudEvents/CHANGELOG.md.</PackageReleaseNotes>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageTags>rocklib messaging cloudevents</PackageTags>
-		<PackageVersion>4.0.0-alpha.1</PackageVersion>
+		<PackageVersion>4.0.0</PackageVersion>
 		<PublishRepositoryUrl>True</PublishRepositoryUrl>
-		<Version>4.0.0-alpha.1</Version>
+		<Version>4.0.0</Version>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-		<PackageReference Include="RockLib.Messaging" Version="5.0.0-alpha.1" />
+		<PackageReference Include="RockLib.Messaging" Version="5.0.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 	<ItemGroup>
